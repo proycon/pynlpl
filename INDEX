@@ -1,0 +1,48 @@
+
+
+pynlpl.textprocessors
+    - Windower
+    - strip_accents
+    
+pynlpl.input
+    pynlpl.input.giza
+        - WordAlignment
+    pynlpl.input.sonar
+        - Corpus
+        - CorpusDocument
+    pynlpl.input.timbl
+        - TimblOutput
+
+pynlpl.clients
+    pynlpl.clients.tadpoleclient
+        - TadpoleClient
+    pynlpl.clients.freeling
+        - FreeLing
+    pynlpl.clients.iriondomainclassifier
+        - IRIONDomainClassifier
+    
+pynlpl.output
+    pynlpl.output.timbl
+        - TrainData
+        - TestData
+    
+pynlpl.statistics
+    - FrequencyList
+        typetokenratio()
+    - Distribution
+        entropy()
+        mode()
+
+pynlpl.evaluation
+    - ContigencyTable
+    - ConfusionMatrix
+
+    ? precision, recall, accuracy, fscore?
+    
+pynlpl.search
+    - BreadthFirstSearch
+    - DepthFirstSearch  
+    - LocalBeamSearch  
+    
+    
+
