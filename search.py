@@ -20,21 +20,26 @@ class AbstractSearchState(object):
 
 
 
+    def test(self):
+        """Checks whether this state is a valid goal state, returns a boolean. For optimisation problems, you often want to always return True here."""
+        raise Exception("Classes derived from AbstractSearchState must define a test() method!")
+
     def score(self):
-        """Should return a heuristic value. """
+        """Should return a heuristic value. This needs to be set if you plan to used an informed search algorithm."""
         raise Exception("Classes derived from AbstractSearchState must define a score() method if used in informed search algorithms!")
 
     def expand(self):
-        """Generates successor states, implement your custom operators in the derived method"""
+        """Generates successor states, implement your custom operators in the derived method."""
         raise Exception("Classes derived from AbstractSearchState must define an expand() method!")
 
     def __eq__(self):
         """Implement an equality test in the derived method, based only on the state's content (not its path etc!)"""
         raise Exception("Classes derived from AbstractSearchState must define an __eq__() method!")
 
-    def test(self):
-        """Checks whether this state is a valid goal state, returns a boolean"""
-        raise Exception("Classes derived from AbstractSearchState must define a test() method!")
+    
+    def __hash__(self):
+        """Return a unique hash for this state, based on its ID"""
+        raise Exception("Classes derived from AbstractSearchState must define a __hash__() method if the search space is a graph and visited nodes to be are stored in memory!")        
 
 
     def depth(self):
@@ -56,6 +61,7 @@ class AbstractSearchState(object):
         else: 
             return self.parent.pathcost() + self.cost
 
+
         
 
     #def __cmp__(self, other):
@@ -73,11 +79,12 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         self.poll = lambda x: x.pop
         self.maxdepth = False #unlimited
         self.minimize = False #minimize rather than maximize the score function? default: no
+        self.keeptraversal = False
         for key, value in kwargs.items():
-            if key == 'usememory' or key == 'graph':
-                self.usememory = value
+            if key == 'graph':
+                self.usememory = value #search space is a graph? memory required to keep visited states
             elif key == 'tree':
-                self.usememory = not value;
+                self.usememory = not value;  #search space is a tree? memory not required
             elif key == 'poll':
                 self.poll = value
             elif key == 'maxdepth':
@@ -86,13 +93,26 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                 self.minimize = value
             elif key == 'maximize':
                 self.minimize = not value
-        self.visited = []
+            elif key == 'keeptraversal': #remember entire traversal?
+                self.keeptraversal = value
+        self.visited = {}
+        self.traversal = []
         self.incomplete = False            
 
-    def memory(self):
-        """Returns all visited states (only when usememory=True), note that this is not equal to the path, but to the entire traversal!"""
-        return self.visited
 
+    def traversal(self):
+        """Returns all visited states (only when keeptraversal=True), note that this is not equal to the path, but contains all states that were checked!"""
+        if self.keeptraversal:
+            return self.traversal
+        else:
+            raise Exception("No traversal available, algorithm not started with keeptraversal=True!")
+
+    def visited(self, state):
+        if self.usememory:
+            return (state in self.visited)
+        else:
+            raise Exception("No memory kept, algorithm not started with graph=True!")
+        
     def __iter__(self):
         """Iterates over all valid goalstates it can find"""
         while len(self.fringe) != 0:
@@ -102,21 +122,19 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
             """Expand the specified state and add to the fringe"""
             if not self.usememory or (self.usememory and not state in self.visited):
                 if not self.maxdepth:
-                     self.fringe += state.expand()
-                     if self.usememory: 
-                        self.visited.append(state)
-                     self.prune()
+                     self.fringe += state.expand() 
                 else:
                     for s in state.expand():
                         if s.depth() <= self.maxdepth:
                             self.fringe.append(s)
-                            if self.usememory: 
-                                self.visited.append(state)
                         else:
                             self.incomplete = True
-                    self.prune()
+                if self.keeptraversal: self.keeptraversal.append(state)
+                if self.usememory: self.visited[state] = True
+                self.prune() #calls prune method
 
     def prune(self):
+        #pruning nothing by default
         pass
 
 class DepthFirstSearch(AbstractSearch):
