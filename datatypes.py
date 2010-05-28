@@ -80,3 +80,7 @@ class PriorityQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.c
         else:
             return self.data.pop()[1]
 
+    def prune(self, n):
+        #prune all but the first n items
+        self.data = self.data[:n]
+

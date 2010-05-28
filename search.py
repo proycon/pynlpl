@@ -14,7 +14,7 @@
 from pynlp.datatypes import FIFOQueue, PriorityQueue
 
 class AbstractSearchState(object):
-    def __init__(self, parent = None, cost = 0):
+    def __init__(self,  parent = None, cost = 0):
         self.parent = parent        
         self.cost = cost
 
@@ -67,8 +67,9 @@ class AbstractSearchState(object):
     #        return 0
 
 class AbstractSearch(object): #not a real search, just a base class for DFS and BFS
-    def __init__(self, usememory = True, maxdepth = False):
+    def __init__(self, usememory = True, maxdepth = False, poll = lambda x: x.pop):
         """For graph-searches usememory must be on, otherwise the search may be infinite. For tree-searches, it can be be switched off for better performance"""
+        self.poll = poll #poll function
         self.usememory = usememory
         self.visited = []
         self.maxdepth = maxdepth      
@@ -81,7 +82,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
     def __iter__(self):
         """Iterates over all valid goalstates it can find"""
         while len(self.fringe) != 0:
-            state = self.fringe.pop()
+            state = self.popfunction(self.fringe)()
             if state.test():
                 yield state
             """Expand the specified state and add to the fringe"""
@@ -109,7 +110,7 @@ class DepthFirstSearch(AbstractSearch):
     def __init__(self, state, usememory = True, maxdepth = False):
         assert issubclass(state, AbstractSearchState)
         self.fringe = [ state ]
-        super(self, DepthFirstSearch).__init(usememory, maxdepth)         
+        super(self, DepthFirstSearch).__init__(usememory, maxdepth)         
 
 
 
@@ -119,7 +120,7 @@ class BreadthFirstSearch(AbstractSearch):
     def __init__(self, state, usememory = True, maxdepth = False):
         assert issubclass(state, AbstractSearchState)
         self.fringe = FIFOQueue([state])
-        super(self, BreadthFirstSearch).__init(usememory, maxdepth)         
+        super(self, BreadthFirstSearch).__init__(usememory, maxdepth)         
 
 
 class IterativeDeepening(AbstractSearch):
@@ -138,27 +139,27 @@ class IterativeDeepening(AbstractSearch):
 
 class BestFirstSearch(AbstractSearch):
 
-    def __init__(self, state, usememory = True, maxdepth = False, minimize=False,):
+    def __init__(self, state, usememory = True, maxdepth = False, minimize=False):
         assert issubclass(state, AbstractSearchState)
         self.fringe = PriorityQueue([state], lambda x: x.score, minimize)
-        super(self, BestFirstSearch).__init(state,usememory, maxdepth)            
+        super(self, BestFirstSearch).__init__(state,usememory, maxdepth)            
 
 
 class BeamSearch(AbstractSearch):
     
-    def __init__(self, state, beamsize, usememory = True, maxdepth = False):
+    def __init__(self, state, beamsize, usememory = True, maxdepth = False, minimize=False):
         assert issubclass(state, AbstractSearchState)
-        self.fringe = FIFOQueue([state])
+        self.fringe = PriorityQueue([state], lambda x: x.score, minimize)
         self.beamsize = beamsize
-        super(self, BeamSearch).__init(state,usememory, maxdepth)            
+        super(self, BeamSearch).__init__(state,usememory, maxdepth, lambda x: x.pop(0))            
 
     def prune(self):
-        self.fringe.sort(cmp=lambda x,y: cmp(x.score(), y.score()),reverse=True)[:self.beamsize] #sort by score, descending order
+        self.fringe.prune(self.beamsize)
 
 
 class HillClimbingSearch(BeamSearch):
     """BeamSearch with beam 1"""
 
     def __init__(self, state, usememory = True, maxdepth = False):
-        super(self, HillClimbingSearch).__init(state,1, usememory, maxdepth)            
+        super(self, HillClimbingSearch).__init__(state,1, usememory, maxdepth)            
 
