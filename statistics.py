@@ -5,6 +5,10 @@
 #       Induction for Linguistic Knowledge Research Group
 #       Universiteit van Tilburg
 #       
+#       Also contains MIT licensed code from
+#        AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
+#        Peter Norvig
+#
 #       Licensed under GPLv3
 # 
 # This is a Python library containing classes for Statistic and
@@ -12,7 +16,7 @@
 #
 ###############################################################
 
-from math import log
+import math
 
 class FrequencyList:
     def __init__(self, tokens = None, casesensitive = True):
@@ -110,7 +114,8 @@ class FrequencyList:
             yield " ".join(type) + delimiter + str(count)
 
 class Distribution:
-    def __init__(self, data):
+    def __init__(self, data, base = None):
+        self.base = base #logarithmic base: can be set to 2 or 10 (or anything else), when set to None, it defaults to e
         self._dist = {}
         if isinstance(data, FrequencyList):
             for type, count in data.items():
@@ -132,30 +137,45 @@ class Distribution:
         if not self._ranked: self._ranked = sorted(self._dist.items(),key=lambda x: x[1], reverse=True )
 
     def information(self, type):
-        """Computes the information content of the specified type: -log(p(X))"""
+        """Computes the information content of the specified type: -log_e(p(X))"""
         type = self._validate(type)
-        return -log(self._dist[type])
+        if not base and self.base: base = self.base
+        if not base:
+            return -math.log(self._dist[type])
+        else:
+            return -math.log(self._dist[type], base)
 
     def poslog(self, type):
         """alias for information content"""
         type = self._validate(type)
         return self.information(type)
 
-    def entropy(self):
-        """Compute the entropy of the distribution"""
+    def entropy(self, base = None):
+        """Compute the entropy of the distribution (base e)"""
         entropy = 0
+        if not base and self.base: base = self.base
         for type in self._dist:
-            entropy += self._dist[type] * -log(self._dist[type])     
+            if not base:
+                entropy += self._dist[type] * -math.log(self._dist[type])     
+            else:
+                entropy += self._dist[type] * -math.log(self._dist[type], base)     
         return entropy
+
 
     def mode(self):
         """Returns the type that occurs the most frequently in the probability distribution"""
         self._rank()
         return self._ranked[0][0]
 
-    def maxentropy(self):     
-        """Compute the maximum entropy of the distribution: log(N)"""   
-        return log(len(self._dist))
+    def maxentropy(self, base = None):     
+        """Compute the maximum entropy of the distribution: log_e(N)"""   
+        if not base and self.base: base = self.base
+        if not base:
+            return math.log(len(self._dist))
+        else:
+            return math.log(len(self._dist), base)
+
+
 
     def __getitem__(self, type):
         """Return the probability for this type"""
@@ -176,4 +196,91 @@ class Distribution:
     def output(self,delimiter = '\t'):
         for type, prob in self:    
             yield " ".join(type) + delimiter + str(prob)
+
+
+
+# All below functions are mathematical functions from  AI: A Modern Approach, see: http://aima.cs.berkeley.edu/python/utils.html 
+
+def histogram(values, mode=0, bin_function=None): #from AI: A Modern Appproach 
+    """Return a list of (value, count) pairs, summarizing the input values.
+    Sorted by increasing value, or if mode=1, by decreasing count.
+    If bin_function is given, map it over values first."""
+    if bin_function: values = map(bin_function, values)
+    bins = {}
+    for val in values:
+        bins[val] = bins.get(val, 0) + 1
+    if mode:
+        return sorted(bins.items(), key=lambda v: v[1], reverse=True)
+    else:
+        return sorted(bins.items())
+ 
+def log2(x):  #from AI: A Modern Appproach 
+    """Base 2 logarithm.
+    >>> log2(1024)
+    10.0
+    """
+    return math.log(x, 2)
+
+def mode(values):  #from AI: A Modern Appproach 
+    """Return the most common value in the list of values.
+    >>> mode([1, 2, 3, 2])
+    2
+    """
+    return histogram(values, mode=1)[0][0]
+
+def median(values):  #from AI: A Modern Appproach 
+    """Return the middle value, when the values are sorted.
+    If there are an odd number of elements, try to average the middle two.
+    If they can't be averaged (e.g. they are strings), choose one at random.
+    >>> median([10, 100, 11])
+    11
+    >>> median([1, 2, 3, 4])
+    2.5
+    """
+    n = len(values)
+    values = sorted(values)
+    if n % 2 == 1:
+        return values[n/2]
+    else:
+        middle2 = values[(n/2)-1:(n/2)+1]
+        try:
+            return mean(middle2)
+        except TypeError:
+            return random.choice(middle2)
+
+def mean(values):  #from AI: A Modern Appproach 
+    """Return the arithmetic average of the values."""
+    return sum(values) / float(len(values))
+
+def stddev(values, meanval=None):  #from AI: A Modern Appproach 
+    """The standard deviation of a set of values.
+    Pass in the mean if you already know it."""
+    if meanval == None: meanval = mean(values)
+    return math.sqrt(sum([(x - meanval)**2 for x in values]) / (len(values)-1))
+
+def dotproduct(X, Y):  #from AI: A Modern Appproach 
+    """Return the sum of the element-wise product of vectors x and y.
+    >>> dotproduct([1, 2, 3], [1000, 100, 10])
+    1230
+    """
+    return sum([x * y for x, y in zip(X, Y)])
+
+def vector_add(a, b):  #from AI: A Modern Appproach 
+    """Component-wise addition of two vectors.
+    >>> vector_add((0, 1), (8, 9))
+    (8, 10)
+    """
+    return tuple(map(operator.add, a, b))
+
+
+
+def normalize(numbers, total=1.0):  #from AI: A Modern Appproach 
+    """Multiply each number by a constant such that the sum is 1.0 (or total).
+    >>> normalize([1,2,1])
+    [0.25, 0.5, 0.25]
+    """
+    k = total / sum(numbers)
+    return [k * n for n in numbers]
+
+
 
