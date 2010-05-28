@@ -1,0 +1,4 @@
+#!/bin/bash
+SRILM=srilm/lib/i686-m64
+g++ -fpic -shared -I/usr/include/python2.6 -lpython2.6 -lboost_python srilm.cc $SRILM/liboolm.a $SRILM/libdstruct.a $SRILM/libmisc.a -o srilmcc.so
+
