@@ -67,12 +67,26 @@ class AbstractSearchState(object):
     #        return 0
 
 class AbstractSearch(object): #not a real search, just a base class for DFS and BFS
-    def __init__(self, usememory = True, maxdepth = False, poll = lambda x: x.pop):
-        """For graph-searches usememory must be on, otherwise the search may be infinite. For tree-searches, it can be be switched off for better performance"""
-        self.poll = poll #poll function
-        self.usememory = usememory
+    def __init__(self, **kwargs):
+        """For graph-searches usememory=True is required (default), otherwise the search may loop forever. For tree-searches, it can be be switched off for better performance"""
+        self.usememory = True
+        self.poll = lambda x: x.pop
+        self.maxdepth = False #unlimited
+        self.minimize = False #minimize rather than maximize the score function? default: no
+        for key, value in kwargs.items():
+            if key == 'usememory' or key == 'graph':
+                self.usememory = value
+            elif key == 'tree':
+                self.usememory = not value;
+            elif key == 'poll':
+                self.poll = value
+            elif key == 'maxdepth':
+                self.maxdepth = value
+            elif key == 'minimize':
+                self.minimize = value
+            elif key == 'maximize':
+                self.minimize = not value
         self.visited = []
-        self.maxdepth = maxdepth      
         self.incomplete = False            
 
     def memory(self):
@@ -107,20 +121,20 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
 
 class DepthFirstSearch(AbstractSearch):
 
-    def __init__(self, state, usememory = True, maxdepth = False):
+    def __init__(self, state, **kwargs):
         assert issubclass(state, AbstractSearchState)
         self.fringe = [ state ]
-        super(self, DepthFirstSearch).__init__(usememory, maxdepth)         
+        super(self, DepthFirstSearch).__init__(**kwargs)         
 
 
 
 class BreadthFirstSearch(AbstractSearch):
 
 
-    def __init__(self, state, usememory = True, maxdepth = False):
+    def __init__(self, state, **kwargs):
         assert issubclass(state, AbstractSearchState)
         self.fringe = FIFOQueue([state])
-        super(self, BreadthFirstSearch).__init__(usememory, maxdepth)         
+        super(self, BreadthFirstSearch).__init__(**kwargs)         
 
 
 class IterativeDeepening(AbstractSearch):
@@ -139,19 +153,19 @@ class IterativeDeepening(AbstractSearch):
 
 class BestFirstSearch(AbstractSearch):
 
-    def __init__(self, state, usememory = True, maxdepth = False, minimize=False):
+    def __init__(self, state, **kwargs):
+        super(self, BestFirstSearch).__init__(**kwargs)            
         assert issubclass(state, AbstractSearchState)
-        self.fringe = PriorityQueue([state], lambda x: x.score, minimize)
-        super(self, BestFirstSearch).__init__(state,usememory, maxdepth)            
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize)
 
 
 class BeamSearch(AbstractSearch):
     
-    def __init__(self, state, beamsize, usememory = True, maxdepth = False, minimize=False):
+    def __init__(self, state, beamsize, **kwargs):
         assert issubclass(state, AbstractSearchState)
-        self.fringe = PriorityQueue([state], lambda x: x.score, minimize)
         self.beamsize = beamsize
-        super(self, BeamSearch).__init__(state,usememory, maxdepth, lambda x: x.pop(0))            
+        super(self, BeamSearch).__init__(beamsize, **kwargs)            
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize)
 
     def prune(self):
         self.fringe.prune(self.beamsize)
@@ -160,6 +174,6 @@ class BeamSearch(AbstractSearch):
 class HillClimbingSearch(BeamSearch):
     """BeamSearch with beam 1"""
 
-    def __init__(self, state, usememory = True, maxdepth = False):
-        super(self, HillClimbingSearch).__init__(state,1, usememory, maxdepth)            
+    def __init__(self, state, **kwargs):
+        super(self, HillClimbingSearch).__init__(state,1, **kwargs)            
 
