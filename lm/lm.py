@@ -3,7 +3,7 @@
 #   by Maarten van Gompel, ILK, Universiteit van Tilburg
 #   http://ilk.uvt.nl/~mvgompel
 #   proycon AT anaproy DOT nl
-##
+#
 #   Licensed under GPLv3
 #
 #----------------------------------------------------------------
@@ -11,10 +11,11 @@
 from pynlpl.statistics import FrequencyList, product
 from pynlpl.textprocessors import Windower
 import codecs
+from sys import stderr
 
 class SimpleLanguageModel:
     """This is a very simple unsmoothed language model"""
-    def __init__(self, n, beginmarker = "<begin>", endmarker = "<end>"):
+    def __init__(self, n=2, beginmarker = "<begin>", endmarker = "<end>"):
         self.freqlistN = FrequencyList()
         self.freqlistNm1 = FrequencyList()
 
@@ -46,24 +47,30 @@ class SimpleLanguageModel:
                     if line[:2] == 'n=':
                         self.n = int(line[2:])
                     elif line[:12] == 'beginmarker=':
-                        self.beginmarker = line[:12]
+                        self.beginmarker = line[12:]
                     elif line[:10] == 'endmarker=':
-                        self.beginmarker = line[:10]            
-                    mode = 2
-                elif mode == 2:
-                    if line == "[freqlistN]":
-                        mode = 3
+                        self.endmarker = line[10:]            
+                    elif line == "[freqlistN]":
+                        mode = 2
                     else:
                         raise Exception("Syntax error in language model file: ", line)
-                elif mode == 3:
+                elif mode == 2:
                     if line == "[freqlistNm1]":
-                        mode = 4
+                        mode = 3
                     else:
-                        type, count = line.split("\t")
-                        self.freqlistN.count(type,count)
-                elif mode == 4:
-                        type, count = line.split("\t")
-                        self.freqlistNm1.count(type,count)
+			try:
+                        	type, count = line.split("\t")
+				count = int(count)
+                        	self.freqlistN.count(type,count)
+			except:
+				print >>stderr,"Warning, could not parse line whilst loading frequency list: ", line
+                elif mode == 3:
+			try:
+                        	type, count = line.split("\t")
+				count = int(count)
+                        	self.freqlistNm1.count(type,count)
+			except:
+				print >>stderr,"Warning, could not parse lin    e whilst loading frequency list: ", line
 
     def save(self, filename):
         f = codecs.open(filename,'w','utf-8')
@@ -82,7 +89,7 @@ class SimpleLanguageModel:
 
 
     def scoresentence(self, sentence):
-        return product([self.__getitem(x) for x in Windower(sentence, self.n, self.beginmarker, self.endmarker)])
+        return product([self[x] for x in Windower(sentence, self.n, self.beginmarker, self.endmarker)])
             
 
     def __getitem__(self, ngram):
