@@ -265,6 +265,15 @@ def dotproduct(X, Y):  #from AI: A Modern Appproach
     """
     return sum([x * y for x, y in zip(X, Y)])
 
+def product(seq):
+    if len(seq) == 0:
+        return 0
+    else:
+        product = 1
+        for x in seq:
+            product *= x
+        return product
+
 def vector_add(a, b):  #from AI: A Modern Appproach 
     """Component-wise addition of two vectors.
     >>> vector_add((0, 1), (8, 9))
