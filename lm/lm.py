@@ -26,9 +26,9 @@ class SimpleLanguageModel:
         self.sentences = 0
 
         if self.beginmarker:
-            self._begingram = tuple(self.beginmarker * (n-1))
+            self._begingram = [self.beginmarker] * (n-1)
         if self.endmarker:
-            self._endgram = tuple(self.endmarker * (n-1))
+            self._endgram = [self.endmarker] * (n-1)
 
     def append(self, sentence):
         self.sentences += 1
@@ -108,9 +108,9 @@ class SimpleLanguageModel:
         nm1gram = ngram[:-1]
 
         if (self.beginmarker and nm1gram == self._begingram) or (self.endmarker and nm1gram == self._endgram):
-            return self.freqlistN[ngram] / self.sentences
+            return self.freqlistN[ngram] / float(self.sentences)
         else:   
-            return self.freqlistN[ngram] / self.freqlistNm1[nm1gram]
+            return self.freqlistN[ngram] / float(self.freqlistNm1[nm1gram])
 
 
 
