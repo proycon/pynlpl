@@ -23,12 +23,21 @@ class SimpleLanguageModel:
         self.n = n
         self.beginmarker = beginmarker
         self.endmarker = endmarker
+        self.sentences = 0
+
+        if self.beginmarker:
+            self._begingram = tuple(self.beginmarker * (n-1))
+        if self.endmarker:
+            self._endgram = tuple(self.endmarker * (n-1))
 
     def append(self, sentence):
+        self.sentences += 1
         for ngram in Windower(sentence,self.n, self.beginmarker, self.endmarker):
             self.freqlistN.count(ngram)
         for ngram in Windower(sentence,self.n-1, self.beginmarker, self.endmarker):
-            self.freqlistNm1.count(ngram)        
+            self.freqlistNm1.count(ngram)  
+        
+            
         
     def load(self, filename):
         self.freqlistN = FrequencyList()
@@ -49,7 +58,9 @@ class SimpleLanguageModel:
                     elif line[:12] == 'beginmarker=':
                         self.beginmarker = line[12:]
                     elif line[:10] == 'endmarker=':
-                        self.endmarker = line[10:]            
+                        self.endmarker = line[10:]   
+                    elif line[:10] == 'sentences=':
+                        self.sentences = int(line[10:])
                     elif line == "[freqlistN]":
                         mode = 2
                     else:
@@ -74,6 +85,7 @@ class SimpleLanguageModel:
         f = codecs.open(filename,'w','utf-8')
         f.write("[simplelanguagemodel]\n")
         f.write("n="+str(self.n)+"\n")
+        f.write("sentences="+str(self.sentences)+"\n")
         f.write("beginmarker="+self.beginmarker+"\n")
         f.write("endmarker="+self.endmarker+"\n")
         f.write("\n")
@@ -94,11 +106,11 @@ class SimpleLanguageModel:
         assert len(ngram) == self.n
 
         nm1gram = ngram[:-1]
-	print ngram in self.freqlistN
-	print nm1gram in self.freqlistNm1
-	
-        return self.freqlistN.p(ngram) / self.freqlistNm1.p(nm1gram)
-            
-        
-    
+
+        if (self.beginmarker and nm1gram == self._begingram) or (self.endmarker and nm1gram == self._endgram):
+            return self.freqlistN[ngram] / self.sentences
+        else:   
+            return self.freqlistN[ngram] / self.freqlistNm1[nm1gram]
+
+
 
