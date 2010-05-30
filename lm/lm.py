@@ -25,9 +25,9 @@ class SimpleLanguageModel:
         self.endmarker = endmarker
 
     def append(self, sentence):
-        for ngram in Windower(sentence,self.n):
+        for ngram in Windower(sentence,self.n, self.beginmarker, self.endmarker):
             self.freqlistN.count(ngram)
-        for ngram in Windower(sentence,self.n-1):
+        for ngram in Windower(sentence,self.n-1, self.beginmarker, self.endmarker):
             self.freqlistNm1.count(ngram)        
         
     def load(self, filename):
@@ -60,15 +60,13 @@ class SimpleLanguageModel:
                     else:
 			try:
                         	type, count = line.split("\t")
-				count = int(count)
-                        	self.freqlistN.count(type,count)
+                        	self.freqlistN.count(type.split(' '),int(count))
 			except:
 				print >>stderr,"Warning, could not parse line whilst loading frequency list: ", line
                 elif mode == 3:
 			try:
                         	type, count = line.split("\t")
-				count = int(count)
-                        	self.freqlistNm1.count(type,count)
+                        	self.freqlistNm1.count(type.split(' '),int(count))
 			except:
 				print >>stderr,"Warning, could not parse lin    e whilst loading frequency list: ", line
 
@@ -96,8 +94,10 @@ class SimpleLanguageModel:
         assert len(ngram) == self.n
 
         nm1gram = ngram[:-1]
-
-        return self.freqlistN.p(ngram) / self.freqlistN.p(nm1gram)
+	print ngram in self.freqlistN
+	print nm1gram in self.freqlistNm1
+	
+        return self.freqlistN.p(ngram) / self.freqlistNm1.p(nm1gram)
             
         
     

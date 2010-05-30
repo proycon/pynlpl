@@ -66,7 +66,7 @@ class FrequencyList:
 
     def sum(self):
         """alias"""
-        return self._total
+        return self.total
 
     def _rank(self):
         if not self._ranked: self._ranked = sorted(self._count.items(),key=lambda x: x[1], reverse=True )
@@ -96,7 +96,7 @@ class FrequencyList:
     
     def typetokenratio(self):
         """Computes the type/token ratio"""
-        return len(self._total) / float(self._total)
+        return len(self._count) / float(self.total)
 
 
     def mode(self):
@@ -108,7 +108,7 @@ class FrequencyList:
     def p(self, type): 
         """Returns the probability (relative frequency) of the token"""
         type = self._validate(type)
-        return self._count[type] / float(self._total)
+        return self._count[type] / float(self.total)
 
 
     def __eq__(self, otherfreqlist):
