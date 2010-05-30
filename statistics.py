@@ -17,6 +17,9 @@
 ###############################################################
 
 import math
+import codecs
+import random
+import operator
 
 class FrequencyList:
     def __init__(self, tokens = None, casesensitive = True):
@@ -26,6 +29,20 @@ class FrequencyList:
         self.casesensitive = casesensitive
         if tokens: self.append(tokens)
 
+    
+    def load(self, filename):
+        f = codecs.open(filename,'r','utf-8')
+        for line in self.readline():
+            type, count = line.split("\t")
+            self.count(type,count)
+        f.close()
+            
+
+    def save(self, filename):
+        f = codecs.open(filename,'w','utf-8')
+        for line in self.output():
+            f.write(line + '\n')
+        f.close()
 
     def _validate(self,type):
         if not self.casesensitive: 
@@ -139,8 +156,8 @@ class Distribution:
     def information(self, type):
         """Computes the information content of the specified type: -log_e(p(X))"""
         type = self._validate(type)
-        if not base and self.base: base = self.base
-        if not base:
+        if not self.base and self.base: base = self.base
+        if not self.base:
             return -math.log(self._dist[type])
         else:
             return -math.log(self._dist[type], base)
