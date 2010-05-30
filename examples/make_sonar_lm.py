@@ -4,6 +4,11 @@
 #Create a language model based on SoNaR
 
 import sys
+
+sys.path.append(sys.path[0] + '/../..')
+os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
+
+
 from pynlpl.input.sonar import Corpus
 from pynlpl.lm.lm import SimpleLanguageModel
 
