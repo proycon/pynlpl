@@ -4,7 +4,7 @@
 #Create a language model based on SoNaR
 
 import sys
-
+import os
 sys.path.append(sys.path[0] + '/../..')
 os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
 

@@ -2,7 +2,7 @@
 #-*- coding:utf-8 -*-
 
 import sys
-
+import os
 sys.path.append(sys.path[0] + '/../..')
 os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
 
