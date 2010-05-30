@@ -69,17 +69,23 @@ class SimpleLanguageModel:
                     if line == "[freqlistNm1]":
                         mode = 3
                     else:
-			try:
-                        	type, count = line.split("\t")
-                        	self.freqlistN.count(type.split(' '),int(count))
-			except:
-				print >>stderr,"Warning, could not parse line whilst loading frequency list: ", line
+                        try:
+                            type, count = line.split("\t")
+                            self.freqlistN.count(type.split(' '),int(count))
+                        except:
+                            print >>stderr,"Warning, could not parse line whilst loading frequency list: ", line
                 elif mode == 3:
-			try:
-                        	type, count = line.split("\t")
-                        	self.freqlistNm1.count(type.split(' '),int(count))
-			except:
-				print >>stderr,"Warning, could not parse lin    e whilst loading frequency list: ", line
+                        try:
+                            type, count = line.split("\t")
+                            self.freqlistNm1.count(type.split(' '),int(count))
+                        except:
+                            print >>stderr,"Warning, could not parse lin    e whilst loading frequency list: ", line
+
+        if self.beginmarker:
+            self._begingram = [self.beginmarker] * (self.n-1)
+        if self.endmarker:
+            self._endgram = [self.endmarker] * (self.n-1)
+
 
     def save(self, filename):
         f = codecs.open(filename,'w','utf-8')
