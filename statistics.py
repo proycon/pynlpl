@@ -25,7 +25,7 @@ class FrequencyList:
     def __init__(self, tokens = None, casesensitive = True):
         self._count = {}
         self._ranked = {}
-        self.total = 0
+        self.total = 0 #number of tokens
         self.casesensitive = casesensitive
         if tokens: self.append(tokens)
 
@@ -98,6 +98,13 @@ class FrequencyList:
         """Computes the type/token ratio"""
         return len(self._count) / float(self.total)
 
+    def __len__(self):
+        """Returns the number of types"""
+        return len(self._count)
+
+    def tokens(self):
+        """Returns the number of tokens"""
+        return self.total
 
     def mode(self):
         """Returns the type that occurs the most frequently in the frequency list"""
@@ -192,7 +199,9 @@ class Distribution:
         else:
             return math.log(len(self._dist), base)
 
-
+    def __len__(self):
+        """Returns the number of types"""
+        return len(self._dist)
 
     def __getitem__(self, type):
         """Return the probability for this type"""
