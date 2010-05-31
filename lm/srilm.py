@@ -26,7 +26,8 @@ class SRILM:
         self.order = order
 
     def scoresentence(self, sentence):
-        return product([self[x] for x in Windower(sentence, self.n, self.beginmarker, self.endmarker)])
+        sentence = ["<s>"] + sentence + ["</s>"]
+        return product([self[x] for x in Windower(sentence, self.n, None, None)])
 
     def __getitem__(self, ngram):
         return 10**self.logscore(ngram)
@@ -54,5 +55,5 @@ class SRILM:
             score = self.model.wordProb(*ngram[0:3])
             for i in range(1,n - 2):
                 score += self.model.wordProb(*ngram[i:i+3]) 
-            return score    
+            return score
 
