@@ -13,6 +13,7 @@ from pynlpl.textprocessors import Windower
 import codecs
 from sys import stderr
 
+
 class SimpleLanguageModel:
     """This is a very simple unsmoothed language model"""
     def __init__(self, n=2, beginmarker = "<begin>", endmarker = "<end>"):
