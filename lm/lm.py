@@ -42,11 +42,11 @@ class SimpleLanguageModel:
             
         
     def load(self, filename):
-        self.freqlistN = FrequencyList()
-        self.freqlistNm1 = FrequencyList()
+        self.freqlistN = FrequencyList(None, self.casesensitive)
+        self.freqlistNm1 = FrequencyList(None, self.casesensitive)
         f = codecs.open(filename,'r','utf-8')
         mode = False
-        for line in f.readlines():        
+        for line in f.readlines():
             line = line.strip()
             if line:
                 if not mode:
@@ -63,6 +63,10 @@ class SimpleLanguageModel:
                         self.endmarker = line[10:]   
                     elif line[:10] == 'sentences=':
                         self.sentences = int(line[10:])
+                    elif line[:14] == 'casesensitive=':
+                        self.casesensitive = bool(int(line[14:]))
+                        self.freqlistN = FrequencyList(None, self.casesensitive)
+                        self.freqlistNm1 = FrequencyList(None, self.casesensitive)
                     elif line == "[freqlistN]":
                         mode = 2
                     else:
@@ -96,6 +100,7 @@ class SimpleLanguageModel:
         f.write("sentences="+str(self.sentences)+"\n")
         f.write("beginmarker="+self.beginmarker+"\n")
         f.write("endmarker="+self.endmarker+"\n")
+        f.write("casesensitive="+str(int(self.casesensitive))+"\n")
         f.write("\n")
         f.write("[freqlistN]\n")
         for line in self.freqlistN.output():
