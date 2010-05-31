@@ -16,9 +16,10 @@ from sys import stderr
 
 class SimpleLanguageModel:
     """This is a very simple unsmoothed language model"""
-    def __init__(self, n=2, beginmarker = "<begin>", endmarker = "<end>"):
-        self.freqlistN = FrequencyList()
-        self.freqlistNm1 = FrequencyList()
+    def __init__(self, n=2, casesensitive = True, beginmarker = "<begin>", endmarker = "<end>"):
+        self.casesensitive = casesensitive
+        self.freqlistN = FrequencyList(None, self.casesensitive)
+        self.freqlistNm1 = FrequencyList(None, self.casesensitive)
 
         assert n >= 2
         self.n = n
