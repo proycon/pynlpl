@@ -11,7 +11,7 @@
 #
 #----------------------------------------------------------------
 
-from pynlp.datatypes import FIFOQueue, PriorityQueue
+from pynlpl.datatypes import FIFOQueue, PriorityQueue
 
 class AbstractSearchState(object):
     def __init__(self,  parent = None, cost = 0):
