@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# README!!!
+
 #First compile SRILM as follows:
 
 #In srilm/common/Makefile.machine.i686 (also for x86_64!) set:
@@ -12,7 +15,12 @@
 
 #Then edit the directories in this script and run ./makesrilm
 
-export SRILM=/home/mvgompel/tmp/srilm5.10/ #(must be an absolute path!)
+if [ -z $1 ]; then
+	echo "Usage: ./makesrilm /path/to/srilm/" >&2
+	exit 1;
+fi
+
+export SRILM=$1   #Default: /home/mvgompel/tmp/srilm5.10/ #(must be an absolute path!)
 export SRILMLIBS=$SRILM/lib/i686
-g++ -fPIC -shared -I/usr/include/python2.5 -lpython2.5 -I/home/mvgompel/tmp/srilm5.10/src -I/home/mvgompel/tmp/srilm5.10/include -lboost_python srilm.cc $SRILMLIBS/liboolm.a $SRILMLIBS/libdstruct.a $SRILMLIBS/libmisc.a -o srilmcc.so
+g++ -fPIC -shared -I/usr/include/python2.5 -lpython2.5 -I$SRILM/src -I$SRILM/include -lboost_python srilm.cc $SRILMLIBS/liboolm.a $SRILMLIBS/libdstruct.a $SRILMLIBS/libmisc.a -o srilmcc.so
 
