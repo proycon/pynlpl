@@ -34,7 +34,7 @@ public:
 };
 
 
-BOOST_PYTHON_MODULE(srilm)
+BOOST_PYTHON_MODULE(srilmcc)
 {
 	class_<LanguageModel, boost::noncopyable>("LanguageModel", init<const std::string&, int>())
 		.def("wordProb", &LanguageModel::wordProb)

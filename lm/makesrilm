@@ -1,4 +1,18 @@
 #!/bin/bash
-SRILM=srilm/lib/i686-m64
-g++ -fpic -shared -I/usr/include/python2.6 -lpython2.6 -lboost_python srilm.cc $SRILM/liboolm.a $SRILM/libdstruct.a $SRILM/libmisc.a -o srilmcc.so
+#First compile SRILM as follows:
+
+#In srilm/common/Makefile.machine.i686 (also for x86_64!) set:
+# ADDITIONAL_CFLAGS =-fPIC
+# ADDITIONAL_CXXFLAGS =-fPIC
+
+#And change GCC_FLAGS to GCC_FLAGS =  -Wreturn-type -Wimplicit
+
+#Then compile:
+# make MACHINE_TYPE=i686 NO_TCL=X
+
+#Then edit the directories in this script and run ./makesrilm
+
+export SRILM=/home/mvgompel/tmp/srilm5.10/ #(must be an absolute path!)
+export SRILMLIBS=$SRILM/lib/i686
+g++ -fPIC -shared -I/usr/include/python2.5 -lpython2.5 -I/home/mvgompel/tmp/srilm5.10/src -I/home/mvgompel/tmp/srilm5.10/include -lboost_python srilm.cc $SRILMLIBS/liboolm.a $SRILMLIBS/libdstruct.a $SRILMLIBS/libmisc.a -o srilmcc.so
 
