@@ -86,3 +86,15 @@ class PriorityQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.c
         #prune all but the first n items
         self.data = self.data[:n]
 
+    def prunebyscore(self, score, retainequalscore=False):
+        if retainequalscore:
+            if self.minimize:
+                f = lambda x: x[0] <= score
+            else:
+                f = lambda x: x[0] >= score
+        else:
+            if self.minimize:
+                f = lambda x: x[0] < score
+            else:
+                f = lambda x: x[0] > score
+        self.data = filter(f, self.data)
