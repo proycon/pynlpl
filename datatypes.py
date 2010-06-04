@@ -58,29 +58,30 @@ class FIFOQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.cs.be
             self.start = 0
         return e
 
-class PriorityQueue(Queue): #Heavily adapted, originally from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
+class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
     """A queue in which the maximum (or minumum) element is returned first, 
     as determined by either an external score function f (by default calling
     the objects score() method). If minimize=True, the item with minimum f(x) is
     returned first; otherwise is the item with maximum f(x) or x.score().
 
 
-    acceptworse can be set to false if you want to prohibit adding worse-scoring items to the queue.
-    acceptequal can be set to false if you also want to prohibit adding equally-scoring items to the queue.
-    (Both parameters default to True)
+    blockworse can be set to true if you want to prohibit adding worse-scoring items to the queue.
+    blockequal can be set to false if you also want to prohibit adding equally-scoring items to the queue.
+    (Both parameters default to False)
     """
-    def __init__(self, data =[], f = lambda x: x.score, minimize=False, acceptworse =True, acceptequal=True):
+    def __init__(self, data =[], f = lambda x: x.score, minimize=False, blockworse=False, blockequal=False):
         self.data = []
         self.f = f
         self.minimize=False #minimize instead of maximize?
-        self.acceptworse
+        self.blockworse=blockworse
+        self.blockequal=blockequal
         for item in data:
             self.append(item)
 
     def append(self, item):
-        """Adds an item to the priority queue, returns True if successfull, False if the item was denied (because of a bad score)"""
+        """Adds an item to the priority queue (in the right place), returns True if successfull, False if the item was blocked (because of a bad score)"""
         score = self.f(item)
-        if not self.acceptworse:
+        if self.blockworse:
             bestscore = self.bestscore()
             if self.minimize:
                 if score > bestscore:
@@ -88,7 +89,7 @@ class PriorityQueue(Queue): #Heavily adapted, originally from AI: A Modern Apppr
             else:
                 if score < bestscore:
                     return False
-        if not self.acceptequal:
+        if self.blockequal:
             bestscore = self.bestscore()
             if bestscore == score:
                 return False
@@ -136,7 +137,7 @@ class PriorityQueue(Queue): #Heavily adapted, originally from AI: A Modern Apppr
         self.data = self.data[:n]
 
     def prunebyscore(self, score, retainequalscore=False):
-        """It is recommmended to use acceptworse=False / acceptequal=False instead!"""
+        """It is recommmended to use blockworse=True / blockequal=True instead!"""
         if retainequalscore:
             if self.minimize:
                 f = lambda x: x[0] <= score
