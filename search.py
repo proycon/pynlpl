@@ -18,11 +18,13 @@ class AbstractSearchState(object):
         self.parent = parent        
         self.cost = cost
 
-
-
-    def test(self):
-        """Checks whether this state is a valid goal state, returns a boolean. For optimisation problems, you often want to always return True here."""
-        raise Exception("Classes derived from AbstractSearchState must define a test() method!")
+    def test(self, goalstates = None):
+        """Checks whether this state is a valid goal state, returns a boolean. If not goalstate is defined, then all states will test positively, this is what you usually want for optimisation problems."""
+        if goalstates:
+            return (self in goalstates)
+        else:
+            return True
+            #raise Exception("Classes derived from AbstractSearchState must define a test() method!")
 
     def score(self):
         """Should return a heuristic value. This needs to be set if you plan to used an informed search algorithm."""
@@ -80,6 +82,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         self.maxdepth = False #unlimited
         self.minimize = False #minimize rather than maximize the score function? default: no
         self.keeptraversal = False
+        self.goalstates = None
         for key, value in kwargs.items():
             if key == 'graph':
                 self.usememory = value #search space is a graph? memory required to keep visited states
@@ -95,9 +98,14 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                 self.minimize = not value
             elif key == 'keeptraversal': #remember entire traversal?
                 self.keeptraversal = value
+            elif key == 'goal' or key == 'goals': #remember entire traversal?
+                if isinstance(value, list) or isinstance(value, tuple):
+                    self.goalstates = value
+                else:
+                    self.goalstates = [value]
         self.visited = {}
         self.traversal = []
-        self.incomplete = False            
+        self.incomplete = False
 
 
     def traversal(self):
@@ -117,21 +125,25 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         """Iterates over all valid goalstates it can find"""
         while len(self.fringe) != 0:
             state = self.poll(self.fringe)()
-            if state.test():
+            if state.test(self.goalstates):
                 yield state
             """Expand the specified state and add to the fringe"""
             if not self.usememory or (self.usememory and not state in self.visited):
-                if not self.maxdepth:
-                     self.fringe += state.expand() 
-                else:
-                    for s in state.expand():
-                        if s.depth() <= self.maxdepth:
-                            self.fringe.append(s)
-                        else:
-                            self.incomplete = True
+                for s in state.expand():
+                    if not self.maxdepth or s.depth() <= self.maxdepth:
+                        self.fringe.append(s)
+                    else:
+                        self.incomplete = True
                 if self.keeptraversal: self.keeptraversal.append(state)
                 if self.usememory: self.visited[state] = True
                 self.prune() #calls prune method
+
+    def searchone(self):
+        for solution in self:
+            return solution
+
+    def searchall(self):
+        return list(iter(self))
 
     def prune(self):
         #pruning nothing by default
@@ -157,10 +169,15 @@ class BreadthFirstSearch(AbstractSearch):
 
 class IterativeDeepening(AbstractSearch):
 
+    def __init__(self, state, **kwargs):
+        assert isinstance(state, AbstractSearchState)
+        self.state = state
+        self.kwargs = kwargs
+
     def __iter__(self):
         d = 0
-        while not self.maxdepth or d <= self.maxdepth:
-            dfs = DepthFirstSearch(self.state, self.usememory, d)
+        while not 'maxdepth' in self.kwargs or d <= self.kwargs['maxdepth']:
+            dfs = DepthFirstSearch(self.state, **self.kwargs)
             for match in dfs:
                 yield match
             if dfs.incomplete:
