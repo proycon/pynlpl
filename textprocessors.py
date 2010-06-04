@@ -18,7 +18,10 @@ class Windower:
     """Moves a sliding window over a list of tokens, returning all windows"""
 
     def __init__(self, tokens, n=1, beginmarker = "<begin>", endmarker = "<end>"):
-        self.tokens = tokens
+        if isinstance(tokens, str) or  isinstance(unicode, str):
+            self.tokens = tokens.split()
+        else:
+            self.tokens = tokens
         self.n = n
         self.beginmarker = beginmarker
         self.endmarker = endmarker
@@ -35,7 +38,7 @@ class Windower:
                 if not self.beginmarker or not self.endmarker:
                     continue
                 else:
-                   yield ((begin * -1) * [self.beginmarker]) + self.tokens + ((end - l) * [self.endmarker])                                   
+                   yield ((begin * -1) * [self.beginmarker]) + self.tokens + ((end - l) * [self.endmarker])
             elif begin < 0:
                 if not self.beginmarker: 
                    continue   
