@@ -81,7 +81,7 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
     def append(self, item):
         """Adds an item to the priority queue (in the right place), returns True if successfull, False if the item was blocked (because of a bad score)"""
         score = self.f(item)
-        if self.blockworse:
+        if self.blockworse and self.data:
             bestscore = self.bestscore()
             if self.minimize:
                 if score > bestscore:
@@ -89,7 +89,7 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
             else:
                 if score < bestscore:
                     return False
-        if self.blockequal:
+        if self.blockequal and self.data:
             bestscore = self.bestscore()
             if bestscore == score:
                 return False
