@@ -86,7 +86,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
             elif key == 'tree':
                 self.usememory = not value;  #search space is a tree? memory not required
             elif key == 'poll':
-                self.poll = value
+                self.poll = value #function
             elif key == 'maxdepth':
                 self.maxdepth = value
             elif key == 'minimize':
@@ -116,7 +116,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
     def __iter__(self):
         """Iterates over all valid goalstates it can find"""
         while len(self.fringe) != 0:
-            state = self.popfunction(self.fringe)()
+            state = self.poll(self.fringe)()
             if state.test():
                 yield state
             """Expand the specified state and add to the fringe"""
@@ -140,9 +140,9 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
 class DepthFirstSearch(AbstractSearch):
 
     def __init__(self, state, **kwargs):
-        assert issubclass(state, AbstractSearchState)
+        assert isinstance(state, AbstractSearchState)
         self.fringe = [ state ]
-        super(self, DepthFirstSearch).__init__(**kwargs)         
+        super(DepthFirstSearch,self).__init__(**kwargs)         
 
 
 
@@ -150,9 +150,9 @@ class BreadthFirstSearch(AbstractSearch):
 
 
     def __init__(self, state, **kwargs):
-        assert issubclass(state, AbstractSearchState)
+        assert isinstance(state, AbstractSearchState)
         self.fringe = FIFOQueue([state])
-        super(self, BreadthFirstSearch).__init__(**kwargs)         
+        super(BreadthFirstSearch,self).__init__(**kwargs)         
 
 
 class IterativeDeepening(AbstractSearch):
@@ -172,17 +172,17 @@ class IterativeDeepening(AbstractSearch):
 class BestFirstSearch(AbstractSearch):
 
     def __init__(self, state, **kwargs):
-        super(self, BestFirstSearch).__init__(**kwargs)            
-        assert issubclass(state, AbstractSearchState)
+        super(BestFirstSearch,self).__init__(**kwargs)            
+        assert isinstance(state, AbstractSearchState)
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize)
 
 
 class BeamSearch(AbstractSearch):
     
     def __init__(self, state, beamsize, **kwargs):
-        assert issubclass(state, AbstractSearchState)
+        assert isinstance(state, AbstractSearchState)
         self.beamsize = beamsize
-        super(self, BeamSearch).__init__(beamsize, **kwargs)            
+        super(BeamSearch,self).__init__(**kwargs)            
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize)
 
     def prune(self):
@@ -193,5 +193,5 @@ class HillClimbingSearch(BeamSearch):
     """BeamSearch with beam 1"""
 
     def __init__(self, state, **kwargs):
-        super(self, HillClimbingSearch).__init__(state,1, **kwargs)            
+        super(HillClimbingSearch,self).__init__(state,1, **kwargs)            
 
