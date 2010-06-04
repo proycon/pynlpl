@@ -51,7 +51,7 @@ class AbstractSearchState(object):
             return self.parent.depth() + 1            
 
     def __len__(self):
-        return len(self.path)
+        return len(self.path())
 
     def path(self):
         if not self.parent:
@@ -148,7 +148,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                 if self.usememory: self.visited[state] = True
                 self.prune() #calls prune method
 
-    def searchone(self):
+    def searchfirst(self):
         for solution in self:
             return solution
 
@@ -184,16 +184,16 @@ class IterativeDeepening(AbstractSearch):
         assert isinstance(state, AbstractSearchState)
         self.state = state
         self.kwargs = kwargs
-        self.traversalsize = 0
+        self.traversed = 0
 
     def __iter__(self):
-        self.traversalsize = 0
+        self.traversed = 0
         d = 0
         while not 'maxdepth' in self.kwargs or d <= self.kwargs['maxdepth']:
             dfs = DepthFirstSearch(self.state, **self.kwargs)
+            self.traversed += dfs.traversalsize()
             for match in dfs:
                 yield match
-            self.traversalsize += dfs.traversalsize()
             if dfs.incomplete:
                 d +=1 
             else:
@@ -204,7 +204,7 @@ class IterativeDeepening(AbstractSearch):
         raise Exception("not implemented yet")
 
     def traversalsize(self):
-        return self.traversalzsize
+        return self.traversed
         
 
 class BestFirstSearch(AbstractSearch):

@@ -1,5 +1,5 @@
 ###############################################################
-#  PyNLPp - Statistics Library
+#  PyNLPp - Statistics & Information Theory Library
 #       by Maarten van Gompel (proycon)
 #       http://ilk.uvt.nl/~mvgompel
 #       Induction for Linguistic Knowledge Research Group
@@ -322,7 +322,7 @@ def normalize(numbers, total=1.0):  #from AI: A Modern Appproach
     k = total / sum(numbers)
     return [k * n for n in numbers]
 
-
+###########################################################################################
 
 def levenshtein(s1, s2): #from http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
     if len(s1) < len(s2):
