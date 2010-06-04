@@ -11,7 +11,9 @@
 #
 #----------------------------------------------------------------
 
+from sys import stderr
 from pynlpl.datatypes import FIFOQueue, PriorityQueue
+from collections import deque
 
 class AbstractSearchState(object):
     def __init__(self,  parent = None, cost = 0):
@@ -50,8 +52,8 @@ class AbstractSearchState(object):
         else:
             return self.parent.depth() + 1            
 
-    def __len__(self):
-        return len(self.path())
+    #def __len__(self):
+    #    return len(self.path())
 
     def path(self):
         if not self.parent:
@@ -85,6 +87,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         self.minimize = False #minimize rather than maximize the score function? default: no
         self.keeptraversal = False
         self.goalstates = None
+        self.debug = False
         for key, value in kwargs.items():
             if key == 'graph':
                 self.usememory = value #search space is a graph? memory required to keep visited states
@@ -105,11 +108,12 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                     self.goalstates = value
                 else:
                     self.goalstates = [value]
+            elif key == 'debug':
+                self.debug = value
         self.visited = {}
         self.traversal = []
         self.incomplete = False
         self.traversed = 0
-
 
     def traversal(self):
         """Returns all visited states (only when keeptraversal=True), note that this is not equal to the path, but contains all states that were checked!"""
@@ -132,21 +136,40 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
     def __iter__(self):
         """Iterates over all valid goalstates it can find"""
         self.traversed = 0
-        while len(self.fringe) != 0:
+        while len(self.fringe) > 0:
+            if self.debug: print self.fringe
             state = self.poll(self.fringe)()
+            if self.debug:
+                print >>stderr,"CURRENT STATE: " + str(state),
+                try:
+                    print >>stderr,state.score()
+                except:
+                    pass
             self.traversed += 1
             if state.test(self.goalstates):
+                if self.debug: print >>stderr,"   *TARGET!*"
                 yield state
-            """Expand the specified state and add to the fringe"""
+            elif self.debug:
+                print >>stderr,"   (no target)"
+
+            if self.debug: print >>stderr,"\tEXPANDING:"
+
+            #Expand the specified state and add to the fringe
             if not self.usememory or (self.usememory and not state in self.visited):
                 for s in state.expand():
+                    if self.debug:
+                        print >>stderr,"\t\t" + str(s),
+                        try:
+                            print >>stderr,s.score()
+                        except:
+                            pass
                     if not self.maxdepth or s.depth() <= self.maxdepth:
                         self.fringe.append(s)
                     else:
                         self.incomplete = True
                 if self.keeptraversal: self.keeptraversal.append(state)
                 if self.usememory: self.visited[state] = True
-                self.prune() #calls prune method
+                self.prune(state) #calls prune method
 
     def searchfirst(self):
         for solution in self:
@@ -155,8 +178,20 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
     def searchall(self):
         return list(iter(self))
 
+    def searchbest(self):
+        finalsolution = None
+        for solution in self:
+            finalsolution = solution
+        return finalsolution
 
-    def prune(self):
+    def searchtop(self,n=10):
+        solutions = deque([], n)
+        for solution in self:
+            solutions.append(solution)
+        return solutions
+
+
+    def prune(self, state):
         #pruning nothing by default
         pass
 
@@ -205,31 +240,31 @@ class IterativeDeepening(AbstractSearch):
 
     def traversalsize(self):
         return self.traversed
-        
+
 
 class BestFirstSearch(AbstractSearch):
 
     def __init__(self, state, **kwargs):
-        super(BestFirstSearch,self).__init__(**kwargs)            
+        super(BestFirstSearch,self).__init__(**kwargs)
         assert isinstance(state, AbstractSearchState)
-        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize)
-
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False)
 
 class BeamSearch(AbstractSearch):
-    
+
     def __init__(self, state, beamsize, **kwargs):
         assert isinstance(state, AbstractSearchState)
         self.beamsize = beamsize
-        super(BeamSearch,self).__init__(**kwargs)            
-        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize)
+        super(BeamSearch,self).__init__(**kwargs)
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False)
 
-    def prune(self):
+    def prune(self, state):
+        self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
 
-
-class HillClimbingSearch(BeamSearch):
-    """BeamSearch with beam 1"""
+class HillClimbingSearch(AbstractSearch):
+    """(identical to beamsearch with beam 1, but implemented differently)"""
 
     def __init__(self, state, **kwargs):
-        super(HillClimbingSearch,self).__init__(state,1, **kwargs)            
-
+        assert isinstance(state, AbstractSearchState)
+        super(HillClimbingSearch,self).__init__(**kwargs)
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=True, blockequal=False)

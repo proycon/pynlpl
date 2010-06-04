@@ -38,9 +38,8 @@ class SimpleLanguageModel:
             self.freqlistN.count(ngram)
         for ngram in Windower(sentence,self.n-1, self.beginmarker, self.endmarker):
             self.freqlistNm1.count(ngram)  
-        
-            
-        
+
+
     def load(self, filename):
         self.freqlistN = FrequencyList(None, self.casesensitive)
         self.freqlistNm1 = FrequencyList(None, self.casesensitive)

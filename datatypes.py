@@ -72,27 +72,33 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
     def __init__(self, data =[], f = lambda x: x.score, minimize=False, blockworse=False, blockequal=False):
         self.data = []
         self.f = f
-        self.minimize=False #minimize instead of maximize?
+        self.minimize=minimize
         self.blockworse=blockworse
         self.blockequal=blockequal
+        self.bestscore = None
         for item in data:
             self.append(item)
 
     def append(self, item):
         """Adds an item to the priority queue (in the right place), returns True if successfull, False if the item was blocked (because of a bad score)"""
-        score = self.f(item)
-        if self.blockworse and self.data:
-            bestscore = self.bestscore()
+        f = self.f(item)
+        if callable(f):
+            score = f()
+        else:
+            score = f
+
+        if self.blockworse and self.bestscore != None:
             if self.minimize:
-                if score > bestscore:
+                if score > self.bestscore:
                     return False
             else:
-                if score < bestscore:
+                if score < self.bestscore:
                     return False
-        if self.blockequal and self.data:
-            bestscore = self.bestscore()
-            if bestscore == score:
+        if self.blockequal and self.bestscore != None:
+            if self.bestscore == score:
                 return False
+        if (self.bestscore == None) or (self.minimize and score < self.bestscore) or (not self.minimize and score > self.bestscore):
+            self.bestscore = score
         bisect.insort(self.data, (score, item))
         return True
 
@@ -108,11 +114,11 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         for score, item in f(self.data):
             yield item
 
-    def __index__(self, i):
+    def __getitem__(self, i):
         """Item 0 is always the best item!"""
         if self.minimize:
             return self.data[i][1]
-        else:
+        else:   
             return self.data[(-1 * i) - 1][1]
 
     def pop(self):
@@ -121,9 +127,6 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         else:
             return self.data.pop()[1]
 
-    def bestscore(self):
-        """Return the best score"""
-        return self.score(0)
 
     def score(self, i):
         """Return the score for item x (cheap lookup), Item 0 is always the best item"""
@@ -150,5 +153,9 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
                 f = lambda x: x[0] > score
         self.data = filter(f, self.data)
 
+    def __eq__(self, other):
+        return (self.data == other.data) and (self.minimize == other.minimize)
 
 
+    def __repr__(self):
+        return repr(self.data)

@@ -20,7 +20,7 @@ sys.path.append(sys.path[0] + '/../../')
 os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
 from pynlpl.search import AbstractSearchState, DepthFirstSearch, BreadthFirstSearch, IterativeDeepening, HillClimbingSearch, BeamSearch
-from pynlpl.lm.lm import SimpleLanguageModel
+
 
 class ReorderSearchState(AbstractSearchState):
     def __init__(self, tokens, parent = None):
@@ -48,18 +48,21 @@ class ReorderSearchState(AbstractSearchState):
         return " ".join(self.tokens)
 
 class InformedReorderSearchState(ReorderSearchState):
-    def __init__(self, tokens, goal = None, lm=None, parent = None):
+    def __init__(self, tokens, goal = None, parent = None):
         self.tokens = tokens
         self.goal = goal
-        self.lm = lm
         super(ReorderSearchState, self).__init__(parent)
 
     def score(self):
-        """Run through language model"""
-        try:
-            self.lm.scoresentence(self.tokens)
-        except KeyError:
-            return 0
+        """Compute distortion"""
+        totaldistortion = 0
+        for i, token in enumerate(self.goal.tokens):
+            tokendistortion = 9999999
+            for j, token2 in enumerate(self.tokens):
+                if token == token2 and abs(i - j) < tokendistortion:
+                    tokendistortion = abs(i - j)
+            totaldistortion += tokendistortion
+        return totaldistortion
 
 
     def expand(self):
@@ -71,14 +74,14 @@ class InformedReorderSearchState(ReorderSearchState):
             newtokens.append(self.tokens[i])
             if i+2 < l:
                 newtokens += self.tokens[i+2:]
-            yield InformedReorderSearchState(newtokens, self.goal, self.lm, self)
-
+            yield InformedReorderSearchState(newtokens, self.goal, self)
 
 inputstate = ReorderSearchState("a This test . sentence is".split(' '))
 goalstate = ReorderSearchState("This is a test sentence .".split(' '))
 
 class DepthFirstSearchTest(unittest.TestCase):
     def test_solution(self):
+        """Depth First Search"""
         global inputstate, goalstate
         search = DepthFirstSearch(inputstate ,graph=True, goal=goalstate)
         solution = search.searchfirst()
@@ -90,6 +93,7 @@ class DepthFirstSearchTest(unittest.TestCase):
 
 class BreadthFirstSearchTest(unittest.TestCase):
     def test_solution(self):
+        """Breadth First Search"""
         global inputstate, goalstate
         search = BreadthFirstSearch(inputstate ,graph=True, goal=goalstate)
         solution = search.searchfirst()
@@ -99,6 +103,7 @@ class BreadthFirstSearchTest(unittest.TestCase):
 
 class IterativeDeepeningTest(unittest.TestCase):
     def test_solution(self):
+        """Iterative Deepening DFS"""
         global inputstate, goalstate
         search = IterativeDeepening(inputstate ,graph=True, goal=goalstate)
         solution = search.searchfirst()
@@ -107,17 +112,23 @@ class IterativeDeepeningTest(unittest.TestCase):
 
 
 
-lm = SimpleLanguageModel(2,False)
-lm.append("This is a test sentence .")
-informedinputstate = InformedReorderSearchState("a This test . sentence is".split(' '), lm)
+informedinputstate = InformedReorderSearchState("a This test . sentence is".split(' '), goalstate)
 #making a simple language model
 
 class HillClimbingTest(unittest.TestCase):
     def test_solution(self):
+        """Hill Climbing"""
         global informedinputstate
-        search = HillClimbingSearch(informedinputstate, graph=True, minimize=True)
-        for solution in search:
-            print str(solution), solution.score()
+        search = HillClimbingSearch(informedinputstate, graph=True, minimize=True,debug=False)
+        solution = search.searchbest()
+        self.assertTrue(solution)
+
+class BeamSearchTest(unittest.TestCase):
+    def test_solution(self):
+        """Beam Search"""
+        global informedinputstate
+        search = BeamSearch(informedinputstate, beamsize=5, graph=True, minimize=True,debug=True)
+        solution = search.searchbest()
         self.assertTrue(solution)
 
 
