@@ -57,6 +57,8 @@ class DepthFirstSearchTest(unittest.TestCase):
         search = DepthFirstSearch(inputstate ,graph=True, goal=goalstate)
         solution = search.searchone()
         self.assertEqual(solution, goalstate)
+        print "NODES VISITED: ", search.traversalsize()
+
 
 
 class BreadthFirstSearchTest(unittest.TestCase):
@@ -64,7 +66,9 @@ class BreadthFirstSearchTest(unittest.TestCase):
         global inputstate, goalstate
         search = BreadthFirstSearch(inputstate ,graph=True, goal=goalstate)
         solution = search.searchone()
+        print "NODES VISITED: ", search.traversalsize()
         self.assertEqual(solution, goalstate)
+
 
 class IterativeDeepeningTest(unittest.TestCase):
     def test_solution(self):
@@ -72,6 +76,7 @@ class IterativeDeepeningTest(unittest.TestCase):
         search = IterativeDeepening(inputstate ,graph=True, goal=goalstate)
         solution = search.searchone()
         self.assertEqual(solution, goalstate)
+        print "NODES VISITED: ", search.traversalsize()
 
 if __name__ == '__main__':
     unittest.main()

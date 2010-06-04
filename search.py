@@ -50,6 +50,8 @@ class AbstractSearchState(object):
         else:
             return self.parent.depth() + 1            
 
+    def __len__(self):
+        return len(self.path)
 
     def path(self):
         if not self.parent:
@@ -106,6 +108,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         self.visited = {}
         self.traversal = []
         self.incomplete = False
+        self.traversed = 0
 
 
     def traversal(self):
@@ -114,6 +117,11 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
             return self.traversal
         else:
             raise Exception("No traversal available, algorithm not started with keeptraversal=True!")
+    
+    def traversalsize(self):
+        """Returns the number of nodes visited  (also when keeptravel=False). Note that this is not equal to the path, but contains all states that were checked!"""
+        return self.traversed
+        
 
     def visited(self, state):
         if self.usememory:
@@ -123,8 +131,10 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         
     def __iter__(self):
         """Iterates over all valid goalstates it can find"""
+        self.traversed = 0
         while len(self.fringe) != 0:
             state = self.poll(self.fringe)()
+            self.traversed += 1
             if state.test(self.goalstates):
                 yield state
             """Expand the specified state and add to the fringe"""
@@ -144,6 +154,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
 
     def searchall(self):
         return list(iter(self))
+
 
     def prune(self):
         #pruning nothing by default
@@ -173,18 +184,28 @@ class IterativeDeepening(AbstractSearch):
         assert isinstance(state, AbstractSearchState)
         self.state = state
         self.kwargs = kwargs
+        self.traversalsize = 0
 
     def __iter__(self):
+        self.traversalsize = 0
         d = 0
         while not 'maxdepth' in self.kwargs or d <= self.kwargs['maxdepth']:
             dfs = DepthFirstSearch(self.state, **self.kwargs)
             for match in dfs:
                 yield match
+            self.traversalsize += dfs.traversalsize()
             if dfs.incomplete:
                 d +=1 
             else:
                 break
 
+    def traversal(self):
+        #TODO: add
+        raise Exception("not implemented yet")
+
+    def traversalsize(self):
+        return self.traversalzsize
+        
 
 class BestFirstSearch(AbstractSearch):
 
