@@ -59,14 +59,16 @@ class FIFOQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.cs.be
         return e
 
 class PriorityQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
-    """A queue in which the maximum (or minumum) element is return first, 
+    """A queue in which the maximum (or minumum) element is returned first, 
     as determined by either an external score function f (by default calling
     the objects score() method). If minimize=True, the item with minimum f(x) is
     returned first; otherwise is the item with maximum f(x) or x.score()."""
     def __init__(self, data =[], f = lambda x: x.score, minimize=False):
-        self.data=data
+        self.data = []
         self.f = f
         self.minimize=False #minimize instead of maximize?
+        for item in data:
+            self.append(item)
 
     def append(self, item):
         bisect.insort(self.data, (self.f(item), item))
