@@ -58,23 +58,61 @@ class FIFOQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.cs.be
             self.start = 0
         return e
 
-class PriorityQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
+class PriorityQueue(Queue): #Heavily adapted, originally from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
     """A queue in which the maximum (or minumum) element is returned first, 
     as determined by either an external score function f (by default calling
     the objects score() method). If minimize=True, the item with minimum f(x) is
-    returned first; otherwise is the item with maximum f(x) or x.score()."""
-    def __init__(self, data =[], f = lambda x: x.score, minimize=False):
+    returned first; otherwise is the item with maximum f(x) or x.score().
+
+
+    acceptworse can be set to false if you want to prohibit adding worse-scoring items to the queue.
+    acceptequal can be set to false if you also want to prohibit adding equally-scoring items to the queue.
+    (Both parameters default to True)
+    """
+    def __init__(self, data =[], f = lambda x: x.score, minimize=False, acceptworse =True, acceptequal=True):
         self.data = []
         self.f = f
         self.minimize=False #minimize instead of maximize?
+        self.acceptworse
         for item in data:
             self.append(item)
 
     def append(self, item):
-        bisect.insort(self.data, (self.f(item), item))
+        """Adds an item to the priority queue, returns True if successfull, False if the item was denied (because of a bad score)"""
+        score = self.f(item)
+        if not self.acceptworse:
+            bestscore = self.bestscore()
+            if self.minimize:
+                if score > bestscore:
+                    return False
+            else:
+                if score < bestscore:
+                    return False
+        if not self.acceptequal:
+            bestscore = self.bestscore()
+            if bestscore == score:
+                return False
+        bisect.insort(self.data, (score, item))
+        return True
 
     def __len__(self):
         return len(self.data)
+
+    def __iter__(self):
+        """Iterate over all items, in order from best to worst!"""
+        if self.minimize: 
+            f = lambda x: x
+        else:
+            f = reversed
+        for score, item in f(self.data):
+            yield item
+
+    def __index__(self, i):
+        """Item 0 is always the best item!"""
+        if self.minimize:
+            return self.data[i][1]
+        else:
+            return self.data[(-1 * i) - 1][1]
 
     def pop(self):
         if self.minimize:
@@ -82,11 +120,23 @@ class PriorityQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.c
         else:
             return self.data.pop()[1]
 
+    def bestscore(self):
+        """Return the best score"""
+        return self.score(0)
+
+    def score(self, i):
+        """Return the score for item x (cheap lookup), Item 0 is always the best item"""
+        if self.minimize:
+            return self.data[i][0]
+        else:
+            return self.data[(-1 * i) - 1][0]
+
     def prune(self, n):
-        #prune all but the first n items
+        """prune all but the first n items"""
         self.data = self.data[:n]
 
     def prunebyscore(self, score, retainequalscore=False):
+        """It is recommmended to use acceptworse=False / acceptequal=False instead!"""
         if retainequalscore:
             if self.minimize:
                 f = lambda x: x[0] <= score
@@ -98,3 +148,6 @@ class PriorityQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.c
             else:
                 f = lambda x: x[0] > score
         self.data = filter(f, self.data)
+
+
+
