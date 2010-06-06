@@ -33,22 +33,22 @@ class Windower:
             begin = i
             end = i + self.n
             if begin >= 0 and end <= l:
-                yield self.tokens[begin:end] 
+                yield tuple(self.tokens[begin:end])
             elif begin < 0 and end > l:
                 if not self.beginmarker or not self.endmarker:
                     continue
                 else:
-                   yield ((begin * -1) * [self.beginmarker]) + self.tokens + ((end - l) * [self.endmarker])
+                   yield tuple(((begin * -1) * [self.beginmarker]) + self.tokens + ((end - l) * [self.endmarker]))
             elif begin < 0:
                 if not self.beginmarker: 
                    continue   
                 else: 
-                   yield ((begin * -1) * [self.beginmarker]) + self.tokens[0:end] 
+                   yield tuple(((begin * -1) * [self.beginmarker]) + self.tokens[0:end])
             elif end > l:
                 if not self.endmarker:
                    continue
                 else:
-                   yield self.tokens[begin:] + ((end - l) * [self.endmarker])
+                   yield tuple(self.tokens[begin:] + ((end - l) * [self.endmarker]))
 
 def crude_tokenizer(line):
     """This is a very crude tokenizer"""

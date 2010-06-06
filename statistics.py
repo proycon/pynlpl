@@ -46,9 +46,9 @@ class FrequencyList:
 
     def _validate(self,type):
         if not self.casesensitive: 
-            return tuple([x.lower() for x in type])
+            return type.lower()
         else:
-            return tuple(type)
+            return type
 
     def append(self,tokens):
         for token in tokens:
@@ -136,6 +136,9 @@ class FrequencyList:
     def output(self,delimiter = '\t'):
         for type, count in self:    
             yield " ".join(type) + delimiter + str(count)
+
+    def __repr__(self):
+        return repr(self._count)
 
 class Distribution:
     def __init__(self, data, base = None):
