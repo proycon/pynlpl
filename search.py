@@ -155,7 +155,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
             if self.debug: print >>stderr,"\tEXPANDING:"
 
             #Expand the specified state and add to the fringe
-            if not self.usememory or (self.usememory and not state in self.visited):
+            if not self.usememory or (self.usememory and not hash(state) in self.visited):
                 for s in state.expand():
                     if self.debug:
                         print >>stderr,"\t\t" + str(s),
@@ -168,7 +168,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                     else:
                         self.incomplete = True
                 if self.keeptraversal: self.keeptraversal.append(state)
-                if self.usememory: self.visited[state] = True
+                if self.usememory: self.visited[hash(state)] = True
                 self.prune(state) #calls prune method
 
     def searchfirst(self):
