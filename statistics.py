@@ -194,7 +194,7 @@ class Distribution:
         self._rank()
         return self._ranked[0][0]
 
-    def maxentropy(self, base = None):     
+    def maxentropy(self, base = 2):     
         """Compute the maximum entropy of the distribution: log_e(N)"""   
         if not base and self.base: base = self.base
         if not base:
