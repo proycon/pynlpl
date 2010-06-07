@@ -21,13 +21,12 @@ from pynlpl.statistics import product
 from pynlpl.textprocessors import Windower
 
 class SRILM:
-    def __init__(self, filename, order):
-        self.model = srilmcc.LanguageModel(filename, order + 1)
-        self.order = order
+    def __init__(self, filename, n):
+        self.model = srilmcc.LanguageModel(filename, n)
+        self.n = n
 
     def scoresentence(self, sentence):
-        sentence = ["<s>"] + sentence + ["</s>"]
-        return product([self[x] for x in Windower(sentence, self.n, None, None)])
+        return product([self[x] for x in Windower(sentence, self.n, "<s>", "</s>")])
 
     def __getitem__(self, ngram):
         return 10**self.logscore(ngram)
@@ -36,8 +35,8 @@ class SRILM:
         #expand underscore-delimited phrases in the n-grams (proycon)
         #ngram = sum([ x.split("_") for x in ngram if x != "__" ],[]) 
         n = len(ngram)
-        if n - 1 < self.order:
-            ngram = (self.order - n + 1) * ["<s>"] + ngram
+        if n < self.n:
+            ngram = (self.order - n) * ["<s>"] + ngram
             n = len(ngram)
 
         #Bug work-around
@@ -45,7 +44,7 @@ class SRILM:
             print >> sys.stderr, "WARNING: Invalid word in n-gram! Ignoring", ngram 
             return -999.9
 
-        if n - 1 == self.order:
+        if n == self.n:
             #no phrases, basic trigram, compute directly
             return self.model.wordProb(*ngram)
         else: 
