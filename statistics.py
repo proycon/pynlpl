@@ -141,8 +141,8 @@ class FrequencyList:
         return repr(self._count)
 
 class Distribution:
-    def __init__(self, data, base = None):
-        self.base = base #logarithmic base: can be set to 2 or 10 (or anything else), when set to None, it defaults to e
+    def __init__(self, data, base = 2):
+        self.base = base #logarithmic base: can be set to 2, 10 or math.e (or anything else). when set to None, it's set to e automatically
         self._dist = {}
         if isinstance(data, FrequencyList):
             for type, count in data.items():
@@ -227,7 +227,8 @@ class Distribution:
             yield " ".join(type) + delimiter + str(prob)
 
 
-
+    def __repr__(self):
+        return repr(self._dist)
 
 # ********************* Common Functions ******************************
 
