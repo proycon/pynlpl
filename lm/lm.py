@@ -84,7 +84,7 @@ class SimpleLanguageModel:
                             type, count = line.split("\t")
                             self.freqlistNm1.count(type.split(' '),int(count))
                         except:
-                            print >>stderr,"Warning, could not parse lin    e whilst loading frequency list: ", line
+                            print >>stderr,"Warning, could not parse line whilst loading frequency list: ", line
 
         if self.beginmarker:
             self._begingram = [self.beginmarker] * (self.n-1)
