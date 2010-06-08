@@ -32,27 +32,16 @@ class SRILM:
         return 10**self.logscore(ngram)
 
     def logscore(self, ngram):
-        #expand underscore-delimited phrases in the n-grams (proycon)
-        #ngram = sum([ x.split("_") for x in ngram if x != "__" ],[]) 
         n = len(ngram)
-        if n < self.n:
-            ngram = (self.order - n) * ["<s>"] + ngram
-            n = len(ngram)
 
         #Bug work-around
-        if "" in ngram or "_" in ngram or "__" in ngram:
-            print >> sys.stderr, "WARNING: Invalid word in n-gram! Ignoring", ngram 
-            return -999.9
+        #if "" in ngram or "_" in ngram or "__" in ngram:
+        #    print >> sys.stderr, "WARNING: Invalid word in n-gram! Ignoring", ngram 
+        #    return -999.9
 
-        if n == self.n:
+        if len(ngram) == self.n:
             #no phrases, basic trigram, compute directly
             return self.model.wordProb(*ngram)
-        else: 
-            #we have phrases, estimate probability of phrases:
-            #print ngram[0:3]            
-            #print self.model.wordProb(*ngram[0:3])
-            score = self.model.wordProb(*ngram[0:3])
-            for i in range(1,n - 2):
-                score += self.model.wordProb(*ngram[i:i+3]) 
-            return score
+        else:
+            raise Exception("Not an " + str(self.n) + "-gram")
 
