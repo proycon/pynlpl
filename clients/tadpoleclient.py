@@ -1,5 +1,5 @@
 ###############################################################
-#  PyNLPl - Tadpole Client - Version 1.3
+#  PyNLPl - Tadpole Client - Version 1.4
 #       by Maarten van Gompel (proycon)
 #       http://ilk.uvt.nl/~mvgompel
 #       Induction for Linguistic Knowledge Research Group
@@ -10,9 +10,9 @@
 #       Licensed under GPLv3
 # 
 # This is a Python library for on-the-fly communication with
-# a FreeLing server. Allowing on-the-fly lemmatisation and
+# a Tadpole Server. Allowing on-the-fly lemmatisation and
 # PoS-tagging. It is recommended to pass your data on a 
-# sentence-by-sentence basis to FreeLingClient.process()
+# sentence-by-sentence basis to TadpoleClient.process()
 #
 ###############################################################
 
