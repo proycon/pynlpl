@@ -17,6 +17,21 @@ import re
 import glob
 import os.path
 
+try:
+    from lxml import etree as ElementTree #try lxml
+except ImportError:
+    from xml.etree.ElementTree import ElementTree #fall back to ElementTree
+
+from StringIO import StringIO
+from time import time
+
+namespaces = {
+    'dcoi': "http://lands.let.ru.nl/projects/d-coi/ns/1.0",
+    'standalone':"http://ilk.uvt.nl/dutchsemcor-standalone",
+    'dsc':"http://ilk.uvt.nl/dutchsemcor",
+    'xml':"http://www.w3.org/XML/1998/namespace"
+}
+
 class CorpusDocument:
     """This class represent one document/text of the Corpus"""
 
@@ -26,6 +41,7 @@ class CorpusDocument:
         self.f = codecs.open(filename,'r', encoding)
 
     def __iter__(self):
+        """Iterate over all words, a four-tuple (word,id,pos,lemma), in the document"""
         r = re.compile('<w.*xml:id="([^"]*)"(.*)>(.*)</w>')
         for line in self.f.readlines():
             matches = r.findall(line)
@@ -38,8 +54,14 @@ class CorpusDocument:
                 if m: lemma = m[0]
         
                 yield word, id, pos, lemma       
+    
+    def words(self):
+        #alias
+        return iter(self) 
+
 
     def sentences(self):
+        """Iterate over all sentences (sentence_id, sentence) in the document, sentence is a list of 4-tuples (word,id,pos,lemma)"""
         prevp = 0
         prevs = 0
         prevw = 0
@@ -59,7 +81,7 @@ class CorpusDocument:
             yield sentence_id, sentence 
             
     def paragraphs(self, with_id = False):
-        """Extracts paragraphs, returns list of plain-text paragraphs"""
+        """Extracts paragraphs, returns list of plain-text(!) paragraphs"""
         prevp = 0
         partext = []
         for word, id, pos, lemma in iter(self):
@@ -83,10 +105,90 @@ class Corpus:
             if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
                     yield CorpusDocument(f)
-            
-      
-    
-        
-        
-        
+
+#######################################################
+
+def ns(namespace):
+    """Resolves the namespace identifier to a full URL""" 
+    global namespaces
+    return '{'+namespaces[namespace]+'}'
+
+
+class CorpusX(Corpus):
+    def __iter__(self):
+        for d in glob.glob(self.corpusdir+"/*"):
+            if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
+                for f in glob.glob(d+ "/*." + self.extension):
+                    yield CorpusDocumentX(f)
+
+
+class CorpusDocumentX:
+    """This class represent one document/text of the Corpus, loaded into memory at once and retaining the full structure"""
+
+    def __init__(self, filename, tree = None, index=True ):
+        global namespaces
+        self.filename = filename
+        if not tree:
+            self.tree = ElementTree.parse(self.filename)
+            self.committed = True
+        elif isinstance(tree, ElementTree._Element):
+            self.tree = tree
+            self.committed = False
+
+        #Grab root element and determine if we run inline or standalone
+        self.root =  self.xpath("/dcoi:DCOI")
+        if self.root: 
+            self.inline = True
+        else:
+            raise Exception("Not in DCOI/SoNaR format!")
+            #self.root = self.xpath("/standalone:text")
+            #self.inline = False
+            #if not self.root:
+            #    raise FormatError()            
+
+        #build an index
+        self.index = {}
+        if index:
+            self._index(self.root)
+
+    def _index(self,node):
+        if ns('xml') + 'id' in subnode.attrib:
+                self.index[subnode.attrib[ns('xml') + 'id']] = subnode
+        for subnode in node: #TODO: can we do this with xpath instead?
+            self._index(subnode)
+
+    def validate(self, formats_dir="../formats/"):
+        """checks if the document is valid"""
+        #TODO: download XSD from web
+        if self.inline:
+            xmlschema = ElementTree.XMLSchema(ElementTree.parse(StringIO("\n".join(open(formats_dir+"dcoi-dsc.xsd").readlines()))))
+            xmlschema.assertValid(self.tree)
+            #return xmlschema.validate(self)
+        else:
+            xmlschema = ElementTree.XMLSchema(ElementTree.parse(StringIO("\n".join(open(formats_dir+"dutchsemcor-standalone.xsd").readlines()))))
+            xmlschema.assertValid(self.tree)
+            #return xmlschema.validate(self)
+
+    def __exists__(self, id):
+        return (id in self.index)
+
+    def __getitem__(self, id):
+        return self.index[id]
+
+
+    def paragraphs(self, node=None):
+        """iterate over paragraphs"""
+        if node == None: node = self
+        return node.xpath("//dcoi:p")
+
+    def sentences(self, node=None):
+        """iterate over sentences"""
+        if node == None: node = self
+        return node.xpath("//dcoi:s")
+
+    def words(self,node=None):
+        """iterate over words"""
+        if node == None: node = self
+        return node.xpath("//dcoi:w")
+
 
