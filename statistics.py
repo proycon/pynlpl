@@ -22,6 +22,7 @@ import random
 import operator
 
 class FrequencyList:
+
     def __init__(self, tokens = None, casesensitive = True):
         self._count = {}
         self._ranked = {}
@@ -45,15 +46,21 @@ class FrequencyList:
         f.close()
 
     def _validate(self,type):
-        if not self.casesensitive: 
-            return type.strip().lower()
+        if isinstance(type,tuple):
+            if not self.casesensitive: 
+                return tuple([x.lower() for x in type])
+            else:
+                return type
         else:
-            return type.strip()
+            if not self.casesensitive: 
+                return type.lower()
+            else:
+                return type
 
     def append(self,tokens):
         for token in tokens:
-            self.count(token.strip())
-        
+            self.count(tokens)
+
 
     def count(self, type, amount = 1):
         type = self._validate(type)
