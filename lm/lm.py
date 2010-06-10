@@ -33,6 +33,8 @@ class SimpleLanguageModel:
             self._endgram = [self.endmarker] * (n-1)
 
     def append(self, sentence):
+        if isinstance(sentence, str) or isinstance(sentence, unicode):
+            sentence = sentence.strip().split(' ')
         self.sentences += 1
         for ngram in Windower(sentence,self.n, self.beginmarker, self.endmarker):
             self.freqlistN.count(ngram)

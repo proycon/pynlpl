@@ -46,13 +46,13 @@ class FrequencyList:
 
     def _validate(self,type):
         if not self.casesensitive: 
-            return type.lower()
+            return type.strip().lower()
         else:
-            return type
+            return type.strip()
 
     def append(self,tokens):
         for token in tokens:
-            self.count(token)
+            self.count(token.strip())
         
 
     def count(self, type, amount = 1):
