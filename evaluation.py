@@ -48,7 +48,8 @@ class WPSParamSearch:
             self.sizefunc = sizefunc
         else:
             self.sizefunc = lambda i, maxsize: round(i/10.0 * maxsize)
-        
+
+        #prunefunc should return a number between 0 and 1, indicating how much is pruned. (for example: 0.75 prunes three/fourth of all combinations, retaining only 25%)
         if prunefunc != None:    
             self.prunefunc = prunefunc
         else:
@@ -56,14 +57,13 @@ class WPSParamSearch:
 
         #compute all parameter combinations:
         verboseparameterscope = [ self._combine(x) for x in self.parameterscope ]
-        self.parametercombinations = list(itertools.product(*verboseparameterscope))
+        self.parametercombinations = itertools.product(*verboseparameterscope) #generator
 
-    def _combine(self,name, values):
+    def _combine(self,name, values): #TODO: can't we do this inline in a list comprehension?
         l = []
         for value in values:
             l.append( (name, value) )
         return l
-
 
     def __iter__(self):
         i = 0
@@ -78,11 +78,13 @@ class WPSParamSearch:
             #run on ALL available parameter combinations and retrieve score
             newparametercombinations = []
             for parameters, score in self.parametercombinations:
+                #set up the experiment for this run
                 experiment = self.ExperimentClass(data, **parameters)
                 self.experiment.run()
                 newparametercombinations.append( (parameters, self.experiment.score()) )
 
             #prune the combinations, keeping only the best
             prune = round(self.prunefunc(i) * len(newparametercombinations))
-            parametercombinations = sorted(newparametercombinations, key=lambda v: v[1])[prune:]
+            self.parametercombinations = sorted(newparametercombinations, key=lambda v: v[1])[prune:]
+            yield self.parametercombinations
 
