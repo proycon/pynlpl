@@ -11,7 +11,10 @@
 #
 ###############################################################    
 
+import subprocess
 import itertools
+import os
+
 
 class AbstractExperiment:
 
@@ -28,8 +31,29 @@ class AbstractExperiment:
     def run(self):
         raise Exception("Not implemented yet, make sure to overload this method")
 
+    def runcommand(self, command, *arguments, **parameters):
+        cmd = command
+        if arguments:
+            cmd += ' ' + " ".join(arguments)
+        if parameters:
+            for key, value in parameters.items():
+              cmd += ' ' + key + ' ' + str(value)
+        process = subprocess.Popen(cmd, shell=True)
+        process.communicate() #TODO: verify and catch stdout, stderr
+        #pid = process.pid
+        #os.waitpid(pid, 0) #wait for process to finish
+
+
     def score(self):
         raise Exception("Not implemented yet, make sure to overload this method")
+
+    def stdout(self):
+        #TODO: return standard output
+        pass
+
+    def stderr(self):
+        #TODO: return error output
+        pass
 
     @staticmethod
     def sample(inputdata, n):
@@ -56,8 +80,9 @@ class WPSParamSearch:
             self.prunefunc = lambda i: 0.5
 
         #compute all parameter combinations:
-        verboseparameterscope = [ self._combine(x) for x in self.parameterscope ]
-        self.parametercombinations = itertools.product(*verboseparameterscope) #generator
+        verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope ]
+        self.parametercombinations = [ (x,0) for x in itertools.product(*verboseparameterscope) ] #generator
+        #print list(iter(self.parametercombinations))
 
     def _combine(self,name, values): #TODO: can't we do this inline in a list comprehension?
         l = []
@@ -65,26 +90,41 @@ class WPSParamSearch:
             l.append( (name, value) )
         return l
 
+    def searchbest(self):
+        solution = None
+        for s in iter(self):
+            solution = s
+        return solution[0]
+
     def __iter__(self):
         i = 0
         while True:
             i += 1
 
             #sample size elements from inputdata
-            size = self.sizefunc(i, self.maxsize)
+            size = int(self.sizefunc(i, self.maxsize))
+            if size > self.maxsize:
+                break
 
+            #print "SAMPLING SIZE:",size
             data = self.ExperimentClass.sample(self.inputdata, size)
 
             #run on ALL available parameter combinations and retrieve score
             newparametercombinations = []
-            for parameters, score in self.parametercombinations:
-                #set up the experiment for this run
-                experiment = self.ExperimentClass(data, **parameters)
-                self.experiment.run()
-                newparametercombinations.append( (parameters, self.experiment.score()) )
+            for parameters,score in self.parametercombinations:
+                    #print "PARAMS:",parameters
+                    #print "SCORE:",score
+                    #set up the experiment for this run
+                    experiment = self.ExperimentClass(data, **dict(parameters))
+                    experiment.run()
+                    newparametercombinations.append( (parameters, experiment.score()) )
 
             #prune the combinations, keeping only the best
-            prune = round(self.prunefunc(i) * len(newparametercombinations))
+            prune = int(round(self.prunefunc(i) * len(newparametercombinations)))
+            #print "PRUNE:",prune
             self.parametercombinations = sorted(newparametercombinations, key=lambda v: v[1])[prune:]
-            yield self.parametercombinations
+
+            yield [ x[0] for x in self.parametercombinations ]
+            if len(self.parametercombinations) <= 1:
+                break
 
