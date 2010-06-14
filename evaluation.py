@@ -16,7 +16,7 @@ import itertools
 import os
 
 
-class AbstractExperiment:
+class AbstractExperiment(object):
 
     def __init__(self, inputdata = None, **parameters):
         self.inputdata = inputdata
