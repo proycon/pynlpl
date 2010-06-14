@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
+
+import socket
+
+class LMClient(object):
+
+    def __init__(self,host= "localhost",port=12346):
+        self.BUFSIZE = 1024
+        self.socket = socket.socket(AF_INET,SOCK_STREAM) #Create the socket
+        self.socket.settimeout(120) 
+        self.socket.connect((host, port)) #Connect to server
+
+    def scoresentence(self, sentence:
+        if isinstance(sentence,list) or isinstance(sentence,tuple):
+            sentence = " ".join(sentence)
+        self.socket.sendall(sentence+ "\n")
+        self.socket.recv(self.BUFSIZE)
+        return self.socket.recv(self.BUFSIZE)
+
+
