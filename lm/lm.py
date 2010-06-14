@@ -28,9 +28,9 @@ class SimpleLanguageModel:
         self.sentences = 0
 
         if self.beginmarker:
-            self._begingram = [self.beginmarker] * (n-1)
+            self._begingram = tuple([self.beginmarker] * (n-1))
         if self.endmarker:
-            self._endgram = [self.endmarker] * (n-1)
+            self._endgram = tuple([self.endmarker] * (n-1))
 
     def append(self, sentence):
         if isinstance(sentence, str) or isinstance(sentence, unicode):
