@@ -11,20 +11,25 @@
 #
 #----------------------------------------------------------------
 
-import socket
+from twisted.internet import protocol, reactor
+from twisted.protocols import basic
+
+class LMProtocol(basic.LineReceiver):
+    def lineReceived(self, sentence):
+        try:
+            score = self.factory.lm.scoresentence(sentence)
+        except:
+            score = 0.0
+        self.sendLine(str(score))
+
+class LMFactory(protocol.ServerFactory):
+    protocol = LMProtocol
+
+    def __init__(self, lm):
+        self.lm = lm
 
 class LMServer:
-    def __init__(self,lm,host="",port=12346):
-        self.lm = lm
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((host,port))
-        self.socket.listen(5)
-
-
-        while True:
-            client_socket, address = self.socket.accept()
-            while True:
-                data = client_socket.recv(4084)
-                if not data: break
-                client_socket.send(str(lm.scoresentence(data)))
+    def __init__(self, lm, port=12346):
+        reactor.listenTCP(port, LMFactory(lm))
+        reactor.run()
 
