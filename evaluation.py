@@ -28,6 +28,15 @@ class AbstractExperiment:
     def defaultparameters():
         return {}
 
+    def subrun(self):
+        """Run as a detached subprocess, immediately returning execution to caller."""
+        raise Exception("Not implemented yet, make sure to overload this method in your Experiment class")
+
+    def done(self):
+        """Is the subprocess done?"""
+        self.process.poll()
+        return (self.process.returncode != None)
+
     def run(self):
         raise Exception("Not implemented yet, make sure to overload this method")
 
@@ -38,8 +47,7 @@ class AbstractExperiment:
         if parameters:
             for key, value in parameters.items():
               cmd += ' ' + key + ' ' + str(value)
-        process = subprocess.Popen(cmd, shell=True)
-        process.communicate() #TODO: verify and catch stdout, stderr
+        self.process = subprocess.Popen(cmd, shell=True)
         #pid = process.pid
         #os.waitpid(pid, 0) #wait for process to finish
 
@@ -59,6 +67,49 @@ class AbstractExperiment:
     def sample(inputdata, n):
         """Return a sample of the input data"""
         raise Exception("Not implemented yet, make sure to overload this method")
+
+class ExperimentPool:
+    def __init__(self, size):
+        self.size = size
+        self.queue = []
+        self.running = []
+
+    def append(self, experiment):
+        assert isinstance(experiment, AbstractExperiment)
+        self.queue.append( experiment )
+
+    def __len__(self):
+        return len(self.queue)
+
+    def start(self, experiment):
+        experiment.subrun()
+        self.running.append( experiment )
+
+    def poll(self):
+        done = []
+        for experiment in self.running:
+            if experiment.done():
+                done.append( experiment )
+        for experiment in done:
+                self.running.remove( experiment )
+        return done
+
+    def __iter__(self):
+        while True:
+            #check how many processes are done
+            done = self.poll()
+            for experiment in done:
+                yield experiment
+            #start new processes
+            while self.queue and len(self.running) < self.size:
+                    self.start( self.queue.pop(0) )
+
+            if not self.queue and not self.running:
+                break
+
+    def run(self):
+        for x in iter(self):
+            pass
 
 
 class WPSParamSearch:
