@@ -20,12 +20,11 @@ class AbstractExperiment(object):
 
     def __init__(self, inputdata = None, **parameters):
         self.inputdata = inputdata
-        self.parameters = AbstractExperiment.defaultparameters()
+        self.parameters = self.defaultparameters()
         for parameter, value in parameters.items():
             self.parameters[parameter] = value
 
-    @staticmethod
-    def defaultparameters():
+    def defaultparameters(self):
         return {}
 
     def start(self):
