@@ -28,8 +28,8 @@ class AbstractExperiment:
     def defaultparameters():
         return {}
 
-    def subrun(self):
-        """Run as a detached subprocess, immediately returning execution to caller."""
+    def start(self):
+        """Start as a detached subprocess, immediately returning execution to caller."""
         raise Exception("Not implemented yet, make sure to overload this method in your Experiment class")
 
     def done(self):
@@ -40,31 +40,28 @@ class AbstractExperiment:
     def run(self):
         raise Exception("Not implemented yet, make sure to overload this method")
 
-    def runcommand(self, command, *arguments, **parameters):
+    def runcommand(self, command, cwd, stdout, stderr, *arguments, **parameters):
+        
         cmd = command
         if arguments:
             cmd += ' ' + " ".join(arguments)
         if parameters:
             for key, value in parameters.items():
               cmd += ' ' + key + ' ' + str(value)
-        self.process = subprocess.Popen(cmd, shell=True)
+        if not cwd:
+            self.process = subprocess.Popen(cmd, shell=True,stdout=stdout,stderr=stderr)
+        else:
+            self.process = subprocess.Popen(cmd, shell=True,cwd=cwd,stdout=stdout,stderr=stderr)
         #pid = process.pid
         #os.waitpid(pid, 0) #wait for process to finish
 
+    def wait(self):
+        self.process.wait()
 
     def score(self):
         raise Exception("Not implemented yet, make sure to overload this method")
 
-    def stdout(self):
-        #TODO: return standard output
-        pass
-
-    def stderr(self):
-        #TODO: return error output
-        pass
-
-    @staticmethod
-    def sample(inputdata, n):
+    def sample(self, size):
         """Return a sample of the input data"""
         raise Exception("Not implemented yet, make sure to overload this method")
 
@@ -82,7 +79,7 @@ class ExperimentPool:
         return len(self.queue)
 
     def start(self, experiment):
-        experiment.subrun()
+        experiment.start()
         self.running.append( experiment )
 
     def poll(self):
@@ -113,11 +110,11 @@ class ExperimentPool:
 
 
 class WPSParamSearch:
-    def __init__(self, experimentclass, inputdata, parameterscope, sizefunc=None, prunefunc=None): #parameterscope: {'parameter':[values]}
+    def __init__(self, experimentclass, inputdata, size, parameterscope, sizefunc=None, prunefunc=None): #parameterscope: {'parameter':[values]}
         self.ExperimentClass = experimentclass
         self.inputdata = inputdata
 
-        self.maxsize = len(inputdata)
+        self.maxsize = size
 
         if sizefunc != None:
             self.sizefunc = sizefunc
