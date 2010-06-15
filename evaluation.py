@@ -77,6 +77,9 @@ class ExperimentPool:
     def __len__(self):
         return len(self.queue)
 
+    def __iter__(self):
+        return iter(self.queue)
+
     def start(self, experiment):
         experiment.start()
         self.running.append( experiment )
@@ -90,7 +93,7 @@ class ExperimentPool:
                 self.running.remove( experiment )
         return done
 
-    def __iter__(self):
+    def run(self):
         while True:
             #check how many processes are done
             done = self.poll()
@@ -103,9 +106,6 @@ class ExperimentPool:
             if not self.queue and not self.running:
                 break
 
-    def run(self):
-        for x in iter(self):
-            pass
 
 
 class WPSParamSearch:
