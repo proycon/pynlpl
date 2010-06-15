@@ -53,7 +53,7 @@ class WPSTest(unittest.TestCase):
         parameterscope = [ ('a',[2,4]), ('b',[2,5,8]),  ('c',[3,6,9]) ]
         search = WPSParamSearch(ParamExperiment, inputdata, len(inputdata), parameterscope)
         solution = search.searchbest()
-        self.assertEqual(solution,  (('a', 4), ('b', 8), ('c', 3)) ) 
+        self.assertEqual(solution,  (('a', 4), ('b', 8), ('c', 3)) )
 
 
 

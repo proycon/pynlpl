@@ -109,10 +109,10 @@ class ExperimentPool:
 
 
 class WPSParamSearch:
-    def __init__(self, experimentclass, inputdata, size, parameterscope, sizefunc=None, prunefunc=None): #parameterscope: {'parameter':[values]}
+    def __init__(self, experimentclass, inputdata, size, parameterscope, poolsize=1, sizefunc=None, prunefunc=None): #parameterscope: {'parameter':[values]}
         self.ExperimentClass = experimentclass
         self.inputdata = inputdata
-
+        self.poolsize = poolsize #0 or 1: sequential execution (uses experiment.run() ), >1: parallel execution using ExperimentPool (uses experiment.start() )
         self.maxsize = size
 
         if sizefunc != None:
@@ -158,17 +158,23 @@ class WPSParamSearch:
 
             #run on ALL available parameter combinations and retrieve score
             newparametercombinations = []
-            for parameters,score in self.parametercombinations:
-                    #print "PARAMS:",parameters
-                    #print "SCORE:",score
-                    #set up the experiment for this run
+            if self.poolsize <= 1:
+                #Don't use experiment pool, sequential execution
+                for parameters,score in self.parametercombinations:
                     experiment = self.ExperimentClass(data, **dict(parameters))
                     experiment.run()
                     newparametercombinations.append( (parameters, experiment.score()) )
+            else:
+                #Use experiment pool, parallel execution
+                pool = ExperimentPool(self.poolsize)
+                for parameters,score in self.parametercombinations:
+                    pool.append( self.ExperimentClass(data, **dict(parameters)) )
+                for experiment in pool.run():
+                    newparametercombinations.append( (experiment.parameters, experiment.score()) )
+
 
             #prune the combinations, keeping only the best
             prune = int(round(self.prunefunc(i) * len(newparametercombinations)))
-            #print "PRUNE:",prune
             self.parametercombinations = sorted(newparametercombinations, key=lambda v: v[1])[prune:]
 
             yield [ x[0] for x in self.parametercombinations ]
