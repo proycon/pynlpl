@@ -14,8 +14,20 @@
 
 import subprocess
 import itertools
-import os
+from sys import version_info
 
+if version_info[0] == 2 and version_info[1] < 6: #python2.5 doesn't have itertools.product
+    def itertools_product(*args, **kwds): 
+        # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
+        # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
+        pools = map(tuple, args) * kwds.get('repeat', 1)
+        result = [[]]
+        for pool in pools:
+            result = [x+[y] for x in result for y in pool]
+        for prod in result:
+            yield tuple(prod)
+else:
+    itertools_product = itertools.product
 
 class AbstractExperiment(object):
 
@@ -129,7 +141,7 @@ class WPSParamSearch:
 
         #compute all parameter combinations:
         verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope ]
-        self.parametercombinations = [ (x,0) for x in itertools.product(*verboseparameterscope) ] #generator
+        self.parametercombinations = [ (x,0) for x in itertools_product(*verboseparameterscope) ] #generator
         #print list(iter(self.parametercombinations))
 
     def _combine(self,name, values): #TODO: can't we do this inline in a list comprehension?
