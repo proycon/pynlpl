@@ -46,7 +46,7 @@ class FrequencyList:
         f.close()
 
     def _validate(self,type):
-        if isinstance(type,tuple):
+        if isinstance(type,tuple) or isinstance(type,list):
             if not self.casesensitive: 
                 return tuple([x.lower() for x in type])
             else:
@@ -59,7 +59,7 @@ class FrequencyList:
 
     def append(self,tokens):
         for token in tokens:
-            self.count(tokens)
+            self.count(token)
 
 
     def count(self, type, amount = 1):

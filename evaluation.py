@@ -8,6 +8,7 @@
 #       Licensed under GPLv3
 #
 # This is a Python library classes and functions for evaluation
+# and experiments .
 #
 ###############################################################    
 

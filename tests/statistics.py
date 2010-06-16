@@ -19,6 +19,8 @@ sys.path.append(sys.path[0] + '/../../')
 os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
 from pynlpl.statistics import FrequencyList
+from pynlpl.textprocessors import Windower
+
 
 sentences = ["This is a sentence .".split(' '),"Moreover , this sentence is a test .".split(' ')]
 
@@ -54,6 +56,24 @@ class FrequencyListTest(unittest.TestCase):
         for sentence in sentences:
             f.append(sentence)
         self.assertEqual(len(f),9) 
+
+class BigramFrequencyListTest(unittest.TestCase):
+    def test_freqlist_casesens(self):
+        """Bigram Frequency List (case sensitive)"""
+        global sentences
+        f= FrequencyList()
+        for sentence in sentences:
+            f.append(Windower(sentence,2))
+        self.assertTrue(( f[('is','a')] == 2 and  f[('This','is')] == 1))
+
+    def test_freqlist_caseinsens(self):
+        """Bigram Frequency List (case insensitive)"""
+        global sentences
+        f= FrequencyList(None, False)
+        for sentence in sentences:
+            f.append(Windower(sentence,2))
+        self.assertTrue(( f[('is','a')] == 2 and  f[('this','is')] == 1))
+
 
 if __name__ == '__main__':
     unittest.main()
