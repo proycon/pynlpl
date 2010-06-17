@@ -48,6 +48,8 @@ class AbstractExperiment(object):
 
     def done(self):
         """Is the subprocess done?"""
+        if not self.process:
+            raise Exception("Not implemented yet or process not started yet, make sure to overload the done() method in your Experiment class")
         self.process.poll()
         return (self.process.returncode != None)
 
@@ -81,12 +83,9 @@ class AbstractExperiment(object):
         return self.process
 
     def wait(self):
-        if not self.process:
-            raise Exception("Not implemented yet, make sure to overload the wait method!")
-        else:
-            while not self.done():
-               time.sleep(1)
-               pass
+        while not self.done():
+           time.sleep(1)
+           pass
 
     def score(self):
         raise Exception("Not implemented yet, make sure to overload this method")
