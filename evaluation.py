@@ -14,6 +14,7 @@
 
 import subprocess
 import itertools
+import time
 from sys import version_info
 
 if version_info[0] == 2 and version_info[1] < 6: #python2.5 doesn't have itertools.product
@@ -56,7 +57,7 @@ class AbstractExperiment(object):
         else:
             raise Exception("Not implemented yet, make sure to overload the run() method!")
 
-    def runcommand(self, command, cwd, stdout, stderr, *arguments, **parameters):
+    def startcommand(self, command, cwd, stdout, stderr, *arguments, **parameters):
         
         cmd = command
         if arguments:
@@ -73,12 +74,16 @@ class AbstractExperiment(object):
             self.process = subprocess.Popen(cmd, shell=True,cwd=cwd,stdout=stdout,stderr=stderr)
         #pid = process.pid
         #os.waitpid(pid, 0) #wait for process to finish
+        return self.process
 
     def wait(self):
-        if self.process:
-            self.process.wait()
-        else:
+        if not self.process:
             raise Exception("Not implemented yet, make sure to overload the wait method!")
+        else:
+            while not self.done():
+               time.sleep(1)
+               pass
+
     def score(self):
         raise Exception("Not implemented yet, make sure to overload this method")
 
