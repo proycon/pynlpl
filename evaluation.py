@@ -37,6 +37,7 @@ class AbstractExperiment(object):
         self.parameters = self.defaultparameters()
         for parameter, value in parameters.items():
             self.parameters[parameter] = value
+        self.process = None
 
     def defaultparameters(self):
         return {}
@@ -58,14 +59,17 @@ class AbstractExperiment(object):
             raise Exception("Not implemented yet, make sure to overload the run() method!")
 
     def startcommand(self, command, cwd, stdout, stderr, *arguments, **parameters):
-        
+        argdelimiter=' '
+
         cmd = command
         if arguments:
             cmd += ' ' + " ".join(arguments)
         if parameters:
             for key, value in parameters.items():
-                if key[-1] != '=':
-                    cmd += ' ' + key + ' ' + str(value)
+                if key == 'argdelimiter':
+                    argdelimiter = value
+                elif key[-1] != '=':
+                    cmd += ' ' + key + argdelimiter + str(value)
                 else:
                     cmd += ' ' + key + str(value)
         if not cwd:
