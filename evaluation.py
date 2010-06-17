@@ -42,7 +42,7 @@ class AbstractExperiment(object):
 
     def start(self):
         """Start as a detached subprocess, immediately returning execution to caller."""
-        raise Exception("Not implemented yet, make sure to overload this method in your Experiment class")
+        raise Exception("Not implemented yet, make sure to overload the start() method in your Experiment class")
 
     def done(self):
         """Is the subprocess done?"""
@@ -50,7 +50,11 @@ class AbstractExperiment(object):
         return (self.process.returncode != None)
 
     def run(self):
-        raise Exception("Not implemented yet, make sure to overload this method")
+        if hasattr(self,'start'):
+            self.start()
+            self.wait()
+        else:
+            raise Exception("Not implemented yet, make sure to overload the run() method!")
 
     def runcommand(self, command, cwd, stdout, stderr, *arguments, **parameters):
         
@@ -59,7 +63,10 @@ class AbstractExperiment(object):
             cmd += ' ' + " ".join(arguments)
         if parameters:
             for key, value in parameters.items():
-              cmd += ' ' + key + ' ' + str(value)
+                if key[-1] != '=':
+                    cmd += ' ' + key + ' ' + str(value)
+                else:
+                    cmd += ' ' + key + str(value)
         if not cwd:
             self.process = subprocess.Popen(cmd, shell=True,stdout=stdout,stderr=stderr)
         else:
@@ -68,8 +75,10 @@ class AbstractExperiment(object):
         #os.waitpid(pid, 0) #wait for process to finish
 
     def wait(self):
-        self.process.wait()
-
+        if self.process:
+            self.process.wait()
+        else:
+            raise Exception("Not implemented yet, make sure to overload the wait method!")
     def score(self):
         raise Exception("Not implemented yet, make sure to overload this method")
 

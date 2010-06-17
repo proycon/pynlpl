@@ -191,4 +191,9 @@ class CorpusDocumentX:
         if node == None: node = self
         return node.xpath("//dcoi:w")
 
+    def save(self, filename=None):
+        #TODO
+        if not filename: filename = self.filename
+        pass
+
 
