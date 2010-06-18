@@ -15,6 +15,6 @@ class LMClient(object):
         if isinstance(sentence,list) or isinstance(sentence,tuple):
             sentence = " ".join(sentence)
         self.socket.send(sentence+ "\r\n")
-        return self.socket.recv(self.BUFSIZE)
+        return float(self.socket.recv(self.BUFSIZE).strip())
 
 
