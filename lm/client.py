@@ -14,8 +14,7 @@ class LMClient(object):
     def scoresentence(self, sentence):
         if isinstance(sentence,list) or isinstance(sentence,tuple):
             sentence = " ".join(sentence)
-        self.socket.sendall(sentence+ "\n")
-        self.socket.recv(self.BUFSIZE)
+        self.socket.send(sentence+ "\r\n")
         return self.socket.recv(self.BUFSIZE)
 
 
