@@ -148,7 +148,7 @@ class WPSParamSearch:
         if sizefunc != None:
             self.sizefunc = sizefunc
         else:
-            self.sizefunc = lambda i, maxsize: round((maxsize/100.0)*i^2)
+            self.sizefunc = lambda i, maxsize: round((maxsize/100.0)*i*i)
 
         #prunefunc should return a number between 0 and 1, indicating how much is pruned. (for example: 0.75 prunes three/fourth of all combinations, retaining only 25%)
         if prunefunc != None:    
