@@ -157,9 +157,8 @@ class WPSParamSearch:
             self.prunefunc = lambda i: 0.5
 
         #compute all parameter combinations:
-        verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope ]
+        verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope.items() ]
         self.parametercombinations = [ (x,0) for x in itertools_product(*verboseparameterscope) ] #generator
-        #print list(iter(self.parametercombinations))
 
     def _combine(self,name, values): #TODO: can't we do this inline in a list comprehension?
         l = []
