@@ -88,11 +88,15 @@ class AbstractExperiment(object):
            pass
 
     def score(self):
-        raise Exception("Not implemented yet, make sure to overload this method")
+        raise Exception("Not implemented yet, make sure to overload the score() method")
+
+
+    def delete(self):
+        raise Exception("Not implemented yet, make sure to overload the delete() method")
 
     def sample(self, size):
         """Return a sample of the input data"""
-        raise Exception("Not implemented yet, make sure to overload this method")
+        raise Exception("Not implemented yet, make sure to overload the sample() method")
 
 class ExperimentPool:
     def __init__(self, size):
@@ -139,11 +143,12 @@ class ExperimentPool:
 
 
 class WPSParamSearch:
-    def __init__(self, experimentclass, inputdata, size, parameterscope, poolsize=1, sizefunc=None, prunefunc=None): #parameterscope: {'parameter':[values]}
+    def __init__(self, experimentclass, inputdata, size, parameterscope, poolsize=1, sizefunc=None, prunefunc=None, delete=True): #parameterscope: {'parameter':[values]}
         self.ExperimentClass = experimentclass
         self.inputdata = inputdata
         self.poolsize = poolsize #0 or 1: sequential execution (uses experiment.run() ), >1: parallel execution using ExperimentPool (uses experiment.start() )
         self.maxsize = size
+        self.delete = delete #delete intermediate experiments
 
         if sizefunc != None:
             self.sizefunc = sizefunc
@@ -193,6 +198,8 @@ class WPSParamSearch:
                     experiment = self.ExperimentClass(data, **dict(parameters))
                     experiment.run()
                     newparametercombinations.append( (parameters, experiment.score()) )
+                    if self.delete:
+                        experiment.delete()
             else:
                 #Use experiment pool, parallel execution
                 pool = ExperimentPool(self.poolsize)
@@ -200,6 +207,8 @@ class WPSParamSearch:
                     pool.append( self.ExperimentClass(data, **dict(parameters)) )
                 for experiment in pool.run():
                     newparametercombinations.append( (experiment.parameters, experiment.score()) )
+                    if self.delete:
+                        experiment.delete()
 
 
             #prune the combinations, keeping only the best
