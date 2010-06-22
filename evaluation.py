@@ -62,6 +62,7 @@ class AbstractExperiment(object):
 
     def startcommand(self, command, cwd, stdout, stderr, *arguments, **parameters):
         argdelimiter=' '
+        printcommand = True
 
         cmd = command
         if arguments:
@@ -70,10 +71,15 @@ class AbstractExperiment(object):
             for key, value in parameters.items():
                 if key == 'argdelimiter':
                     argdelimiter = value
+                elif key == 'printcommand':
+                    printcommand = value
                 elif key[-1] != '=':
                     cmd += ' ' + key + argdelimiter + str(value)
                 else:
                     cmd += ' ' + key + str(value)
+        if printcommand:
+            print "STARTING COMMAND: " + cmd
+
         if not cwd:
             self.process = subprocess.Popen(cmd, shell=True,stdout=stdout,stderr=stderr)
         else:
