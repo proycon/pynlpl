@@ -73,7 +73,7 @@ class AbstractExperiment(object):
                     argdelimiter = value
                 elif key == 'printcommand':
                     printcommand = value
-                elif value == True:
+                elif isinstance(value, bool) and value == True:
                     cmd += ' ' + key
                 elif key[-1] != '=':
                     cmd += ' ' + key + argdelimiter + str(value)
