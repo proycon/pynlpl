@@ -19,7 +19,7 @@ from sys import version_info
 
 if version_info[0] == 2 and version_info[1] < 6: #python2.5 doesn't have itertools.product
     def itertools_product(*args, **kwds): 
-        # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
+        # product('ABCD', 'xyargdelimiter') --> Ax Ay Bx By Cx Cy Dx Dy
         # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
         pools = map(tuple, args) * kwds.get('repeat', 1)
         result = [[]]
@@ -73,12 +73,12 @@ class AbstractExperiment(object):
                     argdelimiter = value
                 elif key == 'printcommand':
                     printcommand = value
-                elif key[-1] != '=':
-                    cmd += ' ' + key + str(value)
                 elif value == True:
                     cmd += ' ' + key
-                else:
+                elif key[-1] != '=':
                     cmd += ' ' + key + argdelimiter + str(value)
+                else:
+                    cmd += ' ' + key + str(value)
         if printcommand:
             print "STARTING COMMAND: " + cmd
 
