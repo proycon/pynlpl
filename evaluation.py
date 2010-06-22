@@ -74,11 +74,11 @@ class AbstractExperiment(object):
                 elif key == 'printcommand':
                     printcommand = value
                 elif key[-1] != '=':
-                    cmd += ' ' + key + argdelimiter + str(value)
+                    cmd += ' ' + key + str(value)
                 elif value == True:
                     cmd += ' ' + key
                 else:
-                    cmd += ' ' + key + str(value)
+                    cmd += ' ' + key + argdelimiter + str(value)
         if printcommand:
             print "STARTING COMMAND: " + cmd
 
