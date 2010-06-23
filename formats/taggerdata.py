@@ -18,10 +18,12 @@ class Taggerdata:
     def __init__(self,filename, encoding = 'utf-8', mode ='r'):
         self.filename = filename
         self.encoding = encoding
+        assert (mode == 'r' or mode == 'w')
         self.mode = mode
         self.reset()
         self.firstiter = True
         self.indexed = False
+        self.writeindex = 0
 
     def __iter__(self):
         words = []
@@ -122,10 +124,11 @@ class Taggerdata:
 
 
     def write(self, sentence):
-        #TODO: write index
+        self.f.write("#" + str(self.writeindex))
         for word, lemma, pos in sentence:
            if not word: word = "NONE"
            if not lemma: lemma = "NONE"
            if not pos: pos = "NONE"
            self.f.write( word + "\t" + lemma + "\t" + pos + "\n" )                
+        self.writeindex += 1
         

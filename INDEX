@@ -4,13 +4,13 @@ pynlpl.textprocessors
     - Windower
     - strip_accents
     
-pynlpl.input
-    pynlpl.input.giza
+pynlpl.formats
+    pynlpl.formats.giza
         - WordAlignment
-    pynlpl.input.sonar
+    pynlpl.formats.sonar
         - Corpus
         - CorpusDocument
-    pynlpl.input.timbl
+    pynlpl.formats.timbl
         - TimblOutput
 
 pynlpl.clients

@@ -22,6 +22,7 @@ import os.path
 from pynlpl.giza import WordAlignment, MultiWordAlignment
 from pynlpl.clients.freeling import FreeLingClient
 from pynlpl.clients.tadpoleclient import TadpoleClient
+from pynlpl.formats.taggerdata import Taggerdata
 import codecs
 from datetime import datetime
 
@@ -34,10 +35,10 @@ def usage():
     print >> sys.stderr,"\t--Tfreeling=channel    Use FreeLing to tokenise and lemmatise target-language sentences on-the-fly, channel points to the named pipe created by FreeLing analyze, without the .in or .out extension. Required for proper lemmatised output."
     print >> sys.stderr,"\t--Stadpole=port        Use Tadpole to tokenise and lemmatise source-language sentences on-the-fly, points to a Tadpole server port. Required for being PoS-aware"
     print >> sys.stderr,"\t--Ttadpole=port        Use Tadpole to tokenise and lemmatise target-language sentences on-the-fly, points to a Tadpole server port. Required for being PoS-aware"
-
+    print >> sys.stderr,"\t--shortpos             Use only the head of the PoS tag, remove the features (only works for Tadpole!) "
 
 try:
-	opts, args = getopt.getopt(sys.argv[1:], "a:o:", ["Sfreeling=","Tfreeling=","Stadpole=","Ttadpole=","help","encoding="])
+	opts, args = getopt.getopt(sys.argv[1:], "a:o:", ["Sfreeling=","Tfreeling=","Stadpole=","Ttadpole=","help","encoding=","shortpos"])
 except getopt.GetoptError, err:
 	# print help information and exit:
 	print str(err)
@@ -52,6 +53,7 @@ Ttadpole = None
 multiwordalignment = False
 encoding = "utf-8"
 outputdir = "."
+shortpos = False
 
 for o, a in opts:
     if o in ("-h", "--help"):
@@ -74,6 +76,8 @@ for o, a in opts:
         Ttadpole = TadpoleClient('localhost',int(a))
     elif o == "--encoding":
         encoding = a
+    elif o == "--shortpos":
+        shortpos = True
     elif o == "-d":
         if a == "s2t":       
             multiwordalignment = True
@@ -97,8 +101,8 @@ if multiwordalignment:
 else:
     wordalignment = WordAlignment(alignfilename,encoding)
 
-fsource = codecs.open(outputdir + '/source.toklempos','w',encoding)
-ftarget = codecs.open(outputdir + '/target.toklempos','w',encoding)
+fsource = Taggerdata(outputdir + '/source.toklempos','w',encoding)
+ftarget = Taggerdata(outputdir + '/target.toklempos','w',encoding)
 
 if alignfilename:
 
@@ -108,50 +112,24 @@ if alignfilename:
             print "@", line, "--",d.strftime("%Y-%m-%d %H:%M:%S")
             sys.stdout.flush()
 
-        fsource.write( "#" + str(line) + "\n")                
         if Sfreeling:
-            taggedwords = Sfreeling.process(source)
-            # 0: sourceword, 1: lemma, 2: pos        
-            for w in taggedwords:
-                word = lemma = pos = "NONE"
-                if w[0]: word = w[0]
-                if w[1]: lemma = w[1]        
-                if w[2]: pos = w[2]        
-                fsource.write( word + "\t" + lemma + "\t" + pos + "\n" )                
-            fsource.write("\n")           
+            sentence = [ (w[0], w[1], w[2]) for w in Sfreeling.process(source) ]
+            fsource.write(sentence, line)
         elif Stadpole:
             # 0: sourceword 1: lemma: 2: morph 3: pos
-            taggedwords = Stadpole.process(" ".join(source))
-            for w in taggedwords:
-                word = lemma = pos = "NONE"
-                if len(w) >= 4:
-                    if w[0]: word = w[0]
-                    if w[1]: lemma = w[1]        
-                    if w[3]: pos = w[3].split("(")[0]  #filter out extra features
-                fsource.write( word + "\t" + lemma + "\t" + pos + "\n" )                
-            fsource.write("\n")           
+            if shortpos:
+                sentence = [ (w[0], w[1], w[3].split("(")[0] for w in Stadpole.process(" ".join(source)) if len(w) >= 4 ]
+            else:
+                sentence = [ (w[0], w[1], w[3] for w in Stadpole.process(" ".join(source)) if len(w) >= 4 ]
+            fsource.write(sentence, line)
 
-        ftarget.write( "#" + str(line) + "\n")                
         if Tfreeling:
-            taggedwords = Tfreeling.process(target)
-            # 1: source word, 2: lemma, 3: pos        
-            for w in taggedwords:
-                word = lemma = pos = "NONE"
-                if w[0]: word = w[0]
-                if w[1]: lemma = w[1]        
-                if w[2]: pos = w[2]        
-                ftarget.write( word + "\t" + lemma + "\t" + pos + "\n" )   
-            ftarget.write("\n")     
+            sentence = [ (w[0], w[1], w[2]) for w in Tfreeling.process(target) ]
+            ftarget.write(sentence, line)
         elif Ttadpole:
-            # 0: sourceword 1: lemma: 2: morph 3: pos
-            taggedwords = Ttadpole.process(" ".join(target))
-            for w in taggedwords:
-                word = lemma = pos = "NONE"
-                if len(w) >= 4:
-                    if w[0]: word = w[0]
-                    if w[1]: lemma = w[1]        
-                    if w[3]: pos = w[3].split("(")[0]  #filter out extra features
-                ftarget.write( word + "\t" + lemma + "\t" + pos + "\n" )                
-            ftarget.write("\n")    
-           
+            if shortpos:
+                sentence = [ (w[0], w[1], w[3].split("(")[0] for w in Ttadpole.process(" ".join(target)) if len(w) >= 4 ]
+            else:
+                sentence = [ (w[0], w[1], w[3] for w in Ttadpole.process(" ".join(target)) if len(w) >= 4 ]
+            ftarget.write(sentence, line)
 
