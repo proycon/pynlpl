@@ -169,6 +169,12 @@ class CorpusDocumentX:
             xmlschema.assertValid(self.tree)
             #return xmlschema.validate(self)
 
+    def xpath(self, expression):
+        """Executes an xpath expression using the correct namespaces"""
+        global namespaces
+        return self.tree.xpath(expression, namespaces=namespaces)
+
+
     def __exists__(self, id):
         return (id in self.index)
 
