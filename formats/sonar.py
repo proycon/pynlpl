@@ -200,6 +200,6 @@ class CorpusDocumentX:
 
     def save(self, filename=None):
         if not filename: filename = self.filename
-        self.tree.write(filename, 'iso-8859-15', pretty_print=True)
+        self.tree.write(filename) #, 'iso-8859-15', True)
 
 
