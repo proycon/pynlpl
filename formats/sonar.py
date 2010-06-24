@@ -95,16 +95,18 @@ class CorpusDocument:
             yield (doc_id + "." + ptype + "." + prevp, " ".join(partext) )
                 
 class Corpus:
-    def __init__(self,corpusdir, extension = 'pos', restrict_to_collection = ""):
+    def __init__(self,corpusdir, extension = 'pos', restrict_to_collection = "", conditionf=lambda x: True):
         self.corpusdir = corpusdir
         self.extension = extension
         self.restrict_to_collection = restrict_to_collection
+
 
     def __iter__(self):
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
-                    yield CorpusDocument(f)
+                    if self.conditionf(f):
+                        yield CorpusDocument(f)
 
 #######################################################
 
