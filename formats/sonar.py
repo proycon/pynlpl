@@ -137,7 +137,8 @@ class CorpusDocumentX:
 
         #Grab root element and determine if we run inline or standalone
         self.root =  self.xpath("/dcoi:DCOI")
-        if self.root: 
+        if self.root:
+	    self.root = self.root[0] 
             self.inline = True
         else:
             raise Exception("Not in DCOI/SoNaR format!")
@@ -152,8 +153,8 @@ class CorpusDocumentX:
             self._index(self.root)
 
     def _index(self,node):
-        if ns('xml') + 'id' in subnode.attrib:
-                self.index[subnode.attrib[ns('xml') + 'id']] = subnode
+        if ns('xml') + 'id' in node.attrib:
+                self.index[node.attrib[ns('xml') + 'id']] = node
         for subnode in node: #TODO: can we do this with xpath instead?
             self._index(subnode)
 
