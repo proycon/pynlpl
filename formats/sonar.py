@@ -192,8 +192,7 @@ class CorpusDocumentX:
         return node.xpath("//dcoi:w")
 
     def save(self, filename=None):
-        #TODO
         if not filename: filename = self.filename
-        pass
+        self.tree.write(filename, 'iso-8859-15', pretty_print=True)
 
 
