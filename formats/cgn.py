@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
 ###############################################################
@@ -24,11 +23,22 @@ class AbstractPosType(object):
     def __init__(self, *args, **kwargs):
         for value in args:
             for prop in dir(self.__class__):
-                if prop[0] != '_':
-                    if value in getattr(self.__class__, prop):
+                if isinstance(prop,Enum):
+                    if value in getattr(self.__class__, prop): #verify this uses the derived class
                         setattr(self,prop,value)
         for key, value in kwargs.items():
             getattr(self,ntype) = value
+
+    def __getitem__(self, key):
+        if hasattr(self, key):
+            return getattr(self, key)
+        else:
+            raise KeyError
+
+    def __iter__(self, key):
+        for attr in dir(self):
+            if attr[0] != '_':
+                yield attr
 
 
 class N(AbstractPosType):
@@ -107,10 +117,7 @@ def parse_cgn_postag(tag):
         headcls = globals()[head]
 
         rawfeatures = tag[begin+1:-1]
-        features = {}
-
         return headcls(rawfeatures)
-
     else:
         raise InvalidTagException("Not a valid CGN tag")
 
