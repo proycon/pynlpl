@@ -57,19 +57,18 @@ class TadpoleClient:
                     break
                 elif line:
                     line = line.split('\t') #split on tab
-                    if len(line) > 1 and line[0].isdigit(): #first column is token number
+                    if len(line) > 4 and line[0].isdigit(): #first column is token number
 
-                        if len(line) == 7:
-                            try:
-                                word,lemma,morph,pos,parse1,parse2 = line[1:]
-                            except:
-                                word,lemma,morph,pos = line[1:]
-                                parse1 = parse2 = ""
+                        try:
+                            word,lemma,morph,pos,parse1,parse2 = line[1:]
+                        except:
+                            word,lemma,morph,pos = line[1:]
+                            parse1 = parse2 = ""
 
-                            if self.parser:
-                                tp_output.append( (word,lemma,morph,pos,parse1,parse2) )
-                            else:
-                                tp_output.append( (word,lemma,morph,pos) )
+                        if self.parser:
+                            tp_output.append( (word,lemma,morph,pos,parse1,parse2) )
+                        else:
+                            tp_output.append( (word,lemma,morph,pos) )
                         
         return tp_output
 
