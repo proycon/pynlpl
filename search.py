@@ -137,7 +137,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         """Iterates over all valid goalstates it can find"""
         self.traversed = 0
         while len(self.fringe) > 0:
-            if self.debug: print self.fringe
+            if self.debug: print "FRINGE: ", self.fringe
             state = self.poll(self.fringe)()
             if self.debug:
                 print >>stderr,"CURRENT STATE: " + str(state),
@@ -147,10 +147,10 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                     pass
             self.traversed += 1
             if state.test(self.goalstates):
-                if self.debug: print >>stderr,"   *TARGET!*"
+                if self.debug: print >>stderr,"   *YIELDING TARGET!*"
                 yield state
             elif self.debug:
-                print >>stderr,"   (no target)"
+                print >>stderr,"   (no target, not yielding)"
 
             if self.debug: print >>stderr,"\tEXPANDING:"
 
@@ -166,6 +166,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                     if not self.maxdepth or s.depth() <= self.maxdepth:
                         self.fringe.append(s)
                     else:
+                        if self.debug: print >>stderr,"\t\t\t(Not adding to fringe, maxdepth exceeded)"
                         self.incomplete = True
                 if self.keeptraversal: self.keeptraversal.append(state)
                 if self.usememory: self.visited[hash(state)] = True
@@ -258,6 +259,7 @@ class BeamSearch(AbstractSearch):
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False)
 
     def prune(self, state):
+        if self.debug: print >>stderr,"\t\t(PRUNING)"
         self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
 
