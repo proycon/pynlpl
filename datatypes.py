@@ -159,3 +159,7 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
 
     def __repr__(self):
         return repr(self.data)
+
+    def __add__(self, other):
+        assert (isinstance(other, PriorityyQueue) and self.minimize == other.minimize)
+        return PriorityQueue(self.data + other.data, self.f, self.minimize, self.blockworse, self.blockequal)
