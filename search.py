@@ -259,7 +259,7 @@ class BeamSearch(AbstractSearch):
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False)
 
     def prune(self, state):
-        if self.debug: print >>stderr,"\t\t(PRUNING)"
+        if self.debug: print >>stderr,"\tPRUNING"
         self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
 

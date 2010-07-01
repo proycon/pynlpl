@@ -144,7 +144,10 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
 
     def prune(self, n):
         """prune all but the first n items"""
-        self.data = self.data[:n]
+        if self.minimize:
+            self.data = self.data[:n]
+        else:
+            self.data = self.data[-1 * n:]
 
     def prunebyscore(self, score, retainequalscore=False):
         """It is recommmended to use blockworse=True / blockequal=True instead!"""
