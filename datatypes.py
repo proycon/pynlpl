@@ -116,10 +116,17 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
 
     def __getitem__(self, i):
         """Item 0 is always the best item!"""
-        if self.minimize:
-            return self.data[i][1]
-        else:   
-            return self.data[(-1 * i) - 1][1]
+        if isinstance(i, slice):
+            indices = i.indices(len(self))
+            if self.minimize:
+                return PriorityQueue([ self.data[j][1] for j in range(*indices) ],self.f, self.minimize, self.blockworse, self.blockequal)
+            else:
+                return PriorityQueue([ self.data[(-1 * j) - 1][1] for j in range(*indices) ],self.f, self.minimize, self.blockworse, self.blockequal)
+        else:
+            if self.minimize:
+                return self.data[i][1]
+            else:   
+                return self.data[(-1 * i) - 1][1]
 
     def pop(self):
         if self.minimize:
@@ -161,5 +168,5 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         return repr(self.data)
 
     def __add__(self, other):
-        assert (isinstance(other, PriorityyQueue) and self.minimize == other.minimize)
+        assert (isinstance(other, PriorityQueue) and self.minimize == other.minimize)
         return PriorityQueue(self.data + other.data, self.f, self.minimize, self.blockworse, self.blockequal)
