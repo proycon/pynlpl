@@ -30,6 +30,9 @@ if version_info[0] == 2 and version_info[1] < 6: #python2.5 doesn't have itertoo
 else:
     itertools_product = itertools.product
 
+class ProcessFailed(Exception):
+    pass
+
 class AbstractExperiment(object):
 
     def __init__(self, inputdata = None, **parameters):
@@ -46,12 +49,17 @@ class AbstractExperiment(object):
         """Start as a detached subprocess, immediately returning execution to caller."""
         raise Exception("Not implemented yet, make sure to overload the start() method in your Experiment class")
 
-    def done(self):
+    def done(self, warn=True):
         """Is the subprocess done?"""
         if not self.process:
             raise Exception("Not implemented yet or process not started yet, make sure to overload the done() method in your Experiment class")
         self.process.poll()
-        return (self.process.returncode != None)
+        if self.process.returncode == None:
+            return False
+        elif self.process.returncode > 0:
+            raise ProcessFailed()
+        else:
+            return True
 
     def run(self):
         if hasattr(self,'start'):
