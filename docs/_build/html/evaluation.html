@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Evaluation & Experiments &mdash; PyNLPl v0.2 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.2',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="PyNLPl v0.2 documentation" href="index.html" />
+    <link rel="next" title="Formats" href="formats.html" />
+    <link rel="prev" title="Data Types" href="datatypes.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="formats.html" title="Formats"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="datatypes.html" title="Data Types"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyNLPl v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-evaluation">
+<h1>Evaluation &amp; Experiments<a class="headerlink" href="#module-evaluation" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="evaluation.AbstractExperiment">
+<em class="property">class </em><tt class="descclassname">evaluation.</tt><tt class="descname">AbstractExperiment</tt><big>(</big><em>inputdata=None</em>, <em>**parameters</em><big>)</big><a class="headerlink" href="#evaluation.AbstractExperiment" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="evaluation.AbstractExperiment.defaultparameters">
+<tt class="descname">defaultparameters</tt><big>(</big><big>)</big><a class="headerlink" href="#evaluation.AbstractExperiment.defaultparameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="evaluation.AbstractExperiment.delete">
+<tt class="descname">delete</tt><big>(</big><big>)</big><a class="headerlink" href="#evaluation.AbstractExperiment.delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="evaluation.AbstractExperiment.done">
+<tt class="descname">done</tt><big>(</big><em>warn=True</em><big>)</big><a class="headerlink" href="#evaluation.AbstractExperiment.done" title="Permalink to this definition">¶</a></dt>
+<dd>Is the subprocess done?</dd></dl>
+
+<dl class="method">
+<dt id="evaluation.AbstractExperiment.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#evaluation.AbstractExperiment.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="evaluation.AbstractExperiment.sample">
+<tt class="descname">sample</tt><big>(</big><em>size</em><big>)</big><a class="headerlink" href="#evaluation.AbstractExperiment.sample" title="Permalink to this definition">¶</a></dt>
+<dd>Return a sample of the input data</dd></dl>
+
+<dl class="method">
+<dt id="evaluation.AbstractExperiment.score">
+<tt class="descname">score</tt><big>(</big><big>)</big><a class="headerlink" href="#evaluation.AbstractExperiment.score" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="evaluation.AbstractExperiment.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#evaluation.AbstractExperiment.start" title="Permalink to this definition">¶</a></dt>
+<dd>Start as a detached subprocess, immediately returning execution to caller.</dd></dl>
+
+<dl class="method">
+<dt id="evaluation.AbstractExperiment.startcommand">
+<tt class="descname">startcommand</tt><big>(</big><em>command</em>, <em>cwd</em>, <em>stdout</em>, <em>stderr</em>, <em>*arguments</em>, <em>**parameters</em><big>)</big><a class="headerlink" href="#evaluation.AbstractExperiment.startcommand" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="evaluation.AbstractExperiment.wait">
+<tt class="descname">wait</tt><big>(</big><big>)</big><a class="headerlink" href="#evaluation.AbstractExperiment.wait" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="evaluation.ExperimentPool">
+<em class="property">class </em><tt class="descclassname">evaluation.</tt><tt class="descname">ExperimentPool</tt><big>(</big><em>size</em><big>)</big><a class="headerlink" href="#evaluation.ExperimentPool" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="evaluation.ExperimentPool.append">
+<tt class="descname">append</tt><big>(</big><em>experiment</em><big>)</big><a class="headerlink" href="#evaluation.ExperimentPool.append" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="evaluation.ExperimentPool.poll">
+<tt class="descname">poll</tt><big>(</big><big>)</big><a class="headerlink" href="#evaluation.ExperimentPool.poll" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="evaluation.ExperimentPool.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#evaluation.ExperimentPool.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="evaluation.ExperimentPool.start">
+<tt class="descname">start</tt><big>(</big><em>experiment</em><big>)</big><a class="headerlink" href="#evaluation.ExperimentPool.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="evaluation.ProcessFailed">
+<em class="property">exception </em><tt class="descclassname">evaluation.</tt><tt class="descname">ProcessFailed</tt><a class="headerlink" href="#evaluation.ProcessFailed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="evaluation.WPSParamSearch">
+<em class="property">class </em><tt class="descclassname">evaluation.</tt><tt class="descname">WPSParamSearch</tt><big>(</big><em>experimentclass</em>, <em>inputdata</em>, <em>size</em>, <em>parameterscope</em>, <em>poolsize=1</em>, <em>sizefunc=None</em>, <em>prunefunc=None</em>, <em>delete=True</em><big>)</big><a class="headerlink" href="#evaluation.WPSParamSearch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="evaluation.WPSParamSearch.searchbest">
+<tt class="descname">searchbest</tt><big>(</big><big>)</big><a class="headerlink" href="#evaluation.WPSParamSearch.searchbest" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="datatypes.html"
+                                  title="previous chapter">Data Types</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="formats.html"
+                                  title="next chapter">Formats</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/evaluation.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="formats.html" title="Formats"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="datatypes.html" title="Data Types"
+             >previous</a> |</li>
+        <li><a href="index.html">PyNLPl v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Maarten van Gompel.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>

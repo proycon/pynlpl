@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Data Types &mdash; PyNLPl v0.2 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.2',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="PyNLPl v0.2 documentation" href="index.html" />
+    <link rel="next" title="Evaluation & Experimentats" href="evaluation.html" />
+    <link rel="prev" title="Common Functions" href="common.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="evaluation.html" title="Evaluation & Experimentats"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="common.html" title="Common Functions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyNLPl v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-datatypes">
+<h1>Data Types<a class="headerlink" href="#module-datatypes" title="Permalink to this headline">¶</a></h1>
+<p>This library contains various extra data types, based to a certain extend on MIT-licensed code from Peter Norvig, AI: A Modern Appproach : <a class="reference external" href="http://aima.cs.berkeley.edu/python/utils.html">http://aima.cs.berkeley.edu/python/utils.html</a></p>
+<dl class="class">
+<dt id="datatypes.FIFOQueue">
+<em class="property">class </em><tt class="descclassname">datatypes.</tt><tt class="descname">FIFOQueue</tt><big>(</big><em>data=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#datatypes.FIFOQueue" title="Permalink to this definition">¶</a></dt>
+<dd><p>A First-In-First-Out Queue</p>
+<dl class="method">
+<dt id="datatypes.FIFOQueue.append">
+<tt class="descname">append</tt><big>(</big><em>item</em><big>)</big><a class="headerlink" href="#datatypes.FIFOQueue.append" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="datatypes.FIFOQueue.extend">
+<tt class="descname">extend</tt><big>(</big><em>items</em><big>)</big><a class="headerlink" href="#datatypes.FIFOQueue.extend" title="Permalink to this definition">¶</a></dt>
+<dd>Append all elements from items to the queue</dd></dl>
+
+<dl class="method">
+<dt id="datatypes.FIFOQueue.pop">
+<tt class="descname">pop</tt><big>(</big><big>)</big><a class="headerlink" href="#datatypes.FIFOQueue.pop" title="Permalink to this definition">¶</a></dt>
+<dd>Retrieve the next element in line, this will remove it from the queue</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="datatypes.PriorityQueue">
+<em class="property">class </em><tt class="descclassname">datatypes.</tt><tt class="descname">PriorityQueue</tt><big>(</big><em>data=</em><span class="optional">[</span><span class="optional">]</span>, <em>f=&lt;function &lt;lambda&gt; at 0x1aa65f0&gt;</em>, <em>minimize=False</em>, <em>blockworse=False</em>, <em>blockequal=False</em><big>)</big><a class="headerlink" href="#datatypes.PriorityQueue" title="Permalink to this definition">¶</a></dt>
+<dd><p>A queue in which the maximum (or minumum) element is returned first, 
+as determined by either an external score function f (by default calling
+the objects score() method). If minimize=True, the item with minimum f(x) is
+returned first; otherwise is the item with maximum f(x) or x.score().</p>
+<p>blockworse can be set to true if you want to prohibit adding worse-scoring items to the queue.
+blockequal can be set to false if you also want to prohibit adding equally-scoring items to the queue.
+(Both parameters default to False)</p>
+<dl class="method">
+<dt id="datatypes.PriorityQueue.append">
+<tt class="descname">append</tt><big>(</big><em>item</em><big>)</big><a class="headerlink" href="#datatypes.PriorityQueue.append" title="Permalink to this definition">¶</a></dt>
+<dd>Adds an item to the priority queue (in the right place), returns True if successfull, False if the item was blocked (because of a bad score)</dd></dl>
+
+<dl class="method">
+<dt id="datatypes.PriorityQueue.pop">
+<tt class="descname">pop</tt><big>(</big><big>)</big><a class="headerlink" href="#datatypes.PriorityQueue.pop" title="Permalink to this definition">¶</a></dt>
+<dd>Retrieve the next element in line, this will remove it from the queue</dd></dl>
+
+<dl class="method">
+<dt id="datatypes.PriorityQueue.prune">
+<tt class="descname">prune</tt><big>(</big><em>n</em><big>)</big><a class="headerlink" href="#datatypes.PriorityQueue.prune" title="Permalink to this definition">¶</a></dt>
+<dd>prune all but the first (=best) n items</dd></dl>
+
+<dl class="method">
+<dt id="datatypes.PriorityQueue.prunebyscore">
+<tt class="descname">prunebyscore</tt><big>(</big><em>score</em>, <em>retainequalscore=False</em><big>)</big><a class="headerlink" href="#datatypes.PriorityQueue.prunebyscore" title="Permalink to this definition">¶</a></dt>
+<dd>Deletes all items below/above a certain score from the queue, depending on whether minimize is True or False. Note: It is recommended (more efficient) to use blockworse=True / blockequal=True instead! Preventing the addition of &#8216;worse&#8217; items.</dd></dl>
+
+<dl class="method">
+<dt id="datatypes.PriorityQueue.score">
+<tt class="descname">score</tt><big>(</big><em>i</em><big>)</big><a class="headerlink" href="#datatypes.PriorityQueue.score" title="Permalink to this definition">¶</a></dt>
+<dd>Return the score for item x (cheap lookup), Item 0 is always the best item</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="datatypes.Queue">
+<em class="property">class </em><tt class="descclassname">datatypes.</tt><tt class="descname">Queue</tt><a class="headerlink" href="#datatypes.Queue" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Queue is an abstract class/interface. There are three types:</dt>
+<dd>Python List: A Last In First Out Queue (no Queue object necessary).
+FIFOQueue(): A First In First Out Queue.
+PriorityQueue(lt): Queue where items are sorted by lt, (default &lt;).</dd>
+<dt>Each type supports the following methods and functions:</dt>
+<dd>q.append(item)  &#8211; add an item to the queue
+q.extend(items) &#8211; equivalent to: for item in items: q.append(item)
+q.pop()         &#8211; return the top item from the queue
+len(q)          &#8211; number of items in q (also q.__len()).</dd>
+</dl>
+<dl class="method">
+<dt id="datatypes.Queue.extend">
+<tt class="descname">extend</tt><big>(</big><em>items</em><big>)</big><a class="headerlink" href="#datatypes.Queue.extend" title="Permalink to this definition">¶</a></dt>
+<dd>Append all elements from items to the queue</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="common.html"
+                                  title="previous chapter">Common Functions</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="evaluation.html"
+                                  title="next chapter">Evaluation &amp; Experimentats</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/datatypes.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="evaluation.html" title="Evaluation & Experimentats"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="common.html" title="Common Functions"
+             >previous</a> |</li>
+        <li><a href="index.html">PyNLPl v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Maarten van Gompel.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>

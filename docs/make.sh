@@ -1,3 +1,3 @@
 #!/bin/bash
-export PYTHONPATH=$PYTHONPATH:../
+export PYTHONPATH=$PYTHONPATH:../:../../
 make html

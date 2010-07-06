@@ -1,0 +1,280 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Statistics and Information Theory &mdash; PyNLPl v0.2 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.2',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyNLPl v0.2 documentation" href="index.html" />
+    <link rel="prev" title="<no title>" href="datatypes.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="datatypes.html" title="<no title>"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyNLPl v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-statistics">
+<h1>Statistics and Information Theory<a class="headerlink" href="#module-statistics" title="Permalink to this headline">¶</a></h1>
+<p>This is a Python library containing classes for Statistic and Information Theoretical computations. It also contains some code from Peter Norvig, AI: A Modern Appproach : <a class="reference external" href="http://aima.cs.berkeley.edu/python/utils.html">http://aima.cs.berkeley.edu/python/utils.html</a></p>
+<dl class="class">
+<dt id="statistics.Distribution">
+<em class="property">class </em><tt class="descclassname">statistics.</tt><tt class="descname">Distribution</tt><big>(</big><em>data</em>, <em>base=2</em><big>)</big><a class="headerlink" href="#statistics.Distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>A distribution can be created over a FrequencyList or a plain dictionary with numeric values. It will be normalized automatically.</p>
+<dl class="method">
+<dt id="statistics.Distribution.entropy">
+<tt class="descname">entropy</tt><big>(</big><em>base=None</em><big>)</big><a class="headerlink" href="#statistics.Distribution.entropy" title="Permalink to this definition">¶</a></dt>
+<dd>Compute the entropy of the distribution (base e)</dd></dl>
+
+<dl class="method">
+<dt id="statistics.Distribution.information">
+<tt class="descname">information</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#statistics.Distribution.information" title="Permalink to this definition">¶</a></dt>
+<dd>Computes the information content of the specified type: -log_e(p(X))</dd></dl>
+
+<dl class="method">
+<dt id="statistics.Distribution.items">
+<tt class="descname">items</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.Distribution.items" title="Permalink to this definition">¶</a></dt>
+<dd>Returns an <em>unranked</em> list of (type, prob) pairs. Use this only if you are not interested in the order.</dd></dl>
+
+<dl class="method">
+<dt id="statistics.Distribution.maxentropy">
+<tt class="descname">maxentropy</tt><big>(</big><em>base=2</em><big>)</big><a class="headerlink" href="#statistics.Distribution.maxentropy" title="Permalink to this definition">¶</a></dt>
+<dd>Compute the maximum entropy of the distribution: log_e(N)</dd></dl>
+
+<dl class="method">
+<dt id="statistics.Distribution.mode">
+<tt class="descname">mode</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.Distribution.mode" title="Permalink to this definition">¶</a></dt>
+<dd>Returns the type that occurs the most frequently in the probability distribution</dd></dl>
+
+<dl class="method">
+<dt id="statistics.Distribution.output">
+<tt class="descname">output</tt><big>(</big><em>delimiter='t'</em><big>)</big><a class="headerlink" href="#statistics.Distribution.output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="statistics.Distribution.poslog">
+<tt class="descname">poslog</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#statistics.Distribution.poslog" title="Permalink to this definition">¶</a></dt>
+<dd>alias for information content</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="statistics.FrequencyList">
+<em class="property">class </em><tt class="descclassname">statistics.</tt><tt class="descname">FrequencyList</tt><big>(</big><em>tokens=None</em>, <em>casesensitive=True</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="statistics.FrequencyList.append">
+<tt class="descname">append</tt><big>(</big><em>tokens</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.append" title="Permalink to this definition">¶</a></dt>
+<dd>Add a list of tokens to the frequencylist. This method will count them for you.</dd></dl>
+
+<dl class="method">
+<dt id="statistics.FrequencyList.count">
+<tt class="descname">count</tt><big>(</big><em>type</em>, <em>amount=1</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.count" title="Permalink to this definition">¶</a></dt>
+<dd>Count a certain type. The counter will increase by the amount specified (defaults to one)</dd></dl>
+
+<dl class="method">
+<dt id="statistics.FrequencyList.items">
+<tt class="descname">items</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.FrequencyList.items" title="Permalink to this definition">¶</a></dt>
+<dd>Returns an <em>unranked</em> list of (type, count) pairs. Use this only if you are not interested in the order.</dd></dl>
+
+<dl class="method">
+<dt id="statistics.FrequencyList.load">
+<tt class="descname">load</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.load" title="Permalink to this definition">¶</a></dt>
+<dd>Load a frequency list from file (in the format produced by the save method)</dd></dl>
+
+<dl class="method">
+<dt id="statistics.FrequencyList.mode">
+<tt class="descname">mode</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.FrequencyList.mode" title="Permalink to this definition">¶</a></dt>
+<dd>Returns the type that occurs the most frequently in the frequency list</dd></dl>
+
+<dl class="method">
+<dt id="statistics.FrequencyList.output">
+<tt class="descname">output</tt><big>(</big><em>delimiter='t'</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.output" title="Permalink to this definition">¶</a></dt>
+<dd>Print a representation of the frequency list</dd></dl>
+
+<dl class="method">
+<dt id="statistics.FrequencyList.p">
+<tt class="descname">p</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.p" title="Permalink to this definition">¶</a></dt>
+<dd>Returns the probability (relative frequency) of the token</dd></dl>
+
+<dl class="method">
+<dt id="statistics.FrequencyList.save">
+<tt class="descname">save</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.save" title="Permalink to this definition">¶</a></dt>
+<dd>Save a frequency list to file, can be loaded later using the load method</dd></dl>
+
+<dl class="method">
+<dt id="statistics.FrequencyList.sum">
+<tt class="descname">sum</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.FrequencyList.sum" title="Permalink to this definition">¶</a></dt>
+<dd>Returns the total amount of tokens</dd></dl>
+
+<dl class="method">
+<dt id="statistics.FrequencyList.tokens">
+<tt class="descname">tokens</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.FrequencyList.tokens" title="Permalink to this definition">¶</a></dt>
+<dd>Returns the total amount of tokens</dd></dl>
+
+<dl class="method">
+<dt id="statistics.FrequencyList.typetokenratio">
+<tt class="descname">typetokenratio</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.FrequencyList.typetokenratio" title="Permalink to this definition">¶</a></dt>
+<dd>Computes the type/token ratio</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="statistics.dotproduct">
+<tt class="descclassname">statistics.</tt><tt class="descname">dotproduct</tt><big>(</big><em>X</em>, <em>Y</em><big>)</big><a class="headerlink" href="#statistics.dotproduct" title="Permalink to this definition">¶</a></dt>
+<dd>Return the sum of the element-wise product of vectors x and y.
+&gt;&gt;&gt; dotproduct([1, 2, 3], [1000, 100, 10])
+1230</dd></dl>
+
+<dl class="function">
+<dt id="statistics.histogram">
+<tt class="descclassname">statistics.</tt><tt class="descname">histogram</tt><big>(</big><em>values</em>, <em>mode=0</em>, <em>bin_function=None</em><big>)</big><a class="headerlink" href="#statistics.histogram" title="Permalink to this definition">¶</a></dt>
+<dd>Return a list of (value, count) pairs, summarizing the input values.
+Sorted by increasing value, or if mode=1, by decreasing count.
+If bin_function is given, map it over values first.</dd></dl>
+
+<dl class="function">
+<dt id="statistics.levenshtein">
+<tt class="descclassname">statistics.</tt><tt class="descname">levenshtein</tt><big>(</big><em>s1</em>, <em>s2</em><big>)</big><a class="headerlink" href="#statistics.levenshtein" title="Permalink to this definition">¶</a></dt>
+<dd>Computes the levenshtein distance between to strings. From:  <a class="reference external" href="http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python">http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python</a></dd></dl>
+
+<dl class="function">
+<dt id="statistics.log2">
+<tt class="descclassname">statistics.</tt><tt class="descname">log2</tt><big>(</big><em>x</em><big>)</big><a class="headerlink" href="#statistics.log2" title="Permalink to this definition">¶</a></dt>
+<dd>Base 2 logarithm.
+&gt;&gt;&gt; log2(1024)
+10.0</dd></dl>
+
+<dl class="function">
+<dt id="statistics.mean">
+<tt class="descclassname">statistics.</tt><tt class="descname">mean</tt><big>(</big><em>values</em><big>)</big><a class="headerlink" href="#statistics.mean" title="Permalink to this definition">¶</a></dt>
+<dd>Return the arithmetic average of the values.</dd></dl>
+
+<dl class="function">
+<dt id="statistics.median">
+<tt class="descclassname">statistics.</tt><tt class="descname">median</tt><big>(</big><em>values</em><big>)</big><a class="headerlink" href="#statistics.median" title="Permalink to this definition">¶</a></dt>
+<dd>Return the middle value, when the values are sorted.
+If there are an odd number of elements, try to average the middle two.
+If they can&#8217;t be averaged (e.g. they are strings), choose one at random.
+&gt;&gt;&gt; median([10, 100, 11])
+11
+&gt;&gt;&gt; median([1, 2, 3, 4])
+2.5</dd></dl>
+
+<dl class="function">
+<dt id="statistics.mode">
+<tt class="descclassname">statistics.</tt><tt class="descname">mode</tt><big>(</big><em>values</em><big>)</big><a class="headerlink" href="#statistics.mode" title="Permalink to this definition">¶</a></dt>
+<dd>Return the most common value in the list of values.
+&gt;&gt;&gt; mode([1, 2, 3, 2])
+2</dd></dl>
+
+<dl class="function">
+<dt id="statistics.normalize">
+<tt class="descclassname">statistics.</tt><tt class="descname">normalize</tt><big>(</big><em>numbers</em>, <em>total=1.0</em><big>)</big><a class="headerlink" href="#statistics.normalize" title="Permalink to this definition">¶</a></dt>
+<dd>Multiply each number by a constant such that the sum is 1.0 (or total).
+&gt;&gt;&gt; normalize([1,2,1])
+[0.25, 0.5, 0.25]</dd></dl>
+
+<dl class="function">
+<dt id="statistics.product">
+<tt class="descclassname">statistics.</tt><tt class="descname">product</tt><big>(</big><em>seq</em><big>)</big><a class="headerlink" href="#statistics.product" title="Permalink to this definition">¶</a></dt>
+<dd>Return the product of a sequence of numerical values.
+&gt;&gt;&gt; product([1,2,6])
+12</dd></dl>
+
+<dl class="function">
+<dt id="statistics.stddev">
+<tt class="descclassname">statistics.</tt><tt class="descname">stddev</tt><big>(</big><em>values</em>, <em>meanval=None</em><big>)</big><a class="headerlink" href="#statistics.stddev" title="Permalink to this definition">¶</a></dt>
+<dd>The standard deviation of a set of values.
+Pass in the mean if you already know it.</dd></dl>
+
+<dl class="function">
+<dt id="statistics.vector_add">
+<tt class="descclassname">statistics.</tt><tt class="descname">vector_add</tt><big>(</big><em>a</em>, <em>b</em><big>)</big><a class="headerlink" href="#statistics.vector_add" title="Permalink to this definition">¶</a></dt>
+<dd>Component-wise addition of two vectors.
+&gt;&gt;&gt; vector_add((0, 1), (8, 9))
+(8, 10)</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="datatypes.html"
+                                  title="previous chapter">&lt;no title&gt;</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/statistics.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="datatypes.html" title="<no title>"
+             >previous</a> |</li>
+        <li><a href="index.html">PyNLPl v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Maarten van Gompel.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>

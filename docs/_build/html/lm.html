@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Language Models &mdash; PyNLPl v0.2 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.2',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="PyNLPl v0.2 documentation" href="index.html" />
+    <link rel="next" title="Search Algorithms" href="search.html" />
+    <link rel="prev" title="Formats" href="formats.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="search.html" title="Search Algorithms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="formats.html" title="Formats"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyNLPl v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-lm.client">
+<h1>Language Models<a class="headerlink" href="#module-lm.client" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="lm.lm.SimpleLanguageModel">
+<em class="property">class </em><tt class="descclassname">lm.lm.</tt><tt class="descname">SimpleLanguageModel</tt><big>(</big><em>n=2</em>, <em>casesensitive=True</em>, <em>beginmarker='&lt;begin&gt;'</em>, <em>endmarker='&lt;end&gt;'</em><big>)</big><a class="headerlink" href="#lm.lm.SimpleLanguageModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a very simple unsmoothed language model</p>
+<dl class="method">
+<dt id="lm.lm.SimpleLanguageModel.append">
+<tt class="descname">append</tt><big>(</big><em>sentence</em><big>)</big><a class="headerlink" href="#lm.lm.SimpleLanguageModel.append" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lm.lm.SimpleLanguageModel.load">
+<tt class="descname">load</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#lm.lm.SimpleLanguageModel.load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lm.lm.SimpleLanguageModel.save">
+<tt class="descname">save</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#lm.lm.SimpleLanguageModel.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lm.lm.SimpleLanguageModel.scoresentence">
+<tt class="descname">scoresentence</tt><big>(</big><em>sentence</em><big>)</big><a class="headerlink" href="#lm.lm.SimpleLanguageModel.scoresentence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="lm.srilm.SRILM">
+<em class="property">class </em><tt class="descclassname">lm.srilm.</tt><tt class="descname">SRILM</tt><big>(</big><em>filename</em>, <em>n</em><big>)</big><a class="headerlink" href="#lm.srilm.SRILM" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="lm.srilm.SRILM.logscore">
+<tt class="descname">logscore</tt><big>(</big><em>ngram</em><big>)</big><a class="headerlink" href="#lm.srilm.SRILM.logscore" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lm.srilm.SRILM.scoresentence">
+<tt class="descname">scoresentence</tt><big>(</big><em>sentence</em><big>)</big><a class="headerlink" href="#lm.srilm.SRILM.scoresentence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="lm.server.LMFactory">
+<em class="property">class </em><tt class="descclassname">lm.server.</tt><tt class="descname">LMFactory</tt><big>(</big><em>lm</em><big>)</big><a class="headerlink" href="#lm.server.LMFactory" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="lm.server.LMFactory.protocol">
+<tt class="descname">protocol</tt><a class="headerlink" href="#lm.server.LMFactory.protocol" title="Permalink to this definition">¶</a></dt>
+<dd>alias of <a title="lm.server.LMProtocol" class="reference internal" href="#lm.server.LMProtocol"><tt class="xref docutils literal"><span class="pre">LMProtocol</span></tt></a></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="lm.server.LMProtocol">
+<em class="property">class </em><tt class="descclassname">lm.server.</tt><tt class="descname">LMProtocol</tt><a class="headerlink" href="#lm.server.LMProtocol" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="lm.server.LMProtocol.lineReceived">
+<tt class="descname">lineReceived</tt><big>(</big><em>sentence</em><big>)</big><a class="headerlink" href="#lm.server.LMProtocol.lineReceived" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="lm.server.LMServer">
+<em class="property">class </em><tt class="descclassname">lm.server.</tt><tt class="descname">LMServer</tt><big>(</big><em>lm</em>, <em>port=12346</em><big>)</big><a class="headerlink" href="#lm.server.LMServer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="lm.client.LMClient">
+<em class="property">class </em><tt class="descclassname">lm.client.</tt><tt class="descname">LMClient</tt><big>(</big><em>host='localhost'</em>, <em>port=12346</em><big>)</big><a class="headerlink" href="#lm.client.LMClient" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="lm.client.LMClient.scoresentence">
+<tt class="descname">scoresentence</tt><big>(</big><em>sentence</em><big>)</big><a class="headerlink" href="#lm.client.LMClient.scoresentence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="formats.html"
+                                  title="previous chapter">Formats</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="search.html"
+                                  title="next chapter">Search Algorithms</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/lm.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="search.html" title="Search Algorithms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="formats.html" title="Formats"
+             >previous</a> |</li>
+        <li><a href="index.html">PyNLPl v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Maarten van Gompel.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>

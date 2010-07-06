@@ -1,0 +1,319 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Formats &mdash; PyNLPl v0.2 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.2',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="PyNLPl v0.2 documentation" href="index.html" />
+    <link rel="next" title="Language Models" href="lm.html" />
+    <link rel="prev" title="Evaluation & Experiments" href="evaluation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="lm.html" title="Language Models"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="evaluation.html" title="Evaluation & Experiments"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyNLPl v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="formats">
+<h1>Formats<a class="headerlink" href="#formats" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="corpus-gesproken-nederlands">
+<h2>Corpus Gesproken Nederlands<a class="headerlink" href="#corpus-gesproken-nederlands" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-formats.giza">
+<h2>GIZA++<a class="headerlink" href="#module-formats.giza" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="formats.giza.IntersectionAlignment">
+<em class="property">class </em><tt class="descclassname">formats.giza.</tt><tt class="descname">IntersectionAlignment</tt><big>(</big><em>source2target</em>, <em>target2source</em>, <em>encoding=False</em><big>)</big><a class="headerlink" href="#formats.giza.IntersectionAlignment" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="formats.giza.IntersectionAlignment.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.giza.IntersectionAlignment.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="formats.giza.MultiWordAlignment">
+<em class="property">class </em><tt class="descclassname">formats.giza.</tt><tt class="descname">MultiWordAlignment</tt><big>(</big><em>filename</em>, <em>encoding=False</em><big>)</big><a class="headerlink" href="#formats.giza.MultiWordAlignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Source to Target alignment: reads source-target.A3.final files, in which each source word may be aligned to multiple target words (adapted from code by Sander Canisius)</p>
+<dl class="method">
+<dt id="formats.giza.MultiWordAlignment.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.giza.MultiWordAlignment.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="formats.giza.MultiWordAlignment.targetword">
+<tt class="descname">targetword</tt><big>(</big><em>index</em>, <em>targetwords</em>, <em>alignment</em><big>)</big><a class="headerlink" href="#formats.giza.MultiWordAlignment.targetword" title="Permalink to this definition">¶</a></dt>
+<dd>Return the aligned targeword for a specified index in the source words. Multiple words are concatenated together with a space in between</dd></dl>
+
+<dl class="method">
+<dt id="formats.giza.MultiWordAlignment.targetwords">
+<tt class="descname">targetwords</tt><big>(</big><em>index</em>, <em>targetwords</em>, <em>alignment</em><big>)</big><a class="headerlink" href="#formats.giza.MultiWordAlignment.targetwords" title="Permalink to this definition">¶</a></dt>
+<dd>Return the aligned targetwords for a specified index in the source words</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="formats.giza.WordAlignment">
+<em class="property">class </em><tt class="descclassname">formats.giza.</tt><tt class="descname">WordAlignment</tt><big>(</big><em>filename</em>, <em>encoding=False</em><big>)</big><a class="headerlink" href="#formats.giza.WordAlignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Target to Source alignment: reads target-source.A3.final files, in which each source word is aligned to one target word</p>
+<dl class="method">
+<dt id="formats.giza.WordAlignment.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.giza.WordAlignment.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="formats.giza.WordAlignment.targetword">
+<tt class="descname">targetword</tt><big>(</big><em>index</em>, <em>targetwords</em>, <em>alignment</em><big>)</big><a class="headerlink" href="#formats.giza.WordAlignment.targetword" title="Permalink to this definition">¶</a></dt>
+<dd>Return the aligned targetword for a specified index in the source words</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="formats.giza.parseAlignment">
+<tt class="descclassname">formats.giza.</tt><tt class="descname">parseAlignment</tt><big>(</big><em>tokens</em><big>)</big><a class="headerlink" href="#formats.giza.parseAlignment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-formats.moses">
+<h2>Moses<a class="headerlink" href="#module-formats.moses" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="formats.moses.PhraseTable">
+<em class="property">class </em><tt class="descclassname">formats.moses.</tt><tt class="descname">PhraseTable</tt><big>(</big><em>filename</em>, <em>quiet=False</em>, <em>delimiter='|||'</em>, <em>score_column=5</em>, <em>align2_column=4</em><big>)</big><a class="headerlink" href="#formats.moses.PhraseTable" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="formats.moses.PhraseTable.exists">
+<tt class="descname">exists</tt><big>(</big><em>phrase</em><big>)</big><a class="headerlink" href="#formats.moses.PhraseTable.exists" title="Permalink to this definition">¶</a></dt>
+<dd>Query if a certain phrase exist in the phrase table</dd></dl>
+
+<dl class="method">
+<dt id="formats.moses.PhraseTable.translations">
+<tt class="descname">translations</tt><big>(</big><em>phrase</em><big>)</big><a class="headerlink" href="#formats.moses.PhraseTable.translations" title="Permalink to this definition">¶</a></dt>
+<dd>Return a list of (translation, score, null_alignment) tuples</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-formats.sonar">
+<h2>SoNaR<a class="headerlink" href="#module-formats.sonar" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="formats.sonar.Corpus">
+<em class="property">class </em><tt class="descclassname">formats.sonar.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension='pos'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x2f04410&gt;</em><big>)</big><a class="headerlink" href="#formats.sonar.Corpus" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="formats.sonar.CorpusDocument">
+<em class="property">class </em><tt class="descclassname">formats.sonar.</tt><tt class="descname">CorpusDocument</tt><big>(</big><em>filename</em>, <em>encoding='iso-8859-15'</em><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocument" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represent one document/text of the Corpus</p>
+<dl class="method">
+<dt id="formats.sonar.CorpusDocument.paragraphs">
+<tt class="descname">paragraphs</tt><big>(</big><em>with_id=False</em><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocument.paragraphs" title="Permalink to this definition">¶</a></dt>
+<dd>Extracts paragraphs, returns list of plain-text(!) paragraphs</dd></dl>
+
+<dl class="method">
+<dt id="formats.sonar.CorpusDocument.sentences">
+<tt class="descname">sentences</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocument.sentences" title="Permalink to this definition">¶</a></dt>
+<dd>Iterate over all sentences (sentence_id, sentence) in the document, sentence is a list of 4-tuples (word,id,pos,lemma)</dd></dl>
+
+<dl class="method">
+<dt id="formats.sonar.CorpusDocument.words">
+<tt class="descname">words</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocument.words" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="formats.sonar.CorpusDocumentX">
+<em class="property">class </em><tt class="descclassname">formats.sonar.</tt><tt class="descname">CorpusDocumentX</tt><big>(</big><em>filename</em>, <em>tree=None</em>, <em>index=True</em><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocumentX" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represent one document/text of the Corpus, loaded into memory at once and retaining the full structure</p>
+<dl class="method">
+<dt id="formats.sonar.CorpusDocumentX.paragraphs">
+<tt class="descname">paragraphs</tt><big>(</big><em>node=None</em><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocumentX.paragraphs" title="Permalink to this definition">¶</a></dt>
+<dd>iterate over paragraphs</dd></dl>
+
+<dl class="method">
+<dt id="formats.sonar.CorpusDocumentX.save">
+<tt class="descname">save</tt><big>(</big><em>filename=None</em><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocumentX.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="formats.sonar.CorpusDocumentX.sentences">
+<tt class="descname">sentences</tt><big>(</big><em>node=None</em><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocumentX.sentences" title="Permalink to this definition">¶</a></dt>
+<dd>iterate over sentences</dd></dl>
+
+<dl class="method">
+<dt id="formats.sonar.CorpusDocumentX.validate">
+<tt class="descname">validate</tt><big>(</big><em>formats_dir='../formats/'</em><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocumentX.validate" title="Permalink to this definition">¶</a></dt>
+<dd>checks if the document is valid</dd></dl>
+
+<dl class="method">
+<dt id="formats.sonar.CorpusDocumentX.words">
+<tt class="descname">words</tt><big>(</big><em>node=None</em><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocumentX.words" title="Permalink to this definition">¶</a></dt>
+<dd>iterate over words</dd></dl>
+
+<dl class="method">
+<dt id="formats.sonar.CorpusDocumentX.xpath">
+<tt class="descname">xpath</tt><big>(</big><em>expression</em><big>)</big><a class="headerlink" href="#formats.sonar.CorpusDocumentX.xpath" title="Permalink to this definition">¶</a></dt>
+<dd>Executes an xpath expression using the correct namespaces</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="formats.sonar.CorpusX">
+<em class="property">class </em><tt class="descclassname">formats.sonar.</tt><tt class="descname">CorpusX</tt><big>(</big><em>corpusdir</em>, <em>extension='pos'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x2f04410&gt;</em><big>)</big><a class="headerlink" href="#formats.sonar.CorpusX" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="formats.sonar.ns">
+<tt class="descclassname">formats.sonar.</tt><tt class="descname">ns</tt><big>(</big><em>namespace</em><big>)</big><a class="headerlink" href="#formats.sonar.ns" title="Permalink to this definition">¶</a></dt>
+<dd>Resolves the namespace identifier to a full URL</dd></dl>
+
+</div>
+<div class="section" id="module-formats.taggerdata">
+<h2>Taggerdata<a class="headerlink" href="#module-formats.taggerdata" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="formats.taggerdata.Taggerdata">
+<em class="property">class </em><tt class="descclassname">formats.taggerdata.</tt><tt class="descname">Taggerdata</tt><big>(</big><em>filename</em>, <em>encoding='utf-8'</em>, <em>mode='r'</em><big>)</big><a class="headerlink" href="#formats.taggerdata.Taggerdata" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="formats.taggerdata.Taggerdata.align">
+<tt class="descname">align</tt><big>(</big><em>referencewords</em>, <em>datatuple</em><big>)</big><a class="headerlink" href="#formats.taggerdata.Taggerdata.align" title="Permalink to this definition">¶</a></dt>
+<dd>align the reference sentence with the tagged data</dd></dl>
+
+<dl class="method">
+<dt id="formats.taggerdata.Taggerdata.next">
+<tt class="descname">next</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.taggerdata.Taggerdata.next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="formats.taggerdata.Taggerdata.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.taggerdata.Taggerdata.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="formats.taggerdata.Taggerdata.write">
+<tt class="descname">write</tt><big>(</big><em>sentence</em><big>)</big><a class="headerlink" href="#formats.taggerdata.Taggerdata.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-formats.timbl">
+<h2>TiMBL<a class="headerlink" href="#module-formats.timbl" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="formats.timbl.TimblOutput">
+<em class="property">class </em><tt class="descclassname">formats.timbl.</tt><tt class="descname">TimblOutput</tt><big>(</big><em>stream</em>, <em>delimiter=' '</em>, <em>ignorecolumns=</em><span class="optional">[</span><span class="optional">]</span>, <em>ignorevalues=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#formats.timbl.TimblOutput" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for reading Timbl classifier output, supports the +v+db option and ignores comments starting with #</p>
+<dl class="method">
+<dt id="formats.timbl.TimblOutput.parseDistribution">
+<tt class="descname">parseDistribution</tt><big>(</big><em>instance</em>, <em>start</em><big>)</big><a class="headerlink" href="#formats.timbl.TimblOutput.parseDistribution" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Formats</a><ul>
+<li><a class="reference external" href="#corpus-gesproken-nederlands">Corpus Gesproken Nederlands</a></li>
+<li><a class="reference external" href="#module-formats.giza">GIZA++</a></li>
+<li><a class="reference external" href="#module-formats.moses">Moses</a></li>
+<li><a class="reference external" href="#module-formats.sonar">SoNaR</a></li>
+<li><a class="reference external" href="#module-formats.taggerdata">Taggerdata</a></li>
+<li><a class="reference external" href="#module-formats.timbl">TiMBL</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="evaluation.html"
+                                  title="previous chapter">Evaluation &amp; Experiments</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="lm.html"
+                                  title="next chapter">Language Models</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/formats.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lm.html" title="Language Models"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="evaluation.html" title="Evaluation & Experiments"
+             >previous</a> |</li>
+        <li><a href="index.html">PyNLPl v0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Maarten van Gompel.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>
