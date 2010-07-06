@@ -19,7 +19,8 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyNLPl v0.2 documentation" href="#" /> 
+    <link rel="top" title="PyNLPl v0.2 documentation" href="#" />
+    <link rel="next" title="Statistics and Information Theory" href="statistics.html" /> 
   </head>
   <body>
     <div class="related">
@@ -31,6 +32,9 @@
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="statistics.html" title="Statistics and Information Theory"
+             accesskey="N">next</a> |</li>
         <li><a href="#">PyNLPl v0.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -40,108 +44,12 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-statistics">
-<h1>Welcome to PyNLPl&#8217;s documentation!<a class="headerlink" href="#module-statistics" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="welcome-to-pynlpl-s-documentation">
+<h1>Welcome to PyNLPl&#8217;s documentation!<a class="headerlink" href="#welcome-to-pynlpl-s-documentation" title="Permalink to this headline">¶</a></h1>
 <p>Contents:</p>
-<ul class="simple">
+<ul>
+<li class="toctree-l1"><a class="reference external" href="statistics.html">Statistics and Information Theory</a></li>
 </ul>
-<p>This is a Python library containing classes for Statistic and Information Theoretical computations. It also contains some code from Peter Norvig, AI: A Modern Appproach : <a class="reference external" href="http://aima.cs.berkeley.edu/python/utils.html">http://aima.cs.berkeley.edu/python/utils.html</a></p>
-<dl class="class">
-<dt id="statistics.FrequencyList">
-<em class="property">class </em><tt class="descclassname">statistics.</tt><tt class="descname">FrequencyList</tt><big>(</big><em>tokens=None</em>, <em>casesensitive=True</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="statistics.FrequencyList.append">
-<tt class="descname">append</tt><big>(</big><em>tokens</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.append" title="Permalink to this definition">¶</a></dt>
-<dd>Add a list of tokens to the frequencylist. This method will count them for you.</dd></dl>
-
-<dl class="method">
-<dt id="statistics.FrequencyList.count">
-<tt class="descname">count</tt><big>(</big><em>type</em>, <em>amount=1</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.count" title="Permalink to this definition">¶</a></dt>
-<dd>Count a certain type. The counter will increase by the amount specified (defaults to one)</dd></dl>
-
-<dl class="method">
-<dt id="statistics.FrequencyList.items">
-<tt class="descname">items</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.FrequencyList.items" title="Permalink to this definition">¶</a></dt>
-<dd>Returns an <em>unranked</em> list of (type, count) pairs. Use this only if you are not interested in the order.</dd></dl>
-
-<dl class="method">
-<dt id="statistics.FrequencyList.load">
-<tt class="descname">load</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.load" title="Permalink to this definition">¶</a></dt>
-<dd>Load a frequency list from file (in the format produced by the save method)</dd></dl>
-
-<dl class="method">
-<dt id="statistics.FrequencyList.mode">
-<tt class="descname">mode</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.FrequencyList.mode" title="Permalink to this definition">¶</a></dt>
-<dd>Returns the type that occurs the most frequently in the frequency list</dd></dl>
-
-<dl class="method">
-<dt id="statistics.FrequencyList.output">
-<tt class="descname">output</tt><big>(</big><em>delimiter='t'</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.output" title="Permalink to this definition">¶</a></dt>
-<dd>Print a representation of the frequency list</dd></dl>
-
-<dl class="method">
-<dt id="statistics.FrequencyList.p">
-<tt class="descname">p</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.p" title="Permalink to this definition">¶</a></dt>
-<dd>Returns the probability (relative frequency) of the token</dd></dl>
-
-<dl class="method">
-<dt id="statistics.FrequencyList.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#statistics.FrequencyList.save" title="Permalink to this definition">¶</a></dt>
-<dd>Save a frequency list to file, can be loaded later using the load method</dd></dl>
-
-<dl class="method">
-<dt id="statistics.FrequencyList.sum">
-<tt class="descname">sum</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.FrequencyList.sum" title="Permalink to this definition">¶</a></dt>
-<dd>Returns the total amount of tokens</dd></dl>
-
-<dl class="method">
-<dt id="statistics.FrequencyList.tokens">
-<tt class="descname">tokens</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.FrequencyList.tokens" title="Permalink to this definition">¶</a></dt>
-<dd>Returns the total amount of tokens</dd></dl>
-
-<dl class="method">
-<dt id="statistics.FrequencyList.typetokenratio">
-<tt class="descname">typetokenratio</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.FrequencyList.typetokenratio" title="Permalink to this definition">¶</a></dt>
-<dd>Computes the type/token ratio</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="statistics.Distribution">
-<em class="property">class </em><tt class="descclassname">statistics.</tt><tt class="descname">Distribution</tt><big>(</big><em>data</em>, <em>base=2</em><big>)</big><a class="headerlink" href="#statistics.Distribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>A distribution can be created over a FrequencyList or a plain dictionary with numeric values. It will be normalized automatically.</p>
-<dl class="method">
-<dt id="statistics.Distribution.entropy">
-<tt class="descname">entropy</tt><big>(</big><em>base=None</em><big>)</big><a class="headerlink" href="#statistics.Distribution.entropy" title="Permalink to this definition">¶</a></dt>
-<dd>Compute the entropy of the distribution (base e)</dd></dl>
-
-<dl class="method">
-<dt id="statistics.Distribution.information">
-<tt class="descname">information</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#statistics.Distribution.information" title="Permalink to this definition">¶</a></dt>
-<dd>Computes the information content of the specified type: -log_e(p(X))</dd></dl>
-
-<dl class="method">
-<dt id="statistics.Distribution.items">
-<tt class="descname">items</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.Distribution.items" title="Permalink to this definition">¶</a></dt>
-<dd>Returns an <em>unranked</em> list of (type, prob) pairs. Use this only if you are not interested in the order.</dd></dl>
-
-<dl class="method">
-<dt id="statistics.Distribution.maxentropy">
-<tt class="descname">maxentropy</tt><big>(</big><em>base=2</em><big>)</big><a class="headerlink" href="#statistics.Distribution.maxentropy" title="Permalink to this definition">¶</a></dt>
-<dd>Compute the maximum entropy of the distribution: log_e(N)</dd></dl>
-
-<dl class="method">
-<dt id="statistics.Distribution.mode">
-<tt class="descname">mode</tt><big>(</big><big>)</big><a class="headerlink" href="#statistics.Distribution.mode" title="Permalink to this definition">¶</a></dt>
-<dd>Returns the type that occurs the most frequently in the probability distribution</dd></dl>
-
-<dl class="method">
-<dt id="statistics.Distribution.poslog">
-<tt class="descname">poslog</tt><big>(</big><em>type</em><big>)</big><a class="headerlink" href="#statistics.Distribution.poslog" title="Permalink to this definition">¶</a></dt>
-<dd>alias for information content</dd></dl>
-
-</dd></dl>
-
 </div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
@@ -166,6 +74,9 @@
 <li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
+            <h4>Next topic</h4>
+            <p class="topless"><a href="statistics.html"
+                                  title="next chapter">Statistics and Information Theory</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/index.txt"
@@ -197,6 +108,9 @@
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="statistics.html" title="Statistics and Information Theory"
+             >next</a> |</li>
         <li><a href="#">PyNLPl v0.2 documentation</a> &raquo;</li> 
       </ul>
     </div>

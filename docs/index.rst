@@ -9,16 +9,10 @@ Welcome to PyNLPl's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 3
+    :maxdepth: 3
+    :glob:
 
-.. automodule:: statistics
-
-.. autoclass:: FrequencyList
-    :members:
-
-.. autoclass:: Distribution
-    :members:
-
+    *
 
 Indices and tables
 ==================
