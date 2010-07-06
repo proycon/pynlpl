@@ -1,0 +1,17 @@
+PyNLPl - Python Natural Language Processing Library
+    by Maarten van Gompel (proycon)
+    proycon AT anaproy DOT nl
+    http://proycon.anaproy.nl
+    Induction of Linguistic Knowledge Research Group
+    University of Tilburg
+----------------------------------------------------
+
+Description: 
+
+PyNLPl, pronounced as "pineapple", is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl can be used for example the computation of n-grams, frequency lists and distributions, language models. There are also more complex data types, such as Priority Queues, and search algorithms, such as Beam Search.
+
+The library is divided into several packages and modules. It is designed for Python 2.6, but aiming to be backwards compatible with Python 2.5 as well.
+
+Documentation:
+
+For a complete library reference, see /docs/_build/html/index.html
