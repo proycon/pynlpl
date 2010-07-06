@@ -1,0 +1,23 @@
+# Sphinx inventory version 1
+# Project: PyNLPl
+# Version: 0.2
+statistics mod index.html
+statistics.Distribution.information method index.html
+statistics.Distribution.poslog method index.html
+statistics.Distribution.entropy method index.html
+statistics.FrequencyList.save method index.html
+statistics.FrequencyList.count method index.html
+statistics.FrequencyList.items method index.html
+statistics.FrequencyList.sum method index.html
+statistics.FrequencyList class index.html
+statistics.FrequencyList.append method index.html
+statistics.FrequencyList.typetokenratio method index.html
+statistics.Distribution.items method index.html
+statistics.Distribution.maxentropy method index.html
+statistics.Distribution class index.html
+statistics.FrequencyList.output method index.html
+statistics.FrequencyList.mode method index.html
+statistics.FrequencyList.p method index.html
+statistics.FrequencyList.load method index.html
+statistics.Distribution.mode method index.html
+statistics.FrequencyList.tokens method index.html
