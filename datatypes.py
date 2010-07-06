@@ -10,33 +10,33 @@
 #
 #   Licensed under GPLv3
 #
-# This library contains various extra data types
-#
 #----------------------------------------------------------------
+
+"""This library contains various extra data types, based to a certain extend on MIT-licensed code from Peter Norvig, AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html"""
+
 
 import bisect
 
 class Queue: #from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
     """Queue is an abstract class/interface. There are three types:
-        Python List: A Last In First Out Queue.
+        Python List: A Last In First Out Queue (no Queue object necessary).
         FIFOQueue(): A First In First Out Queue.
         PriorityQueue(lt): Queue where items are sorted by lt, (default <).
     Each type supports the following methods and functions:
         q.append(item)  -- add an item to the queue
         q.extend(items) -- equivalent to: for item in items: q.append(item)
         q.pop()         -- return the top item from the queue
-        len(q)          -- number of items in q (also q.__len())
-    Note that isinstance(Stack(), Queue) is false, because we implement stacks
-    as lists.  If Python ever gets interfaces, Queue will be an interface."""
+        len(q)          -- number of items in q (also q.__len())."""
 
     def extend(self, items):
+        """Append all elements from items to the queue"""
         for item in items: self.append(item)
 
     
 #note: A Python list is a LIFOQueue / Stack
 
 class FIFOQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
-    """A First-In-First-Out Queue."""
+    """A First-In-First-Out Queue"""
     def __init__(self, data = []):
         self.data = data
         self.start = 0
@@ -48,9 +48,11 @@ class FIFOQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.cs.be
         return len(self.data) - self.start
 
     def extend(self, items):
+        """Append all elements from items to the queue"""
         self.data.extend(items)
 
     def pop(self):
+        """Retrieve the next element in line, this will remove it from the queue"""
         e = self.data[self.start]
         self.start += 1
         if self.start > 5 and self.start > len(self.data)/2:
@@ -129,6 +131,7 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
                 return self.data[(-1 * i) - 1][1]
 
     def pop(self):
+        """Retrieve the next element in line, this will remove it from the queue"""
         if self.minimize:
             return self.data.pop(0)[1]
         else:
@@ -143,14 +146,14 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
             return self.data[(-1 * i) - 1][0]
 
     def prune(self, n):
-        """prune all but the first n items"""
+        """prune all but the first (=best) n items"""
         if self.minimize:
             self.data = self.data[:n]
         else:
             self.data = self.data[-1 * n:]
 
     def prunebyscore(self, score, retainequalscore=False):
-        """It is recommmended to use blockworse=True / blockequal=True instead!"""
+        """Deletes all items below/above a certain score from the queue, depending on whether minimize is True or False. Note: It is recommended (more efficient) to use blockworse=True / blockequal=True instead! Preventing the addition of 'worse' items."""
         if retainequalscore:
             if self.minimize:
                 f = lambda x: x[0] <= score
@@ -171,5 +174,6 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         return repr(self.data)
 
     def __add__(self, other):
+        """Priority queues can be added up, as long as they all have minimize or maximize (rather than mixed)"""
         assert (isinstance(other, PriorityQueue) and self.minimize == other.minimize)
         return PriorityQueue(self.data + other.data, self.f, self.minimize, self.blockworse, self.blockequal)

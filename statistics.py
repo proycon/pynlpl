@@ -10,11 +10,12 @@
 #        Peter Norvig
 #
 #       Licensed under GPLv3
-# 
-# This is a Python library containing classes for Statistic and
-# Information Theoretical computations.
 #
 ###############################################################
+
+
+"""This is a Python library containing classes for Statistic and Information Theoretical computations. It also contains some code from Peter Norvig, AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html"""
+
 
 import math
 import codecs
@@ -32,6 +33,7 @@ class FrequencyList:
 
     
     def load(self, filename):
+        """Load a frequency list from file (in the format produced by the save method)"""
         f = codecs.open(filename,'r','utf-8')
         for line in self.readline():
             type, count = line.split("\t")
@@ -40,6 +42,7 @@ class FrequencyList:
             
 
     def save(self, filename):
+        """Save a frequency list to file, can be loaded later using the load method"""
         f = codecs.open(filename,'w','utf-8')
         for line in self.output():
             f.write(line + '\n')
@@ -58,11 +61,13 @@ class FrequencyList:
                 return type
 
     def append(self,tokens):
+        """Add a list of tokens to the frequencylist. This method will count them for you."""
         for token in tokens:
             self.count(token)
 
 
     def count(self, type, amount = 1):
+        """Count a certain type. The counter will increase by the amount specified (defaults to one)"""
         type = self._validate(type)
         if self._ranked: self._ranked = None
         if type in self._count:
@@ -72,14 +77,14 @@ class FrequencyList:
         self.total += amount
 
     def sum(self):
-        """alias"""
+        """Returns the total amount of tokens"""
         return self.total
 
     def _rank(self):
         if not self._ranked: self._ranked = sorted(self._count.items(),key=lambda x: x[1], reverse=True )
 
     def __iter__(self):
-        """Returns a ranked list of (type, count) pairs. The first time you iterate over the FrequencyList, the ranking will be computed. For subsequent calls it will be available immediately, unless the frequency list changed in the meantime."""
+        """Iterate over the frequency lists, in order (frequent to rare). This is a generator that yields (type, count) pairs. The first time you iterate over the FrequencyList, the ranking will be computed. For subsequent calls it will be available immediately, unless the frequency list changed in the meantime."""
         self._rank()
         for type, count in self._ranked:
             yield type, count
@@ -106,11 +111,11 @@ class FrequencyList:
         return len(self._count) / float(self.total)
 
     def __len__(self):
-        """Returns the number of types"""
+        """Returns the total amount of types"""
         return len(self._count)
 
     def tokens(self):
-        """Returns the number of tokens"""
+        """Returns the total amount of tokens"""
         return self.total
 
     def mode(self):
@@ -129,10 +134,12 @@ class FrequencyList:
         return (self.total == otherfreqlist.total and self._count == otherfreqlist._count)
 
     def __contains__(self, type):
+        """Checks if the specified type is in the frequency list"""
         type = self._validate(type)
         return type in self._count
 
     def __add__(self, otherfreqlist):
+        """Multiple frequency lists can be added together"""
         product = FrequencyList(None, )
         for type, count in self.items():
             product.count(type,count)        
@@ -141,6 +148,7 @@ class FrequencyList:
         return product
 
     def output(self,delimiter = '\t'):
+        """Print a representation of the frequency list"""
         for type, count in self:    
             yield " ".join(type) + delimiter + str(count)
 
@@ -148,6 +156,8 @@ class FrequencyList:
         return repr(self._count)
 
 class Distribution:
+    """A distribution can be created over a FrequencyList or a plain dictionary with numeric values. It will be normalized automatically."""
+
     def __init__(self, data, base = 2):
         self.base = base #logarithmic base: can be set to 2, 10 or math.e (or anything else). when set to None, it's set to e automatically
         self._dist = {}
@@ -240,6 +250,10 @@ class Distribution:
 # ********************* Common Functions ******************************
 
 def product(seq):
+    """Return the product of a sequence of numerical values.
+    >>> product([1,2,6])
+    12
+    """
     if len(seq) == 0:
         return 0
     else:
@@ -335,7 +349,8 @@ def normalize(numbers, total=1.0):  #from AI: A Modern Appproach
 
 ###########################################################################################
 
-def levenshtein(s1, s2): #from http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
+def levenshtein(s1, s2):
+    """Computes the levenshtein distance between to strings. From:  http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python"""
     if len(s1) < len(s2):
         return levenshtein(s2, s1)
     if not s1:

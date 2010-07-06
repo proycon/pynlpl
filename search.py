@@ -6,10 +6,9 @@
 #
 #   Licensed under GPLv3
 #
-#
-# This library contains various search algorithms.
-#
 #----------------------------------------------------------------
+
+"""This module contains various search algorithms."""
 
 from sys import stderr
 from pynlpl.datatypes import FIFOQueue, PriorityQueue
