@@ -124,7 +124,7 @@ class Taggerdata:
 
 
     def write(self, sentence):
-        self.f.write("#" + str(self.writeindex))
+        self.f.write("#" + str(self.writeindex)+"\n")
         for word, lemma, pos in sentence:
            if not word: word = "NONE"
            if not lemma: lemma = "NONE"
