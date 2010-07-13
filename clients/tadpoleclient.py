@@ -30,6 +30,9 @@ class TadpoleClient:
 
     def process(self,input_data, source_encoding="utf-8", return_unicode = True, columns = 4):
         """Receives input_data in the form of a str or unicode object, passes this to the server, with proper consideration for the encodings, and returns the Tadpole output as a list of tuples: (word,pos,lemma,morphology), each of these is a proper unicode object unless return_unicode is set to False, in which case raw strings in the tadpole encoding will be returned."""
+        if isinstance(input_data, list):
+            input_data = " ".join(input_data)
+
         input_data = input_data.strip(' \t\n')
 
         targetbuffer = re.sub("[ -]","",input_data)
