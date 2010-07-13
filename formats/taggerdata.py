@@ -131,4 +131,7 @@ class Taggerdata:
            if not pos: pos = "NONE"
            self.f.write( word + "\t" + lemma + "\t" + pos + "\n" )                
         self.writeindex += 1
-        
+
+    def close(self):
+        self.f.close()
+
