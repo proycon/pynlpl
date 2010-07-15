@@ -46,14 +46,20 @@ for o, a in opts:
         try:
             testsetsize = int(a)
         except:
-            testsetsize = float(a)
-
+            try:
+                testsetsize = float(a)
+            except:
+                print >>sys.stderr,"ERROR: Invalid testsize"
+                sys.exit(2)
     elif o == "-d":
         try:
             devsetsize = int(a)
         except:
-            devsetsize = float(a)
-
+            try:
+                devsetsize = float(a)
+            except:
+                print >>sys.stderr,"ERROR: Invalid devsetsize"
+                sys.exit(2)
     elif o == "-h":
         usage()
         sys.exit(0)
