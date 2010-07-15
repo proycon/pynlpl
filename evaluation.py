@@ -236,7 +236,7 @@ class WPSParamSearch:
             if len(self.parametercombinations) <= 1:
                 break
 
-def filesampler(self, files, testsetsize = 0.1, devsetsize = 0):
+def filesampler(files, testsetsize = 0.1, devsetsize = 0):
         """Extract a training set, test set and optimally a development set from one file, or multiple *interdependent* files (such as a parallel corpus). It is assumed each line contains one instance (such as a word or sentence for example)."""
 
         if not isinstance(files, list):
@@ -264,7 +264,7 @@ def filesampler(self, files, testsetsize = 0.1, devsetsize = 0):
         if testsetsize >= total or devsetsize >= total or testsetsize + devsetsize >= total:
             assert Exception("Test set and/or development set too large! No samples left for training set!")
 
-        trainset = xrange(1,total+1)
+        trainset = range(1,total+1)
         testset = random.sample(trainset, testsetsize)
         for linenum in testset:
             trainset.remove(linenum)
