@@ -7,7 +7,7 @@
 #
 #       Licensed under GPLv3
 #
-# This is a Python library classes and functions for evaluation
+# This is a Python library with classes and functions for evaluation
 # and experiments .
 #
 ###############################################################    
@@ -15,6 +15,7 @@
 import subprocess
 import itertools
 import time
+import random
 from sys import version_info
 
 if version_info[0] == 2 and version_info[1] < 6: #python2.5 doesn't have itertools.product
@@ -234,4 +235,64 @@ class WPSParamSearch:
             yield [ x[0] for x in self.parametercombinations ]
             if len(self.parametercombinations) <= 1:
                 break
+
+def filesampler(self, files, testsetsize = 0.1, devsetsize = 0):
+        """Extract a training set, test set and optimally a development set from one file, or multiple *interdependent* files (such as a parallel corpus). It is assumed each line contains one instance (such as a word or sentence for example)."""
+
+        if not isinstance(files, list):
+            files = list(files)
+
+        total = 0
+        for filename in files:
+            f = open(filename,'r')
+            count = 0
+            for line in f:
+                count += 1
+            f.close()
+            if total == 0:
+                total = count
+            elif total != count:
+                assert Exception("Size mismatch, when multiple files are specified they must contain the exact same amount of lines!")
+
+        #support for relative values:
+        if testsetsize < 1:
+            testsetsize = int(total * testsetsize)
+        if devsetsize < 1 and devsetsize > 0:
+            devsetsize = int(total * devsetsize)
+
+
+        if testsetsize >= total or devsetsize >= total or testsetsize + devsetsize >= total:
+            assert Exception("Test set and/or development set too large! No samples left for training set!")
+
+        trainset = xrange(1,total+1)
+        testset = random.sample(trainset, testsetsize)
+        for linenum in testset:
+            trainset.remove(linenum)
+        
+        if devsetsize > 0:
+            devset = random.sample(trainset, devsetsize)
+            for linenum in devset:
+                trainset.remove(linenum)
+
+        for filename in files:
+            ftrain = open(filename + '.train','w')
+            ftest = open(filename + '.test','w')
+            if devsetsize > 0: fdev = open(filename + '.dev','w')
+
+            f = open(filename,'r')
+            for linenum, line in enumerate(f):
+                if linenum+1 in trainset:
+                    ftrain.write(line)
+                elif linenum+1 in testset:
+                    ftrain.write(line)
+                elif devsetsize > 0 and linenum+1 in devset:
+                    fdev.write(line)
+            f.close()
+
+            ftrain.close()
+            ftest.close()
+            if devsetsize > 0: fdev.close()
+
+
+
 
