@@ -264,15 +264,20 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0):
         if testsetsize >= total or devsetsize >= total or testsetsize + devsetsize >= total:
             assert Exception("Test set and/or development set too large! No samples left for training set!")
 
-        trainset = range(1,total+1)
-        testset = random.sample(trainset, testsetsize)
-        for linenum in testset:
-            trainset.remove(linenum)
+
+        trainset = {}
+        testset = {}
+        devset = {}
+        for i in range(1,total+1):
+            trainset[i] = True
+        for i in random.sample(trainset.keys(), testsetsize):
+            testset[i] = True
+            del trainset[i]
         
         if devsetsize > 0:
-            devset = random.sample(trainset, devsetsize)
-            for linenum in devset:
-                trainset.remove(linenum)
+            for i in random.sample(trainset.keys(), devsetsize):
+                devset[i] = True
+                del trainset[i]
 
         for filename in files:
             ftrain = open(filename + '.train','w')
@@ -284,7 +289,7 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0):
                 if linenum+1 in trainset:
                     ftrain.write(line)
                 elif linenum+1 in testset:
-                    ftrain.write(line)
+                    ftest.write(line)
                 elif devsetsize > 0 and linenum+1 in devset:
                     fdev.write(line)
             f.close()
