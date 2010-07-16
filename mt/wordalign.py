@@ -51,7 +51,7 @@ class WordAlignment(object):
                 bestscore = 0
                 for i, targettoken in enumerate(targettokens):
                     if targettoken in self.source2target[sourcetoken] and self.source2target[sourcetoken][targettoken] > bestscore:
-                        bestscore = self.source2target[sourcetoken]
+                        bestscore = self.source2target[sourcetoken][targettoken]
                         besttoken = i
                 S2Talignment.append(besttoken) #TODO: multi-alignment?
 
@@ -60,7 +60,7 @@ class WordAlignment(object):
                 bestscore = 0
                 for i, sourcetoken in enumerate(sourcetokens):
                     if sourcetoken in self.target2source[targettoken] and self.target2source[targettoken][sourcetoken] > bestscore:
-                        bestscore = self.target2source[targettoken]
+                        bestscore = self.target2source[targettoken][sourcetoken]
                         besttoken = i
                 T2Salignment.append(besttoken) #TODO: multi-alignment?
             
