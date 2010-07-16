@@ -42,6 +42,7 @@ except getopt.GetoptError, err:
 testsetsize = devsetsize = 0
 casesensitive = True
 encoding = 'utf-8'
+n = 1
 
 for o, a in opts:
     if o == "-n":
@@ -62,16 +63,24 @@ freqlist = FrequencyList(None, casesensitive)
 for filename in files:
     f = codecs.open(filename,'r',encoding)
     for line in f:
-        freqlist.append(Windower(crude_tokenizer(line),n))
+        if n > 1:
+            freqlist.append(Windower(crude_tokenizer(line),n))
+        else:
+            #print crude_tokenizer(line)
+            freqlist.append(crude_tokenizer(line))
+
     f.close()
 
 dist = Distribution(freqlist)
-for type, count in freqlist:      
-    print type + "\t" + str(count) + "\t" + str(dist[type]) + "\t" + str(dist.information(type))
+for type, count in freqlist:
+    if isinstance(type,tuple) or isinstance(type,list):
+        type = " ".join(type)
+    s =  type + "\t" + str(count) + "\t" + str(dist[type]) + "\t" + str(dist.information(type))
+    print s.encode('utf-8')
 
 print >>sys.stderr, "Tokens:           ", freqlist.tokens()
 print >>sys.stderr, "Types:            ", len(freqlist)
 print >>sys.stderr, "Type-token ratio: ", freqlist.typetokenratio()
-print >>sys.stderr, "Entropy:          ", dist.entropy()
+#print >>sys.stderr, "Entropy:          ", dist.entropy()
 
 

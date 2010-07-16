@@ -149,8 +149,11 @@ class FrequencyList:
 
     def output(self,delimiter = '\t'):
         """Print a representation of the frequency list"""
-        for type, count in self:    
-            yield " ".join(type) + delimiter + str(count)
+        for type, count in self:
+            if isinstance(type,tuple) or isinstance(type,list):
+                yield " ".join(type) + delimiter + str(count)
+            else:
+                yield type + delimiter + str(count)
 
     def __repr__(self):
         return repr(self._count)
@@ -175,7 +178,7 @@ class Distribution:
         
 
     def _validate(self,type):
-        return tuple(type)
+        return type
 
     def _rank(self):
         if not self._ranked: self._ranked = sorted(self._dist.items(),key=lambda x: x[1], reverse=True )
@@ -183,11 +186,10 @@ class Distribution:
     def information(self, type):
         """Computes the information content of the specified type: -log_e(p(X))"""
         type = self._validate(type)
-        if not self.base and self.base: base = self.base
         if not self.base:
             return -math.log(self._dist[type])
         else:
-            return -math.log(self._dist[type], base)
+            return -math.log(self._dist[type], self.base)
 
     def poslog(self, type):
         """alias for information content"""
