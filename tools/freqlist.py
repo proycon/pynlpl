@@ -54,6 +54,10 @@ for o, a in opts:
         print >>sys.stderr, "ERROR: Unknown option:",o
         sys.exit(1)
 
+if not files:
+    print >>sys.stderr, "No files specified"
+    sys.exit(1)
+
 freqlist = FrequencyList(None, casesensitive)
 for filename in files:
     f = codecs.open(filename,'r',encoding)
