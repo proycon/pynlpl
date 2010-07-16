@@ -55,22 +55,26 @@ class WordAlignment(object):
             for sourcetoken in sourcetokens:
                 #which of the target-tokens is most frequent?
                 besttoken = None
-                bestscore = 0
+                bestscore = -1
                 for i, targettoken in enumerate(targettokens):
-                    if targettoken in self.source2target[sourcetoken] and self.source2target[sourcetoken][targettoken] > bestscore:
-                        bestscore = self.source2target[sourcetoken][targettoken]
-                        besttoken = i
+                    if targettoken in self.source2target[sourcetoken]:
+                        score = self.source2target[sourcetoken][targettoken] / float(self.targetfreqlist[targettoken])
+                        if score > bestscore:
+                            bestscore = self.source2target[sourcetoken][targettoken]
+                            besttoken = i
                 S2Talignment.append(besttoken) #TODO: multi-alignment?
 
             for targettoken in targettokens:
                 besttoken = None
-                bestscore = 0
+                bestscore = -1
                 for i, sourcetoken in enumerate(sourcetokens):
-                    if sourcetoken in self.target2source[targettoken] and self.target2source[targettoken][sourcetoken] > bestscore:
-                        bestscore = self.target2source[targettoken][sourcetoken]
-                        besttoken = i
+                    if sourcetoken in self.target2source[targettoken]:
+                        score = self.target2source[targettoken][sourcetoken] / float(self.sourcefreqlist[sourcetoken])
+                        if score > bestscore:
+                            bestscore = self.target2source[targettoken][sourcetoken]
+                            besttoken = i
                 T2Salignment.append(besttoken) #TODO: multi-alignment?
-            
+
             yield sourcetokens, targettokens, S2Talignment, T2Salignment
 
         sourcefile.close()
