@@ -66,7 +66,6 @@ for filename in files:
         if n > 1:
             freqlist.append(Windower(crude_tokenizer(line),n))
         else:
-            #print crude_tokenizer(line)
             freqlist.append(crude_tokenizer(line))
 
     f.close()
