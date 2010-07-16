@@ -81,6 +81,6 @@ for type, count in freqlist:
 print >>sys.stderr, "Tokens:           ", freqlist.tokens()
 print >>sys.stderr, "Types:            ", len(freqlist)
 print >>sys.stderr, "Type-token ratio: ", freqlist.typetokenratio()
-#print >>sys.stderr, "Entropy:          ", dist.entropy()
+print >>sys.stderr, "Entropy:          ", dist.entropy()
 
 
