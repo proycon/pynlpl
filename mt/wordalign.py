@@ -7,6 +7,9 @@ class WordAlignment(object):
         self.casesensitive = casesensitive
 
     def train(self, sourcefile, targetfile):
+        sourcefile = open(sourcefile)
+        targetfile = open(targetfile)
+
         self.sourcefreqlist = FrequencyList(None, self.casesensitive)
         self.targetfreqlist = FrequencyList(None, self.casesensitive)
 
@@ -33,10 +36,14 @@ class WordAlignment(object):
                 else:
                     self.target2source[targettoken].append(sourcetokens)
 
-        sourcefile.reset()
-        targetfile.reset()
+        sourcefile.close()
+        targetfile.close()
 
     def test(self, sourcefile, targetfile):
+        sourcefile = open(sourcefile)
+        targetfile = open(targetfile)
+
+
         #stage 2
         for sourceline, targetline in zip(sourcefile, targetfile):
             sourcetokens = sourceline.split()
@@ -66,5 +73,6 @@ class WordAlignment(object):
             
             yield sourcetokens, targettokens, S2Talignment, T2Salignment
 
-
+        sourcefile.close()
+        targetfile.close()
 
