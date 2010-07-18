@@ -45,7 +45,10 @@ class PhraseTable:
 				score = 0
 
 			if align2_column > 0:
-				null_alignments = segments[align2_column].count("()")
+                try:
+    				null_alignments = segments[align2_column].count("()")
+                except:
+                    null_alignments = 0
 			else:
 				null_alignments = 0
 
