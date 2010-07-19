@@ -18,7 +18,7 @@ import sys
 import bz2
 
 class PhraseTable:
-    def __init__(self,filename, quiet=False, delimiter="|||", score_column = 5, align2_column = 4):
+    def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 5, align2_column = 4):
         """Load a phrase table from file into memory (memory intensive!)"""
         self.phrasetable = {}
         if filename.split(".")[-1] == "bz2":
@@ -52,8 +52,12 @@ class PhraseTable:
             else:
                 null_alignments = 0
 
-            source = segments[0]
-            target = segments[1]
+            if reverse:
+                source = segments[1]
+                target = segments[0]
+            else:
+                source = segments[0]
+                target = segments[1]
             if not source in self.phrasetable:
                 #new entry in phrase table
                 self.phrasetable[source] = [ (target, score, null_alignments) ]
