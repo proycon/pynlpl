@@ -16,6 +16,7 @@
 
 import sys
 import bz2
+import datetime
 
 class PhraseTable:
     def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 5, align2_column = 4):
@@ -30,7 +31,7 @@ class PhraseTable:
             if not quiet:
                 linenum += 1
                 if (linenum % 100000) == 0:
-                    print >> sys.stderr, "Loading phrase-table: @%d" % linenum
+                    print >> sys.stderr, "Loading phrase-table: @%d" % linenum, "\t(" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ")"
             line = f.readline()
             if not line: 
                 break
