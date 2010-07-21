@@ -59,12 +59,13 @@ class PhraseTable:
             else:
                 source = segments[0]
                 target = segments[1]
-            if not source in self.phrasetable:
+
+            try:
+                #there are already one or more translations for this source phrase in the phrase table. Insert the new translation
+                self.phrasetable[source].append( (target, score, null_alignments) )                
+            except KeyError:
                 #new entry in phrase table
                 self.phrasetable[source] = [ (target, score, null_alignments) ]
-            else:
-                #there are already one or more translations for this source phrase in the phrase table. Insert the new translation
-                self.phrasetable[source].append( (target, score, null_alignments) )
                         
         f.close()        
 
