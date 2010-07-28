@@ -152,7 +152,7 @@ class ExperimentPool:
     def run(self, haltonerror=True):
         while True:
             #check how many processes are done
-            done = self.poll()
+            done = self.poll(haltonerror)
                 
             for experiment in done:
                 yield experiment
