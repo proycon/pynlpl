@@ -196,8 +196,8 @@ class Distribution:
         type = self._validate(type)
         return self.information(type)
 
-    def entropy(self, base = None):
-        """Compute the entropy of the distribution (base e)"""
+    def entropy(self, base = 2):
+        """Compute the entropy of the distribution"""
         entropy = 0
         if not base and self.base: base = self.base
         for type in self._dist:

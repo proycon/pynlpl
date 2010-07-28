@@ -136,7 +136,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         """Iterates over all valid goalstates it can find"""
         self.traversed = 0
         while len(self.fringe) > 0:
-            if self.debug: print "FRINGE: ", self.fringe
+            if self.debug: >sys.stderr, print "FRINGE: ", self.fringe
             state = self.poll(self.fringe)()
             if self.debug:
                 print >>stderr,"CURRENT STATE: " + str(state),
