@@ -71,12 +71,13 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
     blockequal can be set to false if you also want to prohibit adding equally-scoring items to the queue.
     (Both parameters default to False)
     """
-    def __init__(self, data =[], f = lambda x: x.score, minimize=False, blockworse=False, blockequal=False):
+    def __init__(self, data =[], f = lambda x: x.score, minimize=False, blockworse=False, blockequal=False,duplicates=True):
         self.data = []
         self.f = f
         self.minimize=minimize
         self.blockworse=blockworse
         self.blockequal=blockequal
+        self.duplicates= duplicates
         self.bestscore = None
         for item in data:
             self.append(item)
@@ -88,6 +89,10 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
             score = f()
         else:
             score = f
+
+        if not self.duplicates and item in self.data:
+            #item is a duplicate
+            return False
 
         if self.blockworse and self.bestscore != None:
             if self.minimize:
@@ -103,6 +108,9 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
             self.bestscore = score
         bisect.insort(self.data, (score, item))
         return True
+
+    def __exists__(self, item):
+        return (item in self.data)
 
     def __len__(self):
         return len(self.data)

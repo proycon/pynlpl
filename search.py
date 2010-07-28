@@ -247,7 +247,7 @@ class BestFirstSearch(AbstractSearch):
     def __init__(self, state, **kwargs):
         super(BestFirstSearch,self).__init__(**kwargs)
         assert isinstance(state, AbstractSearchState)
-        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False)
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates=False)
 
 class BeamSearch(AbstractSearch):
 
@@ -255,7 +255,7 @@ class BeamSearch(AbstractSearch):
         assert isinstance(state, AbstractSearchState)
         self.beamsize = beamsize
         super(BeamSearch,self).__init__(**kwargs)
-        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False)
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates=False)
 
     def prune(self, state):
         if self.debug: print >>stderr,"\tPRUNING"
@@ -268,4 +268,4 @@ class HillClimbingSearch(AbstractSearch):
     def __init__(self, state, **kwargs):
         assert isinstance(state, AbstractSearchState)
         super(HillClimbingSearch,self).__init__(**kwargs)
-        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=True, blockequal=False)
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=True, blockequal=False,duplicates=False)
