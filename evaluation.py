@@ -16,7 +16,7 @@ import subprocess
 import itertools
 import time
 import random
-from sys import version_info
+from sys import version_info,stderr
 
 if version_info[0] == 2 and version_info[1] < 6: #python2.5 doesn't have itertools.product
     def itertools_product(*args, **kwds): 
@@ -135,25 +135,30 @@ class ExperimentPool:
         experiment.start()
         self.running.append( experiment )
 
-    def poll(self):
+    def poll(self, haltonerror=True):
         done = []
         for experiment in self.running:
-            if experiment.done():
-                done.append( experiment )
+            try:
+                if experiment.done():
+                    done.append( experiment )
+            except ProcessFailed:
+                print >>stderr, "ERROR: One experiment in the pool failed: " + repr(experiment.inputdata) + repr(experiment.parameters)
+                if haltonerror:
+                    raise
         for experiment in done:
                 self.running.remove( experiment )
         return done
 
-    def run(self):
+    def run(self, haltonerror=True):
         while True:
             #check how many processes are done
             done = self.poll()
+                
             for experiment in done:
                 yield experiment
             #start new processes
             while self.queue and len(self.running) < self.size:
-                    self.start( self.queue.pop(0) )
-
+                self.start( self.queue.pop(0) )
             if not self.queue and not self.running:
                 break
 
