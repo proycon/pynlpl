@@ -90,9 +90,11 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         else:
             score = f
 
-        if not self.duplicates and item in self.data:
-            #item is a duplicate
-            return False
+        if not self.duplicates:
+            for i in self.data:
+                if item is i:
+                    #item is a duplicate, don't add it
+                    return False
 
         if self.blockworse and self.bestscore != None:
             if self.minimize:
