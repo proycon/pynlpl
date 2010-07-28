@@ -92,7 +92,7 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
 
         if not self.duplicates:
             for s, i in self.data:
-                if item is i:
+                if s == score and item == i:
                     #item is a duplicate, don't add it
                     return False
 
