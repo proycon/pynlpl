@@ -171,10 +171,10 @@ if len(sys.argv) < 2:
 else:
     command = sys.argv[1]
     if command == 'start':
-        id = sys.argv[2] if len(sys.argv) < 3 else usage()
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
         wait(start(sys.argv[3:]))
     elif command == 'stop':
-        id = sys.argv[2] if len(sys.argv) < 3 else usage()
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
         #find the process
         procfilename = PROCDIR + '/' + HOST + '/' + id
         if os.path.exists(procfilename):            
@@ -187,7 +187,7 @@ else:
             print >>sys.stderr, "No such experiment on the current host"
 
     elif command in ['stdout','log','out']:
-        id = sys.argv[2] if len(sys.argv) < 3 else usage()
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
         logfile =  EXPLOGDIR + id + '.log'
         if os.path.exists(logfile):
             os.system("cat " + logfile)
@@ -195,7 +195,7 @@ else:
             print >>sys.stderr, "No such experiment on the current host"
 
     elif command in ['stderr', 'err', 'errlog','errors']:
-        id = sys.argv[2] if len(sys.argv) < 3 else usage()
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
         logfile =  EXPLOGDIR + id + '.err'
         if os.path.exists(logfile):
             os.system("cat " + logfile)
