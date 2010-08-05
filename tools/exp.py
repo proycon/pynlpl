@@ -28,11 +28,11 @@ if not os.path.isdir(EXPLOGDIR):
 def usage():
     print "Syntax: exp start   EXPERIMENT-ID COMMAND"
     print "        exp stop    EXPERIMENT-ID"
-    print "        exp stat    EXPERIMENT-ID"
+    print "        exp ps      [HOST]"
+    print "        exp history [YEARMONTH/FILTER]"
     print "        exp log     EXPERIMENT-ID"
     print "        exp errlog  EXPERIMENT-ID"
-    print "        exp history [YEARMONTH/FILTER]"
-    print "        exp ps      [HOST]"
+    print "        exp audit   EXPERIMENT-ID"
     sys.exit(2)
 
 
@@ -201,7 +201,6 @@ else:
             os.kill(pid,11)
         else:
             print >>sys.stderr, "No such experiment on the current host"
-
     elif command in ['stdout','log','out']:
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
         logfile =  EXPLOGDIR + id + '.log'
@@ -215,6 +214,13 @@ else:
         logfile =  EXPLOGDIR + id + '.err'
         if os.path.exists(logfile):
             os.system("cat " + logfile)
+        else:
+            print >>sys.stderr, "No such experiment on the current host"
+    elif command == 'audit':
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
+        logfile =  EXPLOGDIR + id + '.log'
+        if os.path.exists(logfile):
+            os.system("tail -f " + logfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"
     elif command == 'ps' or command == 'ls':
