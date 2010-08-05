@@ -74,14 +74,7 @@ def start(id, cmdline, dir = ""):
     except:
         pass
 
-    if dir:
-        HISTORYFILE = PROCDIR + '/' + datetime.datetime.now().strftime("%Y%m") + '.history'
-    else:
-        HISTORYFILE = PROCDIR + '/' + datetime.datetime.now().strftime("%Y%m") + '.history' #%d %H:%M:%S 
-
-
-
-
+    HISTORYFILE = PROCDIR + '/' + datetime.datetime.now().strftime("%Y%m") + '.history'
 
     dir = os.path.dirname(id)
     base_id = os.path.basename(id)
@@ -197,7 +190,7 @@ else:
         id = sys.argv[2] if len(sys.argv) < 3 else usage()
         logfile =  EXPLOGDIR + id + '.log'
         if os.path.exists(logfile):
-            os.system("less " + logfile)
+            os.system("cat " + logfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"
 
@@ -205,7 +198,7 @@ else:
         id = sys.argv[2] if len(sys.argv) < 3 else usage()
         logfile =  EXPLOGDIR + id + '.err'
         if os.path.exists(logfile):
-            os.system("less " + logfile)
+            os.system("cat " + logfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"
     elif command == 'ps' or command == 'ls':
@@ -222,6 +215,24 @@ else:
                 if os.path.isdir(hostdir):
                     host = os.path.basename(hostdir)
                     ps(host)
+    elif command == 'history':
+        filter = ''
+        date = datetime.datetime.now().strftime("%Y%m")
+        if len(sys.argv >= 3):
+            filter = sys.argv[2]
+            if len(filter) == 6 and filter.isdigit():
+                date = filter
+                filter = ''
+        historyfile = PROCDIR + '/' + date + '.history'
+        if os.path.exists(historyfile):
+            if filter == '*':
+                os.system("cat " + PROCDIR + '/*.history')
+            elif filter:
+                os.system("cat " + historyfile + " | grep " + filter)
+            else:
+                os.system("cat " + historyfile)
+        else:
+            print "No history evailable"
     else:
         print >>sys.stderr,"Unknown command: " + command
         usage()
