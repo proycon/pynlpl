@@ -1,5 +1,5 @@
 ###############################################################
-#  PyNLPl - Tadpole Client - Version 1.4
+#  PyNLPl - Tadpole Client - Version 1.4.1
 #       by Maarten van Gompel (proycon)
 #       http://ilk.uvt.nl/~mvgompel
 #       Induction for Linguistic Knowledge Research Group
@@ -28,7 +28,7 @@ class TadpoleClient:
         self.tadpole_encoding = tadpole_encoding
         self.parser = parser
 
-    def process(self,input_data, source_encoding="utf-8", return_unicode = True, columns = 4):
+    def process(self,input_data, source_encoding="utf-8", return_unicode = True):
         """Receives input_data in the form of a str or unicode object, passes this to the server, with proper consideration for the encodings, and returns the Tadpole output as a list of tuples: (word,pos,lemma,morphology), each of these is a proper unicode object unless return_unicode is set to False, in which case raw strings in the tadpole encoding will be returned."""
         if isinstance(input_data, list):
             input_data = " ".join(input_data)
@@ -65,8 +65,11 @@ class TadpoleClient:
                         try:
                             word,lemma,morph,pos,parse1,parse2 = line[1:]
                         except:
-                            word,lemma,morph,pos = line[1:]
                             parse1 = parse2 = ""
+                            try:
+                                word,lemma,morph,pos = line[1:]
+                            except:
+                                raise Exception("Can't process line: ", repr(line))
 
                         if self.parser:
                             tp_output.append( (word,lemma,morph,pos,parse1,parse2) )
