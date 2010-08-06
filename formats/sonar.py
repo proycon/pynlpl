@@ -116,6 +116,14 @@ def ns(namespace):
     return '{'+namespaces[namespace]+'}'
 
 
+class CorpusFiles(Corpus):
+    def __iter__(self):
+        for d in glob.glob(self.corpusdir+"/*"):
+            if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
+                for f in glob.glob(d+ "/*." + self.extension):
+                    yield f
+
+
 class CorpusX(Corpus):
     def __iter__(self):
         for d in glob.glob(self.corpusdir+"/*"):
