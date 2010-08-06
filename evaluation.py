@@ -75,7 +75,7 @@ class AbstractExperiment(object):
 
         cmd = command
         if arguments:
-            cmd += ' ' + " ".join(arguments)
+            cmd += ' ' + " ".join([ str(x) for x in arguments])
         if parameters:
             for key, value in parameters.items():
                 if key == 'argdelimiter':

@@ -255,7 +255,7 @@ class BeamSearch(AbstractSearch):
         assert isinstance(state, AbstractSearchState)
         self.beamsize = beamsize
         super(BeamSearch,self).__init__(**kwargs)
-        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates=False)
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
 
     def prune(self, state):
         if self.debug: print >>stderr,"\tPRUNING"
