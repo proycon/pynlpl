@@ -63,7 +63,7 @@ def ps(host, dir = ""):
             pids.append(pid)
             cmdline = f.readline()
             f.close()
-            print expid+"\t" + host + "\t" + str(pid) + "\t" + cmdline
+            print "%-20s\t%-15s\t%-6s\t%s" % (expid. host, str(pid), cmdline.strip())
      
     if HOST == host and found:
         os.system("ps u " + " ".join([ str(p) for p in pids ]))
