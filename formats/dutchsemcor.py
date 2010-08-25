@@ -26,7 +26,7 @@ class WSDSystemOutput(object):
        else: 
           fulldistr = True
           for sense, confidence in senses:
-            if confidence == None: 
+            if confidence == None:
                 fulldistr = False
                 break
 
@@ -50,6 +50,7 @@ class WSDSystemOutput(object):
             else:
                 senses = []
                 for i in range(1,999,2):
+                    if fields[i+1] == '?': fields[i+1] = None
                     senses.append( (fields[i], fields[i+1]) )
                 self.append(word_id, senses)
         f.close()
@@ -59,9 +60,18 @@ class WSDSystemOutput(object):
         for word_id, senses in self:
             f.write(word_id)
             for sense, confidence in senses:
+                if confidence == None: confidence = "?"
                 f.write(" " + sense + " " + str(confidence))
             f.write("\n")
         f.close()
+
+    def out(self, filename):
+        for word_id, senses in self:
+            print word_id,
+            for sense, confidence in senses:
+                if confidence == None: confidence = "?"
+                print " " + sense + " " + str(confidence),
+            print
 
     def loadfromtimbl(self, filename):
         timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
