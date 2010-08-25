@@ -94,3 +94,26 @@ class WSDSystemOutput(object):
             self.append(word_id, distribution)
             
 
+
+class SetDefinition(object):
+    def __init__(self, filename):
+        self.sense = {}
+        self.targetwords = []
+        f = codecs.open(filename,'r')
+        for line in f:
+            if len(line) > 0 and line[0] != '#':
+                fields = line.strip('\n').split('\t')
+                word_id = fields[0]
+                sense_id = fields[1]
+                self.sense[word_id] = sense_id
+                lemma = fields[2]
+                pos = fields[3]
+                if not (lemma,pos) in self.targetwords:
+                    self.targetwords.append( (lemma,pos) )
+        f.close()
+
+    def __exists__(self, word_id):
+        return (word_id in self.sense)
+
+    def __iter__(self):
+        return iter(self.sense)
