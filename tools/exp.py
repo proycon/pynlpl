@@ -65,7 +65,7 @@ def ps(host, dir = ""):
             f.close()
             print "%-33s %-22s %-6s %s" % (expid, host, str(pid), cmdline.strip())
      
-    if HOST == host and found:
+    if HOST == host and found and pids:
         os.system("ps u " + " ".join([ str(p) for p in pids ]))
 
     return found
@@ -199,6 +199,12 @@ else:
             f.close()
             #kill the process
             os.kill(pid,11)
+            #delete process file
+            try:
+                os.unlink(procfilename)
+            except:
+                print >> sys.stderr,"ERROR REMOVING PROCESS FILE!"
+                pass
         else:
             print >>sys.stderr, "No such experiment on the current host"
     elif command in ['stdout','log','out']:
