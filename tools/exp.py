@@ -39,6 +39,7 @@ def usage():
 def ps(host, dir = ""):
     global HOST
     found = False
+    pids = None
     if dir:
         pattern = PROCDIR + '/' + host + '/' + dir + '/*'
     else:
