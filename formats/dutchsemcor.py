@@ -95,7 +95,7 @@ class WSDSystemOutput(object):
             
 
 
-class SetDefinition(object):
+class TestSet(object):
     def __init__(self, filename):
         self.sense = {}
         self.targetwords = []
