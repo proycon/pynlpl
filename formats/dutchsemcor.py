@@ -2,6 +2,7 @@
 #-*- coding:utf-8 -*-
 
 from pynlpl.formats.timbl import TimblOutput
+from pynlpl.statistics import Distribution
 import codecs
 
 class WSDSystemOutput(object):
@@ -11,14 +12,28 @@ class WSDSystemOutput(object):
             self.load(filename)
 
     def append(self, word_id, senses):
-       assert isinstance(senses, list) and len(senses) >= 1
        assert (not word_id in self.data)
+       if isinstance(senses, Distribution):
+            self.data[word_id] = senses
+            return
+       else:
+           assert isinstance(senses, list) and len(senses) >= 1
+
        if len(senses[0]) == 1:
             #not a (sense_id, confidence) tuple! compute equal confidence for all elements automatically:
             confidence = 1 / float(len(senses))
-            senses = [ (x,confidence) for x in senses ]
+            self.data[word_id]  = [ (x,confidence) for x in senses ]
+       else: 
+          fulldistr = True
+          for sense, confidence in senses:
+            if confidence == None: 
+                fulldistr = False
+                break
 
-       self.data[word_id] = senses
+          if fulldistr:
+               self.data[word_id] = Distribution(senses)
+          else:
+               self.data[word_id] = senses
 
     def __iter__(self):
         for word_id, senses in  self.data.items():
@@ -49,7 +64,10 @@ class WSDSystemOutput(object):
         f.close()
 
     def loadfromtimbl(self, filename):
-        timbl = TimblOutput(codecs.open(filename,'r','utf-8'))
+        timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
         sysout = WSDSystemOutput()
-        
+        for features, referenceclass, predictedclass, distribution in timbloutput:
+            word_id = features[0] #note: this is an assumption that must be adhered to!
+            self.append(word_id, distribution)
+            
 
