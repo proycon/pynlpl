@@ -1,5 +1,18 @@
-#!/usr/bin/env python
 #-*- coding:utf-8 -*-
+
+###############################################################
+#  PyNLPl - DutchSemCor
+#       by Maarten van Gompel (proycon)
+#       http://ilk.uvt.nl/~mvgompel
+#       Induction for Linguistic Knowledge Research Group
+#       Universiteit van Tilburg
+#       
+#       Licensed under GPLv3
+# 
+# Collection of formats for the DutchSemCor project
+#
+###############################################################
+
 
 from pynlpl.formats.timbl import TimblOutput
 from pynlpl.statistics import Distribution
