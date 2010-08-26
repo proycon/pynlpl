@@ -90,10 +90,9 @@ class ClassEvaluation(object):
     def accuracy(self, cls=None):
         if not self.computed: self.compute()
         if cls:
-            return self.tp[cls]+self.tn[cls] / float(self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls])
+            return (self.tp[cls]+self.tn[cls]) / float(self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls])
         else:
-            #TODO
-            pass
+            return sum( ( self.tp[x] for x in self.tp ) ) / float(len(self.observations))
         
     def fscore(self, cls=None, beta=1):
         if not self.computed: self.compute()
@@ -145,9 +144,10 @@ class ClassEvaluation(object):
         return ConfusionMatrix(zip(self.goals, self.observations), casesensitive)
 
     def __str__(self):
-        o =  "%-15s TP\tFP\tTN\tFN\tPrecision\tRecall   \tF-score\n" % ("")
+        o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall   \tF-score\n" % ("")
         for cls in self:
-            o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.precision(cls), self.recall(cls), self.fscore(cls) )
+            o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls), self.fscore(cls) )
+        o += "Accuracy: " + str(self.accuracy())
         return o
 
 
