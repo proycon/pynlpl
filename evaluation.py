@@ -68,24 +68,21 @@ class ClassEvaluation(object):
         if cls:
             return self.tp[cls] / float(self.tp[cls] + self.fp[cls])
         else:
-            #TODO
-            pass
+            return sum( ( self.precision(x) for x in self.observations ) ) / float(len(self.observations))
 
     def recall(self, cls=None):
         if not self.computed: self.compute()
         if cls:
             return self.tp[cls] / float(self.tp[cls] + self.fn[cls])
         else:
-            #TODO
-            pass
+            return sum( ( self.recall(x) for x in self.observations ) ) / float(len(self.observations))
 
     def specificity(self, cls=None):
         if not self.computed: self.compute()
         if cls:
             return self.tn[cls] / float(self.tn[cls] + self.fp[cls])
         else:
-            #TODO
-            pass
+            return sum( ( self.specificity(x) for x in self.observations ) ) / float(len(self.observations))
 
     def accuracy(self, cls=None):
         if not self.computed: self.compute()
@@ -101,8 +98,8 @@ class ClassEvaluation(object):
             rec =  self.recall(cls)
             return (1 + beta*beta) * ((prec * rec) / (beta*beta * prec + rec))
         else:
-            #TODO
-            pass
+            return sum( ( self.fscore(x) for x in self.observations ) ) / float(len(self.observations))
+
 
     def __iter__(self):
         return iter(set(self.goals + self.observations))
@@ -144,10 +141,14 @@ class ClassEvaluation(object):
         return ConfusionMatrix(zip(self.goals, self.observations), casesensitive)
 
     def __str__(self):
-        o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall   \tF-score\n" % ("")
-        for cls in self:
-            o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls), self.fscore(cls) )
-        o += "Accuracy: " + str(self.accuracy())
+        o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
+        for cls in sorted(self):
+            o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
+        o += "Accuracy             : " + str(self.accuracy()) + "\n"
+        o += "Recall      (macroav): "+ str(self.recall()) + "\n"
+        o += "Precision   (macroav): " + str(self.precision()) + "\n"
+        o += "Specificity (macroav): " + str(self.specificity()) + "\n"
+        o += "F-score     (macroav): " + str(self.fscore()) + "\n"
         return o
 
 
