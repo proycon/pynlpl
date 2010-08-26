@@ -37,9 +37,46 @@ class ProcessFailed(Exception):
 
 
 class ConfusionMatrix(FrequencyList):
-    def output(self):
+    def __str__(self):
         """Print Confusion Matrix in table form"""
-        #TODO
+        o = "== Confusion Matrix == (hor: goals, vert: observations)\n\n"
+
+        keys = sorted( set( ( x[1] for x in self._count.keys()) ) )
+
+        linemask = "%20s"
+        cells = ['']
+        for keyH in keys:
+                l = len(keyH)
+                if l < 4:
+                    l = 4
+                elif l > 15:
+                    l = 15
+
+                linemask += " %" + str(l) + "s"
+                cells.append(keyH)
+        linemask += "\n"
+        o += linemask % tuple(cells)
+
+        for keyV in keys:
+            linemask = "%20s"
+            cells = [keyV]
+            for keyH in keys:
+                l = len(keyH)
+                if l < 4:
+                    l = 4
+                elif l > 15:
+                    l = 15
+                linemask += " %" + str(l) + "d"
+                try:
+                    count = self._count[(keyH, keyV)]
+                except: 
+                    count = 0
+                cells.append(count)
+            linemask += "\n"
+            o += linemask % tuple(cells)
+        
+        return o
+
 
 
 class ClassEvaluation(object):
@@ -144,7 +181,7 @@ class ClassEvaluation(object):
         o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
         for cls in sorted(self):
             o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
-        o += "Accuracy             : " + str(self.accuracy()) + "\n"
+        o += "\nAccuracy             : " + str(self.accuracy()) + "\n"
         o += "Recall      (macroav): "+ str(self.recall()) + "\n"
         o += "Precision   (macroav): " + str(self.precision()) + "\n"
         o += "Specificity (macroav): " + str(self.specificity()) + "\n"
