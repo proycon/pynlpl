@@ -112,6 +112,9 @@ class TestSet(object):
                     self.targetwords.append( (lemma,pos) )
         f.close()
 
+    def __getitem__(self, word_id):
+        return self.sense[word_id]
+
     def __exists__(self, word_id):
         return (word_id in self.sense)
 

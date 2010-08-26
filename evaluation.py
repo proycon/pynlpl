@@ -12,6 +12,7 @@
 #
 ###############################################################    
 
+from pynlpl.statistics import FrequencyList
 import subprocess
 import itertools
 import time
@@ -33,6 +34,123 @@ else:
 
 class ProcessFailed(Exception):
     pass
+
+
+class ConfusionMatrix(FrequencyList):
+    def output(self):
+        """Print Confusion Matrix in table form"""
+        #TODO
+
+
+class ClassEvaluation(object):
+    def __init__(self,  goals = [], observations = []):
+        assert len(observations) == len(goals)
+        self.observations = observations
+        self.goals = goals
+ 
+        self.tp = {}
+        self.fp = {}
+        self.tn = {}
+        self.fn = {}
+
+        self.computed = False
+ 
+        if self.observations:
+            self.compute()
+
+    def append(self, goal, observation):
+        self.goals.append(goal)
+        self.observations.append(observation)
+        self.computed = False
+
+    def precision(self, cls=None):
+        if not self.computed: self.compute()
+        if cls:
+            return self.tp[cls] / float(self.tp[cls] + self.fp[cls])
+        else:
+            #TODO
+            pass
+
+    def recall(self, cls=None):
+        if not self.computed: self.compute()
+        if cls:
+            return self.tp[cls] / float(self.tp[cls] + self.fn[cls])
+        else:
+            #TODO
+            pass
+
+    def specificity(self, cls=None):
+        if not self.computed: self.compute()
+        if cls:
+            return self.tn[cls] / float(self.tn[cls] + self.fp[cls])
+        else:
+            #TODO
+            pass
+
+    def accuracy(self, cls=None):
+        if not self.computed: self.compute()
+        if cls:
+            return self.tp[cls]+self.tn[cls] / float(self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls])
+        else:
+            #TODO
+            pass
+        
+    def fscore(self, cls=None, beta=1):
+        if not self.computed: self.compute()
+        if cls:
+            prec = self.precision(cls)
+            rec =  self.recall(cls)
+            return (1 + beta*beta) * ((prec * rec) / (beta*beta * prec + rec))
+        else:
+            #TODO
+            pass
+
+    def __iter__(self):
+        return iter(set(self.goals + self.observations))
+
+    def compute(self):
+        self.tp = {}
+        self.fp = {}
+        self.tn = {}
+        self.fn = {}
+        for x in self:
+            self.tp[x] = 0
+            self.fp[x] = 0
+            self.tn[x] = 0
+            self.fn[x] = 0
+
+        for goal, observation in zip(self.goals, self.observations):
+            if goal == observation:
+                self.tp[observation] += 1
+                for goal2, observation2 in zip(self.goals, self.observations):
+                    if observation2 != observation and goal2 != goal:
+                        self.tn[observation] += 1
+                    
+                #for g in self.goals:
+                #    if g != observation:
+                #        self.tn[g] += 1
+            elif goal != observation:
+                self.fp[observation] += 1
+                self.fn[goal] += 1
+
+
+        l = len(self.goals)
+        for o in set(self.observations):
+            self.tn[o] = l - self.tp[o] - self.fp[o] - self.fn[o]
+            
+        self.computed = True
+
+
+    def confusionmatrix(self, casesensitive =True):
+        return ConfusionMatrix(zip(self.goals, self.observations), casesensitive)
+
+    def __str__(self):
+        o =  "%-15s TP\tFP\tTN\tFN\tPrecision\tRecall   \tF-score\n" % ("")
+        for cls in self:
+            o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.precision(cls), self.recall(cls), self.fscore(cls) )
+        return o
+
+
 
 class AbstractExperiment(object):
 
