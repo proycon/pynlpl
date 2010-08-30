@@ -88,7 +88,6 @@ class WSDSystemOutput(object):
 
     def loadfromtimbl(self, filename):
         timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
-        sysout = WSDSystemOutput()
         for features, referenceclass, predictedclass, distribution in timbloutput:
             word_id = features[0] #note: this is an assumption that must be adhered to!
             self.append(word_id, distribution)
