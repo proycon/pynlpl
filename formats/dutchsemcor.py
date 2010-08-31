@@ -55,14 +55,15 @@ class WSDSystemOutput(object):
     def load(self, filename):
         f = codecs.open(filename,'r','utf-8')
         for line in f:
-            fields = line.split(" ")
+            fields = line.strip().split(" ")
             word_id = fields[0]
             if len(fields[1:]) == 1:
                 #only one sense, no confidence expressed:
                 self.append(word_id, [(fields[1],None)])
             else:
                 senses = []
-                for i in range(1,999,2):
+                print fields
+                for i in range(1,len(fields),2):
                     if fields[i+1] == '?': fields[i+1] = None
                     senses.append( (fields[i], fields[i+1]) )
                 self.append(word_id, senses)
@@ -74,7 +75,6 @@ class WSDSystemOutput(object):
             f.write(word_id)
             for sense, confidence in senses:
                 if confidence == None: confidence = "?"
-                print sense, confidence
                 f.write(" " + sense + " " + str(confidence))
             f.write("\n")
         f.close()
