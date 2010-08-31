@@ -49,8 +49,7 @@ class WSDSystemOutput(object):
                self.data[word_id] = senses
 
     def __iter__(self):
-        for word_id, senses in  self.data.items():
-            yield word_id, senses
+        return self.data.items()
 
     def load(self, filename):
         f = codecs.open(filename,'r','utf-8')
