@@ -68,36 +68,48 @@ class PhraseTable:
 
 
     def append(self, source, target, Pst = 0, Pts = 0, null_alignments = 0):
-        d = self.phrasetable
-        for word in source:
-            if not word in d:
-                d[word] = {}
-            d = d[word]
+        try:
+            self.phrasetable[source].append((target, Pst, Pts, null_alignments))
+        except:
+            self.phrasetable[source] = [ (target, Pst, Pts, null_alignments) ]
 
-        if "" in d:
-            d[""].append( (target, Pst, Pts, null_alignments) )
-        else:
-            d[""] = [ (target, Pst, Pts, null_alignments) ]
+        #d = self.phrasetable
+        #for word in source:
+        #    if not word in d:
+        #        d[word] = {}
+        #    d = d[word]
+
+        #if "" in d:
+        #    d[""].append( (target, Pst, Pts, null_alignments) )
+        #else:
+        #    d[""] = [ (target, Pst, Pts, null_alignments) ]
 
     def __contains__(self, phrase):
         """Query if a certain phrase exist in the phrase table"""
-        d = self.phrasetable
-        for word in phrase:
-            if not word in d:
-                return False
-            d = d[word]
-        return ("" in d)
+        return (phrase in self.phrasetable)
+        #d = self.phrasetable
+        #for word in phrase:
+        #    if not word in d:
+        #        return False
+        #    d = d[word]
+        #return ("" in d)
 
     def __getitem__(self, phrase): #same as translations
         """Return a list of (translation, Pst, Pts, null_alignment) tuples"""
-        d = self.phrasetable
-        for word in phrase:
-            if not word in d:
-                raise KeyError
-            d = d[word]
+        try:
+            return self.phrasetable[phrase]
+        except KeyError:
+            raise
 
-        if "" in d:
-            return d[""]
-        else:
-            raise KeyError
+
+        #d = self.phrasetable
+        #for word in phrase:
+        #    if not word in d:
+        #        raise KeyError
+        #    d = d[word]
+
+        #if "" in d:
+        #    return d[""]
+        #else:
+        #    raise KeyError
 
