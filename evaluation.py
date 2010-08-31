@@ -103,39 +103,69 @@ class ClassEvaluation(object):
     def precision(self, cls=None):
         if not self.computed: self.compute()
         if cls:
-            return self.tp[cls] / float(self.tp[cls] + self.fp[cls])
+            if self.tp[cls] + self.fp[cls] > 0:
+                return self.tp[cls] / float(self.tp[cls] + self.fp[cls])
+            else:
+                return float('nan')
         else:
-            return sum( ( self.precision(x) for x in self.observations ) ) / float(len(self.observations))
+            if len(self.observations) > 0:
+                return sum( ( self.precision(x) for x in self.observations ) ) / float(len(self.observations))
+            else: 
+                return float('nan')
 
     def recall(self, cls=None):
         if not self.computed: self.compute()
         if cls:
-            return self.tp[cls] / float(self.tp[cls] + self.fn[cls])
+            if self.tp[cls] + self.fn[cls] > 0:
+                return self.tp[cls] / float(self.tp[cls] + self.fn[cls])
+            else:
+                return float('nan')
         else:
-            return sum( ( self.recall(x) for x in self.observations ) ) / float(len(self.observations))
+            if len(self.observations) > 0:
+                return sum( ( self.recall(x) for x in self.observations ) ) / float(len(self.observations))
+            else:
+                return float('nan')
 
     def specificity(self, cls=None):
         if not self.computed: self.compute()
         if cls:
-            return self.tn[cls] / float(self.tn[cls] + self.fp[cls])
+            if self.tn[cls] + self.fp[cls] > 0:
+                return self.tn[cls] / float(self.tn[cls] + self.fp[cls])
+            else:
+                return float('nan')
         else:
-            return sum( ( self.specificity(x) for x in self.observations ) ) / float(len(self.observations))
+            if len(self.observations) > 0:
+                return sum( ( self.specificity(x) for x in self.observations ) ) / float(len(self.observations))
+            else:
+                return float('nan')
 
     def accuracy(self, cls=None):
         if not self.computed: self.compute()
         if cls:
-            return (self.tp[cls]+self.tn[cls]) / float(self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls])
+            if self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls] > 0:
+                return (self.tp[cls]+self.tn[cls]) / float(self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls])
+            else:
+                return float('nan')
         else:
-            return sum( ( self.tp[x] for x in self.tp ) ) / float(len(self.observations))
+            if len(self.observations) > 0:
+                return sum( ( self.tp[x] for x in self.tp ) ) / float(len(self.observations))
+            else:
+                return float('nan')
         
     def fscore(self, cls=None, beta=1):
         if not self.computed: self.compute()
         if cls:
             prec = self.precision(cls)
             rec =  self.recall(cls)
-            return (1 + beta*beta) * ((prec * rec) / (beta*beta * prec + rec))
+            if prec * rec > 0:
+                return (1 + beta*beta) * ((prec * rec) / (beta*beta * prec + rec))
+            else:
+                return float('nan')
         else:
-            return sum( ( self.fscore(x) for x in self.observations ) ) / float(len(self.observations))
+            if len(self.observations) > 0:
+                return sum( ( self.fscore(x) for x in self.observations ) ) / float(len(self.observations))
+            else:
+                return float('nan')
 
 
     def __iter__(self):
