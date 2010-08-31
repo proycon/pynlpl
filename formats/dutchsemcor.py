@@ -27,7 +27,7 @@ class WSDSystemOutput(object):
     def append(self, word_id, senses):
        assert (not word_id in self.data)
        if isinstance(senses, Distribution):
-            self.data[word_id] = senses
+            self.data[word_id] = ( (x[0],y) for x,y in senses ) #TODO: this is a patch, something's not right in Distribution?
             return
        else:
            assert isinstance(senses, list) and len(senses) >= 1
@@ -74,6 +74,7 @@ class WSDSystemOutput(object):
             f.write(word_id)
             for sense, confidence in senses:
                 if confidence == None: confidence = "?"
+                print sense, confidence
                 f.write(" " + sense + " " + str(confidence))
             f.write("\n")
         f.close()
