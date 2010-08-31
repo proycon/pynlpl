@@ -41,9 +41,11 @@ class PhraseTable:
 
             #Do we have a score associated?
             if score_column > 0 and len(segments) >= score_column:
-                score = float(segments[score_column-1].strip().split(" ",1)[0]) #the 1rd number is p(source|target), 3rd number is p(target|source)
+                nums = segments[score_column-1].strip().split(" ")
+                Pst = float(nums[0]) #the 1st number is p(source|target)
+                Pts = float(nums[2]) #3rd number is p(target|source)
             else:
-                score = 0
+                Pst = Pts = 0
 
             if align2_column > 0:
                 try:
@@ -54,38 +56,48 @@ class PhraseTable:
                 null_alignments = 0
 
             if reverse:
-                source = segments[1]
-                target = segments[0]
+                source = tuple(segments[1].split(" "))
+                target = tuple(segments[0].split(" "))
             else:
-                source = segments[0]
-                target = segments[1]
+                source = tuple(segments[0].split(" "))
+                target = tuple(segments[1].split(" "))
 
-            try:
-                #there are already one or more translations for this source phrase in the phrase table. Insert the new translation
-                self.phrasetable[source].append( (target, score, null_alignments) )                
-            except KeyError:
-                #new entry in phrase table
-                self.phrasetable[source] = [ (target, score, null_alignments) ]
+            self.append(source, target,Pst,Pts,null_alignments)
                         
         f.close()        
 
-    def exists(self, phrase):
-        """Query if a certain phrase exist in the phrase table"""
-        return (phrase in self.phrasetable)
+
+    def append(self, source, target, Pst = 0, Pts = 0, null_alignments = 0):
+        d = self.phrasetable
+        for word in source:
+            if not word in d:
+                d[word] = {}
+            d = d[word]
+
+        if "" in d:
+            d[""].append( (target, Pst, Pts, null_alignments) )
+        else:
+            d[""] = [ (target, Pst, Pts, null_alignments) ]
 
     def __contains__(self, phrase):
         """Query if a certain phrase exist in the phrase table"""
-        return (phrase in self.phrasetable)
-
-    def translations(self, phrase):
-        """Return a list of (translation, score, null_alignment) tuples"""
-        return self.phrasetable[phrase]
-
+        d = self.phrasetable
+        for word in phrase:
+            if not word in d:
+                return False
+            d = d[word]
+        return ("" in d)
 
     def __getitem__(self, phrase): #same as translations
-        try:
-            data = self.phrasetable[phrase]
-        except:
-            raise
-        return data
+        """Return a list of (translation, Pst, Pts, null_alignment) tuples"""
+        d = self.phrasetable
+        for word in phrase:
+            if not word in d:
+                raise KeyError
+            d = d[word]
+
+        if "" in d:
+            return d[""]
+        else:
+            raise KeyError
 
