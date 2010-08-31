@@ -62,7 +62,6 @@ class WSDSystemOutput(object):
                 self.append(word_id, [(fields[1],None)])
             else:
                 senses = []
-                print fields
                 for i in range(1,len(fields),2):
                     if fields[i+1] == '?': fields[i+1] = None
                     senses.append( (fields[i], fields[i+1]) )
