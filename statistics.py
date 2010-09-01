@@ -169,8 +169,11 @@ class Distribution:
                 self._dist[type] = count / float(data.total)
         elif isinstance(data, dict) or isinstance(data, list):
             if isinstance(data, list):
-                data = dict(data)
-            self._dist = data 
+                self._dist = {}
+                for key,value in data:
+                    self._dist[key] = float(value)
+            else:
+                self._dist = data 
             total = float(sum(self._dist.values()))
             if total < 0.999 or total > 1.000:
                 #normalize again
