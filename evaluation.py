@@ -18,6 +18,7 @@ import itertools
 import time
 import random
 import copy
+import datetime
 from sys import version_info,stderr
 
 if version_info[0] == 2 and version_info[1] < 6: #python2.5 doesn't have itertools.product
@@ -231,9 +232,17 @@ class AbstractExperiment(object):
         for parameter, value in parameters.items():
             self.parameters[parameter] = value
         self.process = None
+        self.creationtime = datetime.datetime.now()
+        self.begintime = self.endtime = 0
 
     def defaultparameters(self):
         return {}
+
+    def duration(self):
+        if self.endtime > self.begintime:
+            return self.endtime - self.begintime
+        else:
+            return 0
 
     def start(self):
         """Start as a detached subprocess, immediately returning execution to caller."""
@@ -249,6 +258,7 @@ class AbstractExperiment(object):
         elif self.process.returncode > 0:
             raise ProcessFailed()
         else:
+            self.endtime = datetime.datetime.now()
             return True
 
     def run(self):
@@ -280,6 +290,7 @@ class AbstractExperiment(object):
         if printcommand:
             print "STARTING COMMAND: " + cmd
 
+        self.begintime = datetime.datetime.now()
         if not cwd:
             self.process = subprocess.Popen(cmd, shell=True,stdout=stdout,stderr=stderr)
         else:
