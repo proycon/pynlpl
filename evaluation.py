@@ -17,6 +17,7 @@ import subprocess
 import itertools
 import time
 import random
+import copy
 from sys import version_info,stderr
 
 if version_info[0] == 2 and version_info[1] < 6: #python2.5 doesn't have itertools.product
@@ -82,8 +83,8 @@ class ConfusionMatrix(FrequencyList):
 class ClassEvaluation(object):
     def __init__(self,  goals = [], observations = []):
         assert len(observations) == len(goals)
-        self.observations = observations
-        self.goals = goals
+        self.observations = copy.copy(observations)
+        self.goals = copy.copy(goals)
  
         self.tp = {}
         self.fp = {}
@@ -177,7 +178,7 @@ class ClassEvaluation(object):
         self.fp = {}
         self.tn = {}
         self.fn = {}
-        for x in set(self.observations):
+        for x in set(self.observations + self.goals):
             self.tp[x] = 0
             self.fp[x] = 0
             self.tn[x] = 0
