@@ -169,20 +169,21 @@ class ClassEvaluation(object):
 
 
     def __iter__(self):
-        return iter(set(self.goals + self.observations))
+        for g,o in zip(self.goals, self.observations):
+             yield g,o
 
     def compute(self):
         self.tp = {}
         self.fp = {}
         self.tn = {}
         self.fn = {}
-        for x in self:
+        for x in set(self.observations):
             self.tp[x] = 0
             self.fp[x] = 0
             self.tn[x] = 0
             self.fn[x] = 0
 
-        for goal, observation in zip(self.goals, self.observations):
+        for goal, observation in self:
             if goal == observation:
                 self.tp[observation] += 1
                 for goal2, observation2 in zip(self.goals, self.observations):
@@ -208,8 +209,9 @@ class ClassEvaluation(object):
         return ConfusionMatrix(zip(self.goals, self.observations), casesensitive)
 
     def __str__(self):
+        if not self.computed: self.compute()
         o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
-        for cls in sorted(self):
+        for cls in set(self.observations):
             o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
         o += "\nAccuracy             : " + str(self.accuracy()) + "\n"
         o += "Recall      (macroav): "+ str(self.recall()) + "\n"
