@@ -167,13 +167,17 @@ class Distribution:
         if isinstance(data, FrequencyList):
             for type, count in data.items():
                 self._dist[type] = count / float(data.total)
-        elif isinstance(data, dict):
+        elif isinstance(data, dict) or isinstance(data, list):
+            if isinstance(data, list):
+                data = dict(data)
             self._dist = data 
             total = float(sum(self._dist.values()))
             if total < 0.999 or total > 1.000:
                 #normalize again
                 for key, value in self._dist.items():
                     self._dist[key] = value / total                       
+        else:
+            raise Exception("Can't create distribution")
         self._ranked = None
         
 
