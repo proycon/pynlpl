@@ -334,6 +334,8 @@ class ExperimentPool:
                 print >>stderr, "ERROR: One experiment in the pool failed: " + repr(experiment.inputdata) + repr(experiment.parameters)
                 if haltonerror:
                     raise
+                else:
+                    done.append( experiment )
         for experiment in done:
                 self.running.remove( experiment )
         return done
