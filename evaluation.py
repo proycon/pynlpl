@@ -239,7 +239,7 @@ class AbstractExperiment(object):
         return {}
 
     def duration(self):
-        if self.endtime > self.begintime:
+        if self.endtime > 0 and self.begintime > 0:
             return self.endtime - self.begintime
         else:
             return 0
