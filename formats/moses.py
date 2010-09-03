@@ -113,3 +113,28 @@ class PhraseTable:
         #else:
         #    raise KeyError
 
+from twisted.internet import protocol, reactor
+from twisted.protocols import basic
+
+class PTProtocol(basic.LineReceiver):
+    def lineReceived(self, phrase):
+        if isinstance(phrase, str) or  isinstance(phrase, unicode):
+            phrase = tuple(phrase.split(" "))
+        try:
+            target,Pst,Pts,null_alignments = self.factory.phrasetable[phrase]
+            self.sendLine(target+"\t"+str(Pst)+"\t"+str(Pts)+"\t"+str(null_alignments))
+        except:
+            self.sendLine("NotFound")
+
+class PTFactory(protocol.ServerFactory):
+    protocol = PTProtocol
+
+    def __init__(self, phrasetable):
+        self.phrasetable = phrasetable
+
+class PhraseTableServer:
+    def __init__(self, phrasetable, port=65432):
+        reactor.listenTCP(port, PTFactory(phrasetable))
+        reactor.run()
+
+
