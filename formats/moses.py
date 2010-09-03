@@ -56,11 +56,11 @@ class PhraseTable:
                 null_alignments = 0
 
             if reverse:
-                source = tuple(segments[1].split(" "))
-                target = tuple(segments[0].split(" "))
+                source = segments[1] #tuple(segments[1].split(" "))
+                target = segments[0] #tuple(segments[0].split(" "))
             else:
-                source = tuple(segments[0].split(" "))
-                target = tuple(segments[1].split(" "))
+                source = segments[0] #tuple(segments[0].split(" "))
+                target = segments[1] #tuple(segments[1].split(" "))
 
             self.append(source, target,Pst,Pts,null_alignments)
                         
@@ -118,8 +118,6 @@ from twisted.protocols import basic
 
 class PTProtocol(basic.LineReceiver):
     def lineReceived(self, phrase):
-        if isinstance(phrase, str) or  isinstance(phrase, unicode):
-            phrase = tuple(phrase.split(" "))
         try:
             target,Pst,Pts,null_alignments = self.factory.phrasetable[phrase]
             self.sendLine(target+"\t"+str(Pst)+"\t"+str(Pts)+"\t"+str(null_alignments))
