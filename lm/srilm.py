@@ -15,8 +15,6 @@
 
 
 import srilmcc
-
-from collections import deque
 from pynlpl.statistics import product
 from pynlpl.textprocessors import Windower
 
@@ -30,6 +28,10 @@ class SRILM:
 
     def __getitem__(self, ngram):
         return 10**self.logscore(ngram)
+    
+
+    def __contains__(self, key):
+        return self.model.exists( key )
 
     def logscore(self, ngram):
         n = len(ngram)
@@ -40,8 +42,11 @@ class SRILM:
         #    return -999.9
 
         if len(ngram) == self.n:
-            #no phrases, basic trigram, compute directly
-            return self.model.wordProb(*ngram)
+            if all( (self.model.exists(x) for x in ngram) ):
+                #no phrases, basic trigram, compute directly
+                return self.model.wordProb(*ngram)
+            else:
+                raise KeyError
         else:
             raise Exception("Not an " + str(self.n) + "-gram")
 

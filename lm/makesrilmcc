@@ -16,11 +16,18 @@
 #Then edit the directories in this script and run ./makesrilm
 
 if [ -z $1 ]; then
-	echo "Usage: ./makesrilm /path/to/srilm/" >&2
+	echo "Usage: ./makesrilm /path/to/srilm/ [pythonversion]" >&2
 	exit 1;
 fi
 
+
+
 export SRILM=$1   #Default: /home/mvgompel/tmp/srilm5.10/ #(must be an absolute path!)
 export SRILMLIBS=$SRILM/lib/i686
-g++ -fPIC -shared -I/usr/include/python2.5 -lpython2.5 -I$SRILM/src -I$SRILM/include -lboost_python srilm.cc $SRILMLIBS/liboolm.a $SRILMLIBS/libdstruct.a $SRILMLIBS/libmisc.a -o srilmcc.so
+if [ -z $1 ]; then
+    PYTHONVERSION=$2
+else
+    PYTHONVERSION="2.5"
+fi
+g++ -fPIC -shared -I/usr/include/python$PYTHONVERSION -lpython$PYTHONVERSION -I$SRILM/src -I$SRILM/include -lboost_python srilm.cc $SRILMLIBS/liboolm.a $SRILMLIBS/libdstruct.a $SRILMLIBS/libmisc.a -o srilmcc.so
 
