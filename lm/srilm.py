@@ -15,7 +15,6 @@
 
 
 import srilmcc
-from pynlpl.statistics import product
 from pynlpl.textprocessors import Windower
 
 class SRILM:
@@ -23,12 +22,17 @@ class SRILM:
         self.model = srilmcc.LanguageModel(filename, n)
         self.n = n
 
-    def scoresentence(self, sentence):
-        return product([self[x] for x in Windower(sentence, self.n, "<s>", "</s>")])
+    def scoresentence(self, sentence, unknownwordprob=-12):
+        score = 0
+        for ngram in Windower(sentence, self.n, "<s>", "</s>"):
+            try:
+               score += self.logscore(ngram)
+            except KeyError:
+               score += unknownwordprob
+        return 10**score
 
     def __getitem__(self, ngram):
         return 10**self.logscore(ngram)
-    
 
     def __contains__(self, key):
         return self.model.exists( key )
