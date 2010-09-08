@@ -429,7 +429,7 @@ class WPSParamSearch:
                 pool = ExperimentPool(self.poolsize)
                 for parameters,score in self.parametercombinations:
                     pool.append( self.ExperimentClass(data, **dict(parameters)) )
-                for experiment in pool.run():
+                for experiment in pool.run(False):
                     newparametercombinations.append( (experiment.parameters, experiment.score()) )
                     if self.delete:
                         experiment.delete()
