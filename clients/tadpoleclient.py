@@ -20,10 +20,11 @@ from socket import *
 import re
 
 class TadpoleClient:
-    def __init__(self,host="localhost",port=12345, tadpole_encoding="utf-8", parser=False):
+    def __init__(self,host="localhost",port=12345, tadpole_encoding="utf-8", parser=False,timeout=120.0):
         """Create a client connecting to a Tadpole server."""
         self.BUFSIZE = 4096
         self.socket = socket(AF_INET,SOCK_STREAM)
+        self.socket.settimeout(timeout)
         self.socket.connect( (host,int(port)) )
         self.tadpole_encoding = tadpole_encoding
         self.parser = parser
