@@ -99,6 +99,7 @@ class Corpus:
         self.corpusdir = corpusdir
         self.extension = extension
         self.restrict_to_collection = restrict_to_collection
+        self.conditionf = conditionf
 
 
     def __iter__(self):
@@ -121,7 +122,8 @@ class CorpusFiles(Corpus):
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
-                    yield f
+	            if self.conditionf(f):
+                        yield f
 
 
 class CorpusX(Corpus):
@@ -129,7 +131,8 @@ class CorpusX(Corpus):
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
-                    yield CorpusDocumentX(f)
+                    if self.conditionf(f):
+                         yield CorpusDocumentX(f)
 
 
 class CorpusDocumentX:
