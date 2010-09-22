@@ -21,7 +21,7 @@ import getopt
 import os.path
 from pynlpl.giza import WordAlignment, MultiWordAlignment
 from pynlpl.clients.freeling import FreeLingClient
-from pynlpl.clients.tadpoleclient import TadpoleClient
+from pynlpl.clients.frogclient import FrogClient
 from pynlpl.formats.taggerdata import Taggerdata
 import codecs
 from datetime import datetime
