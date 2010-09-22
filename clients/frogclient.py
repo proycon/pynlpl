@@ -1,5 +1,5 @@
 ###############################################################
-#  PyNLPl - Tadpole Client - Version 1.4.1
+#  PyNLPl - Frog Client - Version 1.4.1
 #       by Maarten van Gompel (proycon)
 #       http://ilk.uvt.nl/~mvgompel
 #       Induction for Linguistic Knowledge Research Group
@@ -10,18 +10,18 @@
 #       Licensed under GPLv3
 # 
 # This is a Python library for on-the-fly communication with
-# a Tadpole Server. Allowing on-the-fly lemmatisation and
+# a Frog/Tadpole Server. Allowing on-the-fly lemmatisation and
 # PoS-tagging. It is recommended to pass your data on a 
-# sentence-by-sentence basis to TadpoleClient.process()
+# sentence-by-sentence basis to FrogClient.process()
 #
 ###############################################################
 
 from socket import *
 import re
 
-class TadpoleClient:
+class FrogClient:
     def __init__(self,host="localhost",port=12345, tadpole_encoding="utf-8", parser=False,timeout=120.0):
-        """Create a client connecting to a Tadpole server."""
+        """Create a client connecting to a Frog or Tadpole server."""
         self.BUFSIZE = 4096
         self.socket = socket(AF_INET,SOCK_STREAM)
         self.socket.settimeout(timeout)
@@ -81,3 +81,4 @@ class TadpoleClient:
 
     def __del__(self):
         self.socket.close()
+
