@@ -96,8 +96,8 @@ class WSDSystemOutput(object):
 
 class TestSet(object):
     def __init__(self, filename):
-        self.sense = {}
-        self.targetwords = []
+        self.sense = {} #word_id => sense_id
+        self.targetwords = {} #(lemma,pos) => [sense_id]
         f = codecs.open(filename,'r')
         for line in f:
             if len(line) > 0 and line[0] != '#':
@@ -108,7 +108,9 @@ class TestSet(object):
                 lemma = fields[2]
                 pos = fields[3]
                 if not (lemma,pos) in self.targetwords:
-                    self.targetwords.append( (lemma,pos) )
+                    self.targetwords[(lemma,pos)] = []
+                if not sense_id in self.targetwords[(lemma,pos)]:
+                    self.targetwords[(lemma,pos)].append(sense_id)
         f.close()
 
     def __getitem__(self, word_id):
@@ -119,3 +121,6 @@ class TestSet(object):
 
     def __iter__(self):
         return iter(self.sense)
+
+    def senses(self, lemma, pos):
+        return self.targetwords[(lemma,pos)]
