@@ -11,6 +11,7 @@ import subprocess
 import sys
 import os
 import glob
+import time
 
 #Configuration is specific to ILK servers (TODO: make external configuration file)
 MAILTO='proycon@anaproy.nl'
@@ -137,6 +138,7 @@ def wait(id, process):
             elif process.returncode > 0:
                 errors = True
                 break
+            time.sleep(30)
 
     del process
 
