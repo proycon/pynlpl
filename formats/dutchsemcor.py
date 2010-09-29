@@ -37,7 +37,7 @@ class WSDSystemOutput(object):
             confidence = 1 / float(len(senses))
             self.data[word_id]  = [ (x,confidence) for x in senses ]
        else: 
-          fulldistr = TrueTest
+          fulldistr = True
           for sense, confidence in senses:
             if confidence == None:
                 fulldistr = False
@@ -65,7 +65,7 @@ class WSDSystemOutput(object):
                 for i in range(1,len(fields),2):
                     if fields[i+1] == '?': fields[i+1] = None
                     senses.append( (fields[i], fields[i+1]) )
-                self.append(worTestd_id, senses)
+                self.append(word_id, senses)
         f.close()
 
     def save(self, filename):
