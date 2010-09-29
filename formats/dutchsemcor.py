@@ -96,7 +96,7 @@ class WSDSystemOutput(object):
 
 class DataSet(object): #for testsets/trainingsets
     def __init__(self, filename):
-        self.sense = {} #word_id => sense_id
+        self.sense = {} #word_id => (sense_id, lemma,pos)
         self.targetwords = {} #(lemma,pos) => [sense_id]
         f = codecs.open(filename,'r')
         for line in f:
@@ -104,9 +104,9 @@ class DataSet(object): #for testsets/trainingsets
                 fields = line.strip('\n').split('\t')
                 word_id = fields[0]
                 sense_id = fields[1]
-                self.sense[word_id] = sense_id
                 lemma = fields[2]
                 pos = fields[3]
+                self.sense[word_id] = (sense_id, lemma, pos)
                 if not (lemma,pos) in self.targetwords:
                     self.targetwords[(lemma,pos)] = []
                 if not sense_id in self.targetwords[(lemma,pos)]:
@@ -120,7 +120,7 @@ class DataSet(object): #for testsets/trainingsets
         return (word_id in self.sense)
 
     def __iter__(self):
-        return iter(self.sense)
+        return iter(self.sense) #(sense, lemma,pos)
 
     def senses(self, lemma, pos):
         return self.targetwords[(lemma,pos)]
