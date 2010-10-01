@@ -114,19 +114,27 @@ class DataSet(object): #for testsets/trainingsets
         f.close()
 
     def __getitem__(self, word_id):
-        return self.sense[word_id]
+        return self.sense[self._sanitize(word_id)]
 
     def getsense(self, word_id):
-        return self.sense[word_id][0]
+        return self.sense[self._sanitize(word_id)][0]
 
     def getlemma(self, word_id):
-        return self.sense[word_id][1]
+        return self.sense[self._sanitize(word_id)][1]
 
     def getpos(self, word_id):
-        return self.sense[word_id][2]
+        return self.sense[self._sanitize(word_id)][2]
+
+    def _sanitize(self, word_id):
+        if isinstance(word_id, unicode):
+            return word_id
+        else:
+            return unicode(word_id,'utf-8')
+
 
     def __exists__(self, word_id):
-        return (word_id in self.sense)
+        return (self._sanitize(word_id) in self.sense)
+
 
     def __iter__(self):
         for word_id, (sense, lemma, pos) in self.sense.items():
