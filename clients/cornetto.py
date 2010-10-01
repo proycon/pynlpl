@@ -196,7 +196,7 @@ class CornettoClient:
             value  = dict[ "value" ]    # lexical unit identifier
             form   = dict[ "form" ]     # lemma
             label  = dict[ "label" ]    # label to be shown
-            pos  = dict[ "label" ]    # label to be shown
+            pos  = dict[ "pos" ]    # label to be shown
 
             if self.debug:
                 printf( "seq_nr: %s" % seq_nr )
