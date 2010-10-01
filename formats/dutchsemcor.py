@@ -116,11 +116,21 @@ class DataSet(object): #for testsets/trainingsets
     def __getitem__(self, word_id):
         return self.sense[word_id]
 
+    def getsense(self, word_id):
+        return self.sense[word_id][0]
+
+    def getlemma(self, word_id):
+        return self.sense[word_id][1]
+
+    def getpos(self, word_id):
+        return self.sense[word_id][2]
+
     def __exists__(self, word_id):
         return (word_id in self.sense)
 
     def __iter__(self):
-        return iter(self.sense) #(sense, lemma,pos)
+        for word_id, (sense, lemma, pos) in self.sense.items():
+            yield (word_id, sense, lemma, pos)
 
     def senses(self, lemma, pos):
         return self.targetwords[(lemma,pos)]
