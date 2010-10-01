@@ -98,7 +98,7 @@ class DataSet(object): #for testsets/trainingsets
     def __init__(self, filename):
         self.sense = {} #word_id => (sense_id, lemma,pos)
         self.targetwords = {} #(lemma,pos) => [sense_id]
-        f = codecs.open(filename,'r')
+        f = codecs.open(filename,'r','utf-8')
         for line in f:
             if len(line) > 0 and line[0] != '#':
                 fields = line.strip('\n').split('\t')
