@@ -131,8 +131,7 @@ class DataSet(object): #for testsets/trainingsets
         else:
             return unicode(word_id,'utf-8')
 
-
-    def __exists__(self, word_id):
+    def __contains__(self, word_id):
         return (self._sanitize(word_id) in self.sense)
 
 
