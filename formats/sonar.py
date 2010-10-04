@@ -151,7 +151,7 @@ class CorpusDocumentX:
         #Grab root element and determine if we run inline or standalone
         self.root =  self.xpath("/dcoi:DCOI")
         if self.root:
-	    self.root = self.root[0] 
+            self.root = self.root[0] 
             self.inline = True
         else:
             raise Exception("Not in DCOI/SoNaR format!")
