@@ -90,7 +90,8 @@ class WSDSystemOutput(object):
         timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
         for features, referenceclass, predictedclass, distribution in timbloutput:
             word_id = features[0] #note: this is an assumption that must be adhered to!
-            self.append(word_id, distribution)
+            if distribution:
+                self.append(word_id, distribution)
             
 
 
