@@ -12,19 +12,15 @@
 #
 ###############################################################   
 
-from pynlpl.format.timbl import TimblOutput
-from pynlpl.statistics import mean,mode, median
+from pynlpl.formats.timbl import TimblOutput
+from pynlpl.statistics import mean,mode,median
 import sys
 import os
-
-if __name__ == "__main__":
-    sys.path.append(sys.path[0] + '/../..')
-    os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
 
 
 print "Filename          \tmax\tmin\tmean\tmedian\tmode"
 for filename in sys.argv[1:]:
     observations = []
-    for _,_,_,distribution in TimblOutput(filename):
+    for _,_,_,distribution in TimblOutput(open(filename,'r')):
         observations.append(len(distribution))
-    print filename + "\t" + max(observations) + "\t" + min(observations) + "\t"  + mean(observations) + "\t" + median(observations) + "\t" + mode(observations)
+    print os.path.basename(filename) + "\t" + str(max(observations)) + "\t" + str(min(observations)) + "\t"  + str(mean(observations)) + "\t" + str(median(observations)) + "\t" + str(mode(observations))
