@@ -52,6 +52,10 @@ class WSDSystemOutput(object):
         for word_id, senses in  self.data.items():
             yield word_id, senses
 
+    def __getitem__(self, word_id):
+        """Returns the sense distribution for the given word_id"""
+        return self.data[word_id]
+
     def load(self, filename):
         f = codecs.open(filename,'r','utf-8')
         for line in f:
@@ -85,6 +89,17 @@ class WSDSystemOutput(object):
                 if confidence == None: confidence = "?"
                 print " " + sense + " " + str(confidence),
             print
+
+    def senses(self, bestonly=False):
+        """Returns a list of all predicted senses"""
+        l = []
+        for word_id, senses in self:
+            for sense, confidence in senses:
+                if not sense in l: l.append(sense)
+                if bestonly:
+                    break
+        return l
+
 
     def loadfromtimbl(self, filename):
         timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
