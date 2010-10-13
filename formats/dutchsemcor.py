@@ -52,6 +52,9 @@ class WSDSystemOutput(object):
         for word_id, senses in  self.data.items():
             yield word_id, senses
 
+    def __len__(self):
+        return len(self.data)
+
     def __getitem__(self, word_id):
         """Returns the sense distribution for the given word_id"""
         return self.data[word_id]
