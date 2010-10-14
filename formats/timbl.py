@@ -29,6 +29,7 @@ class TimblOutput:
         self.ignorevalues = ignorevalues #Ignore columns with the following values
 
     def __iter__(self):
+        end = None
         for line in self.stream:
             line = line.strip()
             if line and line[0] != '#': #ignore empty lines and comments
@@ -36,7 +37,8 @@ class TimblOutput:
               
                 #segments = [ x for x in line.split() if x != "^" and not (len(x) == 3 and x[0:2] == "n=") ]  #obtain segments, and filter null fields and "n=?" feature (in fixed-feature configuration)
 
-                end = segments.index("{")
+                if not end:
+                    end = segments.index("{")
                 if segments[-1] == '}' and end > 2:
                     distribution = self.parseDistribution(segments, end)
                 else:
