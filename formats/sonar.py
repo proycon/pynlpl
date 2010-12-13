@@ -33,7 +33,7 @@ namespaces = {
 }
 
 class CorpusDocument:
-    """This class represent one document/text of the Corpus"""
+    """This class represent one document/text of the Corpus (read-only)"""
 
     def __init__(self, filename, encoding = 'iso-8859-15'):
         self.filename = filename
@@ -122,7 +122,7 @@ class CorpusFiles(Corpus):
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
-	            if self.conditionf(f):
+                    if self.conditionf(f):
                         yield f
 
 
@@ -211,8 +211,8 @@ class CorpusDocumentX:
         if node == None: node = self
         return node.xpath("//dcoi:w")
 
-    def save(self, filename=None):
+    def save(self, filename=None, encoding='iso-8859-15'):
         if not filename: filename = self.filename
-        self.tree.write(filename) #, 'iso-8859-15', True)
+        self.tree.write(filename, encoding=encoding, method='xml', pretty_print=True, xml_declaration=True)
 
 
