@@ -16,6 +16,7 @@ import codecs
 import re
 import glob
 import os.path
+import sys
 
 try:
     from lxml import etree as ElementTree #try lxml
@@ -127,12 +128,21 @@ class CorpusFiles(Corpus):
 
 
 class CorpusX(Corpus):
+    def __init__(self, ignoreerrors=False):
+        self.ignoreerrors = ignoreerrors
+        
+
     def __iter__(self):
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
                     if self.conditionf(f):
-                         yield CorpusDocumentX(f)
+                        try:
+                            yield CorpusDocumentX(f)
+                        except:
+                            print >>sys.stderr, "Error, unable to parse " + f
+                            if not self.ignoreerrors:
+                                raise
 
 
 class CorpusDocumentX:
