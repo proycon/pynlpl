@@ -96,19 +96,25 @@ class CorpusDocument:
             yield (doc_id + "." + ptype + "." + prevp, " ".join(partext) )
                 
 class Corpus:
-    def __init__(self,corpusdir, extension = 'pos', restrict_to_collection = "", conditionf=lambda x: True):
+    def __init__(self,corpusdir, extension = 'pos', restrict_to_collection = "", conditionf=lambda x: True, ignoreerrors=False):
         self.corpusdir = corpusdir
         self.extension = extension
         self.restrict_to_collection = restrict_to_collection
         self.conditionf = conditionf
-
+        self.ignoreerrors = False
 
     def __iter__(self):
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
                     if self.conditionf(f):
-                        yield CorpusDocument(f)
+                        try:
+                            yield CorpusDocument(f)
+                        except:
+                            print >>sys.stderr, "Error, unable to parse " + f
+                            if not self.ignoreerrors:
+                                raise
+
 
 #######################################################
 
@@ -128,10 +134,6 @@ class CorpusFiles(Corpus):
 
 
 class CorpusX(Corpus):
-    def __init__(self, ignoreerrors=False):
-        self.ignoreerrors = ignoreerrors
-        
-
     def __iter__(self):
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
