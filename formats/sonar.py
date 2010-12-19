@@ -127,7 +127,7 @@ def ns(namespace):
 class CorpusFiles(Corpus):
     def __iter__(self):
         for d in glob.glob(self.corpusdir+"/*"):
-            if (not self.restrict_to_collection or self.restrict_to_collection == d) and (os.path.isdir(d)):
+            if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
                     if self.conditionf(f):
                         yield f
