@@ -101,7 +101,7 @@ class Corpus:
         self.extension = extension
         self.restrict_to_collection = restrict_to_collection
         self.conditionf = conditionf
-        self.ignoreerrors = False
+        self.ignoreerrors = ignoreerrors
 
     def __iter__(self):
         for d in glob.glob(self.corpusdir+"/*"):
