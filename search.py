@@ -157,7 +157,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
             if not self.usememory or (self.usememory and not hash(state) in self.visited):
                 for i, s in enumerate(state.expand()):
                     if self.debug:
-                        print >>stderr,"\t[pynlpl debug] Expanded state #" + str(i+1) + " , adding to fringe:" + str(s),
+                        print >>stderr,"\t[pynlpl debug] Expanded state #" + str(i+1) + ", adding to fringe: " + str(s),
                         try:
                             print >>stderr,s.score()
                         except:
@@ -258,9 +258,12 @@ class BeamSearch(AbstractSearch):
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
 
     def prune(self, state):
-        if self.debug: print >>stderr,"\t[pynlpl debug] pruning..."
+        if self.debug: 
+            l = len(self.fringe)
+            print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
         self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
+        if self.debug: print >>stderr," (" + str(l) + " to " + len(self.fringe) + " items)"
 
 class HillClimbingSearch(AbstractSearch):
     """(identical to beamsearch with beam 1, but implemented differently)"""
