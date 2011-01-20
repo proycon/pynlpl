@@ -86,7 +86,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         self.minimize = False #minimize rather than maximize the score function? default: no
         self.keeptraversal = False
         self.goalstates = None
-        self.debug = False
+        self.debug = 0
         for key, value in kwargs.items():
             if key == 'graph':
                 self.usememory = value #search space is a graph? memory required to keep visited states
@@ -135,11 +135,14 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
     def __iter__(self):
         """Iterates over all valid goalstates it can find"""
         self.traversed = 0
+        n = 0
         while len(self.fringe) > 0:
+            n += 1
+            if self.debug: print >>stderr,"\t[pynlpl debug] *************** ITERATION #" + str(n) + " ****************"
             if self.debug: print >>stderr,"\t[pynlpl debug] FRINGE: ", self.fringe
             state = self.poll(self.fringe)()
             if self.debug:
-                print >>stderr,"\t[pynlpl debug] CURRENT STATE: " + str(state),
+                print >>stderr,"\t[pynlpl debug] CURRENT STATE (depth " + str(s.depth()) + "): " + str(state),
                 try:
                     print >>stderr,state.score()
                 except:
@@ -151,13 +154,15 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
             elif self.debug:
                 print >>stderr,"\t[pynlpl debug] (no target, not yielding)"
 
-            if self.debug: print >>stderr,"\t[pynlpl debug] \tEXPANDING:"
+            if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
 
             #Expand the specified state and add to the fringe
             if not self.usememory or (self.usememory and not hash(state) in self.visited):
+                statecount = 0
                 for i, s in enumerate(state.expand()):
-                    if self.debug:
-                        print >>stderr,"\t[pynlpl debug] Expanded state #" + str(i+1) + ", adding to fringe: " + str(s),
+                    statecount += 1
+                    if self.debug >= 2:
+                        print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Expanded state #" + str(i+1) + ", adding to fringe: " + str(s),
                         try:
                             print >>stderr,s.score()
                         except:
@@ -165,8 +170,10 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                     if not self.maxdepth or s.depth() <= self.maxdepth:
                         self.fringe.append(s)
                     else:
-                        if self.debug: print >>stderr,"\t[pynlpl debug] Not adding to fringe, maxdepth exceeded"
+                        if self.debug: print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Not adding to fringe, maxdepth exceeded"
                         self.incomplete = True
+                if self.debug:
+                    print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, offered to fringe",
                 if self.keeptraversal: self.keeptraversal.append(state)
                 if self.usememory: self.visited[hash(state)] = True
                 self.prune(state) #calls prune method
