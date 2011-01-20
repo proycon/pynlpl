@@ -263,7 +263,7 @@ class BeamSearch(AbstractSearch):
             print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
         self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
-        if self.debug: print >>stderr," (" + str(l) + " to " + len(self.fringe) + " items)"
+        if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
 
 class HillClimbingSearch(AbstractSearch):
     """(identical to beamsearch with beam 1, but implemented differently)"""
