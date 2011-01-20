@@ -154,10 +154,11 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
             elif self.debug:
                 print >>stderr,"\t[pynlpl debug] (no target, not yielding)"
 
-            if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
+
 
             #Expand the specified state and add to the fringe
             if not self.usememory or (self.usememory and not hash(state) in self.visited):
+                if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
                 statecount = 0
                 for i, s in enumerate(state.expand()):
                     statecount += 1
@@ -166,6 +167,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                         try:
                             print >>stderr,s.score()
                         except:
+                            print >>stderr,"ERROR SCORING!"
                             pass
                     if not self.maxdepth or s.depth() <= self.maxdepth:
                         self.fringe.append(s)
@@ -173,30 +175,53 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                         if self.debug: print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Not adding to fringe, maxdepth exceeded"
                         self.incomplete = True
                 if self.debug:
-                    print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, offered to fringe",
+                    print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, offered to fringe"
                 if self.keeptraversal: self.keeptraversal.append(state)
                 if self.usememory: self.visited[hash(state)] = True
                 self.prune(state) #calls prune method
 
     def searchfirst(self):
+        """Returns the very first result"""
         for solution in self:
             return solution
 
     def searchall(self):
+        """Returns a list of all solutions"""
         return list(iter(self))
 
     def searchbest(self):
+        """Returns the single best result (if multiple have the same score, the first match is returned)"""
         finalsolution = None
+        bestscore = None
         for solution in self:
-            finalsolution = solution
+            if bestscore == None:
+                bestscore = solution.score()
+                finalsolution = solution
+            elif self.minimize:
+                score = solution.score()
+                if score < bestscore:
+                    bestscore = score
+                    finalsolution = solution
+            elif not self.minimize:
+                score = solution.score()
+                if score > bestscore:
+                    bestscore = score
+                    finalsolution = solution                
         return finalsolution
 
     def searchtop(self,n=10):
+        """Return the top n best result (or possibly less if not found)"""            
+        solutions = PriorityQueue([], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates=False)
+        for solution in self:
+            solutions.append(solution)
+        return solutions[:n] #TODO
+
+    def searchlast(self,n=10):
+        """Return the last n results (or possibly less if not found). Note that the last results are not necessarily the best ones! Depending on the search type."""            
         solutions = deque([], n)
         for solution in self:
             solutions.append(solution)
         return solutions
-
 
     def prune(self, state):
         #pruning nothing by default
@@ -268,9 +293,10 @@ class BeamSearch(AbstractSearch):
         if self.debug: 
             l = len(self.fringe)
             print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
-        self.fringe.prunebyscore(state.score(), retainequalscore=True)
+        #self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
         if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
+        
 
 class HillClimbingSearch(AbstractSearch):
     """(identical to beamsearch with beam 1, but implemented differently)"""
