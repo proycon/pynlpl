@@ -136,28 +136,28 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         """Iterates over all valid goalstates it can find"""
         self.traversed = 0
         while len(self.fringe) > 0:
-            if self.debug: print >>stderr,"FRINGE: ", self.fringe
+            if self.debug: print >>stderr,"\t[pynlpl debug] FRINGE: ", self.fringe
             state = self.poll(self.fringe)()
             if self.debug:
-                print >>stderr,"CURRENT STATE: " + str(state),
+                print >>stderr,"\t[pynlpl debug] CURRENT STATE: " + str(state),
                 try:
                     print >>stderr,state.score()
                 except:
                     pass
             self.traversed += 1
             if state.test(self.goalstates):
-                if self.debug: print >>stderr,"   *YIELDING TARGET!*"
+                if self.debug: print >>stderr,"\t[pynlpl debug] *YIELDING TARGET!*"
                 yield state
             elif self.debug:
-                print >>stderr,"   (no target, not yielding)"
+                print >>stderr,"\t[pynlpl debug] (no target, not yielding)"
 
-            if self.debug: print >>stderr,"\tEXPANDING:"
+            if self.debug: print >>stderr,"\t[pynlpl debug] \tEXPANDING:"
 
             #Expand the specified state and add to the fringe
             if not self.usememory or (self.usememory and not hash(state) in self.visited):
-                for s in state.expand():
+                for i, s in enumerate(state.expand()):
                     if self.debug:
-                        print >>stderr,"\t\t" + str(s),
+                        print >>stderr,"\t[pynlpl debug] Expanded state #" + str(i+1) + " , adding to fringe:" + str(s),
                         try:
                             print >>stderr,s.score()
                         except:
@@ -165,7 +165,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                     if not self.maxdepth or s.depth() <= self.maxdepth:
                         self.fringe.append(s)
                     else:
-                        if self.debug: print >>stderr,"\t\t\t(Not adding to fringe, maxdepth exceeded)"
+                        if self.debug: print >>stderr,"\t[pynlpl debug] Not adding to fringe, maxdepth exceeded"
                         self.incomplete = True
                 if self.keeptraversal: self.keeptraversal.append(state)
                 if self.usememory: self.visited[hash(state)] = True
@@ -258,7 +258,7 @@ class BeamSearch(AbstractSearch):
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
 
     def prune(self, state):
-        if self.debug: print >>stderr,"\tPRUNING"
+        if self.debug: print >>stderr,"\t[pynlpl debug] pruning..."
         self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
 
