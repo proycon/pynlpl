@@ -79,7 +79,7 @@ class AbstractSearchState(object):
 
 class AbstractSearch(object): #not a real search, just a base class for DFS and BFS
     def __init__(self, **kwargs):
-        """For graph-searches usememory=True is required (default), otherwise the search may loop forever. For tree-searches, it can be be switched off for better performance"""
+        """For graph-searches graph=True is required (default), otherwise the search may loop forever. For tree-searches, set tree=True for better performance"""
         self.usememory = True
         self.poll = lambda x: x.pop
         self.maxdepth = False #unlimited
@@ -102,7 +102,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                 self.minimize = not value
             elif key == 'keeptraversal': #remember entire traversal?
                 self.keeptraversal = value
-            elif key == 'goal' or key == 'goals': #remember entire traversal?
+            elif key == 'goal' or key == 'goals':
                 if isinstance(value, list) or isinstance(value, tuple):
                     self.goalstates = value
                 else:
@@ -133,7 +133,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
             raise Exception("No memory kept, algorithm not started with graph=True!")
         
     def __iter__(self):
-        """Iterates over all valid goalstates it can find"""
+        """Generator yielding *all* valid goalstates it can find,"""
         self.traversed = 0
         n = 0
         while len(self.fringe) > 0:
@@ -149,10 +149,10 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                     pass
             self.traversed += 1
             if state.test(self.goalstates):
-                if self.debug: print >>stderr,"\t[pynlpl debug] *YIELDING TARGET!*"
+                if self.debug: print >>stderr,"\t[pynlpl debug] Valid goalstate, yielding"
                 yield state
             elif self.debug:
-                print >>stderr,"\t[pynlpl debug] (no target, not yielding)"
+                print >>stderr,"\t[pynlpl debug] (no goalstate, not yielding)"
 
 
 
@@ -282,10 +282,20 @@ class BestFirstSearch(AbstractSearch):
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates=False)
 
 class BeamSearch(AbstractSearch):
+    """Local beam search algorithm
+    
+        If narrow=True , a more aggressive form of pruning will be enabled,
+        which 
+    
+    """
 
     def __init__(self, state, beamsize, **kwargs):
         assert isinstance(state, AbstractSearchState)
         self.beamsize = beamsize
+        if 'exhaustive' in kwargs:
+            self.exhaustive = kwargs['exhaustive']
+        else:
+            self.exhaustive = False        
         super(BeamSearch,self).__init__(**kwargs)
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
 
@@ -293,9 +303,11 @@ class BeamSearch(AbstractSearch):
         if self.debug: 
             l = len(self.fringe)
             print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
-        #self.fringe.prunebyscore(state.score(), retainequalscore=True)
+        if not self.exhaustive:
+            self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
         if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
+
         
 
 class HillClimbingSearch(AbstractSearch):

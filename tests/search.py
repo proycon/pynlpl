@@ -127,7 +127,7 @@ class BeamSearchTest(unittest.TestCase):
     def test_minimize5(self):
         """Beam Search (size=5, minimize)"""
         global informedinputstate, solution, goalstate
-        search = BeamSearch(informedinputstate, beamsize=5, graph=True, minimize=True,debug=1)
+        search = BeamSearch(informedinputstate, beamsize=1, graph=True, minimize=True,narrow=True,debug=1)
         solution = search.searchbest()
         self.assertEqual( str(solution), str(goalstate) )
 
