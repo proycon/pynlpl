@@ -162,6 +162,16 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         else:
             self.data = self.data[-1 * n:]
 
+
+    def randomprune(self,n):
+        """prune down to n items at random, disregarding their score"""
+        self.data = random.sample(self.data, n)
+
+    def stochasticprune(self,n):
+        """prune down to n items, chance of an item being pruned is reverse proportional to its score"""
+        raise NotImplemented
+
+
     def prunebyscore(self, score, retainequalscore=False):
         """Deletes all items below/above a certain score from the queue, depending on whether minimize is True or False. Note: It is recommended (more efficient) to use blockworse=True / blockequal=True instead! Preventing the addition of 'worse' items."""
         if retainequalscore:
