@@ -282,20 +282,11 @@ class BestFirstSearch(AbstractSearch):
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates=False)
 
 class BeamSearch(AbstractSearch):
-    """Local beam search algorithm
-    
-        If narrow=True , a more aggressive form of pruning will be enabled,
-        which 
-    
-    """
+    """Local beam search algorithm"""
 
     def __init__(self, state, beamsize, **kwargs):
         assert isinstance(state, AbstractSearchState)
-        self.beamsize = beamsize
-        if 'exhaustive' in kwargs:
-            self.exhaustive = kwargs['exhaustive']
-        else:
-            self.exhaustive = False        
+        self.beamsize = beamsize       
         super(BeamSearch,self).__init__(**kwargs)
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
 
@@ -303,12 +294,31 @@ class BeamSearch(AbstractSearch):
         if self.debug: 
             l = len(self.fringe)
             print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
-        if not self.exhaustive:
-            self.fringe.prunebyscore(state.score(), retainequalscore=True)
+        self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
         if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
 
-        
+class BeamedBestFirstSearch(BeamSearch):
+    """Best first search with a beamsize (non-optimal!)"""
+    
+    def prune(self, state):
+        if self.debug: 
+            l = len(self.fringe)
+            print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
+        self.fringe.prune(self.beamsize)
+        if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
+
+class StochasticBeamSearch(BeamSearch):
+    
+    def prune(self, state):
+        if self.debug: 
+            l = len(self.fringe)
+            print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
+        if not self.exhaustive:
+            self.fringe.prunebyscore(state.score(), retainequalscore=True)
+        self.fringe.stochasticprune(self.beamsize)
+        if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
+            
 
 class HillClimbingSearch(AbstractSearch):
     """(identical to beamsearch with beam 1, but implemented differently)"""
