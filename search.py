@@ -179,9 +179,9 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                 if self.keeptraversal: self.keeptraversal.append(state)
                 if self.usememory: self.visited[hash(state)] = True
                 self.prune(state) #calls prune method
-
+    
     def searchfirst(self):
-        """Returns the very first result"""
+        """Returns the very first result (regardless of it being the best or not!)"""
         for solution in self:
             return solution
 
