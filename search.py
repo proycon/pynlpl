@@ -114,6 +114,12 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         self.incomplete = False
         self.traversed = 0
 
+    def reset(self):
+        self.visited = {}
+        self.traversal = []
+        self.incomplete = False
+        self.traversed = 0        
+
     def traversal(self):
         """Returns all visited states (only when keeptraversal=True), note that this is not equal to the path, but contains all states that were checked!"""
         if self.keeptraversal:
@@ -134,7 +140,6 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         
     def __iter__(self):
         """Generator yielding *all* valid goalstates it can find,"""
-        self.traversed = 0
         n = 0
         while len(self.fringe) > 0:
             n += 1
@@ -224,6 +229,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         return solutions
 
     def prune(self, state):
+        """Pruning method is called AFTER expansion of each node"""
         #pruning nothing by default
         pass
 
@@ -284,12 +290,101 @@ class BestFirstSearch(AbstractSearch):
 class BeamSearch(AbstractSearch):
     """Local beam search algorithm"""
 
-    def __init__(self, state, beamsize, **kwargs):
+    def __init__(self, states, beamsize, **kwargs):
+        assert isinstance(state, AbstractSearchState)
+        self.beamsize = beamsize      
+        if 'exhaustive' in kwargs:
+            self.exhaustive = kwargs['exhaustive']
+        else:
+            self.exhaustive = False
+        super(BeamSearch,self).__init__(**kwargs)
+        self.fringe = PriorityQueue(states, lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+
+    def __iter__(self):
+        """Generator yielding *all* valid goalstates it can find,"""
+        i = 0
+        while len(self.fringe) > 0:
+            i +=1 
+            if self.debug: print >>stderr,"\t[pynlpl debug] *************** ROUND #" + str(i) + " ****************"
+            
+            b = 0
+            successors = []
+            while len(self.fringe) > 0:
+                b += 1
+                if self.debug: print >>stderr,"\t[pynlpl debug] *************** ROUND #" + str(i) + " BEAM# " + str(b) + " ****************"
+                #if self.debug: print >>stderr,"\t[pynlpl debug] FRINGE: ", self.fringe
+
+                state = self.poll(self.fringe)()
+                if self.debug:
+                    print >>stderr,"\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),
+                    try:
+                        print >>stderr,state.score()
+                    except:
+                        pass
+                self.traversed += 1
+                if state.test(self.goalstates):
+                    if self.debug: print >>stderr,"\t[pynlpl debug] Valid goalstate, yielding"
+                    yield state
+                elif self.debug:
+                    print >>stderr,"\t[pynlpl debug] (no goalstate, not yielding)"
+
+                if not self.exhaustive:
+                    score = state.score()
+
+                #Expand the specified state and add to the fringe
+                if not self.usememory or (self.usememory and not hash(state) in self.visited):
+                    if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
+                    statecount = 0
+                    for j, s in enumerate(state.expand()):
+                        statecount += 1
+                        if self.debug >= 2:
+                            print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Expanded state #" + str(j+1) + ", adding to fringe: " + str(s),
+                            try:
+                                print >>stderr,s.score()
+                            except:
+                                print >>stderr,"ERROR SCORING!"
+                                pass
+                        if not self.maxdepth or s.depth() <= self.maxdepth:
+                            if self.exhaustive:
+                                #use all successors (even worse ones)
+                                successors.append(s)
+                            else:
+                                #use only equal or better successors
+                                if s.score() >= score:
+                                    successors.append()
+                        else:
+                            if self.debug: print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Not adding to successor pool, maxdepth exceeded"
+                            self.incomplete = True
+                    if self.debug:
+                        print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, added to successor pool"
+                    if self.keeptraversal: self.keeptraversal.append(state)
+                    if self.usememory: self.visited[hash(state)] = True
+                    self.prune(state) #calls prune method (does nothing by default in this search!!!)
+            
+            #AFTER EXPANDING ALL NODES IN THE FRINGE/BEAM:
+            
+            #set fringe for next round
+            self.fringe = PriorityQueue([successors], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+
+            if self.debug: 
+                l = len(self.fringe)
+                print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
+            self.fringe.prune(self.beamsize)
+            if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
+        
+        
+        
+
+class OldBeamSearch(AbstractSearch):
+    """Incorrect beam search"""
+    
+    def __init__(self, states, beamsize, **kwargs):
         assert isinstance(state, AbstractSearchState)
         self.beamsize = beamsize       
-        super(BeamSearch,self).__init__(**kwargs)
-        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
-
+        super(OldBeamSearch,self).__init__(**kwargs)
+        self.fringe = PriorityQueue(states, lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+    
+    
     def prune(self, state):
         if self.debug: 
             l = len(self.fringe)
@@ -297,6 +392,7 @@ class BeamSearch(AbstractSearch):
         self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
         if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
+
 
 class BeamedBestFirstSearch(BeamSearch):
     """Best first search with a beamsize (non-optimal!)"""
