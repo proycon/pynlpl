@@ -137,7 +137,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
 
     def visited(self, state):
         if self.usememory:
-            return (state in self.visited)
+            return (hash(state) in self.visited)
         else:
             raise Exception("No memory kept, algorithm not started with graph=True!")
         
