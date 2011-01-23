@@ -345,7 +345,7 @@ class BeamSearch(AbstractSearch):
                     for j, s in enumerate(state.expand()):
                         statecount += 1
                         if self.debug >= 2:
-                            print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Expanded state #" + str(j+1) + ", offering to successor pool: " + str(s),
+                            print >>stderr,"\t[pynlpl debug] (Iteration #" + str(i) +") Expanded state #" + str(j+1) + ", offering to successor pool: " + str(s),
                             try:
                                 print >>stderr,s.score(),
                             except:
