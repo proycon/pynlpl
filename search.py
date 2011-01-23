@@ -86,6 +86,8 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         self.minimize = False #minimize rather than maximize the score function? default: no
         self.keeptraversal = False
         self.goalstates = None
+        self.traversed = 0 #Count of number of nodes visited
+        self.solutions = 0 #Counts the number of solutions
         self.debug = 0
         for key, value in kwargs.items():
             if key == 'graph':
@@ -118,7 +120,8 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         self.visited = {}
         self.traversal = []
         self.incomplete = False
-        self.traversed = 0        
+        self.traversed = 0 #Count of all visited nodes
+        self.solutions = 0 #Counts the number of solutions found     
 
     def traversal(self):
         """Returns all visited states (only when keeptraversal=True), note that this is not equal to the path, but contains all states that were checked!"""
@@ -152,17 +155,22 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                     print >>stderr,state.score()
                 except:
                     pass
-            self.traversed += 1
-            if state.test(self.goalstates):
-                if self.debug: print >>stderr,"\t[pynlpl debug] Valid goalstate, yielding"
-                yield state
-            elif self.debug:
-                print >>stderr,"\t[pynlpl debug] (no goalstate, not yielding)"
+ 
 
-
-
-            #Expand the specified state and add to the fringe
+            #If node not visited before (or no memory kept):
             if not self.usememory or (self.usememory and not hash(state) in self.visited):
+                
+                #Evaluate the current state
+                self.traversed += 1
+                if state.test(self.goalstates):
+                    if self.debug: print >>stderr,"\t[pynlpl debug] Valid goalstate, yielding"
+                    yield state
+                elif self.debug:
+                    print >>stderr,"\t[pynlpl debug] (no goalstate, not yielding)"
+                
+                #Expand the specified state and add to the fringe
+
+                
                 #if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
                 statecount = 0
                 for i, s in enumerate(state.expand()):
@@ -331,19 +339,24 @@ class BeamSearch(AbstractSearch):
                         print >>stderr,state.score()
                     except:
                         pass
-                self.traversed += 1
-                if state.test(self.goalstates):
-                    if self.debug: print >>stderr,"\t[pynlpl debug] Valid goalstate, yielding"
-                    yield state
-                elif self.debug:
-                    print >>stderr,"\t[pynlpl debug] (no goalstate, not yielding)"
 
-                if self.eager:
-                    score = state.score()
 
-                #Expand the specified state and add to the fringe
                 if not self.usememory or (self.usememory and not hash(state) in self.visited):
-                    #if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
+                    
+                    self.traversed += 1
+                    #Evaluate state
+                    if state.test(self.goalstates):
+                        if self.debug: print >>stderr,"\t[pynlpl debug] Valid goalstate, yielding"
+                        self.solutions += 1 #counts the number of solutions
+                        yield state
+                    elif self.debug:
+                        print >>stderr,"\t[pynlpl debug] (no goalstate, not yielding)"
+
+                    if self.eager:
+                        score = state.score()                    
+
+                    #Expand the specified state and offer to the fringe
+                    
                     statecount = offers = 0
                     for j, s in enumerate(state.expand()):
                         statecount += 1

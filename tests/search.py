@@ -124,6 +124,16 @@ class HillClimbingTest(unittest.TestCase):
         self.assertTrue(solution) #TODO: this is not a test!
 
 class BeamSearchTest(unittest.TestCase):
+    def test_minimizeC1(self):
+        """Beam Search needle-in-haystack problem (beam=2, minimize)"""
+        #beamsize has been set to the minimum that yields the correct solution
+        global informedinputstate, solution, goalstate
+        search = BeamSearch(informedinputstate, beamsize=2, graph=True, minimize=True,debug=0, goal=goalstate)
+        solution = search.searchbest()
+        self.assertEqual( str(solution), str(goalstate) )
+        self.assertEqual( search.solutions, 1 )
+    
+    
     def test_minimizeA1(self):
         """Beam Search optimisation problem A (beam=2, minimize)"""
         #beamsize has been set to the minimum that yields the correct solution
@@ -131,6 +141,8 @@ class BeamSearchTest(unittest.TestCase):
         search = BeamSearch(informedinputstate, beamsize=2, graph=True, minimize=True,debug=0)
         solution = search.searchbest()
         self.assertEqual( str(solution), str(goalstate) )
+        self.assertTrue( search.solutions > 1 ) #everything is a solution
+
         
     def test_minimizeA2(self):
         """Beam Search optimisation problem A (beam=100, minimize)"""
@@ -139,6 +151,7 @@ class BeamSearchTest(unittest.TestCase):
         search = BeamSearch(informedinputstate, beamsize=100, graph=True, minimize=True,debug=0)
         solution = search.searchbest()
         self.assertEqual( str(solution), str(goalstate) )   
+        self.assertTrue( search.solutions > 1 ) #everything is a solution
     
     #def test_minimizeA3(self):    
     #    """Beam Search optimisation problem A (eager mode, beam=2, minimize)"""
