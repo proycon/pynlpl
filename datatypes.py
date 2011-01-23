@@ -66,15 +66,16 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
     the objects score() method). If minimize=True, the item with minimum f(x) is
     returned first; otherwise is the item with maximum f(x) or x.score().
 
-
-    blockworse can be set to true if you want to prohibit adding worse-scoring items to the queue.
+    length can be set to an integer > 0. Items will only be added to the queue if they're better or equal to the worst scoring item. If set to zero, length is unbounded.
+    blockworse can be set to true if you want to prohibit adding worse-scoring items to the queue. Only items scoring better than the *BEST* one are added.
     blockequal can be set to false if you also want to prohibit adding equally-scoring items to the queue.
     (Both parameters default to False)
     """
-    def __init__(self, data =[], f = lambda x: x.score, minimize=False, blockworse=False, blockequal=False,duplicates=True):
+    def __init__(self, data =[], f = lambda x: x.score, minimize=False, length=0, blockworse=False, blockequal=False,duplicates=True):
         self.data = []
         self.f = f
         self.minimize=minimize
+        self.length = length
         self.blockworse=blockworse
         self.blockequal=blockequal
         self.duplicates= duplicates
@@ -96,6 +97,17 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
                     #item is a duplicate, don't add it
                     return False
 
+        if self.length and len(self.data) == self.length:
+                #Fixed-length priority queue, abort when queue is full and new item scores worst than worst scoring item.
+                if self.minimize:
+                    worstscore = self.data[-1][0]
+                    if score >= worstscore:
+                        return False
+                else:
+                    worstscore = self.data[0][0]
+                    if score <= worstscore:
+                        return False
+
         if self.blockworse and self.bestscore != None:
             if self.minimize:
                 if score > self.bestscore:
@@ -109,6 +121,13 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         if (self.bestscore == None) or (self.minimize and score < self.bestscore) or (not self.minimize and score > self.bestscore):
             self.bestscore = score
         bisect.insort(self.data, (score, item))
+        if self.length:
+            #fixed length queue: queue is now too long, delete worst items
+            while len(self.data) > self.length:
+                if self.minimize:
+                    del self.data[-1]
+                else:
+                    del self.data[0]
         return True
 
     def __exists__(self, item):

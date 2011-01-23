@@ -216,10 +216,10 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
 
     def searchtop(self,n=10):
         """Return the top n best result (or possibly less if not found)"""            
-        solutions = PriorityQueue([], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates=False)
+        solutions = PriorityQueue([], lambda x: x.score, self.minimize, length=n, blockworse=False, blockequal=False,duplicates=False)
         for solution in self:
             solutions.append(solution)
-        return solutions[:n] #TODO
+        return solutions
 
     def searchlast(self,n=10):
         """Return the last n results (or possibly less if not found). Note that the last results are not necessarily the best ones! Depending on the search type."""            
@@ -285,7 +285,7 @@ class BestFirstSearch(AbstractSearch):
     def __init__(self, state, **kwargs):
         super(BestFirstSearch,self).__init__(**kwargs)
         assert isinstance(state, AbstractSearchState)
-        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates=False)
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, length=0, blockworse=False, blockequal=False,duplicates=False)
 
 class BeamSearch(AbstractSearch):
     """Local beam search algorithm"""
@@ -298,17 +298,20 @@ class BeamSearch(AbstractSearch):
         else:
             self.exhaustive = False
         super(BeamSearch,self).__init__(**kwargs)
-        self.fringe = PriorityQueue(states, lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+        self.incomplete = True
+        self.fringe = PriorityQueue(states, lambda x: x.score, self.minimize, length=0, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
 
     def __iter__(self):
-        """Generator yielding *all* valid goalstates it can find,"""
+        """Generator yielding *all* valid goalstates it can find"""
         i = 0
         while len(self.fringe) > 0:
             i +=1 
-            if self.debug: print >>stderr,"\t[pynlpl debug] *************** ROUND #" + str(i) + " ****************"
+            if self.debug: print >>stderr,"\t[pynlpl debug] *************** STARTING ROUND #" + str(i) + " ****************"
             
             b = 0
-            successors = []
+            #Create a new empty fixed-length priority queue (this implies there will be pruning if more items are offered than it can hold!)
+            successors = PriorityQueue([], lambda x: x.score, self.minimize, length=self.beamsize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+            
             while len(self.fringe) > 0:
                 b += 1
                 if self.debug: print >>stderr,"\t[pynlpl debug] *************** ROUND #" + str(i) + " BEAM# " + str(b) + " ****************"
@@ -338,25 +341,34 @@ class BeamSearch(AbstractSearch):
                     for j, s in enumerate(state.expand()):
                         statecount += 1
                         if self.debug >= 2:
-                            print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Expanded state #" + str(j+1) + ", adding to fringe: " + str(s),
+                            print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Expanded state #" + str(j+1) + ", offering to successor pool: " + str(s),
                             try:
-                                print >>stderr,s.score()
+                                print >>stderr,s.score(),
                             except:
-                                print >>stderr,"ERROR SCORING!"
+                                print >>stderr,"ERROR SCORING!",
                                 pass
                         if not self.maxdepth or s.depth() <= self.maxdepth:
                             if self.exhaustive:
-                                #use all successors (even worse ones)
-                                successors.append(s)
+                                #use all successors (even worse ones than the current state)
+                                offers += 1
+                                accepted = successors.append(s)
                             else:
                                 #use only equal or better successors
                                 if s.score() >= score:
-                                    successors.append()
-                        else:
-                            if self.debug: print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Not adding to successor pool, maxdepth exceeded"
-                            self.incomplete = True
+                                    offers += 1
+                                    accepted = successors.append()
+                            if self.debug >= 2:
+                                if accepted:
+                                    print >>stderr," ACCEPTED"
+                                else:
+                                    print >>stderr," REJECTED"
+                        else:                            
+                            if self.debug >= 2:
+                                print >>stderr," REJECTED, MAXDEPTH EXCEEDED."
+                            elif self.debug:
+                                print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Not offered to successor pool, maxdepth exceeded"
                     if self.debug:
-                        print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, added to successor pool"
+                        print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, offered to successor pool"
                     if self.keeptraversal: self.keeptraversal.append(state)
                     if self.usememory: self.visited[hash(state)] = True
                     self.prune(state) #calls prune method (does nothing by default in this search!!!)
@@ -364,13 +376,14 @@ class BeamSearch(AbstractSearch):
             #AFTER EXPANDING ALL NODES IN THE FRINGE/BEAM:
             
             #set fringe for next round
-            self.fringe = PriorityQueue([successors], lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+            self.fringe = successors
 
+            #Pruning is implicit, successors was a fixed-size priority queue
             if self.debug: 
                 l = len(self.fringe)
-                print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
+                print >>stderr,"\t[pynlpl debug] Implicitly pruned with beamsize " + str(self.beamsize) + "...",
             self.fringe.prune(self.beamsize)
-            if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
+            if self.debug: print >>stderr," (" + str(offers) + " to " + str(len(self.fringe)) + " items)"
         
         
         
@@ -382,7 +395,8 @@ class OldBeamSearch(AbstractSearch):
         assert isinstance(state, AbstractSearchState)
         self.beamsize = beamsize       
         super(OldBeamSearch,self).__init__(**kwargs)
-        self.fringe = PriorityQueue(states, lambda x: x.score, self.minimize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+        self.fringe = PriorityQueue(states, lambda x: x.score, self.minimize, length=0, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+        self.incomplete = True
     
     
     def prune(self, state):
@@ -416,10 +430,10 @@ class StochasticBeamSearch(BeamSearch):
         if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
             
 
-class HillClimbingSearch(AbstractSearch):
+class HillClimbingSearch(AbstractSearch): #TODO: TEST
     """(identical to beamsearch with beam 1, but implemented differently)"""
 
     def __init__(self, state, **kwargs):
         assert isinstance(state, AbstractSearchState)
         super(HillClimbingSearch,self).__init__(**kwargs)
-        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, blockworse=True, blockequal=False,duplicates=False)
+        self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, length=0, blockworse=True, blockequal=False,duplicates=False)
