@@ -218,7 +218,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         return finalsolution
 
     def searchtop(self,n=10):
-        """Return the top n best result (or possibly less if not found)"""            
+        """Return the top n best resulta (or possibly less if not enough is found)"""            
         solutions = PriorityQueue([], lambda x: x.score, self.minimize, length=n, blockworse=False, blockequal=False,duplicates=False)
         for solution in self:
             solutions.append(solution)
@@ -343,12 +343,12 @@ class BeamSearch(AbstractSearch):
 
                 #Expand the specified state and add to the fringe
                 if not self.usememory or (self.usememory and not hash(state) in self.visited):
-                    if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
+                    #if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
                     statecount = offers = 0
                     for j, s in enumerate(state.expand()):
                         statecount += 1
                         if self.debug >= 2:
-                            print >>stderr,"\t[pynlpl debug] (Iteration #" + str(i) +") Expanded state #" + str(j+1) + ", offering to successor pool: " + str(s),
+                            print >>stderr,"\t[pynlpl debug] (Round #" + str(i) +" Beam #" + str(b) + ") Expanded state #" + str(j+1) + ", offering to successor pool: " + str(s),
                             try:
                                 print >>stderr,s.score(),
                             except:
@@ -363,7 +363,9 @@ class BeamSearch(AbstractSearch):
                                 #use only equal or better successors
                                 if s.score() >= score:
                                     offers += 1
-                                    accepted = successors.append()
+                                    accepted = successors.append(s)
+                                else:
+                                    accepted = False
                             if self.debug >= 2:
                                 if accepted:
                                     print >>stderr," ACCEPTED"
@@ -373,13 +375,16 @@ class BeamSearch(AbstractSearch):
                             if self.debug >= 2:
                                 print >>stderr," REJECTED, MAXDEPTH EXCEEDED."
                             elif self.debug:
-                                print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Not offered to successor pool, maxdepth exceeded"
+                                print >>stderr,"\t[pynlpl debug] (Round #" + str(n) +") Not offered to successor pool, maxdepth exceeded"
                     if self.debug:
                         print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, " + str(offers) + " offered to successor pool"
                     if self.keeptraversal: self.keeptraversal.append(state)
                     if self.usememory: self.visited[hash(state)] = True
                     self.prune(state) #calls prune method (does nothing by default in this search!!!)
-            
+
+                else:
+                    if self.debug:
+                        print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again..."
             #AFTER EXPANDING ALL NODES IN THE FRINGE/BEAM:
             
             #set fringe for next round
@@ -388,7 +393,7 @@ class BeamSearch(AbstractSearch):
             #Pruning is implicit, successors was a fixed-size priority queue
             if self.debug: 
                 l = len(self.fringe)
-                print >>stderr,"\t[pynlpl debug] Implicitly pruned with beamsize " + str(self.beamsize) + "...",
+                print >>stderr,"\t[pynlpl debug] (Round #" + str(i) + ") Implicitly pruned with beamsize " + str(self.beamsize) + "...",
             self.fringe.prune(self.beamsize)
             if self.debug: print >>stderr," (" + str(offers) + " to " + str(len(self.fringe)) + " items)"
         

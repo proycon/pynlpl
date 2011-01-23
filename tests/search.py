@@ -124,20 +124,41 @@ class HillClimbingTest(unittest.TestCase):
         self.assertTrue(solution) #TODO: this is not a test!
 
 class BeamSearchTest(unittest.TestCase):
-    def test_minimize5(self):
-        """Beam Search optimisation problem (size=5, minimize)"""
+    def test_minimizeA1(self):
+        """Beam Search optimisation problem A (beam=2, minimize)"""
+        #beamsize has been set to the minimum that yields the correct solution
         global informedinputstate, solution, goalstate
-        search = BeamSearch(informedinputstate, beamsize=5, graph=True, minimize=True,narrow=True,debug=2)
+        search = BeamSearch(informedinputstate, beamsize=2, graph=True, minimize=True,debug=0)
         solution = search.searchbest()
         self.assertEqual( str(solution), str(goalstate) )
-
-
-    def test_minimize3(self):
-        """Beam Search optimisation problem (beam=3, minimize)"""
-        informedinputstate = InformedReorderSearchState("a long very . sentence supposed to be This is".split(' '), goalstate)
-        search = BeamSearch(informedinputstate, beamsize=3, graph=True, minimize=False,debug=False)
+        
+    def test_minimizeA2(self):
+        """Beam Search optimisation problem A (beam=100, minimize)"""
+        #if a small beamsize works, a very large one should too
+        global informedinputstate, solution, goalstate
+        search = BeamSearch(informedinputstate, beamsize=100, graph=True, minimize=True,debug=0)
         solution = search.searchbest()
-        self.assertTrue(solution)
+        self.assertEqual( str(solution), str(goalstate) )   
+    
+    #def test_minimizeA3(self):    
+    #    """Beam Search optimisation problem A (eager mode, beam=2, minimize)"""
+    #    #beamsize has been set to the minimum that yields the correct solution
+    #    global informedinputstate, solution, goalstate
+    #    search = BeamSearch(informedinputstate, beamsize=50, graph=True, minimize=True,eager=True,debug=2)
+    #    solution = search.searchbest()
+    #    self.assertEqual( str(solution), str(goalstate) )
+
+
+    def test_minimizeB1(self):
+        """Beam Search optimisation problem (longer) (beam=3, minimize)"""
+        #beamsize has been set to the minimum that yields the correct solution
+        goalstate = InformedReorderSearchState("This is supposed to be a very long sentence .".split(' '))
+        informedinputstate = InformedReorderSearchState("a long very . sentence supposed to be This is".split(' '), goalstate)
+        search = BeamSearch(informedinputstate, beamsize=3, graph=True, minimize=True,debug=False)
+        solution = search.searchbest()
+        self.assertEqual(str(solution),str(goalstate))
+        
+        
 
 if __name__ == '__main__':
     unittest.main()
