@@ -150,9 +150,9 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         if isinstance(i, slice):
             indices = i.indices(len(self))
             if self.minimize:
-                return PriorityQueue([ self.data[j][1] for j in range(*indices) ],self.f, self.minimize, self.blockworse, self.blockequal)
+                return PriorityQueue([ self.data[j][1] for j in range(*indices) ],self.f, self.minimize, self.length, self.blockworse, self.blockequal)
             else:
-                return PriorityQueue([ self.data[(-1 * j) - 1][1] for j in range(*indices) ],self.f, self.minimize, self.blockworse, self.blockequal)
+                return PriorityQueue([ self.data[(-1 * j) - 1][1] for j in range(*indices) ],self.f, self.minimize, self.length, self.blockworse, self.blockequal)
         else:
             if self.minimize:
                 return self.data[i][1]
@@ -213,6 +213,6 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         return repr(self.data)
 
     def __add__(self, other):
-        """Priority queues can be added up, as long as they all have minimize or maximize (rather than mixed)"""
+        """Priority queues can be added up, as long as they all have minimize or maximize (rather than mixed). In case of fixed-length queues, the FIRST queue in the operation will be authorative for the fixed lengthness of the result!"""
         assert (isinstance(other, PriorityQueue) and self.minimize == other.minimize)
-        return PriorityQueue(self.data + other.data, self.f, self.minimize, self.blockworse, self.blockequal)
+        return PriorityQueue(self.data + other.data, self.f, self.minimize, self.length, self.blockworse, self.blockequal)
