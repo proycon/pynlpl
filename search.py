@@ -293,10 +293,10 @@ class BeamSearch(AbstractSearch):
     def __init__(self, states, beamsize, **kwargs):
         assert isinstance(state, AbstractSearchState)
         self.beamsize = beamsize      
-        if 'exhaustive' in kwargs:
-            self.exhaustive = kwargs['exhaustive']
+        if 'eager' in kwargs:
+            self.eager = kwargs['eager']
         else:
-            self.exhaustive = False
+            self.eager = False
         super(BeamSearch,self).__init__(**kwargs)
         self.incomplete = True
         self.fringe = PriorityQueue(states, lambda x: x.score, self.minimize, length=0, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
@@ -331,7 +331,7 @@ class BeamSearch(AbstractSearch):
                 elif self.debug:
                     print >>stderr,"\t[pynlpl debug] (no goalstate, not yielding)"
 
-                if not self.exhaustive:
+                if self.eager:
                     score = state.score()
 
                 #Expand the specified state and add to the fringe
@@ -348,7 +348,7 @@ class BeamSearch(AbstractSearch):
                                 print >>stderr,"ERROR SCORING!",
                                 pass
                         if not self.maxdepth or s.depth() <= self.maxdepth:
-                            if self.exhaustive:
+                            if not self.eager:
                                 #use all successors (even worse ones than the current state)
                                 offers += 1
                                 accepted = successors.append(s)
@@ -388,8 +388,8 @@ class BeamSearch(AbstractSearch):
         
         
 
-class OldBeamSearch(AbstractSearch):
-    """Incorrect beam search"""
+class EarlyEagerBeamSearch(AbstractSearch):
+    """A beam search that prunes early (after each state expansion) and eagerly (weeding out worse successors)"""
     
     def __init__(self, states, beamsize, **kwargs):
         assert isinstance(state, AbstractSearchState)
