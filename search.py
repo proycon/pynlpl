@@ -302,7 +302,8 @@ class BeamSearch(AbstractSearch):
             self.eager = False
         super(BeamSearch,self).__init__(**kwargs)
         self.incomplete = True
-        self.fringe = PriorityQueue(states, lambda x: x.score, self.minimize, length=0, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+        self.duplicates = kwargs['duplicates'] if 'duplicates' in kwargs else False
+        self.fringe = PriorityQueue(states, lambda x: x.score, self.minimize, length=0, blockworse=False, blockequal=False,duplicates= self.duplicates)
 
     def __iter__(self):
         """Generator yielding *all* valid goalstates it can find"""
@@ -313,7 +314,7 @@ class BeamSearch(AbstractSearch):
             
             b = 0
             #Create a new empty fixed-length priority queue (this implies there will be pruning if more items are offered than it can hold!)
-            successors = PriorityQueue([], lambda x: x.score, self.minimize, length=self.beamsize, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+            successors = PriorityQueue([], lambda x: x.score, self.minimize, length=self.beamsize, blockworse=False, blockequal=False,duplicates= self.duplicates)
             
             while len(self.fringe) > 0:
                 b += 1
