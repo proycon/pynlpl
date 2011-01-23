@@ -125,17 +125,17 @@ class HillClimbingTest(unittest.TestCase):
 
 class BeamSearchTest(unittest.TestCase):
     def test_minimize5(self):
-        """Beam Search (size=5, minimize)"""
+        """Beam Search optimisation problem (size=5, minimize)"""
         global informedinputstate, solution, goalstate
-        search = BeamSearch(informedinputstate, beamsize=1, graph=True, minimize=True,narrow=True,debug=1)
+        search = BeamSearch(informedinputstate, beamsize=5, graph=True, minimize=True,narrow=True,debug=2)
         solution = search.searchbest()
         self.assertEqual( str(solution), str(goalstate) )
 
 
     def test_minimize3(self):
-        """Beam Search (beam=3, minimize)"""
+        """Beam Search optimisation problem (beam=3, minimize)"""
         informedinputstate = InformedReorderSearchState("a long very . sentence supposed to be This is".split(' '), goalstate)
-        search = BeamSearch(informedinputstate, beamsize=5, graph=True, minimize=False,debug=False)
+        search = BeamSearch(informedinputstate, beamsize=3, graph=True, minimize=False,debug=False)
         solution = search.searchbest()
         self.assertTrue(solution)
 

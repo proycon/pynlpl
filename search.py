@@ -163,7 +163,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
 
             #Expand the specified state and add to the fringe
             if not self.usememory or (self.usememory and not hash(state) in self.visited):
-                if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
+                #if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
                 statecount = 0
                 for i, s in enumerate(state.expand()):
                     statecount += 1
@@ -184,6 +184,9 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                 if self.keeptraversal: self.keeptraversal.append(state)
                 if self.usememory: self.visited[hash(state)] = True
                 self.prune(state) #calls prune method
+            else:
+                if self.debug:
+                    print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again..."
     
     def searchfirst(self):
         """Returns the very first result (regardless of it being the best or not!)"""
