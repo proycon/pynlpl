@@ -20,7 +20,7 @@ class AbstractSearchState(object):
         self.cost = cost
 
     def test(self, goalstates = None):
-        """Checks whether this state is a valid goal state, returns a boolean. If not goalstate is defined, then all states will test positively, this is what you usually want for optimisation problems."""
+        """Checks whether this state is a valid goal state, returns a boolean. If no goalstate is defined, then all states will test positively, this is what you usually want for optimisation problems."""
         if goalstates:
             return (self in goalstates)
         else:
@@ -407,7 +407,7 @@ class BeamSearch(AbstractSearch):
             if self.debug: 
                 l = len(self.fringe)
                 print >>stderr,"\t[pynlpl debug] (Round #" + str(i) + ") Implicitly pruned with beamsize " + str(self.beamsize) + "...",
-            self.fringe.prune(self.beamsize)
+            #self.fringe.prune(self.beamsize)
             if self.debug: print >>stderr," (" + str(offers) + " to " + str(len(self.fringe)) + " items)"
         
         
