@@ -291,7 +291,10 @@ class BeamSearch(AbstractSearch):
     """Local beam search algorithm"""
 
     def __init__(self, states, beamsize, **kwargs):
-        assert isinstance(state, AbstractSearchState)
+        if isinstance(states, AbstractSearchState):
+            states = [states]
+        else:
+            assert all( ( isinstance(x, AbstractSearchState) for x in states) )
         self.beamsize = beamsize      
         if 'eager' in kwargs:
             self.eager = kwargs['eager']
