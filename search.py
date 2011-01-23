@@ -341,7 +341,7 @@ class BeamSearch(AbstractSearch):
                 #Expand the specified state and add to the fringe
                 if not self.usememory or (self.usememory and not hash(state) in self.visited):
                     if self.debug: print >>stderr,"\t[pynlpl debug] EXPANDING:"
-                    statecount = 0
+                    statecount = offers = 0
                     for j, s in enumerate(state.expand()):
                         statecount += 1
                         if self.debug >= 2:
@@ -372,7 +372,7 @@ class BeamSearch(AbstractSearch):
                             elif self.debug:
                                 print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Not offered to successor pool, maxdepth exceeded"
                     if self.debug:
-                        print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, offered to successor pool"
+                        print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, " + str(offers) + " offered to successor pool"
                     if self.keeptraversal: self.keeptraversal.append(state)
                     if self.usememory: self.visited[hash(state)] = True
                     self.prune(state) #calls prune method (does nothing by default in this search!!!)
