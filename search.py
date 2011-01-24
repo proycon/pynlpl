@@ -419,7 +419,7 @@ class BeamSearch(AbstractSearch):
             if self.debug: print >>stderr," (" + str(offers) + " to " + str(len(self.fringe)) + " items)"
         
         if self.debug:
-            print >>stderr,"\t[pynlpl debug] Search complete: " + str(self.solutions) + " solution(s), " + str(self.traversed) + " states traversed in " + str(n) + " rounds"            
+            print >>stderr,"\t[pynlpl debug] Search complete: " + str(self.solutions) + " solution(s), " + str(self.traversed) + " states traversed in " + str(i) + " rounds with " + str(b) + "  beams"            
         
         
         
