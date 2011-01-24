@@ -198,6 +198,8 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
             else:
                 if self.debug:
                     print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again..."
+        if self.debug:
+            print >>stderr,"\t[pynlpl debug] Search complete: " + str(self.solutions) + " solution(s), " + str(self.traversed) + " states traversed in " + str(n) + " rounds"
     
     def searchfirst(self):
         """Returns the very first result (regardless of it being the best or not!)"""
@@ -415,6 +417,9 @@ class BeamSearch(AbstractSearch):
                 print >>stderr,"\t[pynlpl debug] (Round #" + str(i) + ") Implicitly pruned with beamsize " + str(self.beamsize) + "...",
             #self.fringe.prune(self.beamsize)
             if self.debug: print >>stderr," (" + str(offers) + " to " + str(len(self.fringe)) + " items)"
+        
+        if self.debug:
+            print >>stderr,"\t[pynlpl debug] Search complete: " + str(self.solutions) + " solution(s), " + str(self.traversed) + " states traversed in " + str(n) + " rounds"            
         
         
         
