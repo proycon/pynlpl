@@ -150,7 +150,10 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
             if self.debug: print >>stderr,"\t[pynlpl debug] FRINGE: ", self.fringe
             state = self.poll(self.fringe)()
             if self.debug:
-                print >>stderr,"\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),
+                try:
+                    print >>stderr,"\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),
+                except AttributeError:
+                    print >>stderr,"\t[pynlpl debug] CURRENT STATE: " + str(state),
                 try:
                     print >>stderr,state.score()
                 except:
@@ -334,7 +337,10 @@ class BeamSearch(AbstractSearch):
 
                 state = self.poll(self.fringe)()
                 if self.debug:
-                    print >>stderr,"\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),
+                    try:
+                        print >>stderr,"\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),
+                    except AttributeError:
+                        print >>stderr,"\t[pynlpl debug] CURRENT STATE: " + str(state),
                     try:
                         print >>stderr,state.score()
                     except:
