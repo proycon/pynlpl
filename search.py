@@ -419,7 +419,7 @@ class EarlyEagerBeamSearch(AbstractSearch):
     def __init__(self, state, beamsize, **kwargs):
         assert isinstance(state, AbstractSearchState)
         self.beamsize = beamsize       
-        super(OldBeamSearch,self).__init__(**kwargs)
+        super(EarlyEagerBeamSearch,self).__init__(**kwargs)
         self.fringe = PriorityQueue(state, lambda x: x.score, self.minimize, length=0, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
         self.incomplete = True
     
