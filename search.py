@@ -416,11 +416,11 @@ class BeamSearch(AbstractSearch):
 class EarlyEagerBeamSearch(AbstractSearch):
     """A beam search that prunes early (after each state expansion) and eagerly (weeding out worse successors)"""
     
-    def __init__(self, states, beamsize, **kwargs):
+    def __init__(self, state, beamsize, **kwargs):
         assert isinstance(state, AbstractSearchState)
         self.beamsize = beamsize       
         super(OldBeamSearch,self).__init__(**kwargs)
-        self.fringe = PriorityQueue(states, lambda x: x.score, self.minimize, length=0, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
+        self.fringe = PriorityQueue(state, lambda x: x.score, self.minimize, length=0, blockworse=False, blockequal=False,duplicates= kwargs['duplicates'] if 'duplicates' in kwargs else False)
         self.incomplete = True
     
     
