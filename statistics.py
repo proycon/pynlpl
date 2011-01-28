@@ -49,7 +49,8 @@ class FrequencyList:
         f.close()
 
     def _validate(self,type):
-        type = tuple(type,list)
+        if isinstance(type,list):
+            type = tuple(type)
         if isinstance(type,tuple):
             if not self.casesensitive: 
                 return tuple([x.lower() for x in type])
