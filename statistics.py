@@ -49,7 +49,8 @@ class FrequencyList:
         f.close()
 
     def _validate(self,type):
-        if isinstance(type,tuple) or isinstance(type,list):
+        type = tuple(type,list)
+        if isinstance(type,tuple):
             if not self.casesensitive: 
                 return tuple([x.lower() for x in type])
             else:
@@ -67,7 +68,7 @@ class FrequencyList:
 
 
     def count(self, type, amount = 1):
-        """Count a certain type. The counter will increase by the amount specified (defaults to one)"""
+        """Count a certain type. The counter will increase by the amount specified (defaults to one)"""        
         type = self._validate(type)
         if self._ranked: self._ranked = None
         if type in self._count:

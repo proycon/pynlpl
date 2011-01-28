@@ -78,13 +78,13 @@ class SimpleLanguageModel:
                     else:
                         try:
                             type, count = line.split("\t")
-                            self.freqlistN.count(type.split(' '),int(count))
+                            self.freqlistN.count(set(type.split(' ')),int(count))
                         except:
                             print >>stderr,"Warning, could not parse line whilst loading frequency list: ", line
                 elif mode == 3:
                         try:
                             type, count = line.split("\t")
-                            self.freqlistNm1.count(type.split(' '),int(count))
+                            self.freqlistNm1.count(set(type.split(' ')),int(count))
                         except:
                             print >>stderr,"Warning, could not parse line whilst loading frequency list: ", line
 
