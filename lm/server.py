@@ -52,6 +52,6 @@ class LMServer:
         if n == 0:
             reactor.listenTCP(port, LMSentenceFactory(lm))
         else:
-            reactor.listenTCP(port, LMFactory(lm))
+            reactor.listenTCP(port, LMNGramFactory(lm))
         reactor.run()
 
