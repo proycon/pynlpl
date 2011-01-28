@@ -14,7 +14,7 @@
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 
-class LMProtocol(basic.LineReceiver):
+class LMSentenceProtocol(basic.LineReceiver):
     def lineReceived(self, sentence):
         try:
             score = self.factory.lm.scoresentence(sentence)
@@ -22,14 +22,36 @@ class LMProtocol(basic.LineReceiver):
             score = 0.0
         self.sendLine(str(score))
 
-class LMFactory(protocol.ServerFactory):
-    protocol = LMProtocol
+class LMSentenceFactory(protocol.ServerFactory):
+    protocol = LMSentenceProtocol
 
     def __init__(self, lm):
         self.lm = lm
+        
+class LMNGramProtocol(basic.LineReceiver):
+    def lineReceived(self, ngram):
+        ngram = ngram.split(" ")    
+        try:
+            score = self.factory.lm[ngram]
+        except:
+            score = 0.0
+        self.sendLine(str(score))    
+        
+class LMNGramFactory(protocol.ServerFactory):
+    protocol = LMNGramProtocol
+
+    def __init__(self, lm):
+        self.lm = lm        
+        
+        
 
 class LMServer:
-    def __init__(self, lm, port=12346):
-        reactor.listenTCP(port, LMFactory(lm))
+    """Language Model Server"""
+    def __init__(self, lm, port=12346, n=0):
+        """n indicates the n-gram size, if set to 0 (which is default), the server will expect to only receive whole sentence, if set to a particular value, it will only expect n-grams of that value"""
+        if n == 0:
+            reactor.listenTCP(port, LMSentenceFactory(lm))
+        else:
+            reactor.listenTCP(port, LMFactory(lm))
         reactor.run()
 
