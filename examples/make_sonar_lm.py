@@ -21,6 +21,7 @@ n=3
 restrictcollection=""
 try:
     n = int(sys.argv[3])
+    restrictcollection = sys.argv[4]
 except:
     pass
 
