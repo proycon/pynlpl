@@ -19,7 +19,7 @@ import unittest
 sys.path.append(sys.path[0] + '/../../')
 os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
-from pynlpl.textprocessors import Windower, crude_tokenizer, strip_accents
+from pynlpl.textprocessors import Windower, crude_tokenizer, strip_accents, calculate_overlap
 
 text = "This is a test .".split(" ")
 
@@ -61,6 +61,37 @@ class StripAccentTest(unittest.TestCase):
         """Strip Accents"""
         self.assertEqual(strip_accents(u"áàâãāĝŭçñßt"),"aaaaagucnt")
 
+class OverlapTest(unittest.TestCase):
+    def test_overlap_subset(self):
+        """Overlap - Subset"""
+        h = [4,5,6,7]
+        n = [5,6]
+        self.assertEqual(calculate_overlap(h,n),  [((5,6),0)])
+        
+    def test_overlap_equal(self):
+        """Overlap - Equal"""
+        h = [4,5,6,7]
+        n = [4,5,6,7]
+        self.assertEqual(calculate_overlap(h,n),  [((4,5,6,7),0)])        
+        
+    def test_overlap_none(self):
+        """Overlap - None"""
+        h = [4,5,6,7]
+        n = [8,9,10]
+        self.assertEqual(calculate_overlap(h,n),  [])            
+    
+    def test_overlap_leftpartial(self):
+        """Overlap - Left partial"""
+        h = [4,5,6,7]
+        n = [1,2,3,4,5]
+        self.assertEqual(calculate_overlap(h,n),  [((4,5),-1)] ) 
+        
+    def test_overlap_rightpartial(self):
+        """Overlap - Right partial"""
+        h = [4,5,6,7]
+        n = [6,7,8,9]
+        self.assertEqual(calculate_overlap(h,n),  [((6,7),1)] )        
+    
 
 if __name__ == '__main__':
     unittest.main()

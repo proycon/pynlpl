@@ -21,13 +21,18 @@ class Windower:
         if isinstance(tokens, str) or  isinstance(unicode, str):
             self.tokens = tokens.split()
         else:
-            self.tokens = tokens
+            self.tokens = tuple(tokens)
         self.n = n
         self.beginmarker = beginmarker
         self.endmarker = endmarker
 
     def __iter__(self):
         l = len(self.tokens)
+
+        if self.beginmarker:
+            beginmarker = (self.beginmarker),  #tuple
+        if self.endmarker:
+            endmarker = (self.endmarker),  #tuple
 
         for i in xrange(-(self.n - 1),l):
             begin = i
@@ -38,17 +43,43 @@ class Windower:
                 if not self.beginmarker or not self.endmarker:
                     continue
                 else:
-                   yield tuple(((begin * -1) * [self.beginmarker]) + self.tokens + ((end - l) * [self.endmarker]))
+                   yield tuple(((begin * -1) * beginmarker  ) + self.tokens + ((end - l) * endmarker ))
             elif begin < 0:
                 if not self.beginmarker: 
                    continue   
                 else: 
-                   yield tuple(((begin * -1) * [self.beginmarker]) + self.tokens[0:end])
+                   yield tuple(((begin * -1) * beginmarker ) + self.tokens[0:end])
             elif end > l:
                 if not self.endmarker:
                    continue
                 else:
-                   yield tuple(self.tokens[begin:] + ((end - l) * [self.endmarker]))
+                   yield tuple(self.tokens[begin:] + ((end - l) * endmarker))
+
+
+def calculate_overlap(haystack, needle, allowpartial=True):
+    """Calculate the overlap between two sequences. Yields (overlap, placement) tuples (multiple because there may be multiple overlaps!). The former is the part of the sequence that overlaps, and the latter is -1 if the overlap is on the left side, 0 if it is a subset, 1, if it overlaps on the right side"""    
+    needle = tuple(needle)
+    haystack = tuple(haystack)
+    solutions = []
+    
+    
+    if allowpartial: 
+        for l in range(1,min(len(needle) - 1, len(haystack))):        
+            #Search for overlap left (including partial overlap!)
+            if needle[-l:] == haystack[:l]:
+                solutions.append( (needle[-l:], -1) )
+            #Search for overlap right (including partial overlap!)
+            if needle[:l] == haystack[-l:]:
+                solutions.append( (needle[:l], 1) )
+
+    if len(needle) <= len(haystack):
+        for option in Windower(haystack,len(needle)):
+            if option == needle:
+                solutions.append( (needle, 0) )
+
+    return solutions
+            
+    
 
 def crude_tokenizer(line):
     """This is a very crude tokenizer"""
