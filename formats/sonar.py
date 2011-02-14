@@ -40,9 +40,17 @@ class CorpusDocument:
         self.filename = filename
         self.id = os.path.basename(filename).split(".")[0]
         self.f = codecs.open(filename,'r', encoding)
+        self.metadata = {}
 
+    def _parseimdi(self,line):
+        r = re.compile('<imdi:Title>(.*)</imdi:Title>')
+        matches = r.findall(line)
+        if matches:
+            self.metadata['title'] = matches[0]
+        
     def __iter__(self):
         """Iterate over all words, a four-tuple (word,id,pos,lemma), in the document"""
+        
         r = re.compile('<w.*xml:id="([^"]*)"(.*)>(.*)</w>')
         for line in self.f.readlines():
             matches = r.findall(line)
@@ -54,7 +62,9 @@ class CorpusDocument:
                 m = re.findall('lemma="([^"]+)"', attribs)
                 if m: lemma = m[0]
         
-                yield word, id, pos, lemma       
+                yield word, id, pos, lemma
+            if line.find('imdi:') != -1:
+                self._parseimdi(line)
     
     def words(self):
         #alias
