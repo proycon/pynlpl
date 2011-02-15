@@ -72,7 +72,7 @@ class OverlapTest(unittest.TestCase):
         """Overlap - Equal"""
         h = [4,5,6,7]
         n = [4,5,6,7]
-        self.assertEqual(calculate_overlap(h,n),  [((4,5,6,7),0)])        
+        self.assertEqual(calculate_overlap(h,n),  [((4,5,6,7),2)])        
         
     def test_overlap_none(self):
         """Overlap - None"""
@@ -104,6 +104,18 @@ class OverlapTest(unittest.TestCase):
         n = [4,5,6]
         self.assertEqual(calculate_overlap(h,n),  [((4,5),1)] )        
     
+    
+    def test_overlap_leftfull(self):
+        """Overlap - Left full"""
+        h = [1,2,3,4,5]
+        n = [1,2]
+        self.assertEqual(calculate_overlap(h,n),  [((1,2),-1)] ) 
+        
+    def test_overlap_rightfull(self):
+        """Overlap - Right full"""
+        h = [1,2,3,4,5]
+        n = [4,5]
+        self.assertEqual(calculate_overlap(h,n),  [((4,5),1)] )        
     
 
 if __name__ == '__main__':

@@ -57,24 +57,37 @@ class Windower:
 
 
 def calculate_overlap(haystack, needle, allowpartial=True):
-    """Calculate the overlap between two sequences. Yields (overlap, placement) tuples (multiple because there may be multiple overlaps!). The former is the part of the sequence that overlaps, and the latter is -1 if the overlap is on the left side, 0 if it is a subset, 1, if it overlaps on the right side"""    
+    """Calculate the overlap between two sequences. Yields (overlap, placement) tuples (multiple because there may be multiple overlaps!). The former is the part of the sequence that overlaps, and the latter is -1 if the overlap is on the left side, 0 if it is a subset, 1 if it overlaps on the right side, 2 if its an identical match"""    
     needle = tuple(needle)
     haystack = tuple(haystack)
     solutions = []
     
-    
+    #equality check    
+    if needle == haystack:
+        return [(needle, 2)]
+
     if allowpartial: 
-        for l in range(1,min(len(needle) - 1, len(haystack))):        
-            #Search for overlap left (including partial overlap!)
-            if needle[-l:] == haystack[:l]:
-                solutions.append( (needle[-l:], -1) )
-            #Search for overlap right (including partial overlap!)
-            if needle[:l] == haystack[-l:]:
-                solutions.append( (needle[:l], 1) )
+        minl =1
+    else:
+        minl = len(needle)
+        
+    for l in range(minl,min(len(needle), len(haystack))+1):    
+        #print "LEFT-DEBUG", l,":", needle[-l:], " vs ", haystack[:l]
+        #print "RIGHT-DEBUG", l,":", needle[:l], " vs ", haystack[-l:]
+        #Search for overlap left (including partial overlap!)
+        if needle[-l:] == haystack[:l]:
+            #print "LEFT MATCH"
+            solutions.append( (needle[-l:], -1) )
+        #Search for overlap right (including partial overlap!)
+        if needle[:l] == haystack[-l:]:
+            #print "RIGHT MATCH"
+            solutions.append( (needle[:l], 1) )
 
     if len(needle) <= len(haystack):
-        for option in Windower(haystack,len(needle)):
+        options = list(iter(Windower(haystack,len(needle),beginmarker=None,endmarker=None)))
+        for option in options[1:-1]:
             if option == needle:
+                #print "SUBSET MATCH"
                 solutions.append( (needle, 0) )
 
     return solutions
