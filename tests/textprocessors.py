@@ -91,6 +91,19 @@ class OverlapTest(unittest.TestCase):
         h = [4,5,6,7]
         n = [6,7,8,9]
         self.assertEqual(calculate_overlap(h,n),  [((6,7),1)] )        
+        
+    def test_overlap_leftpartial2(self):
+        """Overlap - Left partial (2)"""
+        h = [1,2,3,4,5]
+        n = [0,1,2]
+        self.assertEqual(calculate_overlap(h,n),  [((1,2),-1)] ) 
+        
+    def test_overlap_rightpartial2(self):
+        """Overlap - Right partial (2)"""
+        h = [1,2,3,4,5]
+        n = [4,5,6]
+        self.assertEqual(calculate_overlap(h,n),  [((4,5),1)] )        
+    
     
 
 if __name__ == '__main__':
