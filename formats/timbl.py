@@ -55,7 +55,8 @@ class TimblOutput:
                     distribution = None
                     distance = None
                                     
-                yield segments[:endfvec - 2], segments[endfvec - 2], segments[endfvec - 1], distribution, distance    #features, referenceclass, predictedclass, distribution, distance
+                #features, referenceclass, predictedclass, distribution, distance
+                yield segments[:endfvec - 2], segments[endfvec - 2], segments[endfvec - 1], distribution, distance    
            
 
     def parseDistribution(self, instance, start,end= None):
