@@ -13,6 +13,7 @@
 
 import unicodedata
 import string
+from itertools import permutations
 
 class Windower:
     """Moves a sliding window over a list of tokens, returning all windows"""
@@ -119,3 +120,23 @@ def strip_accents(s, encoding= 'utf-8'):
           return unicodedata.normalize('NFKD', unicode(s,encoding)).encode('ASCII', 'ignore')
 
 
+
+def swap(tokens, maxdist=2):
+    assert maxdist >= 2
+    tokens = list(tokens)
+    if maxdist > len(tokens):
+        maxdist = len(tokens)
+    l = len(tokens)
+    for i in range(0,l - 1):
+        for permutation in permutations(tokens[i:i+maxdist]):
+            if permutation != tuple(tokens[i:i+maxdist]):
+                newtokens = tokens[:i]
+                newtokens += permutation
+                newtokens += tokens[i+maxdist:]
+                yield newtokens
+        if maxdist == len(tokens):
+            break
+        
+
+        
+        
