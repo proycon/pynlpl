@@ -27,5 +27,27 @@ class TimblTest(unittest.TestCase):
                 self.assertEqual(distance,None)            
                         
 
-            
-        
+    def test1_db(self):
+        """Timbl - Distribution output"""
+        s = StringIO("a c ? c { c 1.00000, d 1.00000 }\na b ? c { c 1.00000 }\na d ? c { c 1.00000, e 1.00000 }")
+        for i, (features, referenceclass, predictedclass, distribution, distance) in enumerate(TimblOutput(s)):
+            if i == 0:
+                self.assertEqual(features,['a','c'])
+                self.assertEqual(referenceclass,'?')
+                self.assertEqual(predictedclass,'c')
+                self.assertEqual(distribution['c'], 0.5)
+                self.assertEqual(distribution['d'], 0.5)
+                self.assertEqual(distance,None)
+            elif i == 1:
+                self.assertEqual(features,['a','b'])
+                self.assertEqual(referenceclass,'?')
+                self.assertEqual(predictedclass,'c')
+                self.assertEqual(distribution['c'], 1)
+                self.assertEqual(distance,None)            
+            elif i == 2:                        
+                self.assertEqual(features,['a','d'])
+                self.assertEqual(referenceclass,'?')
+                self.assertEqual(predictedclass,'c')
+                self.assertEqual(distribution['c'], 0.5)
+                self.assertEqual(distribution['e'], 0.5)
+                self.assertEqual(distance,None)         
