@@ -47,6 +47,11 @@ class CorpusDocument:
         matches = r.findall(line)
         if matches:
             self.metadata['title'] = matches[0]
+        r = re.compile('<imdi:Date>(.*)</imdi:Date>')
+        matches = r.findall(line)
+        if matches:
+            self.metadata['date'] = matches[0]
+
         
     def __iter__(self):
         """Iterate over all words, a four-tuple (word,id,pos,lemma), in the document"""

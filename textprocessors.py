@@ -108,6 +108,10 @@ def crude_tokenizer(line):
     if buffer: tokens.append(buffer)  
     return tokens
 
+def extract_sentences(text):
+    """Crude sentence tokeniser"""
+    
+
 def strip_accents(s, encoding= 'utf-8'):
       if isinstance(s,unicode):
           return unicodedata.normalize('NFKD', s).encode('ASCII', 'ignore')
