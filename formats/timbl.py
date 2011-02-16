@@ -29,32 +29,43 @@ class TimblOutput:
         self.ignorevalues = ignorevalues #Ignore columns with the following values
 
     def __iter__(self):
-        end = None
+        # Note: distance parsing (+v+di) works only if distributions (+v+db) are also enabled!
+        
+        endfvec = None
         for line in self.stream:
             line = line.strip()
             if line and line[0] != '#': #ignore empty lines and comments
                 segments = [ x for i, x in enumerate(line.split(self.delimiter)) if x not in self.ignorevalues and i+1 not in self.ignorecolumns ]
               
                 #segments = [ x for x in line.split() if x != "^" and not (len(x) == 3 and x[0:2] == "n=") ]  #obtain segments, and filter null fields and "n=?" feature (in fixed-feature configuration)
+                
 
-                if not end:
-                    end = segments.index("{")
-                if segments[-1] == '}' and end > 2:
-                    distribution = self.parseDistribution(segments, end)
+                if not endfvec:
+                    endfvec = segments.index("{")            
+                            
+                if endfvec > 2:
+                    enddistr = segments.index('}',endfvec)
+                    distribution = self.parseDistribution(segments, endfvec, enddistr)
+                    if len(segments) > enddistr + 1:
+                        distance = segments[-1]
+                    else:
+                        distance = None
                 else:
-                    end = len(segments)
+                    endfvec = len(segments)
                     distribution = None
-          
-                yield segments[:end - 2], segments[end - 2], segments[end - 1], distribution    #features, referenceclass, predictedclass, distribution
+                    distance = None
+                                    
+                yield segments[:endfvec - 2], segments[endfvec - 2], segments[endfvec - 1], distribution, distance    #features, referenceclass, predictedclass, distribution, distance
            
 
-    def parseDistribution(self, instance, start):
+    def parseDistribution(self, instance, start,end= None):
         dist = {}
         i = start + 1
 
-        l = len(instance)
+        if not end:
+            end = len(instance) - 1
 
-        while i <= l - 2:  #instance[i] != "}":
+        while i < end:  #instance[i] != "}":
             label = instance[i]
             try:
                 score = float(instance[i+1].rstrip(","))
