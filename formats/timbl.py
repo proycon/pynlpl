@@ -54,7 +54,7 @@ class TimblOutput:
                         raise
                     distribution = self.parseDistribution(segments, endfvec, enddistr)
                     if len(segments) > enddistr + 1:
-                        distance = segments[-1]
+                        distance = float(segments[-1])
                     else:
                         distance = None
                 else:
