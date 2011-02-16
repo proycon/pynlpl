@@ -31,8 +31,9 @@ class TimblOutput:
     def __iter__(self):
         # Note: distance parsing (+v+di) works only if distributions (+v+db) are also enabled!
         
-        endfvec = None
+        
         for line in self.stream:
+            endfvec = None
             line = line.strip()
             if line and line[0] != '#': #ignore empty lines and comments
                 segments = [ x for i, x in enumerate(line.split(self.delimiter)) if x not in self.ignorevalues and i+1 not in self.ignorecolumns ]
@@ -41,10 +42,16 @@ class TimblOutput:
                 
 
                 if not endfvec:
-                    endfvec = segments.index("{")            
+                    try:
+                        endfvec = segments.index("{")            
+                    except ValueError:
+                        endfvec = None
                             
-                if endfvec > 2:
-                    enddistr = segments.index('}',endfvec)
+                if endfvec > 2: #only for +v+db
+                    try:
+                        enddistr = segments.index('}',endfvec)
+                    except ValueError:
+                        raise
                     distribution = self.parseDistribution(segments, endfvec, enddistr)
                     if len(segments) > enddistr + 1:
                         distance = segments[-1]
