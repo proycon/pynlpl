@@ -156,7 +156,8 @@ class PhraseTableClient(object):
         while not data or data[-1] != '\n':
             data += self.socket.recv(self.BUFSIZE)
 
-        for line in data.strip(' \t\r\n').split('\n'):
+        for line in data.split('\n'):
+            line = line.strip('\r\n')
             if line == "NOTFOUND":
                 raise KeyError(phrase)
             else:
