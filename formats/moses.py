@@ -17,6 +17,9 @@
 import sys
 import bz2
 import datetime
+import socket
+from twisted.internet import protocol, reactor
+from twisted.protocols import basic
 
 class PhraseTable:
     def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 5, align2_column = 4):
@@ -113,26 +116,46 @@ class PhraseTable:
         #else:
         #    raise KeyError
 
-#from twisted.internet import protocol, reactor
-#from twisted.protocols import basic
 
-#class PTProtocol(basic.LineReceiver):
-#    def lineReceived(self, phrase):
-#        try:
-#            target,Pst,Pts,null_alignments = self.factory.phrasetable[phrase]
-#            self.sendLine(target+"\t"+str(Pst)+"\t"+str(Pts)+"\t"+str(null_alignments))
-#        except:
-#            self.sendLine("NotFound")
+class PTProtocol(basic.LineReceiver):
+    def lineReceived(self, phrase):
+        try:
+            target,Pst,Pts,null_alignments = self.factory.phrasetable[phrase]
+            self.sendLine(target+"\t"+str(Pst)+"\t"+str(Pts)+"\t"+str(null_alignments))
+        except:
+            self.sendLine("NOTFOUND")
 
-#class PTFactory(protocol.ServerFactory):
-#    protocol = PTProtocol
+class PTFactory(protocol.ServerFactory):
+    protocol = PTProtocol
+    def __init__(self, phrasetable):
+        self.phrasetable = phrasetable
 
-#    def __init__(self, phrasetable):
-#        self.phrasetable = phrasetable
+class PhraseTableServer:
+    def __init__(self, phrasetable, port=65432):
+        reactor.listenTCP(port, PTFactory(phrasetable))
+        reactor.run()
+        
 
-#class PhraseTableServer:
-#    def __init__(self, phrasetable, port=65432):
-#        reactor.listenTCP(port, PTFactory(phrasetable))
-#        reactor.run()
+
+
+class PhraseTableClient(object):
+
+    def __init__(self,host= "localhost",port=65432):        
+        self.BUFSIZE = 1024
+        self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #Create the socket
+        self.socket.settimeout(120) 
+        self.socket.connect((host, port)) #Connect to server
+
+
+    def __getitem__(self, phrase):
+        if isinstance(phrase,str) or isinstance(phrase,unicode):
+            phrase = phrase.split(" ")
+        self.socket.send(" ".join(ngram)+ "\r\n")
+        response = self.socket.recv(self.BUFSIZE).strip()
+        if response == "NOTFOUND":
+            raise KeyError(phrase)
+        else:
+            return response.split("\t")
+        
 
 
