@@ -165,14 +165,18 @@ class PhraseTableClient(object):
         return solutions
     
     def __contains__(self, phrase):
-        if isinstance(phrase,str) or isinstance(phrase,unicode):
-            phrase = phrase.split(" ")
-        self.socket.send(" ".join(ngram)+ "\r\n")
-        response = self.socket.recv(self.BUFSIZE).strip()
-        if response == "NOTFOUND":
-            return False
-        else:
-            return True
+        self.socket.send(phrase+ "\r\n")\
         
+        solutions = []
+        
+        data = ""
+        while not data or data[-1] != '\n':
+            data += self.socket.recv(self.BUFSIZE)
 
-
+        for line in data.split('\n'):
+            line = line.strip('\r\n')
+            if line == "NOTFOUND":
+                raise KeyError(phrase)
+        
+        return True
+                
