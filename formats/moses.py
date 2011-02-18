@@ -160,12 +160,12 @@ class PhraseTableClient(object):
             line = line.strip('\r\n')
             if line == "NOTFOUND":
                 raise KeyError(phrase)
-            else:
+            elif line:
                 fields = tuple(line.split("\t"))
                 if len(fields) == 4:
                     solutions.append( fields )
                 else:
-                    raise ValueError("Received " + repr(fields))
+                    print >>sys.stderr,"PHRASETABLECLIENT WARNING: Unable to parse response line"
         return solutions
     
     def __contains__(self, phrase):
