@@ -145,16 +145,20 @@ class PhraseTableClient(object):
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #Create the socket
         self.socket.settimeout(120) 
         self.socket.connect((host, port)) #Connect to server
-
+        self.lastresponse = ""
+        self.lastquery = ""
 
     def __getitem__(self, phrase):
-        self.socket.send(phrase+ "\r\n")\
+        solutions = []        
+        if phrase != self.lastquery:
+            self.socket.send(phrase+ "\r\n")\
+                    
         
-        solutions = []
-        
-        data = ""
-        while not data or data[-1] != '\n':
-            data += self.socket.recv(self.BUFSIZE)
+            data = ""
+            while not data or data[-1] != '\n':
+                data += self.socket.recv(self.BUFSIZE)
+        else:
+            data = self.lastresponse
 
         for line in data.split('\n'):
             line = line.strip('\r\n')
@@ -166,6 +170,10 @@ class PhraseTableClient(object):
                     solutions.append( fields )
                 else:
                     print >>sys.stderr,"PHRASETABLECLIENT WARNING: Unable to parse response line"
+                    
+        self.lastresponse = data
+        self.lastquery = phrase
+                            
         return solutions
     
     def __contains__(self, phrase):
@@ -180,7 +188,10 @@ class PhraseTableClient(object):
         for line in data.split('\n'):
             line = line.strip('\r\n')
             if line == "NOTFOUND":
-                raise KeyError(phrase)
+                return False
+                
+        self.lastresponse = data
+        self.lastquery = phrase
         
         return True
                 
