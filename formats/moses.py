@@ -161,7 +161,11 @@ class PhraseTableClient(object):
             if line == "NOTFOUND":
                 raise KeyError(phrase)
             else:
-                solutions.append( line.split("\t") )
+                fields = len(line.split("\t"))
+                if fields == 4:
+                    solutions.append( tuple(fields) )
+                else:
+                    raise ValueError("Received " + repr(fields))
         return solutions
     
     def __contains__(self, phrase):
