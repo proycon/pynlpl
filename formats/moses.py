@@ -160,7 +160,7 @@ class PhraseTableClient(object):
             if line == "NOTFOUND":
                 raise KeyError(phrase)
             else:
-                solutions.append( response.split("\t") )
+                solutions.append( line.split("\t") )
         return solutions
     
     def __contains__(self, phrase):
