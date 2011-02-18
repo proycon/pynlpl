@@ -12,16 +12,18 @@
 #
 ###############################################################   
 
+if __name__ == "__main__":
+    sys.path.append(sys.path[0] + '/../..')
+    os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
+    
 from pynlpl.formats.moses import PhraseTable, PhraseTableServer
 
 import sys
 
-if __name__ == "__main__":
-    sys.path.append(sys.path[0] + '/../..')
-    os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
 
 if len(sys.argv) != 3:
     print >>sys.stderr,"Syntax: phrasetableserver.py phrasetable port"
     sys.exit(2)
 else:    
-    PhraseTableServer(PhraseTable(sys.argv[0]), sys.argv[1])
+    port = int(sys.argv[2])
+    PhraseTableServer(PhraseTable(sys.argv[1]), port)
