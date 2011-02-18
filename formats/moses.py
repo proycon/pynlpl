@@ -151,7 +151,7 @@ class PhraseTableClient(object):
     def __getitem__(self, phrase):
         solutions = []        
         if phrase != self.lastquery:
-            self.socket.send(phrase+ "\r\n")\
+            self.socket.send(phrase+ "\r\n")
                     
         
             data = ""

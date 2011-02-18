@@ -165,6 +165,3 @@ def swap(tokens, maxdist=2):
         if maxdist == len(tokens):
             break
         
-
-        
-        
