@@ -120,9 +120,9 @@ class PhraseTable:
 class PTProtocol(basic.LineReceiver):
     def lineReceived(self, phrase):
         try:
-            target,Pst,Pts,null_alignments = self.factory.phrasetable[phrase]
-            self.sendLine(target+"\t"+str(Pst)+"\t"+str(Pts)+"\t"+str(null_alignments))
-        except:
+            for target,Pst,Pts,null_alignments in self.factory.phrasetable[phrase]:
+                self.sendLine(target+"\t"+str(Pst)+"\t"+str(Pts)+"\t"+str(null_alignments))
+        except KeyError:
             self.sendLine("NOTFOUND")
 
 class PTFactory(protocol.ServerFactory):
@@ -141,7 +141,7 @@ class PhraseTableServer:
 class PhraseTableClient(object):
 
     def __init__(self,host= "localhost",port=65432):        
-        self.BUFSIZE = 1024
+        self.BUFSIZE = 4048
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #Create the socket
         self.socket.settimeout(120) 
         self.socket.connect((host, port)) #Connect to server
@@ -150,12 +150,20 @@ class PhraseTableClient(object):
     def __getitem__(self, phrase):
         if isinstance(phrase,str) or isinstance(phrase,unicode):
             phrase = phrase.split(" ")
-        self.socket.send(" ".join(ngram)+ "\r\n")
-        response = self.socket.recv(self.BUFSIZE).strip()
-        if response == "NOTFOUND":
-            raise KeyError(phrase)
-        else:
-            return response.split("\t")
+        self.socket.send(" ".join(ngram)+ "\r\n")\
+        
+        solutions = []
+        
+        data = False
+        while not data or data[-1] != '\n':
+            data += self.socket.recv(self.BUFSIZE)
+
+        for line in data.strip(' \t\r\n').split('\n'):
+            if line == "NOTFOUND":
+                raise KeyError(phrase)
+            else:
+                solutions.append( response.split("\t") )
+        return solutions
     
     def __contains__(self, phrase):
         if isinstance(phrase,str) or isinstance(phrase,unicode):
