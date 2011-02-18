@@ -12,13 +12,16 @@
 #
 ###############################################################   
 
+
+import sys
+
 if __name__ == "__main__":
     sys.path.append(sys.path[0] + '/../..')
     os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
     
 from pynlpl.formats.moses import PhraseTable, PhraseTableServer
 
-import sys
+
 
 
 if len(sys.argv) != 3:
