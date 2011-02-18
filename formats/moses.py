@@ -154,7 +154,7 @@ class PhraseTableClient(object):
         
         solutions = []
         
-        data = False
+        data = ""
         while not data or data[-1] != '\n':
             data += self.socket.recv(self.BUFSIZE)
 
