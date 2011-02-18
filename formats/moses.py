@@ -156,6 +156,16 @@ class PhraseTableClient(object):
             raise KeyError(phrase)
         else:
             return response.split("\t")
+    
+    def __contains__(self, phrase):
+        if isinstance(phrase,str) or isinstance(phrase,unicode):
+            phrase = phrase.split(" ")
+        self.socket.send(" ".join(ngram)+ "\r\n")
+        response = self.socket.recv(self.BUFSIZE).strip()
+        if response == "NOTFOUND":
+            return False
+        else:
+            return True
         
 
 
