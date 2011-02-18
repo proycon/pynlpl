@@ -150,7 +150,7 @@ class PhraseTableClient(object):
     def __getitem__(self, phrase):
         if isinstance(phrase,str) or isinstance(phrase,unicode):
             phrase = phrase.split(" ")
-        self.socket.send(" ".join(ngram)+ "\r\n")\
+        self.socket.send(" ".join(phrase)+ "\r\n")\
         
         solutions = []
         
