@@ -48,7 +48,7 @@ class Windower:
 
     def __init__(self, tokens, n=1, beginmarker = "<begin>", endmarker = "<end>"):
         if isinstance(tokens, str) or  isinstance(unicode, str):
-            self.tokens = tokens.split()
+            self.tokens = tuple(tokens.split())
         else:
             self.tokens = tuple(tokens)
         self.n = n
