@@ -155,9 +155,9 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                 except AttributeError:
                     print >>stderr,"\t[pynlpl debug] CURRENT STATE: " + str(state),
                     
-                print >>stderr," hash="+hash(state)       
+                print >>stderr," hash="+str(hash(state))
                 try:
-                    print >>stderr," score="+state.score()
+                    print >>stderr," score="+str(state.score())
                 except:
                     pass
  
@@ -199,7 +199,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                 self.prune(state) #calls prune method
             else:
                 if self.debug:
-                    print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again...(hash="+hash(state)+")"
+                    print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again...(hash="+str(hash(state))+")"
         if self.debug:
             print >>stderr,"\t[pynlpl debug] Search complete: " + str(self.solutions) + " solution(s), " + str(self.traversed) + " states traversed in " + str(n) + " rounds"
     
@@ -345,8 +345,9 @@ class BeamSearch(AbstractSearch):
                         print >>stderr,"\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),
                     except AttributeError:
                         print >>stderr,"\t[pynlpl debug] CURRENT STATE: " + str(state),
+                    print >>stderr," hash="+str(hash(state))
                     try:
-                        print >>stderr,state.score()
+                        print >>stderr," score="+str(state.score())
                     except:
                         pass
 
@@ -407,7 +408,7 @@ class BeamSearch(AbstractSearch):
 
                 else:
                     if self.debug:
-                        print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again..."
+                        print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again... (hash=" + str(hash(state))  +")"
             #AFTER EXPANDING ALL NODES IN THE FRINGE/BEAM:
             
             #set fringe for next round
