@@ -154,8 +154,10 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                     print >>stderr,"\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),
                 except AttributeError:
                     print >>stderr,"\t[pynlpl debug] CURRENT STATE: " + str(state),
+                    
+                print >>stderr," hash="+hash(state)       
                 try:
-                    print >>stderr,state.score()
+                    print >>stderr," score="+state.score()
                 except:
                     pass
  
@@ -197,7 +199,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                 self.prune(state) #calls prune method
             else:
                 if self.debug:
-                    print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again..."
+                    print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again...(hash="+hash(state)+")"
         if self.debug:
             print >>stderr,"\t[pynlpl debug] Search complete: " + str(self.solutions) + " solution(s), " + str(self.traversed) + " states traversed in " + str(n) + " rounds"
     
