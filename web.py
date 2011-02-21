@@ -12,8 +12,8 @@ def googlecorpsearch(word,concfilter = '', extraquery='',license=None, start=1, 
     if extraquery:
         query += ' ' + extraquery
         
-    if not engine:
-        engine = Google(license=license)
+
+    engine = Google(license=license)
         
     processed = {}
     
