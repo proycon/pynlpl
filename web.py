@@ -27,15 +27,21 @@ def googlecorpsearch(word,concfilter = '', extraquery='',license=None, start=1, 
                 
             begin = 0
             wordindex = None
+            wordlength = 0
             concindex = None            
             for i in range(1,len(content)):
                 if content[i] == '.' or content[i] == '?' or content[i] == '!' or content[i] == '\n':
                     if wordindex >= begin and ((concfilter and concindex >= begin) or (not concfilter)):
-                        if len(content[begin:wordindex].strip()) > 5 or len(content[wordindex+len(word):i+1].strip()) > 5:
-                            yield (content[begin:wordindex].strip(), content[wordindex:wordindex+len(word)].strip(), content[wordindex+len(word):i+1], result.url)
+                        if len(content[begin:wordindex].strip()) > 5 or len(content[wordindex+wordlength:i+1].strip()) > 5:
+                            yield (content[begin:wordindex].strip(), content[wordindex:wordindex+wordlength].strip(), content[wordindex+wordlength:i+1], result.url)
                     wordindex = concindex = None
                     begin = i + 1
                 if content[i:i+len(word)].lower() == word.lower():
                     wordindex = i
+                    wordlength = len(word)
+                    for j in range(len(word),len(content)):                        
+                        if content[i+j] == ' ' or  content[i+j] == '?' or content[i+j] == '!' or content[i+j] == '\n':
+                            wordlength = j
+                            break                                                                
                 if concfilter and content[i:len(concfilter)].lower() == concfilter.lower():
                     concindex = i
