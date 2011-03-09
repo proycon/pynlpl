@@ -121,7 +121,7 @@ class Corpus:
 
     def __iter__(self):
         if not self.restrict_to_collection:
-            for f in glob.glob("*." + self.extension):
+            for f in glob.glob(self.corpusdir+"/*." + self.extension):
                 if self.conditionf(f):
                     try:
                         yield CorpusDocument(f)
@@ -152,7 +152,7 @@ def ns(namespace):
 class CorpusFiles(Corpus):
     def __iter__(self):
         if not self.restrict_to_collection:
-            for f in glob.glob("*." + self.extension):
+            for f in glob.glob(self.corpusdir+"/*." + self.extension):
                 if self.conditionf(f):
                     yield f
         for d in glob.glob(self.corpusdir+"/*"):
@@ -165,7 +165,7 @@ class CorpusFiles(Corpus):
 class CorpusX(Corpus):
     def __iter__(self):
         if not self.restrict_to_collection:
-            for f in glob.glob("*." + self.extension):
+            for f in glob.glob(self.corpusdir+"/*." + self.extension):
                 if self.conditionf(f):
                     try:
                         yield CorpusDocumentX(f)
