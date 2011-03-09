@@ -120,6 +120,15 @@ class Corpus:
         self.ignoreerrors = ignoreerrors
 
     def __iter__(self):
+        if not self.restrict_to_collection:
+            for f in glob.glob(d+ "/*." + self.extension):
+                if self.conditionf(f):
+                    try:
+                        yield CorpusDocument(f)
+                    except:
+                        print >>sys.stderr, "Error, unable to parse " + f
+                        if not self.ignoreerrors:
+                            raise
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
@@ -142,6 +151,10 @@ def ns(namespace):
 
 class CorpusFiles(Corpus):
     def __iter__(self):
+        if not self.restrict_to_collection:
+            for f in glob.glob(d+ "/*." + self.extension):
+                if self.conditionf(f):
+                    yield f
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
@@ -151,6 +164,15 @@ class CorpusFiles(Corpus):
 
 class CorpusX(Corpus):
     def __iter__(self):
+        if not self.restrict_to_collection:
+            for f in glob.glob(d+ "/*." + self.extension):
+                if self.conditionf(f):
+                    try:
+                        yield CorpusDocumentX(f)
+                    except:
+                        print >>sys.stderr, "Error, unable to parse " + f
+                        if not self.ignoreerrors:
+                            raise 
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
@@ -161,6 +183,7 @@ class CorpusX(Corpus):
                             print >>sys.stderr, "Error, unable to parse " + f
                             if not self.ignoreerrors:
                                 raise
+                               
 
 
 class CorpusDocumentX:
