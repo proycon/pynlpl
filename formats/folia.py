@@ -387,7 +387,7 @@ class Sentence(AbstractElement):
     def __unicode__(self):
         s = u""
         for e in self.data:
-            if instance(e, Word):
+            if isinstance(e, Word):
                 s += unicode(e)
                 if e.space:
                     s += ' '
