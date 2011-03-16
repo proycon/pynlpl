@@ -170,6 +170,13 @@ class AbstractElement(object):
         for child in self.data:
             yield child
             
+    def __getitem__(self, key):
+        try:
+            return self.data[key]
+        except KeyError:
+            raise
+        
+            
     def append(self, child):
         if child.__class__ in self.ACCEPTED_DATA:
             self.data.append(child)
@@ -456,6 +463,7 @@ class Document(object):
         
         self.annotationdefaults = {}
         self.annotations = [] #Ordered list of incorporated annotations ['token','pos', etc..]
+        self.index = {} #all IDs go here
     
         if 'debug' in kwargs:
             self.debug = kwargs['debug']
@@ -487,6 +495,15 @@ class Document(object):
         for text in self.data:
             yield text   
         
+    def __getitem__(self, key):
+        try:
+            if isinstance(key, int):
+                return self.data[key]
+            else:
+                return self.index[key]
+        except KeyError:
+            raise
+
             
     def xml(self):    
         raise NotImplementedError #TODO
@@ -552,8 +569,10 @@ class Document(object):
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + subnode.tag
                     args.append( self.parsexml(subnode) )
             kwargs = {}
+            id = None
             for key, value in node.attrib.items():
                 if key == '{http://www.w3.org/XML/1998/namespace}id':
+                    id = value
                     key = 'id'
                 kwargs[key] = value
                                         
@@ -562,7 +581,10 @@ class Document(object):
             if text:
                 kwargs['text'] = text
             #if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag
-            return Class(self, *args, **kwargs)
+            instance = Class(self, *args, **kwargs)
+            if id:
+                self.index[value] = instance
+            return instance
         else:
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
         
