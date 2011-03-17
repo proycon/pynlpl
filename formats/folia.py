@@ -470,6 +470,11 @@ class Document(object):
         else:
             self.debug = False
     
+        if 'load' in kwargs:
+            self.loadall = kwargs['load'] #Load all in memory
+        else:
+            self.loadall = True
+    
         if 'id' in kwargs:
             self.id = kwargs['id']
         elif 'file' in kwargs:
@@ -480,10 +485,10 @@ class Document(object):
                 
             
     def load(self, filename):
-        f = open(filename,'r')
-        self.parsexml(ElementTree.XML(f.read()))
-        f.close()        
-        
+        self.tree = etree.parse(filename)
+        self.parsexml(self.tree.getroot())
+
+            
         
     def save(self, filename):
         raise NotImplementedError  #TODO
@@ -554,7 +559,7 @@ class Document(object):
                     for subsubnode in subnode:
                         if subsubnode.tag == 'annotations':
                             self.parsexmldeclarations(subsubnode)
-                elif subnode.tag == 'text':
+                elif subnode.tag == 'text' and self.loadall:
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
                     self.data.append( self.parsexml(subnode) )
         elif node.tag in XML2CLASS:
