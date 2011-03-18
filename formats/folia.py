@@ -13,6 +13,7 @@
 
 
 from lxml import etree as ElementTree
+from lxml.builder import E
 from sys import stderr
 
 class AnnotatorType:
@@ -145,6 +146,8 @@ class AbstractElement(object):
     OPTIONAL_ATTRIBS = ()
     ACCEPTED_DATA = ()
     ANNOTATIONTYPE = None
+    XMLTAG = None
+    ALLOWTEXT = False
     
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document):
@@ -152,6 +155,13 @@ class AbstractElement(object):
         self.doc = doc
         self.parent = None
         self.data = []
+        
+        if self.ALLOWTEXT:
+            if 'text' in kwargs:
+                self.text = kwargs['text']
+                del kwargs['text']
+            else:
+                self.text = None 
         
         kwargs = parsecommonarguments(self, doc, self.ANNOTATIONTYPE, self.REQUIRED_ATTRIBS, self.OPTIONAL_ATTRIBS,**kwargs)
         for child in args:
@@ -178,7 +188,7 @@ class AbstractElement(object):
         
             
     def append(self, child):
-        if child.__class__ in self.ACCEPTED_DATA:
+        if child.__class__ in self.ACCEPTED_DATA or child.__base__ in self.ACCEPTED_DATA:
             self.data.append(child)
             child.parent = self
         else:
@@ -186,6 +196,53 @@ class AbstractElement(object):
 
     def xml(self):        
         return node
+    
+    @classmethod
+    def relaxng(cls, includechildren=True):
+            
+            elements = [] #(including attributes)
+            
+            if Attrib.ID in cls.REQUIRED_ATTRIBS:
+                elements.append( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") )
+            elif Attrib.ID in cls.OPTIONAL_ATTRIBS:
+                elements.append( E.optional( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") ) )                    
+            if Attrib.CLASS in cls.REQUIRED_ATTRIBS:
+                #Set is a tough one, we can't require it as it may be defined in the declaration: we make it optional and need schematron to resolve this later
+                elements.append( E.attribute(name='class') )
+                elements.append( E.optional( E.attribute( name='set' ) ) )  
+            elif Attrib.CLASS in cls.OPTIONAL_ATTRIBS:
+                elements.append( E.optional( E.attribute(name='class') ) )
+                elements.append( E.optional( E.attribute( name='set' ) ) )                                          
+            if Attrib.ANNOTATOR in cls.REQUIRED_ATTRIBS or Attrib.ANNOTATOR in cls.OPTIONAL_ATTRIBS:
+               #Similarly tough
+               elements.append( E.optional( E.attribute(name='annotator') ) ) 
+               elements.append( E.optional( E.attribute(name='annotatortype') ) ) 
+            if Attrib.CONFIDENCE in cls.REQUIRED_ATTRIBS:
+               elements.append(  E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') )
+            elif Attrib.CONFIDENCE in cls.OPTIONAL_ATTRIBS:
+               elements.append(  E.optional( E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') ) )
+            
+            if cls.ALLOWTEXT:
+                elements.append( E.optional( E.ref(name='t') ) )
+            
+            if includechildren:
+                for c in cls.ACCEPTED_DATA:
+                    try:
+                        if c.XMLTAG:
+                            elements.append( E.ref(name=c.XMLTAG) )
+                    except AttributeError:
+                        continue
+                        
+                                    
+            return E.define(
+                E.element( E.zeroOrMore(*elements), name=cls.XMLTAG),
+            name=cls.XMLTAG)
+            
+            
+            
+            
+        
+        
 
 
 class Word(AbstractElement):
@@ -193,6 +250,7 @@ class Word(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     XMLTAG = 'w'
     ANNOTATIONTYPE = AnnotationType.TOKEN
+    ALLOWTEXT = True
     
     def __init__(self, doc, *args, **kwargs):
         self.space = True
@@ -403,14 +461,9 @@ class Paragraph(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Sentence,)
     XMLTAG = 'p'
+    ALLOWTEXT = True
     
-    def __init__(self, doc, *args, **kwargs):
-        if 'text' in kwargs:
-            self.text = kwargs['text']
-            del kwargs['text']
-        else:
-            self.text = None 
-        super(Paragraph,self).__init__(doc, *args, **kwargs)    
+     
         
     def __unicode__(self):
         p = u" ".join( ( unicode(x) for x in self.data if isinstance(x, Sentence) ) )
@@ -485,7 +538,7 @@ class Document(object):
                 
             
     def load(self, filename):
-        self.tree = etree.parse(filename)
+        self.tree = ElementTree.parse(filename)
         self.parsexml(self.tree.getroot())
 
             
@@ -702,10 +755,29 @@ class Text(AbstractElement):
     XMLTAG = 'text' 
 
 
+def relaxng():
+    grammar = E.grammar( E.element( #FoLiA
+                E.element( #metadata
+                    E.element(name='annotations'),
+                    #TODO: ADD IMDI
+                    name='metadata'
+                ),
+                E.ref(name='text'),
+                name='FoLiA'
+            ) )
+    
+    for c in globals().values():
+        if 'relaxng' in dir(c):
+            if c.relaxng and c.XMLTAG:
+                grammar.append( c.relaxng() )
+        
+    return grammar
+
 
 XML2CLASS = {}
 for c in vars().values():
     try:
-        XML2CLASS[c.XMLTAG] = c
-    except AttributeError: 
+        if c.XMLTAG:
+            XML2CLASS[c.XMLTAG] = c
+    except: 
         continue
