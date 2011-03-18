@@ -206,8 +206,11 @@ class AbstractElement(object):
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__)
 
-    def xml(self, attribs = {},elements = {}):  
-        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={'xml' : "http://www.w3.org/XML/1998/namespace"})
+    def xml(self, attribs = None,elements = None):  
+        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        
+        if not attribs: attribs = {}
+        if not elements: elements = {}
         
         if self.id:
             attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
@@ -667,7 +670,7 @@ class Document(object):
 
             
     def xml(self):    
-        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={'xml' : "http://www.w3.org/XML/1998/namespace"})
+        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
         e = E.FoLiA(
@@ -776,7 +779,11 @@ class Document(object):
         for text in self.data:            
             for e in text.select(Word):
                 yield e
+                
     
+    def __str__(self):
+        return ElementTree.tostring(self.xml(), pretty_print=True, encoding='utf-8')
+        
     
 class Gap(AbstractElement):    
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
