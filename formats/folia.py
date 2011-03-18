@@ -653,13 +653,19 @@ class Document(object):
                 
             
     def load(self, filename):
-        self.tree = ElementTree.parse(filename)
-        self.parsexml(self.tree.getroot())
+        tree = ElementTree.parse(filename)
+        self.parsexml(tree.getroot())
 
             
         
-    def save(self, filename):
-        raise NotImplementedError  #TODO
+    def save(self, filename=None):
+        if not filename:
+            filename = self.filename
+        if not filename:
+            raise Exception("No filename specified")
+        f = open(filename,'w')
+        f.write(str(self))
+        f.close()
 
     def __len__(self):
         return len(self.data)
