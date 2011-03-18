@@ -27,6 +27,8 @@ class Attrib:
 class AnnotationType:
     TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY = range(9)
      
+class MetaDataType:
+    NATIVE, CMDI, IMDI = range(3)     
 
 
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
@@ -623,6 +625,13 @@ class Document(object):
         self.annotationdefaults = {}
         self.annotations = [] #Ordered list of incorporated annotations ['token','pos', etc..]
         self.index = {} #all IDs go here
+        
+        self.metadata = [] #will point to XML Element holding IMDI or CMDI metadata
+        self.metadatatype = MetaDataType.NATIVE
+    
+        #The metadata fields FoLiA is directly aware of:
+        self._title = self._date = self._publisher = self._license = self._language = None
+    
     
         if 'debug' in kwargs:
             self.debug = kwargs['debug']
@@ -696,12 +705,27 @@ class Document(object):
             E.metadata(
                 E.annotations(
                     *self.xmldeclarations()
-                )
+                ),
+                self.xmlmetadata()
             )            
         , **attribs)
         for text in self.data:
             e.append(text.xml())
         return e
+    
+    def xmlmetadata(self):
+        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        if self.metadatatype == MetaDataType.NATIVE:
+            e = E.simple()
+            if self.title(): e.append(E.meta(self.title(),id='title') )
+            if self.date(): e.append(E.meta(self.date(),id='date') )
+            if self.language(): e.append(E.meta(self.language(),id='language') )
+            if self.license(): e.append(E.meta(self.license(),id='license') )    
+            if self.publisher(): e.append(E.meta(self.publisher(),id='publisher') )
+            return e
+        else:
+            return self.metadata
+            
      
     def parsexmldeclarations(self, node):
         if self.debug >= 1: 
@@ -730,7 +754,44 @@ class Document(object):
                 self.annotationdefaults[type] = defaults
                 if self.debug >= 1: 
                     print >>stderr, "[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults)
+
+    def parseimdi(self, node):
+        ns = {'imdi': 'http://www.mpi.nl/IMDI/Schema/IMDI'}
+        self.metadata = node
+        n = node.xpath('imdi:Session/imdi:Title', namespaces=ns)
+        if n and n[0].text: self._title = n[0].text
+        n = node.xpath('imdi:Session/imdi:Date', namespaces=ns)
+        if n and n[0].text: self._date = n[0].text
+        n = node.xpath('//imdi:Source/imdi:Access/imdi:Publisher', namespaces=ns)
+        if n and n[0].text: self._publisher = n[0].text        
+        n = node.xpath('//imdi:Source/imdi:Access/imdi:Availability', namespaces=ns)
+        if n and n[0].text: self._license = n[0].text            
+        n = node.xpath('//imdi:Languages/imdi:Language/imdi:ID', namespaces=ns)
+        if n and n[0].text: self._language = n[0].text            
+        
+    def title(self, value=None):
+        if not (value is None): self._title = value
+        return self._title
+        
+    def date(self, value=None):
+        if not (value is None): self._date = value
+        return self._date        
+       
+    def publisher(self, value=None):
+        if not (value is None): self._publisher = value
+        return self._publisher
+
+    def license(self, value=None):
+        if not (value is None): self._license = value
+        return self._license                       
+        
+    def language(self, value=None):
+        if not (value is None): self._language = value
+        return self._language        
             
+    def parsecmdi(self, node):
+        #TODO
+        self.metadata = node            
 
     def parsexml(self, node):
         global XML2CLASS
@@ -746,6 +807,9 @@ class Document(object):
                 if subnode.tag == '{http://ilk.uvt.nl/folia}metadata':
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Metadata"
                     for subsubnode in subnode:
+                        if subsubnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
+                            self.metadatatype = MetaDataType.IMDI
+                            self.parseimdi(subsubnode)
                         if subsubnode.tag == '{http://ilk.uvt.nl/folia}annotations':
                             self.parsexmldeclarations(subsubnode)
                 elif subnode.tag == '{http://ilk.uvt.nl/folia}text' and self.loadall:
