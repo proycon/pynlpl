@@ -668,7 +668,26 @@ class Document(object):
         except KeyError:
             raise
 
-            
+
+    def xmldeclarations(self):
+        l = []
+        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        for annotationtype in self.annotations:
+            label = None
+            for key, value in vars(AnnotationType).items():
+                if value == annotationtype:
+                    label = key
+                    break
+            attribs = {}
+            for key, value in self.annotationdefaults[annotationtype].items():                
+                if value:
+                    attribs['{http://ilk.uvt.nl/folia}' + key] = value
+            if label:
+                l.append( E._makeelement('{http://ilk.uvt.nl/folia}' + label.lower() + '-annotation', **attribs) )
+            else:
+                raise Exception("Invalid annotation type")            
+        return l
+        
     def xml(self):    
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         attribs = {}
@@ -676,6 +695,7 @@ class Document(object):
         e = E.FoLiA(
             E.metadata(
                 E.annotations(
+                    *self.xmldeclarations()
                 )
             )            
         , **attribs)
