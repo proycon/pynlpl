@@ -653,10 +653,12 @@ class Document(object):
                             
             
     def load(self, filename):
-        tree = ElementTree.parse(filename)
-        self.parsexml(tree.getroot())
-
+        self.tree = ElementTree.parse(filename)
+        self.parsexml(self.tree.getroot())
             
+    def xpath(self, query):
+        for result in self.tree.xpath(query,namespaces={'f': 'http://ilk.uvt.nl/folia','folia': 'http://ilk.uvt.nl/folia' }):
+            yield self.parsexml(result)
         
     def save(self, filename=None):
         if not filename:
