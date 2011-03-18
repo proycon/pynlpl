@@ -185,6 +185,18 @@ class AbstractElement(object):
             return self.data[key]
         except KeyError:
             raise
+
+    def __unicode__(self):
+        if ALLOWTEXT:
+            return self.text
+        else:
+            raise NotImplementedError #on purpose
+    
+    def __str__(self):
+        if ALLOWTEXT:
+            return unicode(self).encode('utf-8')
+        else:
+            raise NotImplementedError #on purpose    
         
             
     def append(self, child):
@@ -196,6 +208,16 @@ class AbstractElement(object):
 
     def xml(self):        
         return node
+        
+    def select(self, cls, recursive=True, node=None):
+        if not node:
+            node = self
+        for e in self:
+            if isinstance(e, cls):
+                yield e
+            elif recursive:
+                for e2 in e.select(cls, recursive, e):
+                    yield e2                
     
     @classmethod
     def relaxng(cls, includechildren=True):
@@ -254,17 +276,10 @@ class Word(AbstractElement):
     
     def __init__(self, doc, *args, **kwargs):
         self.space = True
-        if 'text' in kwargs:
-            if isinstance(kwargs['text'], unicode):
-                self.text = kwargs['text']
-            else:
-                self.text = unicode(kwargs['text'],'utf-8') #assume utf-8
-            del kwargs['text']                        
-        elif 'space' in kwargs:            
+                      
+        if 'space' in kwargs:            
             self.space = kwargs['space']
             del kwargs['space']
-        else:
-            self.text = None 
         super(Word,self).__init__(doc, *args, **kwargs)
         
     
@@ -274,10 +289,31 @@ class Word(AbstractElement):
             child.parent = self
         else:
             raise TypeError("Invalid type")
+
+    def annotations(self, annotationtype=None):
+        for e in self:
+            try:
+                if annotationtype is None or e.ANNOTATIONTYPE == annotationtype:
+                    yield e
+            except AttributeError:
+                continue
             
-    def __unicode__(self):
-        return self.text
-    
+
+    def pos(self):
+        for e in self.select(PosAnnotation):
+            yield e
+            
+    def lemma(self):
+        for e in self.select(LemmaAnnotation):
+            yield e            
+
+    def sense(self):
+        for e in self.select(SenseAnnotation):
+            yield e            
+
+    def alternatives(self):
+        for e in self.select(Alternative):
+            yield e            
 
 
 class AbstractTokenAnnotation(AbstractElement): pass
@@ -647,9 +683,21 @@ class Document(object):
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
         
         
-            
+    def paragraphs(self):
+        for text in self.data:            
+            for e in text.select(Paragraph):
+                yield e
     
-
+    def sentences(self):
+        for text in self.data:            
+            for e in text.select(Sentence):
+                yield e
+        
+    def words(self):
+        for text in self.data:            
+            for e in text.select(Word):
+                yield e
+    
     
 class Gap(AbstractElement):    
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
@@ -745,6 +793,15 @@ class Division(AbstractElement):
             element.parent = self
         else:
             super(Division,self).append(element)
+            
+    def paragraphs(self):            
+        return self.select(Paragraph)
+    
+    def sentences(self):
+        return self.select(Sentence)
+        
+    def words(self):
+        return self.select(Word)            
 
 Division.ACCEPTED_DATA = (Division, Paragraph, Sentence, List, Figure)
 
@@ -753,18 +810,29 @@ class Text(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Division, Paragraph, Sentence, List, Figure)
     XMLTAG = 'text' 
-
-
+        
+    def paragraphs(self):            
+        return self.select(Paragraph)
+    
+    def sentences(self):
+        return self.select(Sentence)
+        
+    def words(self):
+        return self.select(Word)
+        
+            
 def relaxng():
-    grammar = E.grammar( E.element( #FoLiA
+    grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.element( #metadata
                     E.element(name='annotations'),
                     #TODO: ADD IMDI
                     name='metadata'
                 ),
-                E.ref(name='text'),
+                E.oneOrMore(
+                    E.ref(name='text'),
+                ),
                 name='FoLiA'
-            ) )
+            ) ) )
     
     for c in globals().values():
         if 'relaxng' in dir(c):
