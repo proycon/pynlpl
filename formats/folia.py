@@ -650,7 +650,7 @@ class Document(object):
             self.load(self.filename)              
         else:
             raise Exception("No ID or filename specified")
-                
+                            
             
     def load(self, filename):
         tree = ElementTree.parse(filename)
@@ -666,7 +666,7 @@ class Document(object):
         f = open(filename,'w')
         f.write(str(self))
         f.close()
-
+        
     def __len__(self):
         return len(self.data)
     
@@ -1018,6 +1018,17 @@ def relaxng():
     return grammar
 
 
+
+
+def validate(filename):
+    try:
+        doc = ElementTree.parse(filename)
+    except:
+        raise Exception("Not well-formed XML!")
+    grammar = ElementTree.RelaxNG(relaxng())
+    grammar.assertValid(doc) #will raise exceptions
+
+
 XML2CLASS = {}
 for c in vars().values():
     try:
@@ -1025,3 +1036,4 @@ for c in vars().values():
             XML2CLASS[c.XMLTAG] = c
     except: 
         continue
+
