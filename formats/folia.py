@@ -522,6 +522,27 @@ class SenseAnnotation(AbstractTokenAnnotation):
     ANNOTATIONTYPE = AnnotationType.SENSE
     XMLTAG = 'sense'
     
+class Correction(AbstractElement):
+    REQUIRED_ATTRIBS = (Attrib.ID,)
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ANNOTATIONTYPE = AnnotationType.CORRECTION
+    XMLTAG = 'correction'
+
+    def __init__(self,  doc, *args, **kwargs):
+        if 'new' in kwargs:
+            self.new = kwargs['new']
+            del kwargs['new'] 
+        else:
+            raise Exception("No new= argument specified!")
+        if 'original' in kwargs:
+            self.original = kwargs['original']
+            del kwargs['original'] 
+        else:
+            raise Exception("No original= argument specified!") 
+        if self.new.__class__ != self.original.__class__:
+            raise Exception("New and Original are of different types!")             
+        super(Correction,self).__init__(doc, *args, **kwargs)
+
 
 class Quote(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
