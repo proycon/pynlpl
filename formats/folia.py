@@ -208,7 +208,7 @@ class AbstractElement(object):
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__)
 
-    def xml(self, attribs = None,elements = None):  
+    def xml(self, attribs = None,elements = None, skipchildren = False):  
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         
         if not attribs: attribs = {}
@@ -258,8 +258,9 @@ class AbstractElement(object):
             pass                
             
         #append children:
-        for child in self:
-            e.append(child.xml())
+        if not skipchildren:
+            for child in self:
+                e.append(child.xml())
         if elements:
             for e2 in elements:
                 e.append(e2)
@@ -333,13 +334,19 @@ class AbstractElement(object):
             name=cls.XMLTAG)
             
             
+    def resolveword(self, id):
+        return None
             
-            
-        
+class AbstractStructureElement(AbstractElement):
+    def resolveword(self, id): 
+        for child in self:
+            r =  child.resolveword(id)            
+            if r:
+                return r
+        return None          
         
 
-
-class Word(AbstractElement):
+class Word(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     XMLTAG = 'w'
@@ -387,10 +394,41 @@ class Word(AbstractElement):
         for e in self.select(Alternative):
             yield e            
 
+    def resolveword(self, id):
+        if id == self.id:
+            return self
+        else:
+            return None
 
 class AbstractTokenAnnotation(AbstractElement): pass
     
-class AbstractSpanAnnotation(AbstractElement): pass
+class AbstractSpanAnnotation(AbstractElement): 
+    def xml(self, attribs = None,elements = None, skipchildren = False):  
+        if not attribs: attribs = {}
+        if Word in self.ACCEPTED_DATA:
+            E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+            e = super(AbstractSpanAnnotation,self).__init__(attribs, elements, True)
+            for child in self:
+                if isinstance(child, Word):
+                    #Include REFERENCES to word items instead of word items themselves
+                    attribs['{http://www.w3.org/XML/1998/namespace}id'] = child.id
+                    e.append( E.wref(**attribs) )
+                else:
+                    e.append( child.xml() )
+            return e    
+        else:
+            return super(AbstractSpanAnnotation,self).__init__(attribs, elements, skipchildren)    
+
+    def append(self, child):
+        if isinstance(child, Word) and WordReference in self.ACCEPTED_DATA:
+            #Accept Word instances instead of WordReference, references will be automagically used upon serialisation
+            self.data.append(child)
+            child.parent = self
+        else:
+            return super(AbstractSpanAnnotation,self).append(child)    
+
+
+            
 
 class AbstractAnnotationLayer(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,)
@@ -412,34 +450,11 @@ class AlternativeLayers(AbstractElement):
     XMLTAG = 'altlayers'
     
 
-class WordReference(object):
-    def __init__(self, id):
-        self.id = id
-        self.parent = None
-        self.resolved = None
-
-    def __call__():
-        if self.resolved:
-            return self.resolved
-        else:
-            #backtrack to sentence element
-            s = self.parent
-            while s != None and not isinstance(p, Sentence):
-                s = s.parent
-            if s:
-                #forward-track to find word element
-                for w in s:
-                    if isinstance(w, Word):
-                        if w.id == self.id:
-                            self.resolved = w
-                            return self.resolved                        
-                raise Exception("Unable to resolve word reference, no such word found")
-            else:
-                raise Exception("Unable to resolve word reference, parent sentence not found")
-                
-                
-
-
+class WordReference(AbstractElement):
+    """Only used when word reference can not be resolved, if they can, Word objects will be used"""
+    REQUIRED_ATTRIBS = (Attrib.ID,)
+    XMLTAG = 'wref'
+    ANNOTATIONTYPE = AnnotationType.TOKEN
         
 class SyntacticUnit(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -508,7 +523,7 @@ class SenseAnnotation(AbstractTokenAnnotation):
     XMLTAG = 'sense'
     
 
-class Quote(AbstractElement):
+class Quote(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = ()    
     XMLTAG = 'quote'
@@ -534,9 +549,16 @@ class Quote(AbstractElement):
         if not s and self.text:
             return self.text            
         return s
+
+    def resolveword(self, id):
+        for child in self:
+            r =  child.resolveword(id)            
+            if r:
+                return r
+        return None        
         
         
-class Sentence(AbstractElement):
+class Sentence(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer)
@@ -561,10 +583,16 @@ class Sentence(AbstractElement):
             return self.text            
         return s
                 
+    def resolveword(self, id):
+        for child in self:
+            r =  child.resolveword(id)            
+            if r:
+                return r
+        return None
 
 Quote.ACCEPTED_DATA = (Word, Sentence, Quote)        
 
-class Paragraph(AbstractElement):    
+class Paragraph(AbstractStructureElement):    
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Sentence,)
@@ -578,9 +606,9 @@ class Paragraph(AbstractElement):
         if not p and self.text:
             return self.text            
         return p
+                              
                 
-                
-class Head(AbstractElement):
+class Head(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Sentence,)
@@ -825,34 +853,43 @@ class Document(object):
                     self.data.append( self.parsexml(subnode) )
         elif node.tag[:25] == '{http://ilk.uvt.nl/folia}' and node.tag[25:] in XML2CLASS:
             #generic parsing
-            Class = XML2CLASS[node.tag[25:]]    
-            args = []
-            text = None
-            for subnode in node:
-                if subnode.tag == '{http://ilk.uvt.nl/folia}t':
-                    text = subnode.text
-                elif subnode.tag[:25] == '{http://ilk.uvt.nl/folia}':
-                    if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + subnode.tag[25:]
-                    args.append( self.parsexml(subnode) )
-            kwargs = {}
-            id = None
-            for key, value in node.attrib.items():
-                if key == '{http://www.w3.org/XML/1998/namespace}id':
-                    id = value
-                    key = 'id'
-                elif key[:25] == '{http://ilk.uvt.nl/folia}':
-                    key = key[25:]
-                kwargs[key] = value
-                                        
-            if node.text and node.text.strip():
-                kwargs['value'] = node.text
-            if text:
-                kwargs['text'] = text
-            #if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag
-            instance = Class(self, *args, **kwargs)
-            if id:
-                self.index[value] = instance
-            return instance
+            if node.tag[25:] == 'wref':
+                #special handling for word references
+                id = node.attribs['{http://www.w3.org/XML/1998/namespace}id']
+                try:
+                    return self[id]
+                except KeyError:
+                    return WordReference(id=id)                
+            else:
+                #generic handling
+                Class = XML2CLASS[node.tag[25:]]    
+                args = []
+                text = None
+                for subnode in node:
+                    if subnode.tag == '{http://ilk.uvt.nl/folia}t':
+                        text = subnode.text
+                    elif subnode.tag[:25] == '{http://ilk.uvt.nl/folia}':
+                        if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + subnode.tag[25:]
+                        args.append( self.parsexml(subnode) )
+                kwargs = {}
+                id = None
+                for key, value in node.attrib.items():
+                    if key == '{http://www.w3.org/XML/1998/namespace}id':
+                        id = value
+                        key = 'id'
+                    elif key[:25] == '{http://ilk.uvt.nl/folia}':
+                        key = key[25:]
+                    kwargs[key] = value
+                                            
+                if node.text and node.text.strip():
+                    kwargs['value'] = node.text
+                if text:
+                    kwargs['text'] = text
+                #if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag
+                instance = Class(self, *args, **kwargs)
+                if id:
+                    self.index[value] = instance
+                return instance
         else:
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
         
@@ -913,16 +950,16 @@ class Gap(AbstractElement):
             
 
     
-class ListItem(AbstractElement):
+class ListItem(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
     #ACCEPTED_DATA = (List, Sentence) #Defined below
     XMLTAG = 'listitem'
     
     def __init__(self, doc, *args, **kwargs):
-        self.data = []
+        self.daWta = []
         super( ListItem, self).__init__(doc, *args, **kwargs)
     
-class List(AbstractElement):    
+class List(AbstractStructureElement):    
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
     ACCEPTED_DATA = (ListItem,)
     XMLTAG = 'list'
@@ -930,11 +967,12 @@ class List(AbstractElement):
     def __init__(self, doc, *args, **kwargs):
         self.data = []
         super( List, self).__init__(doc, *args, **kwargs)
+        
 
 ListItem.ACCEPTED_DATA = (List, Sentence)
 
 
-class Figure(AbstractElement):    
+class Figure(AbstractStructureElement):    
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
     ACCEPTED_DATA = (Sentence,)
     XMLTAG = 'figure'
@@ -948,7 +986,7 @@ class Figure(AbstractElement):
         super(Figure, self).__init__(doc, *args, **kwargs)
         
 
-class Division(AbstractElement):    
+class Division(AbstractStructureElement):    
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.N)
     XMLTAG = 'div'
