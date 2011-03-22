@@ -376,7 +376,7 @@ class AbstractStructureElement(AbstractElement):
 
                  
     def append(self, child):
-        super(AbstractStructureElement,self).__init__(child)
+        super(AbstractStructureElement,self).append(child)
         self._setmaxid(child)  
                 
     def generate_id(self, cls):
@@ -623,6 +623,9 @@ class Correction(AbstractElement):
             elements.append( E.new( *[ x.xml() for x in self.new ] ), E.original( self.original.xml() ) )
         elif isinstance(self.original, list):
             elements.append( E.new( self.new.xml() ), E.original( *[ x.xml() for x in self.original ] ) )
+        elif (isinstance(self.original, str) or isinstance(self.original, unicode)) and (isinstance(self.original, str) or isinstance(self.original, unicode)):
+            elements.append( E.new( E.t( self.original) ), E.original( E.t( self.new )) )
+
         return super(Correction,self).xml(attribs,elements, True)  
 
 
@@ -1062,14 +1065,20 @@ class Document(object):
                 for subnode in node:
                     if subnode.tag == '{http://ilk.uvt.nl/folia}t':
                         text = subnode.text
-                    elif node.tag == '{http://ilk.uvt.nl/folia}correction' and subnode.tag == '{http://ilk.uvt.nl/folia}original':
+                    elif node.tag == '{http://ilk.uvt.nl/folia}correction' and subnode.tag == '{http://ilk.uvt.nl/folia}original':                        
                         if len(subnode) == 1:
-                            kwargs['original'] = self.parsexml(subnode[0])
+                            if subnode[0].tag == '{http://ilk.uvt.nl/folia}t':
+                                kwargs['original'] = subnode[0].text
+                            else:
+                                kwargs['original'] = self.parsexml(subnode[0])
                         else:
                             kwargs['original'] = [ self.parsexml(x) for x in subnode ] 
                     elif node.tag == '{http://ilk.uvt.nl/folia}correction' and subnode.tag == '{http://ilk.uvt.nl/folia}new':
                         if len(subnode) == 1:
-                            kwargs['new'] = self.parsexml(subnode[0])
+                            if subnode[0].tag == '{http://ilk.uvt.nl/folia}t':
+                                kwargs['new'] = subnode[0].text
+                            else:
+                                kwargs['new'] = self.parsexml(subnode[0])
                         else:
                             kwargs['new'] = [ self.parsexml(x) for x in subnode ] 
                     elif subnode.tag[:25] == '{http://ilk.uvt.nl/folia}':
