@@ -25,7 +25,13 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N = (0,1,2,3,4)
 
 class AnnotationType:
-    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY = range(9)
+    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ALTERNATIVE = range(11)
+    
+    #Alternative is a special one, not declared and not used except for ID generation
+     
+IDMAP = { #TODO
+    
+}     
      
 class MetaDataType:
     NATIVE, CMDI, IMDI = range(3)     
@@ -347,12 +353,50 @@ class AbstractElement(object):
         self.data.remove(child)
             
 class AbstractStructureElement(AbstractElement):
+    def __init__(self, doc, *args, **kwargs):    
+        self.maxid = {}
+        super(AbstractStructureElement,self).__init__(doc, *args, **kwargs)
+    
     def resolveword(self, id): 
         for child in self:
             r =  child.resolveword(id)            
             if r:
                 return r
         return None          
+        
+        
+    def _setmaxid(self, child):
+        try:
+            if child.id and child.XMLTAG:
+                fields = child.id.split(self.doc.IDSEPARATOR)
+                if len(fields) > 1 and fields[-1].isdigit():
+                    if not child.XMLTAG in self.maxid:
+                        self.maxid[child.XMLTAG] = int(fields[-1])
+                    else:
+                        if self.maxid[child.XMLTAG] < int(fields[-1]):
+                           self.maxid[child.XMLTAG] = int(fields[-1]) 
+        except AttributeError:
+            pass        
+
+                 
+    def append(self, child):
+        super(AbstractStructureElement,self).__init__(child)
+        self._setmaxid(child)  
+                
+    def generate_id(self, cls):
+        global IDMAP
+        if isinstance(cls,str):
+            xmltag = cls
+        else:
+            try:
+                xmltag = cls.XMLTAG
+            except:
+                raise Exception("Expected a class such as Alternative, Correction, etc...")
+        
+        if xmltag in self.maxid:
+            return self.parent.id + '.' + IDMAP[xmltag] + '.' + str(self.maxid[xmltag] + 1)
+        else:
+            return self.parent.id + '.' + IDMAP[xmltag] + '.1'
         
 
 class Word(AbstractStructureElement):
@@ -370,11 +414,14 @@ class Word(AbstractStructureElement):
             del kwargs['space']
         super(Word,self).__init__(doc, *args, **kwargs)
         
+            
+        
     
     def append(self, child):
         if isinstance(child, AbstractTokenAnnotation) or isinstance(child, Alternative):
             self.data.append(child)
             child.parent = self
+            self._setmaxid(child)
         else:
             raise TypeError("Invalid type")
 
@@ -421,6 +468,10 @@ class Word(AbstractStructureElement):
         c = Correction(**kwargs)
         self.append( c )
         return c 
+        
+
+
+            
 
 class AbstractTokenAnnotation(AbstractElement): pass
     
@@ -464,6 +515,7 @@ class AbstractAnnotationLayer(AbstractElement):
 class Alternative(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     ACCEPTED_DATA = (AbstractTokenAnnotation,)
+    ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
     XMLTAG = 'alt'
 
 class AlternativeLayers(AbstractElement):
@@ -660,7 +712,7 @@ class Sentence(AbstractStructureElement):
         kwargs['new'] = newwords
         if not 'id' in kwargs:
             #TODO: calculate new ID
-            pass
+            raise NotImplementerError()
         insertindex = self.data.index(originalword)        
         c = Correction(self.doc, **kwargs)
         self.insert( insertindex , c)
@@ -679,8 +731,7 @@ class Sentence(AbstractStructureElement):
         kwargs['new'] = []
         if not 'id' in kwargs:
             #TODO: calculate new ID
-            #ADD TO INDEX
-            pass
+            raise NotImplementerError()
         insertindex = self.data.index(originalword)        
         c = Correction(self.doc, **kwargs)
         self.insert( insertindex , c)
@@ -788,6 +839,8 @@ class Query(object):
 
 
 class Document(object):
+    
+    IDSEPARATOR = '.'
     
     def __init__(self, *args, **kwargs):
         self.data = [] #will hold all texts (usually only one)
