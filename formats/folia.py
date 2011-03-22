@@ -170,9 +170,18 @@ class AbstractElement(object):
             else:
                 self.text = None 
         
+        
         kwargs = parsecommonarguments(self, doc, self.ANNOTATIONTYPE, self.REQUIRED_ATTRIBS, self.OPTIONAL_ATTRIBS,**kwargs)
         for child in args:
             self.append(child)
+        if 'contents' in kwargs:
+            if isinstance(kwargs['contents'], list):
+                for child in kwargs['contents']:
+                    self.append(child)
+            else:
+                self.append(kwargs['contents'])
+            del kwargs['contents']
+                    
         for key in kwargs:
             raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)        
         
@@ -210,7 +219,7 @@ class AbstractElement(object):
         
             
     def append(self, child):
-        if child.__class__ in self.ACCEPTED_DATA or child.__base__ in self.ACCEPTED_DATA:
+        if child.__class__ in self.ACCEPTED_DATA or child.__class__.__base__ in self.ACCEPTED_DATA:
             self.data.append(child)
             child.parent = self
         else:
@@ -413,7 +422,7 @@ class Word(AbstractStructureElement):
         
     
     def append(self, child):
-        if isinstance(child, AbstractTokenAnnotation) or isinstance(child, Alternative):
+        if isinstance(child, AbstractTokenAnnotation) or isinstance(child, Alternative) or isinstance(child, Correction):
             self.data.append(child)
             child.parent = self
             self._setmaxid(child)
@@ -507,9 +516,52 @@ class AbstractAnnotationLayer(AbstractElement):
         super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
 
             
+class Correction(AbstractElement):
+    REQUIRED_ATTRIBS = (Attrib.ID,)
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ANNOTATIONTYPE = AnnotationType.CORRECTION
+    XMLTAG = 'correction'
+
+    def __init__(self,  doc, *args, **kwargs):
+        if 'new' in kwargs:
+            self.new = kwargs['new']
+            del kwargs['new'] 
+        else:
+            raise Exception("No new= argument specified!")
+        if 'original' in kwargs:
+            self.original = kwargs['original']
+            del kwargs['original'] 
+        else:
+            raise Exception("No original= argument specified!") 
+        if self.new.__class__ != self.original.__class__ and not isinstance(self.new,str) and not isinstance(self.new,unicode):
+            raise Exception("New and Original are of different types!")             
+        super(Correction,self).__init__(doc, *args, **kwargs)
+
+    def xml(self, attribs = None, elements = None, skipchildren = False):
+        if not attribs: attribs = {}
+        if not elements: elements = []
+        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
+
+        if (isinstance(self.original, str) or isinstance(self.original, unicode)) and (isinstance(self.original, str) or isinstance(self.original, unicode)):
+            elements.append( E.new( E.t( self.original) ) )
+            elements.append( E.original( E.t( self.new )) )
+        elif not isinstance(self.new, list) and not isinstance(self.original, list):
+            elements.append( E.new( self.new.xml() ) )
+            elements.append( E.original( self.original.xml() ) )
+        elif isinstance(self.new, list):
+            elements.append( E.new( *[ x.xml() for x in self.new ] ) )
+            elements.append( E.original( self.original.xml() ) )
+        elif isinstance(self.original, list):
+            elements.append( E.new( self.new.xml() ) )
+            elements.append( E.original( *[ x.xml() for x in self.original ] ) )
+
+        return super(Correction,self).xml(attribs,elements, True)  
+
+            
 class Alternative(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
-    ACCEPTED_DATA = (AbstractTokenAnnotation,)
+    ACCEPTED_DATA = (AbstractTokenAnnotation, Correction)
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
     XMLTAG = 'alt'
 
@@ -591,42 +643,6 @@ class SenseAnnotation(AbstractTokenAnnotation):
     ANNOTATIONTYPE = AnnotationType.SENSE
     XMLTAG = 'sense'
     
-class Correction(AbstractElement):
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
-    ANNOTATIONTYPE = AnnotationType.CORRECTION
-    XMLTAG = 'correction'
-
-    def __init__(self,  doc, *args, **kwargs):
-        if 'new' in kwargs:
-            self.new = kwargs['new']
-            del kwargs['new'] 
-        else:
-            raise Exception("No new= argument specified!")
-        if 'original' in kwargs:
-            self.original = kwargs['original']
-            del kwargs['original'] 
-        else:
-            raise Exception("No original= argument specified!") 
-        if self.new.__class__ != self.original.__class__:
-            raise Exception("New and Original are of different types!")             
-        super(Correction,self).__init__(doc, *args, **kwargs)
-
-    def xml(self, attribs = None, elements = None, skipchildren = False):
-        if not attribs: attribs = {}
-        if not elements: elements = []
-        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-
-        if not isinstance(self.new, list) and not isinstance(self.original, list):
-            elements.append( E.new( self.new.xml() ), E.original( self.original.xml() ) )
-        elif isinstance(self.new, list):
-            elements.append( E.new( *[ x.xml() for x in self.new ] ), E.original( self.original.xml() ) )
-        elif isinstance(self.original, list):
-            elements.append( E.new( self.new.xml() ), E.original( *[ x.xml() for x in self.original ] ) )
-        elif (isinstance(self.original, str) or isinstance(self.original, unicode)) and (isinstance(self.original, str) or isinstance(self.original, unicode)):
-            elements.append( E.new( E.t( self.original) ), E.original( E.t( self.new )) )
-
-        return super(Correction,self).xml(attribs,elements, True)  
 
 
 class Quote(AbstractStructureElement):
