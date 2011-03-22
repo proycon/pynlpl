@@ -212,7 +212,7 @@ class AbstractElement(object):
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         
         if not attribs: attribs = {}
-        if not elements: elements = {}
+        if not elements: elements = []
         
         if self.id:
             attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
@@ -336,6 +336,9 @@ class AbstractElement(object):
             
     def resolveword(self, id):
         return None
+        
+    def remove(self, child):
+        self.data.remove(child)
             
 class AbstractStructureElement(AbstractElement):
     def resolveword(self, id): 
@@ -399,6 +402,19 @@ class Word(AbstractStructureElement):
             return self
         else:
             return None
+            
+    def correct(self, original, new, **kwargs):
+        if not original in self:
+            kwargs['original'] = original
+            raise Exception("Original not found!")
+        kwargs['new'] = new
+        if not 'id' in kwargs:
+            #TODO: calculate new ID
+            pass
+        self.remove(original)
+        c = Correction(**kwargs)
+        self.append( c )
+        return c 
 
 class AbstractTokenAnnotation(AbstractElement): pass
     
@@ -543,6 +559,19 @@ class Correction(AbstractElement):
             raise Exception("New and Original are of different types!")             
         super(Correction,self).__init__(doc, *args, **kwargs)
 
+    def xml(self, attribs = None, elements = None, skipchildren = False):
+        if not attribs: attribs = {}
+        if not elements: elements = []
+        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
+        if not isinstance(self.new, list) and not isinstance(self.original, list):
+            elements.append( E.new( self.new.xml() ), E.original( self.original.xml() ) )
+        elif isinstance(self.new, list):
+            elements.append( E.new( *[ x.xml() for x in self.new ] ), E.original( self.original.xml() ) )
+        elif isinstance(self.original, list):
+            elements.append( E.new( self.new.xml() ), E.original( *[ x.xml() for x in self.original ] ) )
+        return super(Correction,self).xml(attribs,elements, True)  
+
 
 class Quote(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -610,6 +639,42 @@ class Sentence(AbstractStructureElement):
             if r:
                 return r
         return None
+        
+    def splitword(self, originalword, newwords, **kwargs):
+        if isinstance(word, str) or isinstance(word, unicode):
+            word = self.doc[word]            
+        if not originalword in self or not isinstance(originalword, Word):
+            raise Exception("Original not found or not instance of Word!")
+        else:
+            kwargs['original'] = originalword
+            
+        if not isinstance(newwords, list) or not all( [ isinstance(w, Word) for w in newwords ] ):
+            raise Exception("Second argument, new words, must be a list of Word instances!"
+            
+        kwargs['new'] = newwords
+        if not 'id' in kwargs:
+            #TODO: calculate new ID
+            pass
+        self.remove(word)
+        c = Correction(**kwargs)
+        self.append( c )
+        return c 
+        
+    def mergewords(self, words, **kwargs):
+        #TODO
+        pass
+        if not original in self:
+            kwargs['original'] = original
+            raise Exception("Original not found!")
+        kwargs['new'] = new
+        if not 'id' in kwargs:
+            #TODO: calculate new ID
+            pass
+        self.remove(original)
+        c = Correction(**kwargs)
+        self.append( c )
+        return c 
+        
 
 Quote.ACCEPTED_DATA = (Word, Sentence, Quote)        
 
@@ -885,14 +950,28 @@ class Document(object):
                 #generic handling
                 Class = XML2CLASS[node.tag[25:]]    
                 args = []
+                kwargs = {}
                 text = None
+                if node.tag == '{http://ilk.uvt.nl/folia}correction':
+                    kwargs['original'] == {}
+                    kwargs['new'] == {}
                 for subnode in node:
                     if subnode.tag == '{http://ilk.uvt.nl/folia}t':
                         text = subnode.text
+                    elif node.tag == '{http://ilk.uvt.nl/folia}correction' and subnode.tag == '{http://ilk.uvt.nl/folia}original':
+                        if len(subnode) == 1:
+                            kwargs['original'] = self.parsexml(subnode[0])
+                        else:
+                            kwargs['original'] = [ self.parsexml(x) for x in subnode ] 
+                    elif node.tag == '{http://ilk.uvt.nl/folia}correction' and subnode.tag == '{http://ilk.uvt.nl/folia}new':
+                        if len(subnode) == 1:
+                            kwargs['new'] = self.parsexml(subnode[0])
+                        else:
+                            kwargs['new'] = [ self.parsexml(x) for x in subnode ] 
                     elif subnode.tag[:25] == '{http://ilk.uvt.nl/folia}':
                         if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + subnode.tag[25:]
                         args.append( self.parsexml(subnode) )
-                kwargs = {}
+                
                 id = None
                 for key, value in node.attrib.items():
                     if key == '{http://www.w3.org/XML/1998/namespace}id':
@@ -906,6 +985,7 @@ class Document(object):
                     kwargs['value'] = node.text
                 if text:
                     kwargs['text'] = text
+                                        
                 #if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag
                 instance = Class(self, *args, **kwargs)
                 if id:
