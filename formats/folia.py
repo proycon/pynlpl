@@ -133,7 +133,10 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     elif Attrib.N in required:
         raise ValueError("N is required")
     else:
-        object.n = None
+        object.n = None    
+    
+    if object.doc and object.id:
+        object.doc.index[object.id] = object
     
     return kwargs
     
@@ -181,6 +184,9 @@ class AbstractElement(object):
         """Iterate over children"""
         for child in self.data:
             yield child
+
+    def __contains__(self, child):
+        return child in self.data
             
     def __getitem__(self, key):
         try:
@@ -641,38 +647,88 @@ class Sentence(AbstractStructureElement):
         return None
         
     def splitword(self, originalword, newwords, **kwargs):
-        if isinstance(word, str) or isinstance(word, unicode):
-            word = self.doc[word]            
+        if isinstance(originalword, str) or isinstance(originalword, unicode):
+            originalword = self.doc[originalword]            
         if not originalword in self or not isinstance(originalword, Word):
             raise Exception("Original not found or not instance of Word!")
         else:
             kwargs['original'] = originalword
             
         if not isinstance(newwords, list) or not all( [ isinstance(w, Word) for w in newwords ] ):
-            raise Exception("Second argument, new words, must be a list of Word instances!"
+            raise Exception("Second argument, new words, must be a list of Word instances!")
             
         kwargs['new'] = newwords
         if not 'id' in kwargs:
             #TODO: calculate new ID
             pass
-        self.remove(word)
-        c = Correction(**kwargs)
-        self.append( c )
+        insertindex = self.data.index(originalword)        
+        c = Correction(self.doc, **kwargs)
+        self.insert( insertindex , c)
+        self.remove(originalword)
+        c.parent = self
         return c 
         
-    def mergewords(self, words, **kwargs):
-        #TODO
-        pass
-        if not original in self:
-            kwargs['original'] = original
-            raise Exception("Original not found!")
-        kwargs['new'] = new
+    def deleteword(self, word, **kwargs):
+        if isinstance(word, str) or isinstance(word, unicode):
+            word = self.doc[word]            
+        if not word in self or not isinstance(originalword, Word):
+            raise Exception("Original not found or not instance of Word!")
+        else:
+            kwargs['original'] = word
+            
+        kwargs['new'] = []
         if not 'id' in kwargs:
             #TODO: calculate new ID
+            #ADD TO INDEX
             pass
-        self.remove(original)
-        c = Correction(**kwargs)
-        self.append( c )
+        insertindex = self.data.index(originalword)        
+        c = Correction(self.doc, **kwargs)
+        self.insert( insertindex , c)
+        self.remove(originalword)
+        c.parent = self
+        return c 
+        
+    def insertword(self, prevword, newword, **kwargs):
+        if isinstance(prevword, str) or isinstance(prevword, unicode):
+            prevword = self.doc[prevword]            
+        if not prevword in self or not isinstance(prevword, Word):
+            raise Exception("Previous word not found or not instance of Word!")
+        if not newword in self or not isinstance(newword, Word):
+            raise Exception("New word no instance of Word!")
+        
+        insertindex = self.data.index(prevword)
+    
+        kwargs['original'] = []
+        kwargs['new'] = newword
+        
+        if not 'id' in kwargs:
+            #TODO: calculate new ID
+            raise NotImplementerError()
+        c = Correction(self.doc, **kwargs)
+        self.data.insert( insertindex, c )
+        c.parent = self
+        return c 
+        
+    def mergewords(self, originalwords, newword, **kwargs):
+        #TODO!
+        for w in originalwords:            
+            if not isinstance(w, Word) or not w in self:
+                raise Exception("Original word not found or not a Word instance!")    
+        kwargs['original'] = originalwords                
+        
+        if not isinstance(newword, Word):        
+            raise Exception("New word must be a Word instance")
+        kwargs['new'] = newword
+        if not 'id' in kwargs:
+            #TODO: calculate new ID
+            raise NotImplementerError()        
+        
+        
+        insertindex = self.data.index(originalword)        
+        c = Correction(self.doc, **kwargs)
+        self.insert( insertindex, c )
+        c.parent = self
+        self.remove(original)        
         return c 
         
 
