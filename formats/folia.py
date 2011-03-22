@@ -462,7 +462,7 @@ class Word(AbstractStructureElement):
 
     def correcttext(self, newtext, **kwargs):
         kwargs['new'] = newtext
-        kwargs['original'] = self.text
+        kwargs['original'] = self.text        
         if not 'id' in kwargs:
             kwargs['id'] = self.generate_id(Correction)
         if 'alternative' in kwargs and kwargs['alternative']:
@@ -470,6 +470,7 @@ class Word(AbstractStructureElement):
             del kwargs['alternative']
         else:
             c = Correction(self.doc, **kwargs)
+            self.text = newtext
         self.append( c )
         return c 
         
@@ -489,6 +490,7 @@ class Word(AbstractStructureElement):
             del kwargs['alternative']
         else:
             c = Correction(self.doc, **kwargs)
+            self.append( new )
         self.append( c )
         return c 
         
