@@ -28,11 +28,7 @@ class AnnotationType:
     TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ALTERNATIVE = range(11)
     
     #Alternative is a special one, not declared and not used except for ID generation
-     
-IDMAP = { #TODO
-    
-}     
-     
+          
 class MetaDataType:
     NATIVE, CMDI, IMDI = range(3)     
 
@@ -384,7 +380,6 @@ class AbstractStructureElement(AbstractElement):
         self._setmaxid(child)  
                 
     def generate_id(self, cls):
-        global IDMAP
         if isinstance(cls,str):
             xmltag = cls
         else:
@@ -394,9 +389,9 @@ class AbstractStructureElement(AbstractElement):
                 raise Exception("Expected a class such as Alternative, Correction, etc...")
         
         if xmltag in self.maxid:
-            return self.parent.id + '.' + IDMAP[xmltag] + '.' + str(self.maxid[xmltag] + 1)
+            return self.parent.id + '.' + xmltag + '.' + str(self.maxid[xmltag] + 1)
         else:
-            return self.parent.id + '.' + IDMAP[xmltag] + '.1'
+            return self.parent.id + '.' + xmltag + '.1'
         
 
 class Word(AbstractStructureElement):
