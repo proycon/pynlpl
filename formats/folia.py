@@ -1062,7 +1062,9 @@ class Document(object):
 
     def parsexml(self, node):
         global XML2CLASS
-        if not isinstance(node,ElementTree._Element):
+        if isinstance(node,ElementTree._ElementTree):        
+            node = node.getroot()
+        elif not isinstance(node,ElementTree._Element):
             node = ElementTree.parse(StringIO(node)).getroot()         
         if node.tag == '{http://ilk.uvt.nl/folia}FoLiA':
             if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found FoLiA document"
