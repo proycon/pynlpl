@@ -91,15 +91,14 @@ class CorpusDocument:
                     yield sentence_id, sentence
                     sentence = []
                     sentence_id = doc_id + '.' + ptype + '.' + str(p) + '.s.' + str(s)
+                prevp = p
             except IndexError:
                 doc_id, s, w = re.findall('([\w\d-]+)\.s\.(\d+)\.w\.(\d+)',id)[0]            
                 if s != prevs and sentence:
                     yield sentence_id, sentence
                     sentence = []
                     sentence_id = doc_id + '.s.' + str(s)
-
             sentence.append( (word,id,pos,lemma) )     
-            prevp = p
             prevs = s
             prevw = w
         if sentence:
