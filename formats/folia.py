@@ -284,7 +284,6 @@ class AbstractElement(object):
         return e
         
         
-        
     def select(self, cls, recursive=True, node=None):
         if not node:
             node = self
@@ -906,8 +905,10 @@ class Document(object):
         elif 'file' in kwargs:
             self.filename = kwargs['file']
             self.load(self.filename)              
+        elif 'tree' in kwargs:
+            self.parsexml(kwargs['tree'])
         else:
-            raise Exception("No ID or filename specified")
+            raise Exception("No ID, filename or tree specified")
                             
             
     def load(self, filename):
