@@ -85,11 +85,19 @@ class CorpusDocument:
         sentence = [];
         sentence_id = ""
         for word, id, pos, lemma in iter(self):
-            doc_id, ptype, p, s, w = re.findall('([\w\d-]+)\.(p|head)\.(\d+)\.s\.(\d+)\.w\.(\d+)',id)[0]
-            if ((p != prevp) or (s != prevs)) and sentence:
-                yield sentence_id, sentence
-                sentence = []
-                sentence_id = doc_id + '.' + ptype + '.' + str(p) + '.s.' + str(s)
+            try:
+                doc_id, ptype, p, s, w = re.findall('([\w\d-]+)\.(p|head)\.(\d+)\.s\.(\d+)\.w\.(\d+)',id)[0]            
+                if ((p != prevp) or (s != prevs)) and sentence:
+                    yield sentence_id, sentence
+                    sentence = []
+                    sentence_id = doc_id + '.' + ptype + '.' + str(p) + '.s.' + str(s)
+            except IndexError:
+                doc_id, s, w = re.findall('([\w\d-]+)\.s\.(\d+)\.w\.(\d+)',id)[0]            
+                if s != prevs and sentence:
+                    yield sentence_id, sentence
+                    sentence = []
+                    sentence_id = doc_id + '.s.' + str(s)
+
             sentence.append( (word,id,pos,lemma) )     
             prevp = p
             prevs = s
