@@ -1097,8 +1097,8 @@ class Document(object):
                 kwargs = {}
                 text = None
                 if node.tag == '{http://ilk.uvt.nl/folia}correction':
-                    kwargs['original'] == {}
-                    kwargs['new'] == {}
+                    kwargs['original'] = {}
+                    kwargs['new'] = {}
                 for subnode in node:
                     if subnode.tag == '{http://ilk.uvt.nl/folia}t':
                         text = subnode.text
