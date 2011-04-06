@@ -15,6 +15,8 @@
 from lxml import etree as ElementTree
 from lxml.builder import E, ElementMaker
 from sys import stderr
+from StringIO import StringIO
+from pynlpl.formats.imdi import RELAXNG_IMDI
 
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
@@ -892,6 +894,7 @@ class Document(object):
         
         self.metadata = [] #will point to XML Element holding IMDI or CMDI metadata
         self.metadatatype = MetaDataType.NATIVE
+        self.metadatafile = None #reference to external metadata file
     
         #The metadata fields FoLiA is directly aware of:
         self._title = self._date = self._publisher = self._license = self._language = None
@@ -934,6 +937,13 @@ class Document(object):
         f = open(filename,'w')
         f.write(str(self))
         f.close()
+
+    def setcmdi(filename):
+        self.metadatatype = MetaDataType.CMDI
+        self.metadatafile = filename
+        self.metadata = []
+        #TODO: Parse CMDI
+        
         
     def __len__(self):
         return len(self.data)
@@ -975,12 +985,23 @@ class Document(object):
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
+        
+        metadataattribs = {}
+        if self.metadatatype == MetaDataType.NATIVE:
+            metadataattribs['{' + NSFOLIA + '}type'] = 'native'
+        elif self.metadatatype == MetaDataType.IMDI:
+            metadataattribs['{' + NSFOLIA + '}type'] = 'imdi'
+        elif self.metadatatype == MetaDataType.CMDI:
+            metadataattribs['{' + NSFOLIA + '}type'] = 'cmdi'
+            metadataattribs['{' + NSFOLIA + '}src'] = self.metadatafile
+            
         e = E.FoLiA(
             E.metadata(
                 E.annotations(
                     *self.xmldeclarations()
                 ),
-                self.xmlmetadata()
+                *self.xmlmetadata(),
+                **metadataattribs
             )            
         , **attribs)
         for text in self.data:
@@ -990,15 +1011,19 @@ class Document(object):
     def xmlmetadata(self):
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         if self.metadatatype == MetaDataType.NATIVE:
-            e = E.simple()
+            e = []
             if self.title(): e.append(E.meta(self.title(),id='title') )
             if self.date(): e.append(E.meta(self.date(),id='date') )
             if self.language(): e.append(E.meta(self.language(),id='language') )
             if self.license(): e.append(E.meta(self.license(),id='license') )    
             if self.publisher(): e.append(E.meta(self.publisher(),id='publisher') )
             return e
-        else:
-            return self.metadata
+        elif self.metadatatype == MetaDataType.IMDI: #in-line IMDI, SoNaR-style
+            return [self.metadata]
+        elif self.metadatatype == MetaDataType.CMDI: #CMDI, by definition external
+            return []
+
+            
             
      
     def parsexmldeclarations(self, node):
@@ -1029,8 +1054,9 @@ class Document(object):
                 if self.debug >= 1: 
                     print >>stderr, "[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults)
 
-    def parseimdi(self, node):
+    def setimdi(self, node):
         ns = {'imdi': 'http://www.mpi.nl/IMDI/Schema/IMDI'}
+        self.metadatatype = MetaDataType.IMDI
         self.metadata = node
         n = node.xpath('imdi:Session/imdi:Title', namespaces=ns)
         if n and n[0].text: self._title = n[0].text
@@ -1062,10 +1088,7 @@ class Document(object):
     def language(self, value=None):
         if not (value is None): self._language = value
         return self._language        
-            
-    def parsecmdi(self, node):
-        #TODO
-        self.metadata = node            
+           
 
     def parsexml(self, node):
         global XML2CLASS, NSFOLIA
@@ -1087,7 +1110,7 @@ class Document(object):
                     for subsubnode in subnode:
                         if subsubnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
                             self.metadatatype = MetaDataType.IMDI
-                            self.parseimdi(subsubnode)
+                            self.setimdi(subsubnode)
                         if subsubnode.tag == '{' + NSFOLIA + '}annotations':
                             self.parsexmldeclarations(subsubnode)
                 elif subnode.tag == '{' + NSFOLIA + '}text' and self.loadall:
@@ -1299,34 +1322,47 @@ class Text(AbstractElement):
     def words(self):
         return self.select(Word)
         
+def relaxng_imdi():
+    for e in ElementTree.parse(StringIO(RELAXNG_IMDI)).getroot():
+        if e.tag == '{http://relaxng.org/ns/structure/1.0}define':
+            yield e
             
 def relaxng():
     global NSFOLIA
-    E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+    E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace",'imdi':'http://www.mpi.nl/IMDI/Schema/IMDI'})
     grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.element( #metadata
                     E.element(E.text(),name='annotations'),
-                    #TODO: ADD IMDI
+                    E.zeroOrMore(
+                        E.element(E.attribute(name='id'), E.text(), name='meta'),
+                    ),
+                    #E.optional(
+                    #    E.ref(name='METATRANSCRIPT')
+                    #),
                     name='metadata',
-                    ns=NSFOLIA,
+                    #ns=NSFOLIA,
                 ),
                 E.oneOrMore(
                     E.ref(name='text'),
                 ),
                 name='FoLiA',
                 ns = NSFOLIA
-            ) ),
+            ) ),            
             E.define(E.element(
               E.text(),
-              name="t",ns=NSFOLIA)
+              name="t") #,ns=NSFOLIA)
             ,name="t"),
-            )    
+            )  
+             
     done = {}
     for c in globals().values():
         if 'relaxng' in dir(c):
             if c.relaxng and c.XMLTAG and not c.XMLTAG in done:
                 done[c.XMLTAG] = True
                 grammar.append( c.relaxng() )
+    
+    #for e in relaxng_imdi():
+    #    grammar.append(e)
         
     return grammar
 
