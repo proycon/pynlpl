@@ -1,4 +1,4 @@
-RELAXNG_IMDI_START = """
+RELAXNG_IMDI = """
 <!--
 	XML Schema for IMDI
 	
@@ -65,9 +65,6 @@ RELAXNG_IMDI_START = """
 	<rng:start combine="choice">
 <rng:ref name="METATRANSCRIPT"/>
 </rng:start>
-"""
-
-RELAXNG_IMDI_EMBEDDED = """
 <rng:define name="METATRANSCRIPT">
 <rng:element name="METATRANSCRIPT">
 <rng:ref name="METATRANSCRIPT_Type"/>
@@ -2487,6 +2484,5 @@ RELAXNG_IMDI_EMBEDDED = """
 </rng:attribute>
 </rng:optional>
 	</rng:define>
+</rng:grammar>
 """
-
-RELAXNG_IMDI_END = "</rng:grammar>"
