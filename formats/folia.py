@@ -344,10 +344,12 @@ class AbstractElement(object):
             if extraelements:
                     for e in extraelements:
                         elements.append(e)                                                            
-
-            return E.define(
-                E.element( E.group( *attribs ) , E.zeroOrMore(*elements), name=cls.XMLTAG),
-            name=cls.XMLTAG)
+            if elements:
+                return E.define(
+                    E.element( E.group( *attribs ) , E.zeroOrMore(*elements), name=cls.XMLTAG),name=cls.XMLTAG)
+            else:
+                return E.define(
+                    E.element( E.group( *attribs ) , name=cls.XMLTAG),name=cls.XMLTAG)
             
             
     def resolveword(self, id):
@@ -1294,7 +1296,7 @@ class Text(AbstractElement):
 def relaxng():
     grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.element( #metadata
-                    E.element(name='annotations'),
+                    E.element(E.text(),name='annotations'),
                     #TODO: ADD IMDI
                     name='metadata'
                 ),
@@ -1302,11 +1304,18 @@ def relaxng():
                     E.ref(name='text'),
                 ),
                 name='FoLiA'
-            ) ) )
+            ) ),
+            E.define(E.element(
+              E.text(),
+              name="t")
+            ,name="t"),
+            xmlns='http://relaxng.org/ns/structure/1.0' )
     
+    done = {}
     for c in globals().values():
         if 'relaxng' in dir(c):
-            if c.relaxng and c.XMLTAG:
+            if c.relaxng and c.XMLTAG and not c.XMLTAG in done:
+                done[c.XMLTAG] = True
                 grammar.append( c.relaxng() )
         
     return grammar
