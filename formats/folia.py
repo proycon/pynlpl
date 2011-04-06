@@ -16,6 +16,9 @@ from lxml import etree as ElementTree
 from lxml.builder import E, ElementMaker
 from sys import stderr
 
+
+NSFOLIA = "http://ilk.uvt.nl/folia"
+
 class AnnotatorType:
     AUTO = 0
     MANUAL = 1
@@ -226,7 +229,8 @@ class AbstractElement(object):
             raise ValueError("Unable to append object of type " + child.__class__.__name__)
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
-        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        global NSFOLIA
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
         
         if not attribs: attribs = {}
         if not elements: elements = []
@@ -242,31 +246,31 @@ class AbstractElement(object):
             pass
         try:
             if self.cls:
-                attribs['{http://ilk.uvt.nl/folia}class'] = self.cls
+                attribs['{' + NSFOLIA + '}class'] = self.cls
         except AttributeError:
             pass            
         try:            
             if self.annotator and (not 'annotator' in self.doc.annotationdefaults or self.annotator != self.doc.annotationdefaults['annotator']):
-                attribs['{http://ilk.uvt.nl/folia}annotator'] = self.annotator
+                attribs['{' + NSFOLIA + '}annotator'] = self.annotator
             if self.annotatortype and (not 'annotatortype' in self.doc.annotationdefaults or self.annotatortype != self.doc.annotationdefaults['annotatortype']):
                 if self.annotatortype == AnnotatorType.AUTO:
-                    attribs['{http://ilk.uvt.nl/folia}annotatortype'] = 'auto'
+                    attribs['{' + NSFOLIA + '}annotatortype'] = 'auto'
                 elif self.annotatortype == AnnotatorType.MANUAL:
-                    attribs['{http://ilk.uvt.nl/folia}annotatortype'] = 'manual'
+                    attribs['{' + NSFOLIA + '}annotatortype'] = 'manual'
         except AttributeError:
             pass       
         try:
             if self.confidence:
-                attribs['{http://ilk.uvt.nl/folia}confidence'] = str(self.confidence)
+                attribs['{' + NSFOLIA + '}confidence'] = str(self.confidence)
         except AttributeError:
             pass
         try:
             if self.n:
-                attribs['{http://ilk.uvt.nl/folia}n'] = str(self.n)
+                attribs['{' + NSFOLIA + '}n'] = str(self.n)
         except AttributeError:
             pass
             
-        e  = E._makeelement('{http://ilk.uvt.nl/folia}' + self.XMLTAG, **attribs)        
+        e  = E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
         
         try:
             if self.ALLOWTEXT and self.text:
@@ -296,8 +300,9 @@ class AbstractElement(object):
     
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-            
-            
+            global NSFOLIA
+            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
             attribs = []
             if Attrib.ID in cls.REQUIRED_ATTRIBS:
                 attribs.append( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") )
@@ -305,26 +310,26 @@ class AbstractElement(object):
                 attribs.append( E.optional( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") ) )                    
             if Attrib.CLASS in cls.REQUIRED_ATTRIBS:
                 #Set is a tough one, we can't require it as it may be defined in the declaration: we make it optional and need schematron to resolve this later
-                attribs.append( E.attribute(name='class') )
-                attribs.append( E.optional( E.attribute( name='set' ) ) )  
+                attribs.append( E.attribute(name='class',ns=NSFOLIA) )
+                attribs.append( E.optional( E.attribute( name='set',ns=NSFOLIA ) ) )  
             elif Attrib.CLASS in cls.OPTIONAL_ATTRIBS:
-                attribs.append( E.optional( E.attribute(name='class') ) )
-                attribs.append( E.optional( E.attribute( name='set' ) ) )                                          
+                attribs.append( E.optional( E.attribute(name='class',ns=NSFOLIA) ) )
+                attribs.append( E.optional( E.attribute( name='set',ns=NSFOLIA ) ) )                                          
             if Attrib.ANNOTATOR in cls.REQUIRED_ATTRIBS or Attrib.ANNOTATOR in cls.OPTIONAL_ATTRIBS:
                #Similarly tough
-               attribs.append( E.optional( E.attribute(name='annotator') ) ) 
-               attribs.append( E.optional( E.attribute(name='annotatortype') ) ) 
+               attribs.append( E.optional( E.attribute(name='annotator',ns=NSFOLIA) ) ) 
+               attribs.append( E.optional( E.attribute(name='annotatortype',ns=NSFOLIA) ) ) 
             if Attrib.CONFIDENCE in cls.REQUIRED_ATTRIBS:
-               attribs.append(  E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') )
+               attribs.append(  E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence',ns=NSFOLIA) )
             elif Attrib.CONFIDENCE in cls.OPTIONAL_ATTRIBS:
-               attribs.append(  E.optional( E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') ) )
+               attribs.append(  E.optional( E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence',ns=NSFOLIA) ) )
             if Attrib.N in cls.REQUIRED_ATTRIBS:
-               attribs.append( E.optional( E.attribute( name='n' ) ) )
+               attribs.append( E.attribute( name='n' ,ns=NSFOLIA) )
             elif Attrib.N in cls.OPTIONAL_ATTRIBS:
-               attribs.append( E.optional( E.attribute( name='n' ) ) )
+               attribs.append( E.optional( E.attribute( name='n',ns=NSFOLIA ) ) )
             
             if cls.ALLOWTEXT:
-                attribs.append( E.optional( E.ref(name='t') ) ) #yes, not actually an attrib, I know, but should go here
+                attribs.append( E.optional( E.ref(name='t',ns=NSFOLIA) ) ) #yes, not actually an attrib, I know, but should go here
                         
             if extraattribs:
                     for e in extraattribs:
@@ -346,10 +351,10 @@ class AbstractElement(object):
                         elements.append(e)                                                            
             if elements:
                 return E.define(
-                    E.element( E.group( *attribs ) , E.zeroOrMore(*elements), name=cls.XMLTAG),name=cls.XMLTAG)
+                    E.element( E.group( *attribs ) , E.zeroOrMore(*elements), name=cls.XMLTAG, ns=NSFOLIA ),name=cls.XMLTAG)
             else:
                 return E.define(
-                    E.element( E.group( *attribs ) , name=cls.XMLTAG),name=cls.XMLTAG)
+                    E.element( E.group( *attribs ) , name=cls.XMLTAG),name=cls.XMLTAG, ns=NSFOLIA)
             
             
     def resolveword(self, id):
@@ -959,9 +964,9 @@ class Document(object):
             attribs = {}
             for key, value in self.annotationdefaults[annotationtype].items():                
                 if value:
-                    attribs['{http://ilk.uvt.nl/folia}' + key] = value
+                    attribs['{' + NSFOLIA + '}' + key] = value
             if label:
-                l.append( E._makeelement('{http://ilk.uvt.nl/folia}' + label.lower() + '-annotation', **attribs) )
+                l.append( E._makeelement('{' + NSFOLIA + '}' + label.lower() + '-annotation', **attribs) )
             else:
                 raise Exception("Invalid annotation type")            
         return l
@@ -1000,7 +1005,7 @@ class Document(object):
         if self.debug >= 1: 
             print >>stderr, "[PyNLPl FoLiA DEBUG] Processing Annotation Declarations"
         for subnode in node:
-            if subnode.tag[:25] == '{http://ilk.uvt.nl/folia}' and subnode.tag[-11:] == '-annotation':
+            if subnode.tag[:25] == '{' + NSFOLIA + '}' and subnode.tag[-11:] == '-annotation':
                 prefix = subnode.tag[25:][:-11]
                 type = None
                 if prefix.upper() in vars(AnnotationType):
@@ -1063,32 +1068,34 @@ class Document(object):
         self.metadata = node            
 
     def parsexml(self, node):
-        global XML2CLASS
+        global XML2CLASS, NSFOLIA
+        nslen = len(NSFOLIA) + 2
+        
         if isinstance(node,ElementTree._ElementTree):        
             node = node.getroot()
         elif not isinstance(node,ElementTree._Element):
             node = ElementTree.parse(StringIO(node)).getroot()         
-        if node.tag == '{http://ilk.uvt.nl/folia}FoLiA':
+        if node.tag == '{' + NSFOLIA + '}FoLiA':
             if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found FoLiA document"
             try:
                 self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
             except KeyError:
                 raise Exception("FoLiA Document has no ID!")
             for subnode in node:
-                if subnode.tag == '{http://ilk.uvt.nl/folia}metadata':
+                if subnode.tag == '{' + NSFOLIA + '}metadata':
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Metadata"
                     for subsubnode in subnode:
                         if subsubnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
                             self.metadatatype = MetaDataType.IMDI
                             self.parseimdi(subsubnode)
-                        if subsubnode.tag == '{http://ilk.uvt.nl/folia}annotations':
+                        if subsubnode.tag == '{' + NSFOLIA + '}annotations':
                             self.parsexmldeclarations(subsubnode)
-                elif subnode.tag == '{http://ilk.uvt.nl/folia}text' and self.loadall:
+                elif subnode.tag == '{' + NSFOLIA + '}text' and self.loadall:
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
                     self.data.append( self.parsexml(subnode) )
-        elif node.tag[:25] == '{http://ilk.uvt.nl/folia}' and node.tag[25:] in XML2CLASS:
+        elif node.tag[:nslen] == '{' + NSFOLIA + '}' and node.tag[nslen:] in XML2CLASS:
             #generic parsing
-            if node.tag[25:] == 'wref':
+            if node.tag[nslen:] == 'wref':
                 #special handling for word references
                 id = node.attribs['{http://www.w3.org/XML/1998/namespace}id']
                 try:
@@ -1097,34 +1104,34 @@ class Document(object):
                     return WordReference(id=id)                
             else:
                 #generic handling
-                Class = XML2CLASS[node.tag[25:]]    
+                Class = XML2CLASS[node.tag[nslen:]]    
                 args = []
                 kwargs = {}
                 text = None
-                if node.tag == '{http://ilk.uvt.nl/folia}correction':
+                if node.tag == '{' + NSFOLIA + '}correction':
                     kwargs['original'] = {}
                     kwargs['new'] = {}
                 for subnode in node:
-                    if subnode.tag == '{http://ilk.uvt.nl/folia}t':
+                    if subnode.tag == '{' + NSFOLIA + '}t':
                         text = subnode.text
-                    elif node.tag == '{http://ilk.uvt.nl/folia}correction' and subnode.tag == '{http://ilk.uvt.nl/folia}original':                        
+                    elif node.tag == '{' + NSFOLIA + '}correction' and subnode.tag == '{' + NSFOLIA + '}original':                        
                         if len(subnode) == 1:
-                            if subnode[0].tag == '{http://ilk.uvt.nl/folia}t':
+                            if subnode[0].tag == '{' + NSFOLIA + '}t':
                                 kwargs['original'] = subnode[0].text
                             else:
                                 kwargs['original'] = self.parsexml(subnode[0])
                         else:
                             kwargs['original'] = [ self.parsexml(x) for x in subnode ] 
-                    elif node.tag == '{http://ilk.uvt.nl/folia}correction' and subnode.tag == '{http://ilk.uvt.nl/folia}new':
+                    elif node.tag == '{' + NSFOLIA + '}correction' and subnode.tag == '{' + NSFOLIA + '}new':
                         if len(subnode) == 1:
-                            if subnode[0].tag == '{http://ilk.uvt.nl/folia}t':
+                            if subnode[0].tag == '{' + NSFOLIA + '}t':
                                 kwargs['new'] = subnode[0].text
                             else:
                                 kwargs['new'] = self.parsexml(subnode[0])
                         else:
                             kwargs['new'] = [ self.parsexml(x) for x in subnode ] 
-                    elif subnode.tag[:25] == '{http://ilk.uvt.nl/folia}':
-                        if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + subnode.tag[25:]
+                    elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
+                        if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + subnode.tag[nslen:]
                         args.append( self.parsexml(subnode) )
                 
                 id = None
@@ -1132,8 +1139,8 @@ class Document(object):
                     if key == '{http://www.w3.org/XML/1998/namespace}id':
                         id = value
                         key = 'id'
-                    elif key[:25] == '{http://ilk.uvt.nl/folia}':
-                        key = key[25:]
+                    elif key[:nslen] == '{' + NSFOLIA + '}':
+                        key = key[nslen:]
                     kwargs[key] = value
                                             
                 if node.text and node.text.strip():
@@ -1294,23 +1301,26 @@ class Text(AbstractElement):
         
             
 def relaxng():
+    global NSFOLIA
+    E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.element( #metadata
                     E.element(E.text(),name='annotations'),
                     #TODO: ADD IMDI
-                    name='metadata'
+                    name='metadata',
+                    ns=NSFOLIA,
                 ),
                 E.oneOrMore(
                     E.ref(name='text'),
                 ),
-                name='FoLiA'
+                name='FoLiA',
+                ns = NSFOLIA
             ) ),
             E.define(E.element(
               E.text(),
-              name="t")
+              name="t",ns=NSFOLIA)
             ,name="t"),
-            xmlns='http://relaxng.org/ns/structure/1.0' )
-    
+            )    
     done = {}
     for c in globals().values():
         if 'relaxng' in dir(c):
