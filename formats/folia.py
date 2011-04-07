@@ -331,7 +331,7 @@ class AbstractElement(object):
                attribs.append( E.optional( E.attribute( name='n',ns=NSFOLIA ) ) )
             
             if cls.ALLOWTEXT:
-                attribs.append( E.optional( E.ref(name='t',ns=NSFOLIA) ) ) #yes, not actually an attrib, I know, but should go here
+                attribs.append( E.optional( E.ref(name='t') ) ) #yes, not actually an attrib, I know, but should go here
                         
             if extraattribs:
                     for e in extraattribs:
@@ -350,13 +350,15 @@ class AbstractElement(object):
                         
             if extraelements:
                     for e in extraelements:
-                        elements.append(e)                                                            
+                        elements.append( E.zeroOrMore(e) )                                                            
+                        
             if elements:
-                return E.define(
-                    E.element( E.group( *attribs ) , E.zeroOrMore(E.choice(*elements)), name=cls.XMLTAG, ns=NSFOLIA ),name=cls.XMLTAG)
-            else:
-                return E.define(
-                    E.element( E.group( *attribs ) , name=cls.XMLTAG),name=cls.XMLTAG, ns=NSFOLIA)
+                if len(elements) > 1:
+                    attribs.append( E.interleave(*elements) )
+                else:
+                    attribs.append( E.optional(*elements) )
+            return E.define(
+                    E.element( *attribs , name=cls.XMLTAG),name=cls.XMLTAG, ns=NSFOLIA)
             
             
     def resolveword(self, id):
@@ -503,6 +505,21 @@ class Word(AbstractStructureElement):
         return c 
         
 
+    @classmethod        
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        if not extraelements:
+            extraelements = []
+        done = {}
+        for c in globals().values():
+                if 'relaxng' in dir(c):
+                    if c.relaxng and c.XMLTAG and not c.XMLTAG in done:
+                        if issubclass(c, AbstractTokenAnnotation) or c is Correction:
+                            extraelements.append( E.ref(name=c.XMLTAG) )
+                            done[c.XMLTAG] = True
+        
+        return super(Word,cls).relaxng(includechildren, extraattribs , extraelements)
 
             
 
@@ -1310,6 +1327,15 @@ class Division(AbstractStructureElement):
     def words(self):
         return self.select(Word)            
 
+    @classmethod        
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        if not extraelements:
+            extraelements = []
+        extraelements.append(E.optional( E.ref(name='head') ))
+        return super(Division,cls).relaxng(includechildren, extraattribs , extraelements)
+
 Division.ACCEPTED_DATA = (Division, Paragraph, Sentence, List, Figure)
 
 class Text(AbstractElement):
@@ -1359,7 +1385,8 @@ def relaxng(filename=None):
             ) ),            
             E.define(E.element(
               E.text(),
-              name="t") #,ns=NSFOLIA)
+              name="t",
+              ns=NSFOLIA) #,ns=NSFOLIA)
             ,name="t"),
             )  
              
@@ -1389,10 +1416,10 @@ def validate(filename):
         raise Exception("Not well-formed XML!")
     
     #See if there's inline IMDI and strip it off prior to validation (validator doesn't do IMDI)
-    m = doc.xpath('//metadata')
+    m = doc.xpath('//folia:metadata', namespaces={'f': 'http://ilk.uvt.nl/folia','folia': 'http://ilk.uvt.nl/folia' })
     if m:
-        m = m[0]
-        m = m.find('{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT')
+        metadata = m[0]
+        m = metadata.find('{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT')
         if m:
             metadata.remove(m)
     
