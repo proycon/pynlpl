@@ -50,6 +50,8 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         raise ValueError("ID is required for " + object.__class__.__name__)
     else:
         object.id = None
+        
+
 
     if 'set' in kwargs:
         if not Attrib.CLASS in supported:
@@ -90,7 +92,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.annotator = kwargs['annotator']
         del kwargs['annotator']
     elif annotationtype in doc.annotationdefaults and 'annotator' in doc.annotationdefaults[annotationtype]:
-        object.set = doc.annotationdefaults[annotationtype]['annotator']
+        object.annotator = doc.annotationdefaults[annotationtype]['annotator']
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotator is required for " + object.__class__.__name__)
     else:
@@ -108,7 +110,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             raise ValueError("annotatortype must be 'auto' or 'manual'")                
         del kwargs['annotatortype']
     elif annotationtype in doc.annotationdefaults and 'annotator' in doc.annotationdefaults[annotationtype]:
-        object.set = doc.annotationdefaults[annotationtype]['annotatortype']            
+        object.annotatortype = doc.annotationdefaults[annotationtype]['annotatortype']            
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotatortype is required for " + object.__class__.__name__)        
     else:
@@ -144,6 +146,15 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     
     if object.doc and object.id:
         object.doc.index[object.id] = object
+
+    if doc.debug >= 2:
+        print >>stderr, "   @id           = ", repr(object.id)
+        print >>stderr, "   @set          = ", repr(object.set)
+        print >>stderr, "   @class        = ", repr(object.cls)
+        print >>stderr, "   @annotator    = ", repr(object.annotator)
+        print >>stderr, "   @annotatortype= ", repr(object.annotatortype)
+        print >>stderr, "   @confidence   = ", repr(object.confidence)
+        print >>stderr, "   @n            = ", repr(object.n)
     
     return kwargs
     
@@ -471,6 +482,9 @@ class Word(AbstractStructureElement):
     
     def append(self, child):
         if isinstance(child, AbstractTokenAnnotation) or isinstance(child, Alternative) or isinstance(child, Correction):
+            if isinstance(child, AbstractTokenAnnotation):
+                #TODO: sanity check, there may be no other child within the same set
+                pass
             self.data.append(child)
             child.parent = self
             self._setmaxid(child)
@@ -1206,9 +1220,11 @@ class Document(object):
             if node.tag[nslen:] == 'wref':
                 #special handling for word references
                 id = node.attribs['{http://www.w3.org/XML/1998/namespace}id']
+                if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found word reference"
                 try:
                     return self[id]
                 except KeyError:
+                    if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] ...Unresolvable!"
                     return WordReference(id=id)                
             else:
                 #generic handling
@@ -1239,7 +1255,7 @@ class Document(object):
                         else:
                             kwargs['new'] = [ self.parsexml(x) for x in subnode ] 
                     elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
-                        if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + subnode.tag[nslen:]
+                        if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
                         args.append( self.parsexml(subnode) )
                 
                 id = None
@@ -1256,7 +1272,7 @@ class Document(object):
                 if text:
                     kwargs['text'] = text
                                         
-                #if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag
+                if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
                 instance = Class(self, *args, **kwargs)
                 if id:
                     self.index[value] = instance
