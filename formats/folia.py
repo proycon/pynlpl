@@ -291,14 +291,16 @@ class AbstractElement(object):
         
         
     def select(self, cls, recursive=True, node=None):
+        l = []
         if not node:
             node = self
         for e in self:
             if isinstance(e, cls):
-                yield e
+                l.append(e)
             elif recursive:
                 for e2 in e.select(cls, recursive, e):
-                    yield e2                
+                    l.append(e2)
+        return l
     
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -449,20 +451,16 @@ class Word(AbstractStructureElement):
             
 
     def pos(self):
-        for e in self.select(PosAnnotation):
-            yield e
+        return self.select(PosAnnotation)
             
     def lemma(self):
-        for e in self.select(LemmaAnnotation):
-            yield e            
+        return self.select(LemmaAnnotation)
 
     def sense(self):
-        for e in self.select(SenseAnnotation):
-            yield e            
+        return self.select(SenseAnnotation)
 
     def alternatives(self):
-        for e in self.select(Alternative):
-            yield e            
+        return self.select(Alternative)
 
     def resolveword(self, id):
         if id == self.id:
@@ -1077,6 +1075,7 @@ class Document(object):
                     print >>stderr, "[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults)
 
     def setimdi(self, node):
+        #TODO: node or filename
         ns = {'imdi': 'http://www.mpi.nl/IMDI/Schema/IMDI'}
         self.metadatatype = MetaDataType.IMDI
         self.metadata = node
@@ -1208,21 +1207,14 @@ class Document(object):
         
         
     def paragraphs(self):
-        for text in self.data:            
-            for e in text.select(Paragraph):
-                yield e
+        return sum([ t.select(Paragraph) for t in self.data ],[])
     
     def sentences(self):
-        for text in self.data:            
-            for e in text.select(Sentence):
-                yield e
+        return sum([ t.select(Sentence) for t in self.data ],[])
         
     def words(self):
-        for text in self.data:            
-            for e in text.select(Word):
-                yield e
-                
-    
+        return sum([ t.select(Word) for t in self.data ],[])
+                    
     def __str__(self):
         return ElementTree.tostring(self.xml(), pretty_print=True, encoding='utf-8')
         
