@@ -1091,6 +1091,11 @@ class Document(object):
         n = node.xpath('//imdi:Languages/imdi:Language/imdi:ID', namespaces=ns)
         if n and n[0].text: self._language = n[0].text            
         
+    def declare(self, annotationtype, **kwargs):
+        if not annotationtype in self.annotations:
+            self.annotation.append(annotationtype)
+        self.annotationdefaults[annotationtype] = kwargs
+        
     def title(self, value=None):
         if not (value is None): self._title = value
         return self._title
