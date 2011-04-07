@@ -1331,9 +1331,9 @@ class Text(AbstractElement):
 def relaxng_declarations():
     global NSFOLIA
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-    attribs = E.zeroOrMore( E.attribute(name='set'), E.attribute(name='annotator'), E.attribute(name='annotatortype') )    
     for key, value in vars(AnnotationType).items():
-        yield E.element( attribs, name=key.lower() + '-annotation')
+        if key[0] != '_':
+            yield E.element( E.zeroOrMore( E.attribute(name='set'), E.attribute(name='annotator'), E.attribute(name='annotatortype') )    , name=key.lower() + '-annotation')
 
             
 def relaxng():
@@ -1341,7 +1341,7 @@ def relaxng():
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.element( #metadata
-                    E.zeroOrMore(*relaxng_declarations(),name='annotations'),
+                    E.element(*relaxng_declarations(),name='annotations'),
                     E.zeroOrMore(
                         E.element(E.attribute(name='id'), E.text(), name='meta'),
                     ),
@@ -1385,10 +1385,12 @@ def validate(filename):
         raise Exception("Not well-formed XML!")
     
     #See if there's inline IMDI and strip it off prior to validation (validator doesn't do IMDI)
-    metadata = doc.xpath('//metadata')
-    m = metadata.find('{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT')
+    m = doc.xpath('//metadata')
     if m:
-        metadata.remove(m)
+        m = m[0]
+        m = m.find('{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT')
+        if m:
+            metadata.remove(m)
     
     grammar = ElementTree.RelaxNG(relaxng())
     grammar.assertValid(doc) #will raise exceptions
