@@ -301,6 +301,18 @@ class AbstractElement(object):
                 for e2 in e.select(cls, recursive, e):
                     l.append(e2)
         return l
+        
+
+    def xselect(self, cls, recursive=True, node=None):
+        if not node:
+            node = self
+        for e in self:
+            if isinstance(e, cls):
+                yield 2
+            elif recursive:
+                for e2 in e.select(cls, recursive, e):
+                    yield e2
+        
     
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
