@@ -312,23 +312,23 @@ class AbstractElement(object):
                 attribs.append( E.optional( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") ) )                    
             if Attrib.CLASS in cls.REQUIRED_ATTRIBS:
                 #Set is a tough one, we can't require it as it may be defined in the declaration: we make it optional and need schematron to resolve this later
-                attribs.append( E.attribute(name='class',ns=NSFOLIA) )
-                attribs.append( E.optional( E.attribute( name='set',ns=NSFOLIA ) ) )  
+                attribs.append( E.attribute(name='class') )
+                attribs.append( E.optional( E.attribute( name='set' ) ) )  
             elif Attrib.CLASS in cls.OPTIONAL_ATTRIBS:
-                attribs.append( E.optional( E.attribute(name='class',ns=NSFOLIA) ) )
-                attribs.append( E.optional( E.attribute( name='set',ns=NSFOLIA ) ) )                                          
+                attribs.append( E.optional( E.attribute(name='class') ) )
+                attribs.append( E.optional( E.attribute( name='set' ) ) )                                          
             if Attrib.ANNOTATOR in cls.REQUIRED_ATTRIBS or Attrib.ANNOTATOR in cls.OPTIONAL_ATTRIBS:
                #Similarly tough
-               attribs.append( E.optional( E.attribute(name='annotator',ns=NSFOLIA) ) ) 
-               attribs.append( E.optional( E.attribute(name='annotatortype',ns=NSFOLIA) ) ) 
+               attribs.append( E.optional( E.attribute(name='annotator') ) ) 
+               attribs.append( E.optional( E.attribute(name='annotatortype') ) ) 
             if Attrib.CONFIDENCE in cls.REQUIRED_ATTRIBS:
                attribs.append(  E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence',ns=NSFOLIA) )
             elif Attrib.CONFIDENCE in cls.OPTIONAL_ATTRIBS:
                attribs.append(  E.optional( E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence',ns=NSFOLIA) ) )
             if Attrib.N in cls.REQUIRED_ATTRIBS:
-               attribs.append( E.attribute( name='n' ,ns=NSFOLIA) )
+               attribs.append( E.attribute( name='n') )
             elif Attrib.N in cls.OPTIONAL_ATTRIBS:
-               attribs.append( E.optional( E.attribute( name='n',ns=NSFOLIA ) ) )
+               attribs.append( E.optional( E.attribute( name='n') ) )
             
             if cls.ALLOWTEXT:
                 attribs.append( E.optional( E.ref(name='t') ) ) #yes, not actually an attrib, I know, but should go here
@@ -344,19 +344,19 @@ class AbstractElement(object):
                 for c in cls.ACCEPTED_DATA:
                     try:
                         if c.XMLTAG:
-                            elements.append( E.ref(name=c.XMLTAG) )
+                            elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )
                     except AttributeError:
                         continue
                         
             if extraelements:
                     for e in extraelements:
-                        elements.append( E.zeroOrMore(e) )                                                            
+                        elements.append( e )                                                            
                         
             if elements:
                 if len(elements) > 1:
                     attribs.append( E.interleave(*elements) )
                 else:
-                    attribs.append( E.optional(*elements) )
+                    attribs.append( *elements )
             return E.define(
                     E.element( *attribs , name=cls.XMLTAG),name=cls.XMLTAG, ns=NSFOLIA)
             
@@ -516,7 +516,7 @@ class Word(AbstractStructureElement):
                 if 'relaxng' in dir(c):
                     if c.relaxng and c.XMLTAG and not c.XMLTAG in done:
                         if issubclass(c, AbstractTokenAnnotation) or c is Correction:
-                            extraelements.append( E.ref(name=c.XMLTAG) )
+                            extraelements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )
                             done[c.XMLTAG] = True
         
         return super(Word,cls).relaxng(includechildren, extraattribs , extraelements)
@@ -1366,6 +1366,7 @@ def relaxng(filename=None):
     global NSFOLIA
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     grammar = E.grammar( E.start ( E.element( #FoLiA
+                E.attribute(name='id',ns="http://www.w3.org/XML/1998/namespace"),
                 E.element( #metadata
                     E.element( E.zeroOrMore( E.choice( *relaxng_declarations() ) ) ,name='annotations'),
                     E.zeroOrMore(
@@ -1420,7 +1421,7 @@ def validate(filename):
     if m:
         metadata = m[0]
         m = metadata.find('{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT')
-        if m:
+        if m is not None:
             metadata.remove(m)
     
     grammar = ElementTree.RelaxNG(relaxng())
