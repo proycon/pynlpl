@@ -991,6 +991,8 @@ class Document(object):
             metadataattribs['{' + NSFOLIA + '}type'] = 'native'
         elif self.metadatatype == MetaDataType.IMDI:
             metadataattribs['{' + NSFOLIA + '}type'] = 'imdi'
+            if self.metadatafile:
+                metadataattribs['{' + NSFOLIA + '}src'] = self.metadatafile
         elif self.metadatatype == MetaDataType.CMDI:
             metadataattribs['{' + NSFOLIA + '}type'] = 'cmdi'
             metadataattribs['{' + NSFOLIA + '}src'] = self.metadatafile
@@ -1018,8 +1020,11 @@ class Document(object):
             if self.license(): e.append(E.meta(self.license(),id='license') )    
             if self.publisher(): e.append(E.meta(self.publisher(),id='publisher') )
             return e
-        elif self.metadatatype == MetaDataType.IMDI: #in-line IMDI, SoNaR-style
-            return [self.metadata]
+        elif self.metadatatype == MetaDataType.IMDI:
+            if self.metadatafile:
+                return [] #external
+            else:
+                return [self.metadata] #inline
         elif self.metadatatype == MetaDataType.CMDI: #CMDI, by definition external
             return []
 
@@ -1321,18 +1326,22 @@ class Text(AbstractElement):
         
     def words(self):
         return self.select(Word)
-        
-def relaxng_imdi():
-    for e in ElementTree.parse(StringIO(RELAXNG_IMDI)).getroot():
-        if e.tag == '{http://relaxng.org/ns/structure/1.0}define':
-            yield e
+
+
+def relaxng_declarations():
+    global NSFOLIA
+    E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+    attribs = E.zeroOrMore( E.attribute(name='set'), E.attribute(name='annotator'), E.attribute(name='annotatortype') )    
+    for key, value in vars(AnnotationType).items():
+        yield E.element( attribs, name=key.lower() + '-annotation')
+
             
 def relaxng():
     global NSFOLIA
-    E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace",'imdi':'http://www.mpi.nl/IMDI/Schema/IMDI'})
+    E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.element( #metadata
-                    E.element(E.text(),name='annotations'),
+                    E.zeroOrMore(*relaxng_declarations(),name='annotations'),
                     E.zeroOrMore(
                         E.element(E.attribute(name='id'), E.text(), name='meta'),
                     ),
@@ -1374,6 +1383,13 @@ def validate(filename):
         doc = ElementTree.parse(filename)
     except:
         raise Exception("Not well-formed XML!")
+    
+    #See if there's inline IMDI and strip it off prior to validation (validator doesn't do IMDI)
+    metadata = doc.xpath('//metadata')
+    m = metadata.find('{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT')
+    if m:
+        metadata.remove(m)
+    
     grammar = ElementTree.RelaxNG(relaxng())
     grammar.assertValid(doc) #will raise exceptions
 
