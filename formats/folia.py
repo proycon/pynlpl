@@ -799,6 +799,9 @@ class Sentence(AbstractStructureElement):
         if not s and self.text:
             return self.text            
         return s
+
+    def __str__(self):    
+        return unicode(self).encode('utf-8')        
                 
     def resolveword(self, id):
         for child in self:
@@ -908,6 +911,11 @@ class Paragraph(AbstractStructureElement):
         if not p and self.text:
             return self.text            
         return p
+
+    def __str__(self):    
+        return unicode(self).encode('utf-8')        
+    
+    
                               
                 
 class Head(AbstractStructureElement):
@@ -1257,14 +1265,24 @@ class Document(object):
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
         
         
-    def paragraphs(self):
-        return sum([ t.select(Paragraph) for t in self.data ],[])
+    def paragraphs(self, index = None):
+        if index is None:
+            return sum([ t.select(Paragraph) for t in self.data ],[])
+        else:
+            return sum([ t.select(Paragraph) for t in self.data ],[])[index]
     
-    def sentences(self):
-        return sum([ t.select(Sentence) for t in self.data ],[])
+    def sentences(self, index = None):
+        if index is None:
+            return sum([ t.select(Sentence) for t in self.data ],[])
+        else:
+            return sum([ t.select(Sentence) for t in self.data ],[])[index]
+
         
-    def words(self):
-        return sum([ t.select(Word) for t in self.data ],[])
+    def words(self, index = None):
+        if index is None:            
+            return sum([ t.select(Word) for t in self.data ],[])
+        else:
+            return sum([ t.select(Word) for t in self.data ],[])[index]
                     
     def __str__(self):
         return ElementTree.tostring(self.xml(), pretty_print=True, encoding='utf-8')
