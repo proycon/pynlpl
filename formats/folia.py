@@ -353,7 +353,7 @@ class AbstractElement(object):
                         elements.append(e)                                                            
             if elements:
                 return E.define(
-                    E.element( E.group( *attribs ) , E.zeroOrMore(*elements), name=cls.XMLTAG, ns=NSFOLIA ),name=cls.XMLTAG)
+                    E.element( E.group( *attribs ) , E.zeroOrMore(E.choice(*elements)), name=cls.XMLTAG, ns=NSFOLIA ),name=cls.XMLTAG)
             else:
                 return E.define(
                     E.element( E.group( *attribs ) , name=cls.XMLTAG),name=cls.XMLTAG, ns=NSFOLIA)
@@ -1333,15 +1333,15 @@ def relaxng_declarations():
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     for key, value in vars(AnnotationType).items():
         if key[0] != '_':
-            yield E.element( E.zeroOrMore( E.attribute(name='set'), E.attribute(name='annotator'), E.attribute(name='annotatortype') )    , name=key.lower() + '-annotation')
+            yield E.element( E.optional( E.attribute(name='set')) , E.optional(E.attribute(name='annotator')) , E.optional( E.attribute(name='annotatortype') )  , name=key.lower() + '-annotation')
 
             
-def relaxng():
+def relaxng(filename=None):
     global NSFOLIA
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.element( #metadata
-                    E.element(*relaxng_declarations(),name='annotations'),
+                    E.element( E.zeroOrMore( E.choice( *relaxng_declarations() ) ) ,name='annotations'),
                     E.zeroOrMore(
                         E.element(E.attribute(name='id'), E.text(), name='meta'),
                     ),
@@ -1372,7 +1372,11 @@ def relaxng():
     
     #for e in relaxng_imdi():
     #    grammar.append(e)
-        
+    if filename:
+        f = open(filename,'w')
+        f.write( ElementTree.tostring(relaxng(),pretty_print=True))
+        f.close()
+
     return grammar
 
 
