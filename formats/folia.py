@@ -290,15 +290,27 @@ class AbstractElement(object):
         return e
         
         
-    def select(self, cls, recursive=True, node=None):
+    def select(self, cls, set=None, recursive=True, node=None):
         l = []
         if not node:
             node = self
         for e in self:
             if isinstance(e, cls):
+                if not set is None:
+                    try:
+                        if e.set != set:
+                            continue
+                    except:
+                        continue                    
                 l.append(e)
             elif recursive:
-                for e2 in e.select(cls, recursive, e):
+                for e2 in e.select(cls, set, recursive, e):
+                    if not set is None:
+                        try:
+                            if e2.set != set:
+                                continue
+                        except:
+                            continue
                     l.append(e2)
         return l
         
@@ -308,9 +320,21 @@ class AbstractElement(object):
             node = self
         for e in self:
             if isinstance(e, cls):
-                yield 2
+                if not set is None:
+                    try:
+                        if e.set != set:
+                            continue
+                    except:
+                        continue 
+                yield e
             elif recursive:
                 for e2 in e.select(cls, recursive, e):
+                    if not set is None:
+                        try:
+                            if e2.set != set:
+                                continue
+                        except:
+                            continue
                     yield e2
         
     
@@ -462,14 +486,28 @@ class Word(AbstractStructureElement):
                 continue
             
 
-    def pos(self):
-        return self.select(PosAnnotation)
-            
-    def lemma(self):
-        return self.select(LemmaAnnotation)
+    def getannotation(self, type, set=None):
+        """Will return a SINGLE annotation (even if there are multiple). Returns None if no such annotation is found"""
+        l = self.select(type,set)
+        if len(l) >= 1:
+            return l[0]
+        else:
+            return None
+        
 
-    def sense(self):
-        return self.select(SenseAnnotation)
+
+    def pos(self,set=None):
+        """Return the PoS annotation (will return only one if there are multiple!)"""
+        return self.getannotation(PosAnnotation,set)
+            
+    def lemma(self, set=None):
+        return self.getannotation(LemmaAnnotation,set)
+
+    def sense(self,set=None):
+        return self.getannotation(SenseAnnotation,set)
+        
+    def domain(self,set=None):
+        return self.getannotation(DomainAnnotation,set)        
 
     def alternatives(self):
         return self.select(Alternative)
