@@ -484,9 +484,10 @@ class Word(AbstractStructureElement):
                     yield e
             except AttributeError:
                 continue
-            
+    
 
-    def getannotation(self, type, set=None):
+
+    def annotation(self, type, set=None):
         """Will return a SINGLE annotation (even if there are multiple). Returns None if no such annotation is found"""
         l = self.select(type,set)
         if len(l) >= 1:
@@ -498,16 +499,16 @@ class Word(AbstractStructureElement):
 
     def pos(self,set=None):
         """Return the PoS annotation (will return only one if there are multiple!)"""
-        return self.getannotation(PosAnnotation,set)
+        return self.annotation(PosAnnotation,set)
             
     def lemma(self, set=None):
-        return self.getannotation(LemmaAnnotation,set)
+        return self.annotation(LemmaAnnotation,set)
 
     def sense(self,set=None):
-        return self.getannotation(SenseAnnotation,set)
+        return self.annotation(SenseAnnotation,set)
         
     def domain(self,set=None):
-        return self.getannotation(DomainAnnotation,set)        
+        return self.annotation(DomainAnnotation,set)        
 
     def alternatives(self):
         return self.select(Alternative)
