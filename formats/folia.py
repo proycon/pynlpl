@@ -30,7 +30,7 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N = (0,1,2,3,4)
 
 class AnnotationType:
-    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ALTERNATIVE = range(11)
+    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ALTERNATIVE, PHON = range(12)
     
     #Alternative is a special one, not declared and not used except for ID generation
           
@@ -408,7 +408,43 @@ class AbstractElement(object):
                     attribs.append( *elements )
             return E.define(
                     E.element( *attribs , name=cls.XMLTAG),name=cls.XMLTAG, ns=NSFOLIA)
-            
+    
+    @classmethod
+    def parsexml(Class, node, doc):
+        assert issubclass(Class, AbstractElement)
+        global NSFOLIA
+        nslen = len(NSFOLIA) + 2
+        args = []
+        kwargs = {}
+        text = None
+        for subnode in node:
+            if subnode.tag == '{' + NSFOLIA + '}t' and Class.ALLOWTEXT:
+                text = subnode.text
+            elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
+                if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
+                args.append( doc.parsexml(subnode) )
+            elif doc.debug >= 1:
+                print >>stderr, "[PyNLPl FoLiA DEBUG] Ignoring subnode outside of FoLiA namespace: " + subnode.tag
+                    
+        id = None
+        for key, value in node.attrib.items():
+            if key == '{http://www.w3.org/XML/1998/namespace}id':
+                id = value
+                key = 'id'
+            elif key[:nslen] == '{' + NSFOLIA + '}':
+                key = key[nslen:]
+            kwargs[key] = value
+                                    
+        if node.text and node.text.strip():
+            kwargs['value'] = node.text
+        if text:
+            kwargs['text'] = text
+                                
+        if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
+        instance = Class(doc, *args, **kwargs)
+        if id:
+            doc.index[value] = instance
+        return instance        
             
     def resolveword(self, id):
         return None
@@ -584,7 +620,26 @@ class Word(AbstractStructureElement):
         
         return super(Word,cls).relaxng(includechildren, extraattribs , extraelements)
 
-            
+
+
+class Feature(AbstractElement):
+    XMLTAG = 'feat'
+    
+    def __init__(self,subset, cls):
+        self.subset = subset
+        self.cls = cls
+        
+    def xml(self):
+        global NSFOLIA
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        attribs = {'{' + NSFOLIA + '}subset':self.subset, '{' + NSFOLIA + '}class': self.cls}
+        return E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
+    
+    @classmethod
+    def relaxns(cls, includechildren=True, extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.Element(E.attribute(name='subset'), E.attribute(name='class'), E.empty(),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
 
 class AbstractTokenAnnotation(AbstractElement): pass
     
@@ -667,6 +722,52 @@ class Correction(AbstractElement):
 
         return super(Correction,self).xml(attribs,elements, True)  
 
+    @classmethod
+    def parsexml(Class, node, doc):
+        assert issubclass(Class, AbstractElement)
+        global NSFOLIA
+        nslen = len(NSFOLIA) + 2
+        args = []
+        kwargs = {}
+        kwargs['original'] = {}
+        kwargs['new'] = {}
+        for subnode in node:
+             if subnode.tag == '{' + NSFOLIA + '}original':                        
+                if len(subnode) == 1:
+                    if subnode[0].tag == '{' + NSFOLIA + '}t':
+                        kwargs['original'] = subnode[0].text
+                    else:
+                        kwargs['original'] = doc.parsexml(subnode[0])
+                else:
+                    kwargs['original'] = [ doc.parsexml(x) for x in subnode ] 
+             elif subnode.tag == '{' + NSFOLIA + '}new':
+                if len(subnode) == 1:
+                    if subnode[0].tag == '{' + NSFOLIA + '}t':
+                        kwargs['new'] = subnode[0].text
+                    else:
+                        kwargs['new'] = doc.parsexml(subnode[0])
+                else:
+                    kwargs['new'] = [ doc.parsexml(x) for x in subnode ] 
+             elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
+                if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
+                args.append( doc.parsexml(subnode) )
+             elif doc.debug >= 1:
+                print >>stderr, "[PyNLPl FoLiA DEBUG] Ignoring subnode outside of FoLiA namespace: " + subnode.tag
+                    
+        id = None
+        for key, value in node.attrib.items():
+            if key == '{http://www.w3.org/XML/1998/namespace}id':
+                id = value
+                key = 'id'
+            elif key[:nslen] == '{' + NSFOLIA + '}':
+                key = key[nslen:]
+            kwargs[key] = value                                    
+                                
+        if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
+        instance = Class(doc, *args, **kwargs)
+        if id:
+            doc.index[value] = instance
+        return instance   
             
 class Alternative(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -685,6 +786,25 @@ class WordReference(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     XMLTAG = 'wref'
     ANNOTATIONTYPE = AnnotationType.TOKEN
+    
+    @classmethod
+    def parsexml(Class, node, doc):
+        assert Class is WordReference or issubclass(Class, WordReference)
+        #special handling for word references
+        id = node.attribs['{http://www.w3.org/XML/1998/namespace}id']
+        if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found word reference"
+        try:
+            return doc[id]
+        except KeyError:
+            if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] ...Unresolvable!"
+            return WordReference(id=id)    
+            
+class AlignReference(AbstractElement):
+    REQUIRED_ATTRIBS = (Attrib.ID,)
+    XMLTAG = 'aref'    
+    pass #TODO: IMPLEMENT
+        
+
         
 class SyntacticUnit(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -737,6 +857,12 @@ class LemmaAnnotation(AbstractTokenAnnotation):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.LEMMA
     XMLTAG = 'lemma'
+    
+class PhonAnnotation(AbstractTokenAnnotation):
+    REQUIRED_ATTRIBS = (Attrib.CLASS,)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ANNOTATIONTYPE = AnnotationType.PHON
+    XMLTAG = 'phon'
 
 
 class DomainAnnotation(AbstractTokenAnnotation):
@@ -1190,6 +1316,7 @@ class Document(object):
            
 
     def parsexml(self, node):
+        """Main XML parser, will invoke class-specific XML parsers"""
         global XML2CLASS, NSFOLIA
         nslen = len(NSFOLIA) + 2
         
@@ -1216,67 +1343,9 @@ class Document(object):
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
                     self.data.append( self.parsexml(subnode) )
         elif node.tag[:nslen] == '{' + NSFOLIA + '}' and node.tag[nslen:] in XML2CLASS:
-            #generic parsing
-            if node.tag[nslen:] == 'wref':
-                #special handling for word references
-                id = node.attribs['{http://www.w3.org/XML/1998/namespace}id']
-                if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found word reference"
-                try:
-                    return self[id]
-                except KeyError:
-                    if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] ...Unresolvable!"
-                    return WordReference(id=id)                
-            else:
-                #generic handling
-                Class = XML2CLASS[node.tag[nslen:]]    
-                args = []
-                kwargs = {}
-                text = None
-                if node.tag == '{' + NSFOLIA + '}correction':
-                    kwargs['original'] = {}
-                    kwargs['new'] = {}
-                for subnode in node:
-                    if subnode.tag == '{' + NSFOLIA + '}t':
-                        text = subnode.text
-                    elif node.tag == '{' + NSFOLIA + '}correction' and subnode.tag == '{' + NSFOLIA + '}original':                        
-                        if len(subnode) == 1:
-                            if subnode[0].tag == '{' + NSFOLIA + '}t':
-                                kwargs['original'] = subnode[0].text
-                            else:
-                                kwargs['original'] = self.parsexml(subnode[0])
-                        else:
-                            kwargs['original'] = [ self.parsexml(x) for x in subnode ] 
-                    elif node.tag == '{' + NSFOLIA + '}correction' and subnode.tag == '{' + NSFOLIA + '}new':
-                        if len(subnode) == 1:
-                            if subnode[0].tag == '{' + NSFOLIA + '}t':
-                                kwargs['new'] = subnode[0].text
-                            else:
-                                kwargs['new'] = self.parsexml(subnode[0])
-                        else:
-                            kwargs['new'] = [ self.parsexml(x) for x in subnode ] 
-                    elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
-                        if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
-                        args.append( self.parsexml(subnode) )
-                
-                id = None
-                for key, value in node.attrib.items():
-                    if key == '{http://www.w3.org/XML/1998/namespace}id':
-                        id = value
-                        key = 'id'
-                    elif key[:nslen] == '{' + NSFOLIA + '}':
-                        key = key[nslen:]
-                    kwargs[key] = value
-                                            
-                if node.text and node.text.strip():
-                    kwargs['value'] = node.text
-                if text:
-                    kwargs['text'] = text
-                                        
-                if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
-                instance = Class(self, *args, **kwargs)
-                if id:
-                    self.index[value] = instance
-                return instance
+            #generic handling
+            Class = XML2CLASS[node.tag[nslen:]]                
+            return Class.parsexml(node,self)
         else:
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
         
