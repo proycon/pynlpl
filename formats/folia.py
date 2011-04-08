@@ -624,26 +624,48 @@ class Word(AbstractStructureElement):
 
 class Feature(AbstractElement):
     XMLTAG = 'feat'
+    XMLATTRIB = None
+    SUBSET = None
     
-    def __init__(self,subset, cls):
-        self.subset = subset
-        self.cls = cls
+    def __init__(self,**kwargs):
+        if self.SUBSET:
+            self.subset = self.SUBSET
+        elif 'subset' in kwargs: 
+            self.subset = kwargs['subset']
+        else:
+            raise Exception("No subset specified!")
+        if 'cls' in kwargs:
+            self.cls = kwargs['cls']
+        elif 'class' in kwargs:
+            self.cls = kwargs['class']
+        else:
+            raise Exception("No class specified!")            
         
     def xml(self):
         global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        attribs = {'{' + NSFOLIA + '}subset':self.subset, '{' + NSFOLIA + '}class': self.cls}
+        attribs = {}
+        if self.subset != self.SUBSET:
+            attribs['{' + NSFOLIA + '}subset'] = self.subset 
+        attribs['{' + NSFOLIA + '}class'] =  self.cls
         return E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
     
     @classmethod
     def relaxns(cls, includechildren=True, extraattribs = None, extraelements=None):
         global NSFOLIA
+        #TODO: add XMLATTRIB
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.Element(E.attribute(name='subset'), E.attribute(name='class'), E.empty(),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
 
-class AbstractTokenAnnotation(AbstractElement): pass
+class AbstractAnnotation(AbstractElement):
+    def feat(subset):
+        for f in self:
+            if isinstance(f, Feature) and f.subset == subset:
+                return f.cls
+
+class AbstractTokenAnnotation(AbstractAnnotation): pass
     
-class AbstractSpanAnnotation(AbstractElement): 
+class AbstractSpanAnnotation(AbstractAnnotation): 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
         if not attribs: attribs = {}
         if Word in self.ACCEPTED_DATA:
@@ -840,28 +862,26 @@ class EntitiesLayer(AbstractAnnotationLayer):
     ACCEPTED_DATA = (Entity,)
     XMLTAG = 'entities'
 
-
-class PosFeature(AbstractElement):
-    REQUIRED_ATTRIBS = (Attrib.CLASS)
-    #TODO: Inherit set from parent
     
 class PosAnnotation(AbstractTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.POS
-    ACCEPTED_DATA = (PosFeature,)
+    ACCEPTED_DATA = (Feature,)
     XMLTAG = 'pos'
 
 class LemmaAnnotation(AbstractTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.LEMMA
+    ACCEPTED_DATA = (Feature,)
     XMLTAG = 'lemma'
     
 class PhonAnnotation(AbstractTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.PHON
+    ACCEPTED_DATA = (Feature,)
     XMLTAG = 'phon'
 
 
@@ -869,13 +889,21 @@ class DomainAnnotation(AbstractTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.DOMAIN
+    ACCEPTED_DATA = (Feature,)
     XMLTAG = 'domain'
 
+class SynsetFeature(Feature):
+    XMLATTRIB = 'synset' #allow feature as attribute
+    XMLTAG = 'synset'
+    ANNOTATIONTYPE = AnnotationType.SENSE
+    SUBSET = 'synset' #associated subset
+    
 
 class SenseAnnotation(AbstractTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.SENSE
+    ACCEPTED_DATA = (Feature,SynsetFeature)
     XMLTAG = 'sense'
     
 
