@@ -519,7 +519,11 @@ class Word(AbstractStructureElement):
     
     def append(self, child):
         if isinstance(child, AbstractTokenAnnotation) or isinstance(child, Alternative) or isinstance(child, Correction):
-            if isinstance(child, AbstractTokenAnnotation):
+            if isinstance(child, Correction):
+                #TODO: replace other child within the same set
+                #TODO: make sure there are not other corrections on the same thing 
+                pass
+            elif isinstance(child, AbstractTokenAnnotation):
                 #TODO: sanity check, there may be no other child within the same set
                 pass
             self.data.append(child)
@@ -662,7 +666,7 @@ class Feature(AbstractElement):
         return E.define( E.Element(E.attribute(name='subset'), E.attribute(name='class'), E.empty(),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
 
 class AbstractAnnotation(AbstractElement):
-    def feat(subset):
+    def feat(self,subset):
         for f in self:
             if isinstance(f, Feature) and f.subset == subset:
                 return f.cls
@@ -924,16 +928,16 @@ class Quote(AbstractStructureElement):
             del kwargs['text'] 
         else:
             self.text = None 
-        super(Sentence,self).__init__(doc, *args, **kwargs)
+        super(Quote,self).__init__(doc, *args, **kwargs)
 
     def __unicode__(self):
         s = u""
         for e in self.data:
-            if instance(e, Word):
+            if isinstance(e, Word):
                 s += unicode(e)
                 if e.space:
                     s += ' '
-            elif instance(e, Sentence):
+            elif isinstance(e, Sentence):
                 s += unicode(e)
         if not s and self.text:
             return self.text            
@@ -996,10 +1000,10 @@ class Sentence(AbstractStructureElement):
         kwargs['new'] = newwords
         if not 'id' in kwargs:
             #TODO: calculate new ID
-            raise NotImplementerError()
+            raise NotImplementedError()
         insertindex = self.data.index(originalword)        
         c = Correction(self.doc, **kwargs)
-        self.insert( insertindex , c)
+        self.data.insert( insertindex , c)
         self.remove(originalword)
         c.parent = self
         return c 
@@ -1007,7 +1011,7 @@ class Sentence(AbstractStructureElement):
     def deleteword(self, word, **kwargs):
         if isinstance(word, str) or isinstance(word, unicode):
             word = self.doc[word]            
-        if not word in self or not isinstance(originalword, Word):
+        if not word in self or not isinstance(word, Word):
             raise Exception("Original not found or not instance of Word!")
         else:
             kwargs['original'] = word
@@ -1015,11 +1019,11 @@ class Sentence(AbstractStructureElement):
         kwargs['new'] = []
         if not 'id' in kwargs:
             #TODO: calculate new ID
-            raise NotImplementerError()
-        insertindex = self.data.index(originalword)        
+            raise NotImplementedError()
+        insertindex = self.data.index(word)        
         c = Correction(self.doc, **kwargs)
-        self.insert( insertindex , c)
-        self.remove(originalword)
+        self.data.insert( insertindex , c)
+        self.remove(word)
         c.parent = self
         return c 
         
@@ -1038,7 +1042,7 @@ class Sentence(AbstractStructureElement):
         
         if not 'id' in kwargs:
             #TODO: calculate new ID
-            raise NotImplementerError()
+            raise NotImplementedError()
         c = Correction(self.doc, **kwargs)
         self.data.insert( insertindex, c )
         c.parent = self
@@ -1056,12 +1060,12 @@ class Sentence(AbstractStructureElement):
         kwargs['new'] = newword
         if not 'id' in kwargs:
             #TODO: calculate new ID
-            raise NotImplementerError()        
+            raise NotImplementedError()        
         
         
         insertindex = self.data.index(originalword)        
         c = Correction(self.doc, **kwargs)
-        self.insert( insertindex, c )
+        self.data.insert( insertindex, c )
         c.parent = self
         self.remove(original)        
         return c 
@@ -1184,7 +1188,7 @@ class Document(object):
         f.write(str(self))
         f.close()
 
-    def setcmdi(filename):
+    def setcmdi(self,filename):
         self.metadatatype = MetaDataType.CMDI
         self.metadatafile = filename
         self.metadata = []
@@ -1323,7 +1327,7 @@ class Document(object):
         
     def declare(self, annotationtype, **kwargs):
         if not annotationtype in self.annotations:
-            self.annotation.append(annotationtype)
+            self.annotations.append(annotationtype)
         self.annotationdefaults[annotationtype] = kwargs
         
     def title(self, value=None):
@@ -1423,7 +1427,7 @@ class Gap(AbstractElement):
         elif 'description' in kwargs:        
             self.description = kwargs['description']
             del kwargs['description']
-        super(Division,self).__init__(doc, *args, **kwargs)
+        super(Gap,self).__init__(doc, *args, **kwargs)
         
     def __iter__(self):
         pass
