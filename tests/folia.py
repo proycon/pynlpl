@@ -40,6 +40,11 @@ class FoliaSanity(unittest.TestCase):
     
     def setUp(self):
         self.doc = folia.Document(file='/tmp/foliatest.xml')
+
+    def test000_count_paragraphs(self):                                    
+        """Sanity check - One text """        
+        self.assertEqual( len(self.doc), 1) 
+        self.assertTrue( isinstance( self.doc[0], folia.Text )) 
         
     def test001_count_paragraphs(self):                                    
         """Sanity check - Paragraph count"""        
@@ -57,7 +62,8 @@ class FoliaSanity(unittest.TestCase):
         """Sanity check - First word"""            
         #grab first word
         w = self.doc.words(0) # shortcut for doc.words()[0]         
-        self.assertEqual( w.id , 'WR-P-E-J-0000000001.head.1.s.1.w.1' ) 
+        self.assertTrue( isinstance(w, folia.Word) )
+        self.assertEqual( w.id , 'WR-P-E-J-0000000001.head.1.s.1.w.1' )         
         self.assertEqual( w.text , "Stemma" ) 
         self.assertEqual( str(w) , "Stemma" ) 
         self.assertEqual( unicode(w) , u"Stemma" ) 
@@ -67,6 +73,7 @@ class FoliaSanity(unittest.TestCase):
         """Sanity check - Last word"""            
         #grab first word
         w = self.doc.words(-1) # shortcut for doc.words()[0]         
+        self.assertTrue( isinstance(w, folia.Word) )
         self.assertEqual( w.id , 'WR-P-E-J-0000000001.p.1.s.8.w.17' ) 
         self.assertEqual( w.text , "." )             
         self.assertEqual( str(w) , "." )             
@@ -75,10 +82,19 @@ class FoliaSanity(unittest.TestCase):
         """Sanity check - Sentence"""                                
         #grab last sentence
         s = self.doc.sentences(1)
+        self.assertTrue( isinstance(s, folia.Sentence) )
         self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.1' )
+        self.assertEqual( s.text, None ) #no text DIRECTLY associated with the sentence
         self.assertEqual( str(s), "Stemma is een ander woord voor stamboom . " ) 
         
-        
+    def test007_index(self):                                    
+        """Sanity check - Index"""            
+        #grab something from the index
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        self.assertTrue( isinstance(w, folia.Word) )
+        self.assertEqual( self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] , self.doc.index['WR-P-E-J-0000000001.p.1.s.2.w.7'] )         
+        self.assertEqual( w.id , 'WR-P-E-J-0000000001.p.1.s.2.w.7' )         
+        self.assertEqual( w.text , "stamboom" ) 
         
         
             
