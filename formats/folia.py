@@ -734,8 +734,8 @@ class Correction(AbstractElement):
 
 
         if (isinstance(self.original, str) or isinstance(self.original, unicode)) and (isinstance(self.original, str) or isinstance(self.original, unicode)):
-            elements.append( E.new( E.t( self.original) ) )
-            elements.append( E.original( E.t( self.new )) )
+            elements.append( E.new( E.t( self.new) ) )
+            elements.append( E.original( E.t( self.original )) )
         elif not isinstance(self.new, list) and not isinstance(self.original, list):
             elements.append( E.new( self.new.xml() ) )
             elements.append( E.original( self.original.xml() ) )
