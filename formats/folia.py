@@ -443,7 +443,8 @@ class AbstractElement(object):
         if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
         instance = Class(doc, *args, **kwargs)
         if id:
-            doc.index[value] = instance
+            if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + id
+            doc.index[id] = instance
         return instance        
             
     def resolveword(self, id):
