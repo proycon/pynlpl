@@ -89,15 +89,14 @@ class FoliaSanity(unittest.TestCase):
         
     def test007_index(self):                                    
         """Sanity check - Index"""            
-        #grab something from the index
+        #grab something using the index
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
         self.assertTrue( isinstance(w, folia.Word) )
         self.assertEqual( self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] , self.doc.index['WR-P-E-J-0000000001.p.1.s.2.w.7'] )         
         self.assertEqual( w.id , 'WR-P-E-J-0000000001.p.1.s.2.w.7' )         
         self.assertEqual( w.text , "stamboom" ) 
         
-        
-            
+
         
 
 

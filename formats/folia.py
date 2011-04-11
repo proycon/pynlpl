@@ -422,7 +422,7 @@ class AbstractElement(object):
                 text = subnode.text
             elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
-                args.append( doc.parsexml(subnode) )
+                args.append(doc.parsexml(subnode) )                
             elif doc.debug >= 1:
                 print >>stderr, "[PyNLPl FoLiA DEBUG] Ignoring subnode outside of FoLiA namespace: " + subnode.tag
                     
@@ -1488,22 +1488,30 @@ class Division(AbstractStructureElement):
     ANNOTATIONTYPE = AnnotationType.DIVISION
 
     def __init__(self, doc, *args, **kwargs):
+        self.data = []
         if 'head' in kwargs:
             if not isinstance(kwargs['head'], Head):
                 raise ValueError("Head must be of type Head")        
-            self.head = kwargs['head']
+            self.append(kwargs['head'])
             del kwargs['head']
         else:
-            self.head = None
-        self.data = []
+            self.head = None        
         super(Division, self).__init__(doc, *args, **kwargs)
         
     def append(self, element):        
         if isinstance(element, Head):
-            self.head = element #There can be only one
+            if self.data and isinstance(self.data[0], Head): #There can be only one, replace:
+                self.data[0] = element
+            else:
+                self.data.insert(0, element)
+        
             element.parent = self
         else:
             super(Division,self).append(element)
+            
+    def head(self):
+        if self.data and isinstance(self.data[0], Head):
+            return self.data[0]            
             
     def paragraphs(self):            
         return self.select(Paragraph)
