@@ -578,7 +578,7 @@ class Word(AbstractStructureElement):
         if 'alternative' in kwargs :
             if kwargs['alternative']:
                 del kwargs['alternative']
-                c = Alternative( Correction(self.doc, **kwargs), id=self.generate_id(Alternative))            
+                c = Alternative(self.doc, Correction(self.doc, **kwargs), id=self.generate_id(Alternative))            
             else:
                 del kwargs['alternative']
         else:
