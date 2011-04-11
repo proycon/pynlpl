@@ -575,9 +575,12 @@ class Word(AbstractStructureElement):
         kwargs['original'] = self.text        
         if not 'id' in kwargs:
             kwargs['id'] = self.generate_id(Correction)
-        if 'alternative' in kwargs and kwargs['alternative']:
-            c = Alternative( Correction(self.doc, **kwargs), id=self.generate_id(Alternative))
-            del kwargs['alternative']
+        if 'alternative' in kwargs :
+            if kwargs['alternative']:
+                del kwargs['alternative']
+                c = Alternative( Correction(self.doc, **kwargs), id=self.generate_id(Alternative))            
+            else:
+                del kwargs['alternative']
         else:
             c = Correction(self.doc, **kwargs)
             self.text = newtext
