@@ -1174,6 +1174,12 @@ class Document(object):
         elif 'file' in kwargs:
             self.filename = kwargs['file']
             self.load(self.filename)              
+        elif 'string' in kwargs:
+            s = kwargs['string']
+            if isinstance(s, unicode):
+                s = s.encode('utf-8')
+            self.tree = ElementTree.parse(StringIO(s))
+            self.parsexml(self.tree.getroot())    
         elif 'tree' in kwargs:
             self.parsexml(kwargs['tree'])
         else:

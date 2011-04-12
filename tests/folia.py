@@ -20,6 +20,8 @@ import codecs
 sys.path.append(sys.path[0] + '/../../')
 os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
+from StringIO import StringIO
+import lxml.etree
 import pynlpl.formats.folia as folia
 
 
@@ -34,6 +36,18 @@ class FoliaRead(unittest.TestCase):
         f.close()
         
         doc = folia.Document(file='/tmp/foliatest.xml')
+        self.assertTrue(isinstance(doc,folia.Document))
+        
+    def test2_readfromstring(self):        
+        """Reading from string"""        
+        global FOLIAEXAMPLE
+        doc = folia.Document(string=FOLIAEXAMPLE)
+        self.assertTrue(isinstance(doc,folia.Document))
+        
+    def test3_readfromstring(self):        
+        """Reading from pre-parsed XML tree (lxml)"""        
+        global FOLIAEXAMPLE
+        doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
         self.assertTrue(isinstance(doc,folia.Document))
 
 class FoliaSanity(unittest.TestCase):
@@ -142,6 +156,21 @@ class FoliaSanity(unittest.TestCase):
         
         self.assertEqual( len(w.select(folia.SenseAnnotation)), 0)  #list
         self.assertRaises( folia.NoSuchAnnotation, w.annotation, folia.SenseAnnotation) #exception
+
+class FoliaWrite(unittest.TestCase):
+    def test1_write(self):        
+        """Reading from file"""
+        global FOLIAEXAMPLE
+        #write example to file
+        f = codecs.open('/tmp/foliatest.xml','w','utf-8')
+        f.write(FOLIAEXAMPLE)    
+        f.close()
+        
+        doc = folia.Document(file='/tmp/foliatest.xml')
+        
+        
+        
+        self.assertTrue(isinstance(doc,folia.Document))
 
 
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
