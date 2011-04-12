@@ -157,20 +157,41 @@ class FoliaSanity(unittest.TestCase):
         self.assertEqual( len(w.select(folia.SenseAnnotation)), 0)  #list
         self.assertRaises( folia.NoSuchAnnotation, w.annotation, folia.SenseAnnotation) #exception
 
-class FoliaWrite(unittest.TestCase):
-    def test1_write(self):        
-        """Reading from file"""
-        global FOLIAEXAMPLE
-        #write example to file
-        f = codecs.open('/tmp/foliatest.xml','w','utf-8')
-        f.write(FOLIAEXAMPLE)    
-        f.close()
+
+    def test099_write(self):        
+        """Sanity Check - Writing to file"""
+        self.doc.save('/tmp/foliasavetest.xml')
+    
+    def test100_sanity(self):                       
+        """Sanity Check - Checking output file against input (should be equal)"""
+        #use diff to compare the two:
+        retcode = os.system('diff -w -c /tmp/foliatest.xml /tmp/foliasavetest.xml')
+        self.assertEqual( retcode, 0)
         
-        doc = folia.Document(file='/tmp/foliatest.xml')
+class FoliaEdit(unittest.TestCase):
         
+    def setUp(self):
+        self.doc = folia.Document(file='/tmp/foliatest.xml')
+    
+    def test001_addsentence(self):        
+        """Edit Check - Adding a sentence to last paragraph"""
         
+        #grab last paragraph
+        p = self.paragraphs(-1)
+                    
+        #make a sentence            
+        s = folia.Sentence(self.doc, generate_id_in=p, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+        #add words to the sentence
+        s.append( folia.Word(self.doc, text='Dit',generate_id_in=s, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+        s.append( folia.Word(self.doc, text='is',generate_id_in=s, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+        s.append( folia.Word(self.doc, text='een',generate_id_in=s, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+        s.append( folia.Word(self.doc, text='nieuwe',generate_id_in=s, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+        s.append( folia.Word(self.doc, text='zin',generate_id_in=s, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+        s.append( folia.Word(self.doc, text='.',generate_id_in=s, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+
+        #add the sentence
+        p.append(s)
         
-        self.assertTrue(isinstance(doc,folia.Document))
 
 
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>

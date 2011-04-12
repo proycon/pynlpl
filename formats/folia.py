@@ -44,6 +44,11 @@ class NoSuchAnnotation(Exception):
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     object.doc = doc #The FoLiA root document
     supported = required + allowed
+    
+    if 'generate_id_in' in kwargs:
+        kwargs['id'] = kwargs['generate_id_in'].generate_id(object.__class__)
+        del kwargs['generate_id_in']
+            
     if 'id' in kwargs:
         if not Attrib.ID in supported:
             raise ValueError("ID is not supported")
@@ -245,6 +250,15 @@ class AbstractElement(object):
             child.parent = self
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__)
+            
+            
+    def appendnew(self, Class, **kwargs):
+        try:
+            if 'id' in Class.
+            
+        except:
+            pass
+        
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
         global NSFOLIA
