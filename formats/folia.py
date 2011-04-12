@@ -117,7 +117,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         else:
             raise ValueError("annotatortype must be 'auto' or 'manual'")                
         del kwargs['annotatortype']
-    elif annotationtype in doc.annotationdefaults and 'annotator' in doc.annotationdefaults[annotationtype]:
+    elif annotationtype in doc.annotationdefaults and 'annotatortype' in doc.annotationdefaults[annotationtype]:
         object.annotatortype = doc.annotationdefaults[annotationtype]['annotatortype']            
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotatortype is required for " + object.__class__.__name__)        
