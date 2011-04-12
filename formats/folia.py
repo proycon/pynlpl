@@ -36,6 +36,9 @@ class AnnotationType:
           
 class MetaDataType:
     NATIVE, CMDI, IMDI = range(3)     
+    
+class NoSuchAnnotation(Exception):
+    pass
 
 
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
@@ -171,6 +174,8 @@ class AbstractElement(object):
     ANNOTATIONTYPE = None
     XMLTAG = None
     ALLOWTEXT = False
+    
+    
     
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document):
@@ -533,22 +538,26 @@ class Word(AbstractStructureElement):
             raise TypeError("Invalid type")
 
     def annotations(self, annotationtype=None):
+        """Generator yielding all annotations of a certain type. Raises a Raises a NoSuchAnnotation exception if none was found."""
+        found = False 
         for e in self:
             try:
                 if annotationtype is None or e.ANNOTATIONTYPE == annotationtype:
+                    found = True
                     yield e
             except AttributeError:
                 continue
+        if not found:
+            raise NoSuchAnnotation()
     
 
-
     def annotation(self, type, set=None):
-        """Will return a SINGLE annotation (even if there are multiple). Returns None if no such annotation is found"""
+        """Will return a SINGLE annotation (even if there are multiple). Raises a NoSuchAnnotation exception if none was found"""
         l = self.select(type,set)
         if len(l) >= 1:
             return l[0]
         else:
-            return None
+            raise NoSuchAnnotation()
         
 
 
@@ -1488,15 +1497,16 @@ class Division(AbstractStructureElement):
     ANNOTATIONTYPE = AnnotationType.DIVISION
 
     def __init__(self, doc, *args, **kwargs):
-        self.data = []
         if 'head' in kwargs:
             if not isinstance(kwargs['head'], Head):
                 raise ValueError("Head must be of type Head")        
-            self.append(kwargs['head'])
+            head = kwargs['head']
             del kwargs['head']
         else:
-            self.head = None        
+            head = None
         super(Division, self).__init__(doc, *args, **kwargs)
+        if head:
+            self.append(head)
         
     def append(self, element):        
         if isinstance(element, Head):
@@ -1511,7 +1521,9 @@ class Division(AbstractStructureElement):
             
     def head(self):
         if self.data and isinstance(self.data[0], Head):
-            return self.data[0]            
+            return self.data[0]
+        else:
+            raise NoSuchAnnotation()
             
     def paragraphs(self):            
         return self.select(Paragraph)
