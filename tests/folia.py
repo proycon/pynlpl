@@ -141,7 +141,7 @@ class FoliaSanity(unittest.TestCase):
         w = self.doc.words(0)
         
         self.assertEqual( len(w.select(folia.SenseAnnotation)), 0)  #list
-        self.assertRaises(  w.annotation(folia.SenseAnnotation)) #exception
+        self.assertRaises( folia.NoSuchAnnotation, w.annotation, folia.SenseAnnotation) #exception
 
 
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
