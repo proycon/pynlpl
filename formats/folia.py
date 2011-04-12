@@ -508,9 +508,9 @@ class AbstractStructureElement(AbstractElement):
                 raise Exception("Expected a class such as Alternative, Correction, etc...")
         
         if xmltag in self.maxid:
-            return self.parent.id + '.' + xmltag + '.' + str(self.maxid[xmltag] + 1)
+            return self.id + '.' + xmltag + '.' + str(self.maxid[xmltag] + 1)
         else:
-            return self.parent.id + '.' + xmltag + '.1'
+            return self.id + '.' + xmltag + '.1'
         
 
 class Word(AbstractStructureElement):
