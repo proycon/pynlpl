@@ -252,12 +252,7 @@ class AbstractElement(object):
             raise ValueError("Unable to append object of type " + child.__class__.__name__)
             
             
-    def appendnew(self, Class, **kwargs):
-        try:
-            if 'id' in Class.
-            
-        except:
-            pass
+
         
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
