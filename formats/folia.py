@@ -253,8 +253,6 @@ class AbstractElement(object):
             
             
 
-        
-
     def xml(self, attribs = None,elements = None, skipchildren = False):  
         global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
@@ -267,19 +265,20 @@ class AbstractElement(object):
             
         #Some attributes only need to be added if they are not the same as what's already set in the declaration    
         try:
-            if self.set and (not 'set' in self.doc.annotationdefaults or self.set != self.doc.annotationdefaults['set']):
-                attribs['set'] = self.set
+            if self.set and (not self.ANNOTATIONTYPE in self.doc.annotationdefaults or not 'set' in self.doc.annotationdefaults[self.ANNOTATIONTYPE] or self.set != self.doc.annotationdefaults[self.ANNOTATIONTYPE]['set']):
+                attribs['set'] = self.set        
         except AttributeError:
             pass
+        
         try:
             if self.cls:
                 attribs['{' + NSFOLIA + '}class'] = self.cls
         except AttributeError:
             pass            
         try:            
-            if self.annotator and (not 'annotator' in self.doc.annotationdefaults or self.annotator != self.doc.annotationdefaults['annotator']):
+            if self.annotator and (not self.ANNOTATIONTYPE in self.doc.annotationdefaults or not 'annotator' in self.doc.annotationdefaults[self.ANNOTATIONTYPE] or self.annotator != self.doc.annotationdefaults[self.ANNOTATIONTYPE]['annotator']):
                 attribs['{' + NSFOLIA + '}annotator'] = self.annotator
-            if self.annotatortype and (not 'annotatortype' in self.doc.annotationdefaults or self.annotatortype != self.doc.annotationdefaults['annotatortype']):
+            if self.annotatortype and (not self.ANNOTATIONTYPE in self.doc.annotationdefaults or not 'annotatortype' in self.doc.annotationdefaults[self.ANNOTATIONTYPE] or self.annotatortype != self.doc.annotationdefaults[self.ANNOTATIONTYPE]['annotatortype']):
                 if self.annotatortype == AnnotatorType.AUTO:
                     attribs['{' + NSFOLIA + '}annotatortype'] = 'auto'
                 elif self.annotatortype == AnnotatorType.MANUAL:
@@ -1234,6 +1233,10 @@ class Document(object):
                 return self.index[key]
         except KeyError:
             raise
+            
+    def append(self):
+        #TODO: implement
+        pass
 
 
     def xmldeclarations(self):
