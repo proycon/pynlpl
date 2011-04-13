@@ -110,9 +110,9 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'annotatortype' in kwargs:
         if not Attrib.ANNOTATOR in supported:
             raise ValueError("Annotatortype is not supported for " + object.__class__.__name__)
-        if kwargs['annotatortype'] == 'auto':
+        if kwargs['annotatortype'] == 'auto' or kwargs['annotatortype'] == AnnotatorType.AUTO:
             object.annotatortype = AnnotatorType.AUTO
-        elif kwargs['annotatortype'] == 'manual':
+        elif kwargs['annotatortype'] == 'manual' or kwargs['annotatortype']  == AnnotatorType.MANUAL:
             object.annotatortype = AnnotatorType.MANUAL
         else:
             raise ValueError("annotatortype must be 'auto' or 'manual'")                

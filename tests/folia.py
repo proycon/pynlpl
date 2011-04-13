@@ -177,10 +177,10 @@ class FoliaEdit(unittest.TestCase):
         """Edit Check - Adding a sentence to last paragraph"""
         
         #grab last paragraph
-        p = self.paragraphs(-1)
+        p = self.doc.paragraphs(-1)
                     
         #make a sentence            
-        s = folia.Sentence(self.doc, generate_id_in=p, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+        s = folia.Sentence(self.doc, generate_id_in=p)
         #add words to the sentence
         s.append( folia.Word(self.doc, text='Dit',generate_id_in=s, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
         s.append( folia.Word(self.doc, text='is',generate_id_in=s, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
