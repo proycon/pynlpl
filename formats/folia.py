@@ -1244,10 +1244,12 @@ class Document(object):
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         for annotationtype in self.annotations:
             label = None
+            #Find the 'label' for the declarations dynamically (aka: AnnotationType --> String)
             for key, value in vars(AnnotationType).items():
                 if value == annotationtype:
                     label = key
                     break
+            #gather attribs
             attribs = {}
             for key, value in self.annotationdefaults[annotationtype].items():                
                 if value:
@@ -1433,7 +1435,7 @@ class Document(object):
             return sum([ t.select(Word) for t in self.data ],[])[index]
                     
     def __str__(self):
-        return ElementTree.tostring(self.xml(), pretty_print=True, encoding='utf-8')
+        return ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
         
     
 class Gap(AbstractElement):    
