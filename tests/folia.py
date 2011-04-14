@@ -205,6 +205,11 @@ class Test3Edit(unittest.TestCase):
         self.assertEqual( s[4].id, s.id + '.w.5' )
         self.assertEqual( s[5].id, s.id + '.w.6' )
         
+        
+        #index check
+        self.assertEqual( self.doc[s.id], s )
+        self.assertEqual( self.doc[s.id + '.w.3'], s[2] )
+        
         #attribute check
         self.assertEqual( s[0].annotator, 'testscript' )
         self.assertEqual( s[0].annotatortype, folia.AnnotatorType.AUTO )
@@ -240,6 +245,12 @@ class Test3Edit(unittest.TestCase):
         #add a pos annotation without specifying a set (should take default set), but this will clash with existing tag!
         self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.PosAnnotation(self.doc,  cls='N', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
         self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.LemmaAnnotation(self.doc, cls='naam', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO ) ) 
+        
+    def test003_addalternative(self):        
+        """Edit Check - Adding an alternative token annotation"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
+        w.append( folia.Alternative(self.doc, generate_id_in=w, contents=folia.PosAnnotation(self.doc, cls='V')))
+        
         
         
 

@@ -213,8 +213,7 @@ class AbstractElement(object):
         for key in kwargs:
             raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)        
         
-    def __eq__(self, other):
-        return self.id == other.id
+
 
     def __len__(self):
         return len(self.data)
