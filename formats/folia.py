@@ -17,7 +17,7 @@ from lxml.builder import E, ElementMaker
 from sys import stderr
 from StringIO import StringIO
 from pynlpl.formats.imdi import RELAXNG_IMDI
-
+import inspect
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 
@@ -42,6 +42,9 @@ class NoSuchAnnotation(Exception):
 
 class DuplicateAnnotationError(Exception):
     pass
+    
+class NoDefaultError(Exception):
+    pass    
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     object.doc = doc #The FoLiA root document
@@ -466,8 +469,56 @@ class AbstractElement(object):
         
     def remove(self, child):
         self.data.remove(child)
+
+class AllowTokenAnnotation(object):
+    """Elements that allow token annotation (including extended annotation) must inherit from this class"""
+    
+    def annotations(self, annotationtype=None):
+        """Generator yielding all annotations of a certain type. Raises a Raises a NoSuchAnnotation exception if none was found."""
+        found = False 
+        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
+        for e in self:
+            try:
+                if annotationtype is None or e.ANNOTATIONTYPE == annotationtype:
+                    found = True
+                    yield e
+            except AttributeError:
+                continue
+        if not found:
+            raise NoSuchAnnotation()
+    
+
+    def annotation(self, type, set=None):
+        """Will return a SINGLE annotation (even if there are multiple). Raises a NoSuchAnnotation exception if none was found"""
+        l = self.select(type,set)
+        if len(l) >= 1:
+            return l[0]
+        else:
+            raise NoSuchAnnotation()            
+
+    def alternatives(self, annotationtype=None, set=None):
+        """Return a list of alternatives, either all or only of a specific type, and possibly restrained also by set"""
+        l = []
+        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
+        for e in self.select(Alternative):
+            if annotationtype is None:
+                l.append(e)
+            elif len(e) >= 1: #child elements?
+                for e2 in e:
+                    try:
+                        if e2.ANNOTATIONTYPE == annotationtype:
+                            try:
+                                if set is None or e2.set == set:
+                                    found = True
+                                    l.append(e) #not e2
+                                    break #yield an alternative only once (in case there are multiple matches)
+                            except AttributeError:
+                                continue
+                    except AttributeError:
+                        continue
+        return l
             
-class AbstractStructureElement(AbstractElement):
+class AbstractStructureElement(AbstractElement, AllowTokenAnnotation):
     def __init__(self, doc, *args, **kwargs):    
         self.maxid = {}
         super(AbstractStructureElement,self).__init__(doc, *args, **kwargs)
@@ -492,6 +543,7 @@ class AbstractStructureElement(AbstractElement):
                            self.maxid[child.XMLTAG] = int(fields[-1]) 
         except AttributeError:
             pass        
+            
 
                  
     def append(self, child):
@@ -527,8 +579,7 @@ class Word(AbstractStructureElement):
             self.space = kwargs['space']
             del kwargs['space']
         super(Word,self).__init__(doc, *args, **kwargs)
-        
-            
+                
         
     
     def append(self, child):
@@ -551,27 +602,7 @@ class Word(AbstractStructureElement):
         else:
             raise TypeError("Invalid type")
 
-    def annotations(self, annotationtype=None):
-        """Generator yielding all annotations of a certain type. Raises a Raises a NoSuchAnnotation exception if none was found."""
-        found = False 
-        for e in self:
-            try:
-                if annotationtype is None or e.ANNOTATIONTYPE == annotationtype:
-                    found = True
-                    yield e
-            except AttributeError:
-                continue
-        if not found:
-            raise NoSuchAnnotation()
-    
 
-    def annotation(self, type, set=None):
-        """Will return a SINGLE annotation (even if there are multiple). Raises a NoSuchAnnotation exception if none was found"""
-        l = self.select(type,set)
-        if len(l) >= 1:
-            return l[0]
-        else:
-            raise NoSuchAnnotation()
         
 
 
@@ -588,9 +619,8 @@ class Word(AbstractStructureElement):
     def domain(self,set=None):
         return self.annotation(DomainAnnotation,set)        
 
-    def alternatives(self):
-        return self.select(Alternative)
 
+    
     def resolveword(self, id):
         if id == self.id:
             return self
@@ -822,7 +852,7 @@ class Correction(AbstractElement):
             doc.index[value] = instance
         return instance   
             
-class Alternative(AbstractElement):
+class Alternative(AbstractElement, AllowTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     ACCEPTED_DATA = (AbstractTokenAnnotation, Correction)
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
@@ -1364,6 +1394,28 @@ class Document(object):
         if not annotationtype in self.annotations:
             self.annotations.append(annotationtype)
         self.annotationdefaults[annotationtype] = kwargs
+        
+    def defaultset(self, annotationtype):
+        try:
+            return self.annotationdefaults[annotationtype]['set']
+        except KeyError:
+            raise NoDefaultError
+        
+    
+    def defaultannotator(self, annotationtype):
+        try:
+            return self.annotationdefaults[annotationtype]['annotator']        
+        except KeyError:
+            raise NoDefaultError
+            
+    def defaultannotatortype(self, annotationtype):
+        try:
+            return self.annotationdefaults[annotationtype]['annotatortype']        
+        except KeyError:
+            raise NoDefaultError
+            
+
+            
         
     def title(self, value=None):
         if not (value is None): self._title = value

@@ -237,7 +237,7 @@ class Test3Edit(unittest.TestCase):
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )
 
-    def test003_addinvalidannotation(self):        
+    def test004_addinvalidannotation(self):        
         """Edit Check - Adding a token default-set annotation that clashes with the existing one"""        
         #grab a word (naam)
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
@@ -246,11 +246,22 @@ class Test3Edit(unittest.TestCase):
         self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.PosAnnotation(self.doc,  cls='N', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
         self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.LemmaAnnotation(self.doc, cls='naam', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO ) ) 
         
-    def test003_addalternative(self):        
+    def test005_addalternative(self):        
         """Edit Check - Adding an alternative token annotation"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
         w.append( folia.Alternative(self.doc, generate_id_in=w, contents=folia.PosAnnotation(self.doc, cls='V')))
         
+        #reobtaining it:        
+        alt = list(w.alternatives()) #all alternatives
+        
+        set = self.doc.defaultset(folia.AnnotationType.POS)
+        
+        alt2 = w.alternatives(folia.AnnotationType.POS, set)        
+        
+        self.assertEqual( alt[0],alt2[0] )        
+        self.assertEqual( len(alt),1 )
+        self.assertEqual( len(alt2),1 )        
+        self.assertTrue( isinstance(alt[0].annotation(folia.PosAnnotation, set), folia.PosAnnotation) )
         
         
 
