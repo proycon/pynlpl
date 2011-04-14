@@ -25,7 +25,7 @@ import lxml.etree
 import pynlpl.formats.folia as folia
 
 
-class FoliaRead(unittest.TestCase):
+class Test1Read(unittest.TestCase):
                         
     def test1_readfromfile(self):        
         """Reading from file"""
@@ -50,7 +50,7 @@ class FoliaRead(unittest.TestCase):
         doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
         self.assertTrue(isinstance(doc,folia.Document))
 
-class FoliaSanity(unittest.TestCase):
+class Test2Sanity(unittest.TestCase):
     
     def setUp(self):
         self.doc = folia.Document(file='/tmp/foliatest.xml')
@@ -168,16 +168,21 @@ class FoliaSanity(unittest.TestCase):
         retcode = os.system('diff -w -c /tmp/foliatest.xml /tmp/foliasavetest.xml')
         self.assertEqual( retcode, 0)
         
-class FoliaEdit(unittest.TestCase):
+class Test3Edit(unittest.TestCase):
         
     def setUp(self):
-        self.doc = folia.Document(file='/tmp/foliatest.xml')
+        global FOLIAEXAMPLE
+        self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
+
     
     def test001_addsentence(self):        
         """Edit Check - Adding a sentence to last paragraph"""
         
         #grab last paragraph
         p = self.doc.paragraphs(-1)
+                    
+        #how many sentences?
+        tmp = len(p)
                     
         #make a sentence            
         s = folia.Sentence(self.doc, generate_id_in=p)
@@ -192,7 +197,51 @@ class FoliaEdit(unittest.TestCase):
         #add the sentence
         p.append(s)
         
+        #ID check
+        self.assertEqual( s[0].id, s.id + '.w.1' )
+        self.assertEqual( s[1].id, s.id + '.w.2' )
+        self.assertEqual( s[2].id, s.id + '.w.3' )
+        self.assertEqual( s[3].id, s.id + '.w.4' )
+        self.assertEqual( s[4].id, s.id + '.w.5' )
+        self.assertEqual( s[5].id, s.id + '.w.6' )
+        
+        #attribute check
+        self.assertEqual( s[0].annotator, 'testscript' )
+        self.assertEqual( s[0].annotatortype, folia.AnnotatorType.AUTO )
+        
+        #addition to paragraph correct?
+        self.assertEqual( len(p) , tmp + 1)
+        self.assertEqual( p[-1] , s)
+        
+    def test002_addannotation(self):        
+        """Edit Check - Adding a token annotation (pos, lemma)"""
+         
+        #grab a word (naam)
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
+        
+        #add a pos annotation (in a different set than the one already present, to prevent conflict)
+        w.append( folia.PosAnnotation(self.doc, set='adhocpos', cls='NOUN', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
+        w.append( folia.LemmaAnnotation(self.doc, set='adhoclemma', cls='NAAM', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO ) ) 
+        
+        #retrieve and check
+        p = w.annotation(folia.PosAnnotation, 'adhocpos')
+        self.assertTrue( isinstance(p, folia.PosAnnotation) )
+        self.assertEqual( p.cls, 'NOUN' )
+        
+        l = w.annotation(folia.LemmaAnnotation, 'adhoclemma')
+        self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
+        self.assertEqual( l.cls, 'NAAM' )
 
+    def test003_addinvalidannotation(self):        
+        """Edit Check - Adding a token default-set annotation that clashes with the existing one"""        
+        #grab a word (naam)
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
+        
+        #add a pos annotation without specifying a set (should take default set), but this will clash with existing tag!
+        self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.PosAnnotation(self.doc,  cls='N', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
+        self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.LemmaAnnotation(self.doc, cls='naam', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO ) ) 
+        
+        
 
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="folia.xsl"?>

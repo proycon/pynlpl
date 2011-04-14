@@ -40,7 +40,9 @@ class MetaDataType:
 class NoSuchAnnotation(Exception):
     pass
 
-
+class DuplicateAnnotationError(Exception):
+    pass
+    
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     object.doc = doc #The FoLiA root document
     supported = required + allowed
@@ -537,8 +539,13 @@ class Word(AbstractStructureElement):
                 #TODO: make sure there are not other corrections on the same thing 
                 pass
             elif isinstance(child, AbstractTokenAnnotation):
-                #TODO: sanity check, there may be no other child within the same set
-                pass
+                #sanity check, there may be no other child within the same set
+                try:
+                    self.annotation(child.__class__, child.set)
+                    raise DuplicateAnnotationError
+                except NoSuchAnnotation:
+                    #good, that's what we want
+                    pass
             self.data.append(child)
             child.parent = self
             self._setmaxid(child)
