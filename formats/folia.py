@@ -872,9 +872,11 @@ class WordReference(AbstractElement):
     
     @classmethod
     def parsexml(Class, node, doc):
+        global NSFOLIA
         assert Class is WordReference or issubclass(Class, WordReference)
         #special handling for word references
-        id = node.attribs['{http://www.w3.org/XML/1998/namespace}id']
+        print node.attrib
+        id = node.attrib['id']
         if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found word reference"
         try:
             return doc[id]
@@ -890,23 +892,23 @@ class AlignReference(AbstractElement):
 
         
 class SyntacticUnit(AbstractSpanAnnotation):
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.SYNTAX
     XMLTAG = 'su'
     
 SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference)
 
 class Chunk(AbstractSpanAnnotation):
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ACCEPTED_DATA = (WordReference,)
     ANNOTATIONTYPE = AnnotationType.CHUNKING
     XMLTAG = 'chunk'
 
 class Entity(AbstractSpanAnnotation):
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ACCEPTED_DATA = (WordReference,)
     ANNOTATIONTYPE = AnnotationType.ENTITY
     XMLTAG = 'entity'

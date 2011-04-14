@@ -262,7 +262,18 @@ class Test3Edit(unittest.TestCase):
         self.assertEqual( len(alt),1 )
         self.assertEqual( len(alt2),1 )        
         self.assertTrue( isinstance(alt[0].annotation(folia.PosAnnotation, set), folia.PosAnnotation) )
+
+    #def test006_addcorrection(self):        
+    #    """Edit Check - Correcting Text"""
         
+        
+    #def test007_addcorrection2(self):        
+    #    """Edit Check - Correcting a Token Annotation element"""        
+    
+    #def test008_addaltcorrection(self):            
+    #    """Edit Check - Adding alternative corrections"""        
+        
+    #def test009_addaltcorrection(self):                
         
 
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
@@ -434,6 +445,24 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <pos class="LET()"/>
               <lemma class="."/>
             </w>
+            <syntax>
+                <su class="sentence">
+                 <su class="subject"><wref id="WR-P-E-J-0000000001.p.1.s.1.w.1" t="Stemma" /></su>
+                 <su class="verb"><wref id="WR-P-E-J-0000000001.p.1.s.1.w.2" t="is" /></su>
+                 <su class="predicate">
+                    <su class="np">
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.3" t="een" />
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.4" t="ander" />
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.5" t="woord" />
+                    </su>
+                    <su class="pp">
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.6" t="voor" />
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.7" t="stamboom" />
+                    </su>
+                 </su>
+                 <wref id="WR-P-E-J-0000000001.p.1.s.1.w.8" t="." />
+                </su>
+            </syntax>
           </s>
           <s xml:id="WR-P-E-J-0000000001.p.1.s.2">
             <w xml:id="WR-P-E-J-0000000001.p.1.s.2.w.1">
