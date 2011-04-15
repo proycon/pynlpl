@@ -253,7 +253,7 @@ class AbstractElement(object):
             self.data.append(child)
             child.parent = self
         else:
-            raise ValueError("Unable to append object of type " + child.__class__.__name__)
+            raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ )
             
             
 
@@ -318,21 +318,30 @@ class AbstractElement(object):
         return e
         
         
-    def select(self, cls, set=None, recursive=True, node=None):
+    def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
         l = []
         if not node:
             node = self
         for e in self:
-            if isinstance(e, cls):
+            ignore = False                            
+            for c in ignorelist:
+                if c == cls or issubclass(c,cls):
+                    print "IGNORE ", c
+                    ignore = True
+                    break
+            if ignore: 
+                continue
+        
+            if isinstance(e, cls):                
                 if not set is None:
                     try:
                         if e.set != set:
                             continue
                     except:
-                        continue                    
+                        continue
                 l.append(e)
-            elif recursive:
-                for e2 in e.select(cls, set, recursive, e):
+            if recursive:
+                for e2 in e.select(cls, set, recursive, ignorelist, e):
                     if not set is None:
                         try:
                             if e2.set != set:
@@ -741,7 +750,7 @@ class AbstractSpanAnnotation(AbstractAnnotation):
                     e.append( child.xml() )
             return e    
         else:
-            return super(AbstractSpanAnnotation,self).__init__(attribs, elements, skipchildren)    
+            return super(AbstractSpanAnnotation,self).xml( attribs, elements, skipchildren)    
 
     def append(self, child):
         if isinstance(child, Word) and WordReference in self.ACCEPTED_DATA:
@@ -750,8 +759,6 @@ class AbstractSpanAnnotation(AbstractAnnotation):
             child.parent = self
         else:
             return super(AbstractSpanAnnotation,self).append(child)    
-
-
             
 
 class AbstractAnnotationLayer(AbstractElement):
@@ -875,7 +882,6 @@ class WordReference(AbstractElement):
         global NSFOLIA
         assert Class is WordReference or issubclass(Class, WordReference)
         #special handling for word references
-        print node.attrib
         id = node.attrib['id']
         if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found word reference"
         try:
@@ -1483,16 +1489,16 @@ class Document(object):
     
     def sentences(self, index = None):
         if index is None:
-            return sum([ t.select(Sentence) for t in self.data ],[])
+            return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])
         else:
-            return sum([ t.select(Sentence) for t in self.data ],[])[index]
+            return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])[index]
 
         
     def words(self, index = None):
         if index is None:            
-            return sum([ t.select(Word) for t in self.data ],[])
+            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation,Correction]) for t in self.data ],[])
         else:
-            return sum([ t.select(Word) for t in self.data ],[])[index]
+            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation,Correction]) for t in self.data ],[])[index]
                     
     def __str__(self):
         return ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
