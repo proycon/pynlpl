@@ -325,8 +325,7 @@ class AbstractElement(object):
         for e in self:
             ignore = False                            
             for c in ignorelist:
-                if c == cls or issubclass(c,cls):
-                    print "IGNORE ", c
+                if c == e.__class__ or issubclass(e.__class__,c):
                     ignore = True
                     break
             if ignore: 
