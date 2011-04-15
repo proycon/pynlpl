@@ -600,28 +600,35 @@ class Word(AbstractStructureElement):
             if isinstance(child, Correction):
                 #TODO: replace other child within the same set
                 #TODO: make sure there are not other corrections on the same thing 
-                previouscorrection = None
-                try:
+                
+                conflicts = []                
+                
+                #Are there correction already?
+                if self.hasannotation(Correction):
+                    #are there conflicts with the correction that is about to be added?
                     corrections = self.annotations(Correction)
                     for correction in corrections:            
-                        if (isinstance(correction.new, str) or isinstance(correction.new, unicode)) and (isinstance(child.new, str) or isinstance(child.new, unicode)):
-                            previouscorrection = correction                                                    
-                        if isinstance(correction.new, list):    
-                            if isinstance(child, 
-                    
-                            
-                        if correction.hasannotation(child.new,__class__, child.set):                        
-                            previouscorrection = correction
-                except NoSuchAnnotation:
-                    #good
-                    pass
+                        for element1 in child.new:
+                            for element2 in correction.new:
+                                if element1.__class__ == element2.__class__:
+                                    if element1.set == element2.set:
+                                        if not correction in conflicts:
+                                            conflicts.append(correction)
+                                            break                
                 
-                if previouscorrection:
-                    previouscorrection.parent.remove(previouscorrection)
+                if conflicts:
+                    if len(conflicts) >= 2:
+                        raise Exception("Unable to add correction. Unresolvable conflict with existing corrections")                                
+                    else:                        
+                        conflict = conflicts[0]
+                        if conflict.new == child.original:
+                            #good, we can nest
+                            #TODO: ID trouble?
+                            self.data.remove(conflict)
+                            child.original = [conflict]                                                        
+                        else:
+                            raise Exception("Unable to add correction. Unresolvable conflict with existing correction")                                
                 
-                if alreadyexists:
-                    
-                pas
             elif isinstance(child, AbstractTokenAnnotation):
                 #sanity check, there may be no other child within the same set
                 try:
@@ -821,8 +828,8 @@ class Correction(AbstractElement):
         if not attribs: attribs = {}
         if not elements: elements = []
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
-        elements.append( E.new( *[ x.xml() if isinstance(s, AbstractElement) else E.t(x) for x in self.new ) ] ) )
-        elements.append( E.original( *[ x.xml() if isinstance(s, AbstractElement) else E.t(x) for x in self.original ) ] ) )    
+        elements.append( E.new( *[ x.xml() if isinstance(s, AbstractElement) else E.t(x) for x in self.new ] ) ) 
+        elements.append( E.original( *[ x.xml() if isinstance(s, AbstractElement) else E.t(x) for x in self.original ] ) )    
         return super(Correction,self).xml(attribs,elements, True)  
 
     @classmethod

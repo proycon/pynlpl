@@ -5,8 +5,15 @@
 #Frog Wrapper with XML input and FoLiA output support
 
 import getopt
-
 import lxml.etree
+import sys
+import os
+
+if __name__ == "__main__":
+    sys.path.append(sys.path[0] + '/../..')
+    os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
+
+
 import pynlpl.formats.folia as folia
 from pynlpl.clients.frogclient import FrogClient
 
