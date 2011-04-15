@@ -736,20 +736,21 @@ class AbstractTokenAnnotation(AbstractAnnotation): pass
     
 class AbstractSpanAnnotation(AbstractAnnotation): 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
+        global NSFOLIA
         if not attribs: attribs = {}
-        if Word in self.ACCEPTED_DATA:
-            E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-            e = super(AbstractSpanAnnotation,self).__init__(attribs, elements, True)
-            for child in self:
-                if isinstance(child, Word):
-                    #Include REFERENCES to word items instead of word items themselves
-                    attribs['{http://www.w3.org/XML/1998/namespace}id'] = child.id
-                    e.append( E.wref(**attribs) )
-                else:
-                    e.append( child.xml() )
-            return e    
-        else:
-            return super(AbstractSpanAnnotation,self).xml( attribs, elements, skipchildren)    
+        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        e = super(AbstractSpanAnnotation,self).xml(attribs, elements, True)
+        for child in self:
+            if isinstance(child, Word):
+                #Include REFERENCES to word items instead of word items themselves
+                attribs['{' + NSFOLIA + '}id'] = child.id                    
+                if child.text:
+                    attribs['{' + NSFOLIA + '}t'] = child.text
+                e.append( E.wref(**attribs) )
+            else:
+                e.append( child.xml() )
+        return e    
+
 
     def append(self, child):
         if isinstance(child, Word) and WordReference in self.ACCEPTED_DATA:
@@ -1304,7 +1305,7 @@ class Document(object):
         return l
         
     def xml(self):    
-        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
         
