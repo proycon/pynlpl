@@ -263,17 +263,37 @@ class Test3Edit(unittest.TestCase):
         self.assertEqual( len(alt2),1 )        
         self.assertTrue( isinstance(alt[0].annotation(folia.PosAnnotation, set), folia.PosAnnotation) )
 
-    #def test006_addcorrection(self):        
-    #    """Edit Check - Correcting Text"""
+    def test006_addcorrection(self):        
+        """Edit Check - Correcting Text"""
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
+        w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+                    
+        self.assertEqual( w.annotation(folia.Correction).original ,'stippelijn' ) 
+        self.assertEqual( w.annotation(folia.Correction).new ,'stippellijn' )     
+        self.assertEqual( w.text, 'stippellijn')    
         
         
-    #def test007_addcorrection2(self):        
-    #    """Edit Check - Correcting a Token Annotation element"""        
+    def test007_addcorrection2(self):        
+        """Edit Check - Correcting a Token Annotation element"""        
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
+        w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+                    
+        self.assertEqual( w.annotation(folia.Correction).original ,'stippelijn' ) 
+        self.assertEqual( w.annotation(folia.Correction).new ,'stippellijn' )     
+        self.assertEqual( w.text, 'stippellijn')    
+        
     
-    #def test008_addaltcorrection(self):            
-    #    """Edit Check - Adding alternative corrections"""        
+    def test008_addaltcorrection(self):            
+        """Edit Check - Adding alternative corrections"""        
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
+        w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto', alternative=True) 
+            
+        alt = w.alternatives(folia.AnnotationType.CORRECTION)        
+        self.assertEqual( alt[0].annotation(folia.Correction).original ,'stippelijn' ) 
+        self.assertEqual( alt[0].annotation(folia.Correction).new ,'stippellijn' ) 
         
-    #def test009_addaltcorrection(self):                
+        
+            
         
 
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
@@ -1153,9 +1173,9 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <lemma class="een"/>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11">
-              <t>stippellijn</t>
-              <pos class="N(soort,ev,basis,zijd,stan)"/>
-              <lemma class="stippellijn"/>
+              <t>stippelijn</t>
+              <pos class="FOUTN(soort,ev,basis,zijd,stan)"/>
+              <lemma class="stippelijn"/>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.12">
               <t>op</t>

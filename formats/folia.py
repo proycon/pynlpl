@@ -476,6 +476,7 @@ class AbstractElement(object):
         return None
         
     def remove(self, child):
+        child.parent = None
         self.data.remove(child)
 
 class AllowTokenAnnotation(object):
@@ -495,10 +496,14 @@ class AllowTokenAnnotation(object):
         if not found:
             raise NoSuchAnnotation()
     
+    def hasannotation(self,type,set):
+        """Returns an integer indicating whether such as annotation exists, and if so, how many"""
+        l = self.select(type,set,False) #non-recursive
+        return len(l)
 
     def annotation(self, type, set=None):
         """Will return a SINGLE annotation (even if there are multiple). Raises a NoSuchAnnotation exception if none was found"""
-        l = self.select(type,set)
+        l = self.select(type,set,False) #non-recursive
         if len(l) >= 1:
             return l[0]
         else:
@@ -595,7 +600,28 @@ class Word(AbstractStructureElement):
             if isinstance(child, Correction):
                 #TODO: replace other child within the same set
                 #TODO: make sure there are not other corrections on the same thing 
-                pass
+                previouscorrection = None
+                try:
+                    corrections = self.annotations(Correction)
+                    for correction in corrections:            
+                        if (isinstance(correction.new, str) or isinstance(correction.new, unicode)) and (isinstance(child.new, str) or isinstance(child.new, unicode)):
+                            previouscorrection = correction                                                    
+                        if isinstance(correction.new, list):    
+                            if isinstance(child, 
+                    
+                            
+                        if correction.hasannotation(child.new,__class__, child.set):                        
+                            previouscorrection = correction
+                except NoSuchAnnotation:
+                    #good
+                    pass
+                
+                if previouscorrection:
+                    previouscorrection.parent.remove(previouscorrection)
+                
+                if alreadyexists:
+                    
+                pas
             elif isinstance(child, AbstractTokenAnnotation):
                 #sanity check, there may be no other child within the same set
                 try:
@@ -794,22 +820,9 @@ class Correction(AbstractElement):
     def xml(self, attribs = None, elements = None, skipchildren = False):
         if not attribs: attribs = {}
         if not elements: elements = []
-        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-
-
-        if (isinstance(self.original, str) or isinstance(self.original, unicode)) and (isinstance(self.original, str) or isinstance(self.original, unicode)):
-            elements.append( E.new( E.t( self.new) ) )
-            elements.append( E.original( E.t( self.original )) )
-        elif not isinstance(self.new, list) and not isinstance(self.original, list):
-            elements.append( E.new( self.new.xml() ) )
-            elements.append( E.original( self.original.xml() ) )
-        elif isinstance(self.new, list):
-            elements.append( E.new( *[ x.xml() for x in self.new ] ) )
-            elements.append( E.original( self.original.xml() ) )
-        elif isinstance(self.original, list):
-            elements.append( E.new( self.new.xml() ) )
-            elements.append( E.original( *[ x.xml() for x in self.original ] ) )
-
+        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
+        elements.append( E.new( *[ x.xml() if isinstance(s, AbstractElement) else E.t(x) for x in self.new ) ] ) )
+        elements.append( E.original( *[ x.xml() if isinstance(s, AbstractElement) else E.t(x) for x in self.original ) ] ) )    
         return super(Correction,self).xml(attribs,elements, True)  
 
     @classmethod
@@ -819,23 +832,23 @@ class Correction(AbstractElement):
         nslen = len(NSFOLIA) + 2
         args = []
         kwargs = {}
-        kwargs['original'] = {}
-        kwargs['new'] = {}
+        kwargs['original'] = []
+        kwargs['new'] = []
         for subnode in node:
              if subnode.tag == '{' + NSFOLIA + '}original':                        
                 if len(subnode) == 1:
                     if subnode[0].tag == '{' + NSFOLIA + '}t':
-                        kwargs['original'] = subnode[0].text
+                        kwargs['original'] = [ subnode[0].text ]
                     else:
-                        kwargs['original'] = doc.parsexml(subnode[0])
+                        kwargs['original'] = [ doc.parsexml(subnode[0]) ]
                 else:
                     kwargs['original'] = [ doc.parsexml(x) for x in subnode ] 
              elif subnode.tag == '{' + NSFOLIA + '}new':
                 if len(subnode) == 1:
                     if subnode[0].tag == '{' + NSFOLIA + '}t':
-                        kwargs['new'] = subnode[0].text
+                        kwargs['new'] = [ subnode[0].text ]
                     else:
-                        kwargs['new'] = doc.parsexml(subnode[0])
+                        kwargs['new'] = [ ( doc.parsexml(subnode[0]) ) ]
                 else:
                     kwargs['new'] = [ doc.parsexml(x) for x in subnode ] 
              elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
