@@ -276,7 +276,7 @@ class Test3Edit(unittest.TestCase):
     def test007_addcorrection2(self):        
         """Edit Check - Correcting a Token Annotation element"""        
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+        w.correct('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
                     
         self.assertEqual( w.annotation(folia.Correction).original ,'stippelijn' ) 
         self.assertEqual( w.annotation(folia.Correction).new ,'stippellijn' )     
