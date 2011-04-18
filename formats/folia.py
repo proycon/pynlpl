@@ -487,8 +487,10 @@ class AbstractElement(object):
                 continue
             elif Class is Word and  key == 'correction':
                 dcoicorrection = value #class
+                continue
             elif Class is Word and  key == 'original':
                 dcoicorrectionoriginal = value                
+                continue
             elif Class is Gap and  key == 'reason':
                 key = 'class'
             elif Class is Gap and  key == 'hand':
@@ -521,10 +523,10 @@ class AbstractElement(object):
             if not AnnotationType.LEMMA in doc.annotationdefaults:
                 doc.declare(AnnotationType.LEMMA, set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset')
             instance.append( LemmaAnnotation(doc, cls=dcoilemma) )            
-        if dcoicorrection and dcoicorrectionoriginal:
+        if dcoicorrection and dcoicorrectionoriginal and text:
             if not AnnotationType.CORRECTION in doc.annotationdefaults:
                 doc.declare(AnnotationType.CORRECTION, set='http://ilk.uvt.nl/folia/sets/dcoi-corrections.foliaset')
-            instance.append( Correction(cls=dcoicorrection, original=dcoicorrectionoriginal, new=text) )                        
+            instance.append( Correction(doc, generate_id_in=instance, cls=dcoicorrection, original=dcoicorrectionoriginal, new=text) )                        
         return instance        
             
     def resolveword(self, id):
