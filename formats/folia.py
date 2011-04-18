@@ -1750,6 +1750,37 @@ class Text(AbstractElement):
         return self.select(Word)
 
 
+class Corpus:
+    def __init__(self,corpusdir, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, ignoreerrors=False):
+        self.corpusdir = corpusdir
+        self.extension = extension
+        self.restrict_to_collection = restrict_to_collection
+        self.conditionf = conditionf
+        self.ignoreerrors = ignoreerrors
+
+    def __iter__(self):
+        if not self.restrict_to_collection:
+            for f in glob.glob(self.corpusdir+"/*." + self.extension):
+                if self.conditionf(f):
+                    try:
+                        yield Document(file=f)
+                    except:
+                        print >>sys.stderr, "Error, unable to parse " + f
+                        if not self.ignoreerrors:
+                            raise
+        for d in glob.glob(self.corpusdir+"/*"):
+            if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
+                for f in glob.glob(d+ "/*." + self.extension):
+                    if self.conditionf(f):
+                        try:
+                            yield Document(file=f)
+                        except:
+                            print >>sys.stderr, "Error, unable to parse " + f
+                            if not self.ignoreerrors:
+                                raise
+
+
+
 def relaxng_declarations():
     global NSFOLIA
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
