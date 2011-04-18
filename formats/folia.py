@@ -506,7 +506,8 @@ class AbstractElement(object):
         #   kwargs['value'] = node.text
         if text:
             kwargs['text'] = text
-                                
+            if not AnnotationType.TOKEN in doc.annotationdefaults:                    
+                doc.declare(AnnotationType.TOKEN, set='http://ilk.uvt.nl/folia/sets/ilktok.foliaset')
                                                             
         if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
         instance = Class(doc, *args, **kwargs)
