@@ -176,7 +176,8 @@ for (fragment, id) in zip(data,idmap):
             if lemma:
                 w.append( folia.LemmaAnnotation(foliadoc, cls=lemma) ) 
             if pos:
-                w.append( folia.PosAnnotation(foliadoc, cls=pos) )         
+                w.append( folia.PosAnnotation(foliadoc, cls=pos) )  
+            s.append(w)
         if (not word or i == len(response) - 1) and len(s) > 0:
             #gap or end of response: terminate sentence
             if mode == 'p':
