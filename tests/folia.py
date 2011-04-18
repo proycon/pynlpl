@@ -268,20 +268,22 @@ class Test3Edit(unittest.TestCase):
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
                     
-        self.assertEqual( w.annotation(folia.Correction).original ,'stippelijn' ) 
-        self.assertEqual( w.annotation(folia.Correction).new ,'stippellijn' )     
+        self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' ) 
+        self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )     
         self.assertEqual( w.text, 'stippellijn')    
         
         
     def test007_addcorrection2(self):        
         """Edit Check - Correcting a Token Annotation element"""        
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        w.correct('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+        oldpos = w.annotation(folia.PosAnnotation)
+        newpos = folia.PosAnnotation(cls='N(soort,ev,basis,zijd,stan)')
+        w.correct(w.annotation(oldpos),newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
                     
-        self.assertEqual( w.annotation(folia.Correction).original ,'stippelijn' ) 
-        self.assertEqual( w.annotation(folia.Correction).new ,'stippellijn' )     
-        self.assertEqual( w.text, 'stippellijn')    
-        
+        self.assertEqual( w.annotation(folia.Correction).original[0] ,oldpos ) 
+        self.assertEqual( w.annotation(folia.Correction).new[0] ,'newpos' )     
+    
+    
     
     def test008_addaltcorrection(self):            
         """Edit Check - Adding alternative corrections"""        

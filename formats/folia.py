@@ -20,6 +20,7 @@ from pynlpl.formats.imdi import RELAXNG_IMDI
 import inspect
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
+NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 
 class AnnotatorType:
     AUTO = 0
@@ -437,8 +438,10 @@ class AbstractElement(object):
     @classmethod
     def parsexml(Class, node, doc):
         assert issubclass(Class, AbstractElement)
-        global NSFOLIA
+        global NSFOLIA, NSDCOI
         nslen = len(NSFOLIA) + 2
+        nslendcoi = len(NSDCOI) + 2
+        dcoi = (node.tag[nslendcoi] == '{' + NSDCOI + '}')
         args = []
         kwargs = {}
         text = None
@@ -448,23 +451,49 @@ class AbstractElement(object):
             elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
                 args.append(doc.parsexml(subnode) )                
+            elif subnode.tag[:nslen] == '{' + NSDCOI + '}':
+                if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslen:]
+                args.append(doc.parsexml(subnode) ) 
             elif doc.debug >= 1:
                 print >>stderr, "[PyNLPl FoLiA DEBUG] Ignoring subnode outside of FoLiA namespace: " + subnode.tag
                     
-        id = None
+
+        
+        id = dcoipos = dcoilemma = None
         for key, value in node.attrib.items():
             if key == '{http://www.w3.org/XML/1998/namespace}id':
                 id = value
                 key = 'id'
             elif key[:nslen] == '{' + NSFOLIA + '}':
                 key = key[nslen:]
+            elif key[:nslendcoi] == '{' + NSDCOI + '}':
+                key = key[nslendcoi:]
+                if Class is Word and key == 'pos':
+                    dcoipos = value
+                    continue
+                elif Class is Word and  key == 'lemma':
+                    dcoilemma = value
+                    continue
+                elif Class is Gap and  key == 'reason':
+                    key = 'class'
+                elif Class is Gap and  key == 'hand':
+                    key = 'annotator'
+            elif doc.debug >= 1:
+                print >>stderr, "[PyNLPl FoLiA DEBUG] Ignoring attribute outside of FoLiA namespace: " + subnode.tag
             kwargs[key] = value
+                                
+        #D-Coi support:
+        if dcoi and Class.ALLOWTEXT:
+            text = node.text.strip()
+                    
+                                
                                     
-        if node.text and node.text.strip():
-            kwargs['value'] = node.text
+        #if node.text and node.text.strip():
+        #   kwargs['value'] = node.text
         if text:
             kwargs['text'] = text
                                 
+                                                            
         if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
         instance = Class(doc, *args, **kwargs)
         if id:
@@ -496,7 +525,7 @@ class AllowTokenAnnotation(object):
         if not found:
             raise NoSuchAnnotation()
     
-    def hasannotation(self,type,set):
+    def hasannotation(self,type,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many"""
         l = self.select(type,set,False) #non-recursive
         return len(l)
@@ -1493,10 +1522,27 @@ class Document(object):
                 elif subnode.tag == '{' + NSFOLIA + '}text' and self.loadall:
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
                     self.data.append( self.parsexml(subnode) )
+        elif node.tag == '{' + NSDCOI + '}DCOI':
+            if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found DCOI document"
+            try:
+                self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
+            except KeyError:
+                raise Exception("D-Coi Document has no ID!")
+            for subnode in node:
+                if subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
+                    self.metadatatype = MetaDataType.IMDI
+                    self.setimdi(subsubnode)
+                elif subnode.tag == '{' + NSDCOI + '}text':
+                    if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
+                    self.data.append( self.parsexml(subnode) )
         elif node.tag[:nslen] == '{' + NSFOLIA + '}' and node.tag[nslen:] in XML2CLASS:
-            #generic handling
+            #generic handling (FoLiA)
             Class = XML2CLASS[node.tag[nslen:]]                
             return Class.parsexml(node,self)
+        elif node.tag[:len(NSDCOI)] == '{' + NSDCOI + '}' and node.tag[len(NSDCOI):] in XML2CLASS:
+            #generic handling (D-Coi)
+            Class = XML2CLASS[node.tag[len(NSDCOI):]]                
+            return Class.parsexml(node,self)            
         else:
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
         
