@@ -28,29 +28,42 @@ print "Processing..."
 for i, filename in enumerate(index):
     progress = round((i+1) / float(len(index)) * 100,1)    
     print "#" + str(i+1) + " " + filename + " " + str(progress) + '%'
-    doc = folia.Document(file=filename)
+    try:
+        doc = folia.Document(file=filename)
+    except:
+        print >> sys.stderr,"ERROR loading " + filename
+        continue        
     filename = filename.replace(sonardir,'')
     if filename[0] == '/':
         filename = filename[1:]
     if filename[-4:] == '.pos':
-        filename == filename[:-4]
+        filename = filename[:-4]
     if filename[-4:] == '.tok':
-        filename == filename[:-4]    
+        filename = filename[:-4]    
     if filename[-4:] == '.ilk':
-        filename == filename[:-4]    
+        filename = filename[:-4]    
     #Load document prior to tokenisation
-    pretokdoc = folia.Document(file=sonardir + '/' + filename)
+    try:
+        pretokdoc = folia.Document(file=sonardir + '/' + filename)
+    except:
+        print >> sys.stderr,"ERROR loading " + filename
+        continue    
     for p2 in pretokdoc.paragraphs():
         try:
             p = doc[p2.id]        
         except:
             print >> sys.stderr,"ERROR: Paragraph " + p2.id + " not found. Tokenised and pre-tokenised versions out of sync?"
             continue
-        p.text = p2.text                        
+        if p2.text:
+            p.text = p2.text                     
     try:
         os.mkdir(foliadir + os.path.dirname(filename))
     except:
         pass
-    doc.save(foliadir + filename)
+    try:        
+        doc.save(foliadir + filename)
+    except:
+        print >> sys.stderr,"ERROR saving " + foliadir + filename
+        
     
     
