@@ -441,7 +441,7 @@ class AbstractElement(object):
         global NSFOLIA, NSDCOI
         nslen = len(NSFOLIA) + 2
         nslendcoi = len(NSDCOI) + 2
-        dcoi = (node.tag[nslendcoi] == '{' + NSDCOI + '}')
+        dcoi = (node.tag[:nslendcoi] == '{' + NSDCOI + '}')
         args = []
         kwargs = {}
         text = None
@@ -508,11 +508,11 @@ class AbstractElement(object):
         if dcoipos:
             if not AnnotationType.POS in doc.annotationdefaults:
                 doc.declare(set='http://ilk.uvt.nl/folia/sets/cgn-legacy.foliaset')
-            instance.append( PosAnnotation(cls=dcoipos) )
+            instance.append( PosAnnotation(doc, cls=dcoipos) )
         if dcoilemma:
             if not AnnotationType.LEMMA in doc.annotationdefaults:
                 doc.declare(set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset')
-            instance.append( LemmaAnnotation(cls=dcoilemma) )            
+            instance.append( LemmaAnnotation(doc, cls=dcoilemma) )            
         return instance        
             
     def resolveword(self, id):
@@ -854,12 +854,26 @@ class Correction(AbstractElement):
 
     def __init__(self,  doc, *args, **kwargs):
         if 'new' in kwargs:
-            self.new = kwargs['new']
+            if isinstance(kwargs['new'], AbstractElement) or isinstance(kwargs['new'], unicode):
+                self.new = [ kwargs['new'] ]
+            elif isinstance(kwargs['new'], str):
+                self.new = [ unicode(kwargs['new'],'utf-8') ]
+            elif isinstance(kwargs['new'], list):                
+                self.new = kwargs['new']
+            else:
+                raise Exception("Invalid type for new: ")
             del kwargs['new'] 
         else:
             raise Exception("No new= argument specified!")
         if 'original' in kwargs:
-            self.original = kwargs['original']
+            if isinstance(kwargs['original'], AbstractElement)  or isinstance(kwargs['original'], unicode):
+                self.original = [ kwargs['original'] ]
+            elif isinstance(kwargs['original'], str):
+                self.original = [ unicode(kwargs['original'],'utf-8') ]                
+            elif isinstance(kwargs['original'], list):
+                self.original = kwargs['original']
+            else:
+                raise Exception("Invalid type for original")
             del kwargs['original'] 
         else:
             raise Exception("No original= argument specified!") 
@@ -1511,8 +1525,9 @@ class Document(object):
 
     def parsexml(self, node):
         """Main XML parser, will invoke class-specific XML parsers"""
-        global XML2CLASS, NSFOLIA
+        global XML2CLASS, NSFOLIA, NSDCOI
         nslen = len(NSFOLIA) + 2
+        nslendcoi = len(NSDCOI) + 2
         
         if isinstance(node,ElementTree._ElementTree):        
             node = node.getroot()
@@ -1553,9 +1568,9 @@ class Document(object):
             #generic handling (FoLiA)
             Class = XML2CLASS[node.tag[nslen:]]                
             return Class.parsexml(node,self)
-        elif node.tag[:len(NSDCOI)] == '{' + NSDCOI + '}' and node.tag[len(NSDCOI):] in XML2CLASS:
+        elif node.tag[:nsdcoilen] == '{' + NSDCOI + '}' and node.tag[nsdcoilen:] in XML2CLASS:
             #generic handling (D-Coi)
-            Class = XML2CLASS[node.tag[len(NSDCOI):]]                
+            Class = XML2CLASS[node.tag[nsdcoilen:]]                
             return Class.parsexml(node,self)            
         else:
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
