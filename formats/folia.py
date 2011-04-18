@@ -451,9 +451,15 @@ class AbstractElement(object):
             elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
                 args.append(doc.parsexml(subnode) )                
-            elif subnode.tag[:nslen] == '{' + NSDCOI + '}':
-                if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslen:]
-                args.append(doc.parsexml(subnode) ) 
+            elif subnode.tag[:nslendcoi] == '{' + NSDCOI + '}':
+                #Dcoi support
+                if Class is Text and subnode.tag[nslendcoi:] == 'body':
+                    for subsubnode in subnode:            
+                        if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslendcoi:]
+                        args.append(doc.parsexml(subsubnode) ) 
+                else:
+                    if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslendcoi:]
+                    args.append(doc.parsexml(subnode) ) 
             elif doc.debug >= 1:
                 print >>stderr, "[PyNLPl FoLiA DEBUG] Ignoring subnode outside of FoLiA namespace: " + subnode.tag
                     
@@ -499,6 +505,14 @@ class AbstractElement(object):
         if id:
             if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + id
             doc.index[id] = instance
+        if dcoipos:
+            if not AnnotationType.POS in doc.annotationdefaults:
+                doc.declare(set='http://ilk.uvt.nl/folia/sets/cgn-legacy.foliaset')
+            instance.append( PosAnnotation(cls=dcoipos) )
+        if dcoilemma:
+            if not AnnotationType.LEMMA in doc.annotationdefaults:
+                doc.declare(set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset')
+            instance.append( LemmaAnnotation(cls=dcoilemma) )            
         return instance        
             
     def resolveword(self, id):
