@@ -312,7 +312,7 @@ class AbstractElement(object):
             pass                
             
         #append children:
-        if not skipchildren:
+        if not skipchildren and self.data:
             for child in self:
                 e.append(child.xml())
         if elements:
@@ -899,8 +899,8 @@ class Correction(AbstractElement):
         if not attribs: attribs = {}
         if not elements: elements = []
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
-        elements.append( E.new( *[ x.xml() if isinstance(s, AbstractElement) else E.t(x) for x in self.new ] ) ) 
-        elements.append( E.original( *[ x.xml() if isinstance(s, AbstractElement) else E.t(x) for x in self.original ] ) )    
+        elements.append( E.new( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.new ] ) ) 
+        elements.append( E.original( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.original ] ) )    
         return super(Correction,self).xml(attribs,elements, True)  
 
     @classmethod
