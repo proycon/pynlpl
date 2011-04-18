@@ -12,6 +12,7 @@ if __name__ == "__main__":
 
 import pynlpl.formats.folia as folia
 import pynlpl.formats.sonar as sonar
+import datetime
 
 sonardir = sys.argv[1]
 foliadir = sys.argv[2]
@@ -27,7 +28,7 @@ index = list(sonar.CorpusFiles(sonardir,'pos', "", lambda x: True, True))
 print "Processing..."
 for i, filename in enumerate(index):
     progress = round((i+1) / float(len(index)) * 100,1)    
-    print "#" + str(i+1) + " " + filename + " " + str(progress) + '%'
+    print "#" + str(i+1) + " " + filename + ' ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' ' +  str(progress) + '%'
     try:
         doc = folia.Document(file=filename)
     except:
