@@ -36,6 +36,17 @@ for i, filename in enumerate(index):
         filename == filename[:-4]
     if filename[-4:] == '.tok':
         filename == filename[:-4]    
+    if filename[-4:] == '.ilk':
+        filename == filename[:-4]    
+    #Load document prior to tokenisation
+    pretokdoc = folia.Document(file=sonardir + '/' + filename)
+    for p2 in pretokdoc.paragraphs():
+        try:
+            p = doc[p2.id]        
+        except:
+            print >> sys.stderr,"ERROR: Paragraph " + p2.id + " not found. Tokenised and pre-tokenised versions out of sync?"
+            continue
+        p.text = p2.text                        
     try:
         os.mkdir(foliadir + os.path.dirname(filename))
     except:

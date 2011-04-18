@@ -226,8 +226,7 @@ class AbstractElement(object):
         
     def __iter__(self):
         """Iterate over children"""
-        for child in self.data:
-            yield child
+        return iter(self.data)
 
     def __contains__(self, child):
         return child in self.data
@@ -324,8 +323,8 @@ class AbstractElement(object):
     def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
         l = []
         if not node:
-            node = self
-        for e in self:
+            node = self        
+        for e in self.data:
             ignore = False                            
             for c in ignorelist:
                 if c == e.__class__ or issubclass(e.__class__,c):
