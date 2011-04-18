@@ -64,6 +64,6 @@ for i, filename in enumerate(index):
         doc.save(foliadir + filename)
     except:
         print >> sys.stderr,"ERROR saving " + foliadir + filename
-        
-    
-    
+            
+    sys.stdout.flush()
+    sys.stderr.flush()
