@@ -467,7 +467,6 @@ class AbstractElement(object):
         
         id = dcoipos = dcoilemma = None
         for key, value in node.attrib.items():
-            print key
             if key == '{http://www.w3.org/XML/1998/namespace}id':
                 id = value
                 key = 'id'
@@ -1732,7 +1731,7 @@ Division.ACCEPTED_DATA = (Division, Paragraph, Sentence, List, Figure)
 class Text(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Division, Paragraph, Sentence, List, Figure)
+    ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure)
     XMLTAG = 'text' 
         
     def paragraphs(self):            
