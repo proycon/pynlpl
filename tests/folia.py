@@ -50,6 +50,12 @@ class Test1Read(unittest.TestCase):
         doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
         self.assertTrue(isinstance(doc,folia.Document))
 
+    def test4_readdcoi(self):        
+        """Reading D-Coi file"""
+        global DCOIEXAMPLE
+        doc = folia.Document(tree=lxml.etree.parse(StringIO(DCOIEXAMPLE.encode('utf-8'))))
+        self.assertTrue(isinstance(doc,folia.Document))
+        
 class Test2Sanity(unittest.TestCase):
     
     def setUp(self):
