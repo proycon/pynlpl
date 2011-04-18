@@ -433,7 +433,7 @@ class AbstractElement(object):
                     attribs.append( E.interleave(*elements) )
                 else:
                     attribs.append( *elements )
-            return E.define( E.element(*attribs, name=cls.XMLTAG) ,name=cls.XMLTAG, ns=NSFOLIA)
+            return E.define( E.element(*attribs, name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
     
     @classmethod
     def parsexml(Class, node, doc):
