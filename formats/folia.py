@@ -467,25 +467,28 @@ class AbstractElement(object):
         
         id = dcoipos = dcoilemma = None
         for key, value in node.attrib.items():
+            print key
             if key == '{http://www.w3.org/XML/1998/namespace}id':
                 id = value
                 key = 'id'
             elif key[:nslen] == '{' + NSFOLIA + '}':
                 key = key[nslen:]
-            elif key[:nslendcoi] == '{' + NSDCOI + '}':
+            elif key[:nslendcoi] == '{' + NSDCOI + '}':                
                 key = key[nslendcoi:]
-                if Class is Word and key == 'pos':
-                    dcoipos = value
-                    continue
-                elif Class is Word and  key == 'lemma':
-                    dcoilemma = value
-                    continue
-                elif Class is Gap and  key == 'reason':
-                    key = 'class'
-                elif Class is Gap and  key == 'hand':
-                    key = 'annotator'
-            elif doc.debug >= 1:
-                print >>stderr, "[PyNLPl FoLiA DEBUG] Ignoring attribute outside of FoLiA namespace: " + subnode.tag
+                
+
+            #D-Coi support:
+            if Class is Word and key == 'pos':
+                dcoipos = value
+                continue
+            elif Class is Word and  key == 'lemma':
+                dcoilemma = value
+                continue
+            elif Class is Gap and  key == 'reason':
+                key = 'class'
+            elif Class is Gap and  key == 'hand':
+                key = 'annotator'    
+            
             kwargs[key] = value
                                 
         #D-Coi support:
@@ -507,11 +510,11 @@ class AbstractElement(object):
             doc.index[id] = instance
         if dcoipos:
             if not AnnotationType.POS in doc.annotationdefaults:
-                doc.declare(set='http://ilk.uvt.nl/folia/sets/cgn-legacy.foliaset')
+                doc.declare(AnnotationType.POS, set='http://ilk.uvt.nl/folia/sets/cgn-legacy.foliaset')
             instance.append( PosAnnotation(doc, cls=dcoipos) )
         if dcoilemma:
             if not AnnotationType.LEMMA in doc.annotationdefaults:
-                doc.declare(set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset')
+                doc.declare(AnnotationType.LEMMA, set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset')
             instance.append( LemmaAnnotation(doc, cls=dcoilemma) )            
         return instance        
             
@@ -1560,7 +1563,7 @@ class Document(object):
             for subnode in node:
                 if subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
                     self.metadatatype = MetaDataType.IMDI
-                    self.setimdi(subsubnode)
+                    self.setimdi(subnode)
                 elif subnode.tag == '{' + NSDCOI + '}text':
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
                     self.data.append( self.parsexml(subnode) )
@@ -1568,9 +1571,9 @@ class Document(object):
             #generic handling (FoLiA)
             Class = XML2CLASS[node.tag[nslen:]]                
             return Class.parsexml(node,self)
-        elif node.tag[:nsdcoilen] == '{' + NSDCOI + '}' and node.tag[nsdcoilen:] in XML2CLASS:
+        elif node.tag[:nslendcoi] == '{' + NSDCOI + '}' and node.tag[nslendcoi:] in XML2CLASS:
             #generic handling (D-Coi)
-            Class = XML2CLASS[node.tag[nsdcoilen:]]                
+            Class = XML2CLASS[node.tag[nslendcoi:]]                
             return Class.parsexml(node,self)            
         else:
             raise Exception("Unknown FoLiA XML tag: " + node.tag)

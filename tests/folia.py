@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
@@ -53,7 +52,7 @@ class Test1Read(unittest.TestCase):
     def test4_readdcoi(self):        
         """Reading D-Coi file"""
         global DCOIEXAMPLE
-        doc = folia.Document(tree=lxml.etree.parse(StringIO(DCOIEXAMPLE.encode('utf-8'))))
+        doc = folia.Document(tree=lxml.etree.parse(StringIO(DCOIEXAMPLE.encode('iso-8859-15'))))
         self.assertTrue(isinstance(doc,folia.Document))
         
 class Test2Sanity(unittest.TestCase):
@@ -1221,7 +1220,7 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
 </FoLiA>"""
 
 
-DCOIEXAMPLE="""<?xml version="1.0" encoding="iso-8859-15"?>
+DCOIEXAMPLE=u"""<?xml version="1.0" encoding="iso-8859-15"?>
 <DCOI xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" xmlns="http://lands.let.ru.nl/projects/d-coi/ns/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:d-coi="http://lands.let.ru.nl/projects/d-coi/ns/1.0" xsi:schemaLocation="http://lands.let.ru.nl/projects/d-coi/ns/1.0 dcoi.xsd" xml:id="WR-P-E-J-0000125009">
   <imdi:METATRANSCRIPT xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" Date="2009-01-27" Type="SESSION" Version="1">
     <imdi:Session>
@@ -1334,1693 +1333,1693 @@ DCOIEXAMPLE="""<?xml version="1.0" encoding="iso-8859-15"?>
       <div xml:id="WR-P-E-J-0000125009.div.1">
         <head xml:id="WR-P-E-J-0000125009.head.1">
           <s xml:id="WR-P-E-J-0000125009.head.1.s.1">
-            <w xml:id="WR-P-E-J-0000125009.head.1.s.1.w.1">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.head.1.s.1.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.head.1.s.2">
-            <w xml:id="WR-P-E-J-0000125009.head.1.s.2.w.1">3D</w>
-            <w xml:id="WR-P-E-J-0000125009.head.1.s.2.w.2">model</w>
-            <w xml:id="WR-P-E-J-0000125009.head.1.s.2.w.3">van</w>
-            <w xml:id="WR-P-E-J-0000125009.head.1.s.2.w.4">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.head.1.s.2.w.1" pos="TW(hoofd,prenom,stan)" lemma="3D">3D</w>
+            <w xml:id="WR-P-E-J-0000125009.head.1.s.2.w.2" pos="N(soort,ev,basis,onz,stan)" lemma="model">model</w>
+            <w xml:id="WR-P-E-J-0000125009.head.1.s.2.w.3" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.head.1.s.2.w.4" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
           </s>
         </head>
         <p xml:id="WR-P-E-J-0000125009.p.1">
           <s xml:id="WR-P-E-J-0000125009.p.1.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.1">Aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.2">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.3">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.4">merknaam</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.5">voor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.6">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.7">medicijn</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.8">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.9">Bayer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.10">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.2" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.3" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.4" pos="N(soort,ev,basis,zijd,stan)" lemma="merknaam">merknaam</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.5" pos="VZ(init)" lemma="voor">voor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.6" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.7" pos="N(soort,ev,basis,zijd,stan)" lemma="medicijn">medicijn</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.8" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.9" pos="N(eigen,ev,basis,zijd,stan)" lemma="Bayer">Bayer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.1.w.10" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.1.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.2">werkzame</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.3">stof</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.4">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.5">acetylsalicylzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.6">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.2" pos="ADJ(prenom,basis,met-e,stan)" lemma="werkzaam">werkzame</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.3" pos="N(soort,ev,basis,zijd,stan)" lemma="stof">stof</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.4" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.5" pos="N(soort,ev,basis,onz,stan)" lemma="acetylsalicylzuur">acetylsalicylzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.2.w.6" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.1.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.1">Aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.2">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.3">ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.4">bekend</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.5">onder</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.6">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.7">naam</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.8">acetosal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.9">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.10">aspro</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.11">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.12">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.13">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.14">merknaam</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.15">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.16">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.17">Nicholas</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.18">Ltd.</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.19">Het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.20">werkt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.21">pijnstillend</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.22">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.23">koortsverlagend</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.24">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.25">ontstekingsremmend</w>
-            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.26">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.2" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.3" pos="BW()" lemma="ook">ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.4" pos="ADJ(vrij,basis,zonder)" lemma="bekend">bekend</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.5" pos="VZ(init)" lemma="onder">onder</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.6" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.7" pos="N(soort,ev,basis,zijd,stan)" lemma="naam">naam</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="acetosal">acetosal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.9" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.10" pos="N(soort,mv,basis)" lemma="aspro">aspro</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.11" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.12" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.13" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.14" pos="N(soort,ev,basis,zijd,stan)" lemma="merknaam">merknaam</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.15" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.16" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.17" pos="SPEC(deeleigen)" lemma="_">Nicholas</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.18" pos="SPEC(deeleigen)" lemma="_">Ltd.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.19" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">Het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.20" pos="WW(pv,tgw,met-t)" lemma="werken">werkt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.21" pos="ADJ(vrij,basis,zonder)" lemma="pijnstillend">pijnstillend</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.22" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.23" pos="ADJ(vrij,basis,zonder)" lemma="koortsverlagend">koortsverlagend</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.24" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.25" pos="ADJ(vrij,basis,zonder)" lemma="ontstekingsremmend">ontstekingsremmend</w>
+            <w xml:id="WR-P-E-J-0000125009.p.1.s.3.w.26" pos="LET()" lemma=".">.</w>
           </s>
         </p>
         <p xml:id="WR-P-E-J-0000125009.p.2">
           <s xml:id="WR-P-E-J-0000125009.p.2.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.1">Oorspronkelijk</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.2">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.3">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.4">werking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.5">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.6">salicylzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.7">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.8">pijnstiller</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.9">ontdekt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.10">doordat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.11">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.12">werd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.13">geïdentificeerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.14">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.15">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.16">werkzame</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.17">stof</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.18">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.19">wilgenbast</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.20">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.1" pos="ADJ(vrij,basis,zonder)" lemma="Oorspronkelijk">Oorspronkelijk</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.2" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.3" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.4" pos="N(soort,ev,basis,zijd,stan)" lemma="werking">werking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.5" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.6" pos="N(soort,ev,basis,onz,stan)" lemma="salicylzuur">salicylzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.7" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="pijnstiller">pijnstiller</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.9" pos="WW(vd,vrij,zonder)" lemma="ontdekken">ontdekt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.10" pos="VG(onder)" lemma="doordat">doordat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.11" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.12" pos="WW(pv,verl,ev)" lemma="worden">werd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.13" pos="WW(vd,vrij,zonder)" lemma="identificeren">geïdentificeerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.14" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.15" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.16" pos="ADJ(prenom,basis,met-e,stan)" lemma="werkzaam">werkzame</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.17" pos="N(soort,ev,basis,zijd,stan)" lemma="stof">stof</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.18" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.19" pos="N(soort,ev,basis,zijd,stan)" lemma="wilgenbast">wilgenbast</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.1.w.20" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.2.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.1">Het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.2">zuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.3">zelf</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.4">werd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.5">echter</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.6">bijzonder</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.7">slecht</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.8">door</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.9">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.10">maag</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.11">getolereerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.12">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.1" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">Het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="zuur">zuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.3" pos="BW()" lemma="zelf">zelf</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.4" pos="WW(pv,verl,ev)" lemma="worden">werd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.5" pos="BW()" lemma="echter">echter</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.6" pos="ADJ(prenom,basis,zonder)" lemma="bijzonder">bijzonder</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.7" pos="ADJ(vrij,basis,zonder)" lemma="slecht">slecht</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.8" pos="VZ(init)" lemma="door">door</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.9" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="maag">maag</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.11" pos="WW(vd,vrij,zonder)" lemma="tolereren">getolereerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.2.w.12" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.2.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.2">acetyl-ester</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.3">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.4">daarin</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.5">veel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.6">beter</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.7">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="acetyl-ester">acetyl-ester</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.3" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.4" pos="BW()" lemma="daarin">daarin</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.5" pos="VNW(onbep,grad,stan,vrij,zonder,basis)" lemma="veel">veel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.6" pos="ADJ(vrij,comp,zonder)" lemma="goed">beter</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.3.w.7" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.2.s.4">
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.1">Deze</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.2">stof</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.3">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.4">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.5">zuivere</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.6">toestand</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.7">of</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.8">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.9">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.10">iets</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.11">minder</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.12">maagprikkelende</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.13">calciumzout</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.14">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.15">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.16">markt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.17">gebracht</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.18">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.19">ascal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.20">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.1" pos="VNW(aanw,det,stan,prenom,met-e,rest)" lemma="deze">Deze</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="stof">stof</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.3" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.4" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.5" pos="ADJ(prenom,basis,met-e,stan)" lemma="zuiver">zuivere</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="toestand">toestand</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.7" pos="VG(neven)" lemma="of">of</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.8" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.9" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.10" pos="VNW(onbep,pron,stan,vol,3o,ev)" lemma="iets">iets</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.11" pos="VNW(onbep,grad,stan,vrij,zonder,comp)" lemma="minder">minder</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.12" pos="ADJ(prenom,basis,met-e,stan)" lemma="maagprikkelende">maagprikkelende</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="calciumzout">calciumzout</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.14" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.15" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.16" pos="N(soort,ev,basis,zijd,stan)" lemma="markt">markt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.17" pos="WW(vd,vrij,zonder)" lemma="brengen">gebracht</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.18" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.19" pos="N(soort,ev,basis,zijd,stan)" lemma="ascal">ascal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.2.s.4.w.20" pos="LET()" lemma=")">)</w>
           </s>
         </p>
         <p xml:id="WR-P-E-J-0000125009.p.3">
           <s xml:id="WR-P-E-J-0000125009.p.3.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.2">werking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.3">zelf</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.4">berust</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.5">erop</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.6">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.7">Aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.8">irreversibel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.9">bindt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.10">aan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.11">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.12">enzym</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.13">cyclo-oxygenase</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.14">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.15">COX</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.16">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.17">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.18">waardoor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.19">dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.20">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.21">meer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.22">kan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.23">helpen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.24">arachidonzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.25">om</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.26">te</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.27">zetten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.28">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.29">prostaglandines</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.30">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.31">stoffen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.32">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.33">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.34">zenuwuiteinden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.35">gevoelig</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.36">maken</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.37">voor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.38">prikkels</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.39">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="werking">werking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.3" pos="BW()" lemma="zelf">zelf</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.4" pos="WW(pv,tgw,ev)" lemma="berusten">berust</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.5" pos="BW()" lemma="erop">erop</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.6" pos="VG(onder)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.7" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.8" pos="ADJ(vrij,basis,zonder)" lemma="irreversibel">irreversibel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.9" pos="WW(pv,tgw,met-t)" lemma="binden">bindt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.10" pos="VZ(init)" lemma="aan">aan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.11" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.12" pos="N(soort,ev,basis,onz,stan)" lemma="enzym">enzym</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="cyclo-oxygenase">cyclo-oxygenase</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.14" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.15" pos="N(soort,ev,basis,zijd,stan)" lemma="cox">COX</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.16" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.17" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.18" pos="BW()" lemma="waardoor">waardoor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.19" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dit">dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.20" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.21" pos="VNW(onbep,grad,stan,vrij,zonder,comp)" lemma="veel">meer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.22" pos="WW(pv,tgw,ev)" lemma="kunnen">kan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.23" pos="WW(inf,vrij,zonder)" lemma="helpen">helpen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.24" pos="N(soort,ev,basis,zijd,stan)" lemma="arachidonzuur">arachidonzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.25" pos="VZ(init)" lemma="om">om</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.26" pos="VZ(init)" lemma="te">te</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.27" pos="WW(inf,vrij,zonder)" lemma="zetten">zetten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.28" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.29" pos="N(soort,mv,basis)" lemma="prostaglandine">prostaglandines</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.30" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.31" pos="N(soort,mv,basis)" lemma="stof">stoffen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.32" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.33" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.34" pos="N(soort,mv,basis)" lemma="zenuwuiteinde">zenuwuiteinden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.35" pos="ADJ(vrij,basis,zonder)" lemma="gevoelig">gevoelig</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.36" pos="WW(pv,tgw,mv)" lemma="maken">maken</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.37" pos="VZ(init)" lemma="voor">voor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.38" pos="N(soort,mv,basis)" lemma="prikkel">prikkels</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.1.w.39" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.3.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.2">vermelde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.3">maagproblemen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.4">ontstaan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.5">door</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.6">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.7">irreversibele</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.8">binding</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.9">aan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.10">COX-1</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.11">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.12">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.13">variant</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.14">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.15">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.16">enzym</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.17">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.18">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.19">rolspeelt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.20">bij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.21">bescherming</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.22">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.23">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.24">maag</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.25">tegen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.26">zijn</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.27">eigen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.28">zure</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.29">inhoud</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.30">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.2" pos="WW(vd,prenom,met-e)" lemma="vermelden">vermelde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.3" pos="N(soort,mv,basis)" lemma="maagprobleem">maagproblemen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.4" pos="WW(pv,tgw,mv)" lemma="ontstaan">ontstaan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.5" pos="VZ(init)" lemma="door">door</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.6" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.7" pos="ADJ(prenom,basis,met-e,stan)" lemma="irreversibel">irreversibele</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="binding">binding</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.9" pos="VZ(init)" lemma="aan">aan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.10" pos="N(eigen,ev,basis,zijd,stan)" lemma="Cox-1">COX-1</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.11" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.12" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="variant">variant</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.14" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.15" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.16" pos="N(soort,ev,basis,onz,stan)" lemma="enzym">enzym</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.17" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.18" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.19" pos="N(soort,ev,basis,zijd,stan)" lemma="rolspeelt">rolspeelt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.20" pos="VZ(init)" lemma="bij">bij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.21" pos="N(soort,ev,basis,zijd,stan)" lemma="bescherming">bescherming</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.22" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.23" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.24" pos="N(soort,ev,basis,zijd,stan)" lemma="maag">maag</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.25" pos="VZ(init)" lemma="tegen">tegen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.26" pos="VNW(bez,det,stan,vol,3,ev,prenom,zonder,agr)" lemma="zijn">zijn</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.27" pos="ADJ(prenom,basis,zonder)" lemma="eigen">eigen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.28" pos="ADJ(prenom,basis,met-e,stan)" lemma="zuur">zure</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.29" pos="N(soort,ev,basis,zijd,stan)" lemma="inhoud">inhoud</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.2.w.30" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.3.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.1">Ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.2">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.3">dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.4">COX-1</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.5">aanwezig</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.6">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.7">bloedplaatjes</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.8">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.9">vandaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.10">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.11">trombocytenaggregatieremmende</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.12">werking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.13">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.1" pos="BW()" lemma="ook">Ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.2" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.3" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dit">dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.4" pos="N(eigen,ev,basis,zijd,stan)" lemma="Cox-1">COX-1</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.5" pos="ADJ(vrij,basis,zonder)" lemma="aanwezig">aanwezig</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.6" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.7" pos="N(soort,mv,basis)" lemma="bloedplaatjes">bloedplaatjes</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.8" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.9" pos="BW()" lemma="vandaar">vandaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.10" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.11" pos="ADJ(prenom,basis,met-e,stan)" lemma="trombocytenaggregatieremmende">trombocytenaggregatieremmende</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.12" pos="N(soort,ev,basis,zijd,stan)" lemma="werking">werking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.3.w.13" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.3.s.4">
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.1">Vandaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.2">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.3">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.4">farmaceutische</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.5">industrie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.6">zich</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.7">richt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.8">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.9">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.10">ontwikkeling</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.11">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.12">COX-2</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.13">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.14">induceerbaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.15">COX</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.16">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.17">specifieke</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.18">pijnstillers</w>
-            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.19">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.1" pos="BW()" lemma="vandaar">Vandaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.2" pos="VG(onder)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.3" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.4" pos="ADJ(prenom,basis,met-e,stan)" lemma="farmaceutisch">farmaceutische</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="industrie">industrie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.6" pos="VNW(refl,pron,obl,red,3,getal)" lemma="zich">zich</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.7" pos="WW(pv,tgw,ev)" lemma="richten">richt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.8" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.9" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="ontwikkeling">ontwikkeling</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.11" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.12" pos="N(eigen,ev,basis,zijd,stan)" lemma="Cox-2">COX-2</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.13" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.14" pos="N(soort,ev,basis,zijd,stan)" lemma="induceerbaar">induceerbaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.15" pos="N(soort,ev,basis,zijd,stan)" lemma="cox">COX</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.16" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.17" pos="ADJ(prenom,basis,met-e,stan)" lemma="specifiek">specifieke</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.18" pos="N(soort,mv,basis)" lemma="pijnstiller">pijnstillers</w>
+            <w xml:id="WR-P-E-J-0000125009.p.3.s.4.w.19" pos="LET()" lemma=".">.</w>
           </s>
         </p>
       </div>
       <div xml:id="WR-P-E-J-0000125009.div.2">
         <head xml:id="WR-P-E-J-0000125009.head.2">
           <s xml:id="WR-P-E-J-0000125009.head.2.s.1">
-            <w xml:id="WR-P-E-J-0000125009.head.2.s.1.w.1">Geschiedenis</w>
-            <w xml:id="WR-P-E-J-0000125009.head.2.s.1.w.2">van</w>
-            <w xml:id="WR-P-E-J-0000125009.head.2.s.1.w.3">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.head.2.s.1.w.1" pos="N(soort,ev,basis,zijd,stan)" lemma="geschiedenis">Geschiedenis</w>
+            <w xml:id="WR-P-E-J-0000125009.head.2.s.1.w.2" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.head.2.s.1.w.3" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
           </s>
         </head>
         <p xml:id="WR-P-E-J-0000125009.p.4">
           <s xml:id="WR-P-E-J-0000125009.p.4.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.2">ontdekking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.3">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.4">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.5">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.6">algemeen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.7">toegeschreven</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.8">aan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.9">Felix</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.10">Hoffmann</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.11">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.12">werkzaam</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.13">bij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.14">Bayer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.15">te</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.16">Elberfeld</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.17">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="ontdekking">ontdekking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.3" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.4" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.5" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.6" pos="ADJ(prenom,basis,zonder)" lemma="algemeen">algemeen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.7" pos="WW(vd,vrij,zonder)" lemma="toeschrijven">toegeschreven</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.8" pos="VZ(init)" lemma="aan">aan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.9" pos="SPEC(deeleigen)" lemma="_">Felix</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.10" pos="SPEC(deeleigen)" lemma="_">Hoffmann</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.11" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.12" pos="ADJ(vrij,basis,zonder)" lemma="werkzaam">werkzaam</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.13" pos="VZ(init)" lemma="bij">bij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.14" pos="N(eigen,ev,basis,zijd,stan)" lemma="Bayer">Bayer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.15" pos="VZ(init)" lemma="te">te</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.16" pos="N(soort,ev,basis,onz,stan)" lemma="elberfeld">Elberfeld</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.1.w.17" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.1">Uit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.2">onderzoek</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.3">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.4">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.5">labjournaals</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.6">bij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.7">Bayer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.8">blijkt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.9">echter</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.10">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.11">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.12">werkelijke</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.13">ontdekker</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.14">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.15">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.16">Arthur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.17">Eichengrün</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.18">was</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.19">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.20">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.21">onderzoek</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.22">deed</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.23">naar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.24">betere</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.25">pijnstillers</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.26">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.1" pos="VZ(init)" lemma="uit">Uit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.2" pos="N(soort,ev,basis,onz,stan)" lemma="onderzoek">onderzoek</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.3" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.4" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.5" pos="N(soort,mv,basis)" lemma="labjournaal">labjournaals</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.6" pos="VZ(init)" lemma="bij">bij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.7" pos="N(eigen,ev,basis,zijd,stan)" lemma="Bayer">Bayer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.8" pos="WW(pv,tgw,met-t)" lemma="blijken">blijkt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.9" pos="BW()" lemma="echter">echter</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.10" pos="VG(onder)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.11" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.12" pos="ADJ(prenom,basis,met-e,stan)" lemma="werkelijk">werkelijke</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="ontdekker">ontdekker</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.14" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.15" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.16" pos="SPEC(deeleigen)" lemma="_">Arthur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.17" pos="SPEC(deeleigen)" lemma="_">Eichengrün</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.18" pos="WW(pv,verl,ev)" lemma="zijn">was</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.19" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.20" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.21" pos="N(soort,ev,basis,onz,stan)" lemma="onderzoek">onderzoek</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.22" pos="WW(pv,verl,ev)" lemma="doen">deed</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.23" pos="VZ(init)" lemma="naar">naar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.24" pos="ADJ(prenom,comp,met-e,stan)" lemma="goed">betere</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.25" pos="N(soort,mv,basis)" lemma="pijnstiller">pijnstillers</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.2.w.26" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.1">Felix</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.2">Hoffmann</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.3">werkte</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.4">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.5">laboratorium-assistent</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.6">onder</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.7">zijn</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.8">leiding</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.9">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.1" pos="SPEC(deeleigen)" lemma="_">Felix</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.2" pos="SPEC(deeleigen)" lemma="_">Hoffmann</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.3" pos="WW(pv,verl,ev)" lemma="werken">werkte</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.4" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="laboratorium-assistent">laboratorium-assistent</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.6" pos="VZ(init)" lemma="onder">onder</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.7" pos="WW(pv,tgw,mv)" lemma="zijn">zijn</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="leiding">leiding</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.3.w.9" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.4">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.1">Door</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.2">zijn</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.3">joodse</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.4">achtergrond</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.5">werd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.6">Eichengrün</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.7">door</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.8">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.9">Nazis</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.10">uit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.11">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.12">annalen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.13">geschrapt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.14">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.15">werd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.16">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.17">verhaal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.18">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.19">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.20">rheumatisch</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.21">vader</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.22">bedacht</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.23">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.1" pos="VZ(init)" lemma="door">Door</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.2" pos="VNW(bez,det,stan,vol,3,ev,prenom,zonder,agr)" lemma="zijn">zijn</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.3" pos="ADJ(prenom,basis,met-e,stan)" lemma="joods">joodse</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.4" pos="N(soort,ev,basis,zijd,stan)" lemma="achtergrond">achtergrond</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.5" pos="WW(pv,verl,ev)" lemma="worden">werd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.6" pos="N(soort,mv,basis)" lemma="eichengrün">Eichengrün</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.7" pos="VZ(init)" lemma="door">door</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.8" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.9" pos="N(soort,ev,basis,zijd,stan)" lemma="nazis">Nazis</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.10" pos="VZ(init)" lemma="uit">uit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.11" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.12" pos="N(soort,mv,basis)" lemma="annalen">annalen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.13" pos="WW(vd,vrij,zonder)" lemma="schrappen">geschrapt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.14" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.15" pos="WW(pv,verl,ev)" lemma="worden">werd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.16" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.17" pos="N(soort,ev,basis,onz,stan)" lemma="verhaal">verhaal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.18" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.19" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.20" pos="ADJ(prenom,basis,zonder)" lemma="rheumatisch">rheumatisch</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.21" pos="N(soort,ev,basis,zijd,stan)" lemma="vader">vader</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.22" pos="WW(vd,vrij,zonder)" lemma="bedenken">bedacht</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.4.w.23" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.5">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.1">In</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.2">1949</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.3">publiceerde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.4">Eigengrün</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.5">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.6">artikel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.7">waarin</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.8">hij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.9">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.10">uitvinding</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.11">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.12">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.13">claimde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.14">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.1" pos="VZ(init)" lemma="in">In</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.2" pos="TW(hoofd,vrij)" lemma="1949">1949</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.3" pos="WW(pv,verl,ev)" lemma="publiceren">publiceerde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.4" pos="N(soort,mv,basis)" lemma="eigengrün">Eigengrün</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.5" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.6" pos="N(soort,ev,basis,onz,stan)" lemma="artikel">artikel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.7" pos="BW()" lemma="waarin">waarin</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.8" pos="VNW(pers,pron,nomin,vol,3,ev,masc)" lemma="hij">hij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.9" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="uitvinding">uitvinding</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.11" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.12" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="claimde">claimde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.5.w.14" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.6">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.1">Deze</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.2">claim</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.3">werd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.4">bevestigd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.5">na</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.6">onderzoek</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.7">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.8">Walter</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.9">Sneader</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.10">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.11">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.12">universiteit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.13">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.14">Glasgow</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.15">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.16">1999</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.17">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.1" pos="VNW(aanw,det,stan,prenom,met-e,rest)" lemma="deze">Deze</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="claim">claim</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.3" pos="WW(pv,verl,ev)" lemma="worden">werd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.4" pos="WW(vd,vrij,zonder)" lemma="bevestigen">bevestigd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.5" pos="VZ(init)" lemma="na">na</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.6" pos="N(soort,ev,basis,onz,stan)" lemma="onderzoek">onderzoek</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.7" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.8" pos="SPEC(deeleigen)" lemma="_">Walter</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.9" pos="SPEC(deeleigen)" lemma="_">Sneader</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.10" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.11" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.12" pos="N(soort,ev,basis,zijd,stan)" lemma="universiteit">universiteit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.13" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.14" pos="N(eigen,ev,basis,zijd,stan)" lemma="Glasgow">Glasgow</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.15" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.16" pos="TW(hoofd,vrij)" lemma="1999">1999</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.6.w.17" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.7">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.1">Salicylzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.2">werd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.3">al</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.4">gebruikt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.5">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.6">zelfs</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.7">Hippocrates</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.8">kende</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.9">er</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.10">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.11">werking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.12">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.13">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.14">maar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.15">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.16">was</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.17">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.18">walgelijk</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.19">goedje</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.20">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.21">erg</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.22">slecht</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.23">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.24">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.25">maag</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.26">lag</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.27">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.1" pos="N(soort,mv,basis)" lemma="salicylzuur">Salicylzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.2" pos="WW(pv,verl,ev)" lemma="worden">werd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.3" pos="BW()" lemma="al">al</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.4" pos="WW(vd,vrij,zonder)" lemma="gebruiken">gebruikt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.5" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.6" pos="BW()" lemma="zelfs">zelfs</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.7" pos="N(eigen,ev,basis,zijd,stan)" lemma="Hippocrates">Hippocrates</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.8" pos="WW(pv,verl,ev)" lemma="kennen">kende</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.9" pos="VNW(aanw,adv-pron,stan,red,3,getal)" lemma="er">er</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.10" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.11" pos="N(soort,ev,basis,zijd,stan)" lemma="werking">werking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.12" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.13" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.14" pos="VG(neven)" lemma="maar">maar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.15" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.16" pos="WW(pv,verl,ev)" lemma="zijn">was</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.17" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.18" pos="ADJ(prenom,basis,zonder)" lemma="walgelijk">walgelijk</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.19" pos="N(soort,ev,dim,onz,stan)" lemma="goed">goedje</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.20" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.21" pos="ADJ(vrij,basis,zonder)" lemma="erg">erg</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.22" pos="ADJ(vrij,basis,zonder)" lemma="slecht">slecht</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.23" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.24" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.25" pos="N(soort,ev,basis,zijd,stan)" lemma="maag">maag</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.26" pos="WW(pv,verl,ev)" lemma="liggen">lag</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.7.w.27" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.8">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.1">Dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.2">zuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.3">werd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.4">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.5">eerste</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.6">instantie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.7">geëxtraheerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.8">uit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.9">bast</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.10">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.11">leden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.12">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.13">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.14">plantenfamilie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.15">der</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.16">wilgen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.17">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.18">Latijnse</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.19">gelachtsnaam</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.20">Salix</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.21">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.22">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.23">vandaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.24">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.25">naam</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.26">salicylzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.27">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.1" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dit">Dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="zuur">zuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.3" pos="WW(pv,verl,ev)" lemma="worden">werd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.4" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.5" pos="TW(rang,prenom,stan)" lemma="eerste">eerste</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="instantie">instantie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.7" pos="ADJ(vrij,basis,zonder)" lemma="geëxtraheerd">geëxtraheerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.8" pos="VZ(init)" lemma="uit">uit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.9" pos="N(soort,ev,basis,zijd,stan)" lemma="bast">bast</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.10" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.11" pos="N(soort,mv,basis)" lemma="lid">leden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.12" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.13" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.14" pos="N(soort,ev,basis,zijd,stan)" lemma="plantenfamilie">plantenfamilie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.15" pos="LID(bep,gen,rest3)" lemma="de">der</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.16" pos="N(soort,mv,basis)" lemma="wilg">wilgen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.17" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.18" pos="ADJ(prenom,basis,met-e,stan)" lemma="Latijns">Latijnse</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.19" pos="N(soort,ev,basis,zijd,stan)" lemma="gelachtsnaam">gelachtsnaam</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.20" pos="N(soort,ev,basis,onz,stan)" lemma="salix">Salix</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.21" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.22" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.23" pos="BW()" lemma="vandaar">vandaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.24" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.25" pos="N(soort,ev,basis,zijd,stan)" lemma="naam">naam</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.26" pos="N(soort,ev,basis,onz,stan)" lemma="salicylzuur">salicylzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.8.w.27" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.9">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.1">Hetzelfde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.2">zuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.3">was</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.4">te</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.5">vinden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.6">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.7">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.8">Moerasspirea</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.9">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.10">vandaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.11">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.12">'</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.13">spir</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.14">'</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.15">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.16">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.17">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.1" pos="ADJ(vrij,basis,zonder)" lemma="Hetzelfde">Hetzelfde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="zuur">zuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.3" pos="WW(pv,verl,ev)" lemma="zijn">was</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.4" pos="VZ(init)" lemma="te">te</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.5" pos="WW(inf,vrij,zonder)" lemma="vinden">vinden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.6" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.7" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="moerasspirea">Moerasspirea</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.9" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.10" pos="BW()" lemma="vandaar">vandaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.11" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.12" pos="LET()" lemma="'">'</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="spir">spir</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.14" pos="LET()" lemma="'">'</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.15" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.16" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.9.w.17" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.10">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.1">Hoffmann</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.2">ging</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.3">systematisch</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.4">te</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.5">werk</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.6">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.7">zocht</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.8">hardnekkig</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.9">naar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.10">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.11">nieuwe</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.12">verbinding</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.13">om</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.14">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.15">middel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.16">beter</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.17">verteerbaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.18">te</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.19">maken</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.20">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Hoffmann">Hoffmann</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.2" pos="WW(pv,verl,ev)" lemma="gaan">ging</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.3" pos="ADJ(vrij,basis,zonder)" lemma="systematisch">systematisch</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.4" pos="VZ(init)" lemma="te">te</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.5" pos="N(soort,ev,basis,onz,stan)" lemma="werk">werk</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.6" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.7" pos="WW(pv,verl,ev)" lemma="zoeken">zocht</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.8" pos="ADJ(vrij,basis,zonder)" lemma="hardnekkig">hardnekkig</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.9" pos="VZ(init)" lemma="naar">naar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.10" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.11" pos="ADJ(prenom,basis,met-e,stan)" lemma="nieuw">nieuwe</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.12" pos="N(soort,ev,basis,zijd,stan)" lemma="verbinding">verbinding</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.13" pos="VZ(init)" lemma="om">om</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.14" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.15" pos="N(soort,ev,basis,onz,stan)" lemma="middel">middel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.16" pos="ADJ(vrij,comp,zonder)" lemma="goed">beter</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.17" pos="ADJ(vrij,basis,zonder)" lemma="verteerbaar">verteerbaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.18" pos="VZ(init)" lemma="te">te</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.19" pos="WW(inf,vrij,zonder)" lemma="maken">maken</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.10.w.20" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.11">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.1">Volgens</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.2">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.3">principe</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.4">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.5">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.6">veredeling</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.7">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.8">bestaande</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.9">geneesmiddelen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.10">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.11">waarmee</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.12">hij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.13">al</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.14">eerder</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.15">succes</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.16">heeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.17">geboekt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.18">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.19">ontdekt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.20">hij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.21">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.22">1897</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.23">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.24">oplossing</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.25">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.26">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.27">probleem</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.28">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.29">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.30">acetylering</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.31">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.32">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.33">salicylzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.34">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.1" pos="VZ(init)" lemma="volgens">Volgens</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.2" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.3" pos="N(soort,ev,basis,onz,stan)" lemma="principe">principe</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.4" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.5" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="veredeling">veredeling</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.7" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.8" pos="WW(od,prenom,met-e)" lemma="bestaan">bestaande</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.9" pos="N(soort,mv,basis)" lemma="geneesmiddel">geneesmiddelen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.10" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.11" pos="BW()" lemma="waarmee">waarmee</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.12" pos="VNW(pers,pron,nomin,vol,3,ev,masc)" lemma="hij">hij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.13" pos="BW()" lemma="al">al</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.14" pos="BW()" lemma="eerder">eerder</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.15" pos="N(soort,ev,basis,onz,stan)" lemma="succes">succes</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.16" pos="WW(pv,tgw,met-t)" lemma="hebben">heeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.17" pos="WW(vd,vrij,zonder)" lemma="boeken">geboekt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.18" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.19" pos="WW(pv,tgw,met-t)" lemma="ontdekken">ontdekt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.20" pos="VNW(pers,pron,nomin,vol,3,ev,masc)" lemma="hij">hij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.21" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.22" pos="TW(hoofd,vrij)" lemma="1897">1897</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.23" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.24" pos="N(soort,ev,basis,zijd,stan)" lemma="oplossing">oplossing</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.25" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.26" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.27" pos="N(soort,ev,basis,onz,stan)" lemma="probleem">probleem</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.28" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.29" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.30" pos="N(soort,ev,basis,zijd,stan)" lemma="acetylering">acetylering</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.31" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.32" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.33" pos="N(soort,ev,basis,onz,stan)" lemma="salicylzuur">salicylzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.11.w.34" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.12">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.1">Op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.2">10</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.3">augustus</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.4">beschrijft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.5">hij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.6">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.7">zijn</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.8">laboratoriumdagboek</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.9">hoe</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.10">hij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.11">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.12">acetylsalicylzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.13">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.14">chemisch</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.15">zuivere</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.16">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.17">bewaarbare</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.18">vorm</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.19">heeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.20">samengesteld</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.21">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.1" pos="VZ(init)" lemma="op">Op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.2" pos="TW(hoofd,vrij)" lemma="10">10</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.3" pos="N(eigen,ev,basis,zijd,stan)" lemma="augustus">augustus</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.4" pos="WW(pv,tgw,met-t)" lemma="beschrijven">beschrijft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.5" pos="VNW(pers,pron,nomin,vol,3,ev,masc)" lemma="hij">hij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.6" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.7" pos="WW(pv,tgw,mv)" lemma="zijn">zijn</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="laboratoriumdagboek">laboratoriumdagboek</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.9" pos="BW()" lemma="hoe">hoe</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.10" pos="VNW(pers,pron,nomin,vol,3,ev,masc)" lemma="hij">hij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.11" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.12" pos="N(soort,ev,basis,onz,stan)" lemma="acetylsalicylzuur">acetylsalicylzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.13" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.14" pos="ADJ(vrij,basis,zonder)" lemma="chemisch">chemisch</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.15" pos="ADJ(prenom,basis,met-e,stan)" lemma="zuiver">zuivere</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.16" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.17" pos="ADJ(prenom,basis,met-e,stan)" lemma="bewaarbaar">bewaarbare</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.18" pos="N(soort,ev,basis,zijd,stan)" lemma="vorm">vorm</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.19" pos="WW(pv,tgw,met-t)" lemma="hebben">heeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.20" pos="WW(vd,vrij,zonder)" lemma="samengesteld">samengesteld</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.12.w.21" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.13">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.1">Nadat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.2">hij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.3">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.4">nieuwe</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.5">stof</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.6">samen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.7">met</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.8">dokter</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.9">Heinrich</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.10">Dreser</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.11">uitgebreid</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.12">getest</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.13">heeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.14">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.15">dieren</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.16">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.17">komt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.18">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.19">stof</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.20">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.21">1899</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.22">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.23">poedervorm</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.24">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.25">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.26">markt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.27">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.1" pos="VG(onder)" lemma="nadat">Nadat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.2" pos="VNW(pers,pron,nomin,vol,3,ev,masc)" lemma="hij">hij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.3" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.4" pos="ADJ(prenom,basis,met-e,stan)" lemma="nieuw">nieuwe</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="stof">stof</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.6" pos="BW()" lemma="samen">samen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.7" pos="VZ(init)" lemma="met">met</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="dokter">dokter</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.9" pos="SPEC(deeleigen)" lemma="_">Heinrich</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.10" pos="SPEC(deeleigen)" lemma="_">Dreser</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.11" pos="ADJ(vrij,basis,zonder)" lemma="uitbreiden">uitgebreid</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.12" pos="WW(vd,vrij,zonder)" lemma="testen">getest</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.13" pos="WW(pv,tgw,met-t)" lemma="hebben">heeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.14" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.15" pos="N(soort,mv,basis)" lemma="dier">dieren</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.16" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.17" pos="WW(pv,tgw,met-t)" lemma="komen">komt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.18" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.19" pos="N(soort,ev,basis,zijd,stan)" lemma="stof">stof</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.20" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.21" pos="TW(hoofd,vrij)" lemma="1899">1899</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.22" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.23" pos="N(soort,ev,basis,zijd,stan)" lemma="poedervorm">poedervorm</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.24" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.25" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.26" pos="N(soort,ev,basis,zijd,stan)" lemma="markt">markt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.13.w.27" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.14">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.1">Een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.2">jaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.3">later</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.4">zijn</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.5">er</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.6">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.7">gedoseerde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.8">tabletten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.9">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.1" pos="LID(onbep,stan,agr)" lemma="een">Een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.2" pos="N(soort,ev,basis,onz,stan)" lemma="jaar">jaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.3" pos="ADJ(vrij,comp,zonder)" lemma="laat">later</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.4" pos="WW(pv,tgw,mv)" lemma="zijn">zijn</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.5" pos="VNW(aanw,adv-pron,stan,red,3,getal)" lemma="er">er</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.6" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.7" pos="ADJ(prenom,basis,met-e,stan)" lemma="gedoseerde">gedoseerde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.8" pos="N(soort,mv,basis)" lemma="tablet">tabletten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.14.w.9" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.4.s.15">
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.1">Het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.2">wereldverbruik</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.3">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.4">vandaag</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.5">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.6">dag</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.7">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.8">vijftigduizend</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.9">ton</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.10">of</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.11">ongeveer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.12">honderd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.13">miljard</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.14">tabletten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.15">per</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.16">jaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.17">geschat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.18">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.1" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">Het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.2" pos="N(soort,ev,basis,onz,stan)" lemma="wereldverbruik">wereldverbruik</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.3" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.4" pos="BW()" lemma="vandaag">vandaag</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.5" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.6" pos="N(soort,mv,basis)" lemma="dag">dag</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.7" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.8" pos="ADJ(vrij,basis,zonder)" lemma="vijftigduizend">vijftigduizend</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.9" pos="N(soort,ev,basis,zijd,stan)" lemma="ton">ton</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.10" pos="VG(neven)" lemma="of">of</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.11" pos="BW()" lemma="ongeveer">ongeveer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.12" pos="TW(hoofd,prenom,stan)" lemma="honderd">honderd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.13" pos="N(soort,ev,basis,onz,stan)" lemma="miljard">miljard</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.14" pos="N(soort,mv,basis)" lemma="tablet">tabletten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.15" pos="VZ(init)" lemma="per">per</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.16" pos="N(soort,ev,basis,onz,stan)" lemma="jaar">jaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.17" pos="WW(vd,vrij,zonder)" lemma="schatten">geschat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.4.s.15.w.18" pos="LET()" lemma=".">.</w>
           </s>
         </p>
       </div>
       <div xml:id="WR-P-E-J-0000125009.div.3">
         <head xml:id="WR-P-E-J-0000125009.head.3">
           <s xml:id="WR-P-E-J-0000125009.head.3.s.1">
-            <w xml:id="WR-P-E-J-0000125009.head.3.s.1.w.1">Geschiedenis</w>
-            <w xml:id="WR-P-E-J-0000125009.head.3.s.1.w.2">van</w>
-            <w xml:id="WR-P-E-J-0000125009.head.3.s.1.w.3">Aspro</w>
+            <w xml:id="WR-P-E-J-0000125009.head.3.s.1.w.1" pos="N(soort,ev,basis,zijd,stan)" lemma="geschiedenis">Geschiedenis</w>
+            <w xml:id="WR-P-E-J-0000125009.head.3.s.1.w.2" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.head.3.s.1.w.3" pos="N(soort,ev,basis,zijd,stan)" lemma="aspro">Aspro</w>
           </s>
         </head>
         <p xml:id="WR-P-E-J-0000125009.p.5">
           <s xml:id="WR-P-E-J-0000125009.p.5.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.1">Tijdens</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.2">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.3">1ste</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.4">Wereldoorlog</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.5">loofde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.6">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.7">Britse</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.8">regering</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.9">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.10">prijs</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.11">uit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.12">voor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.13">eenieder</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.14">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.15">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.16">nieuwe</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.17">formule</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.18">kon</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.19">vinden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.20">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.21">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.22">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.23">gezien</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.24">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.25">feit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.26">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.27">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.28">invoer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.29">uit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.30">Duitsland</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.31">stil</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.32">lag</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.33">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.1" pos="VZ(init)" lemma="tijdens">Tijdens</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.2" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.3" pos="ADJ(prenom,basis,met-e,stan)" lemma="1ste">1ste</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.4" pos="N(soort,ev,basis,zijd,stan)" lemma="wereldoorlog">Wereldoorlog</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.5" pos="WW(pv,verl,ev)" lemma="loven">loofde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.6" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.7" pos="ADJ(prenom,basis,met-e,stan)" lemma="Brits">Britse</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="regering">regering</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.9" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="prijs">prijs</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.11" pos="VZ(fin)" lemma="uit">uit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.12" pos="VZ(init)" lemma="voor">voor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="eenieder">eenieder</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.14" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.15" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.16" pos="ADJ(prenom,basis,met-e,stan)" lemma="nieuw">nieuwe</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.17" pos="N(soort,ev,basis,zijd,stan)" lemma="formule">formule</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.18" pos="WW(pv,verl,ev)" lemma="kunnen">kon</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.19" pos="WW(inf,vrij,zonder)" lemma="vinden">vinden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.20" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.21" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.22" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.23" pos="VZ(init)" lemma="gezien">gezien</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.24" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.25" pos="N(soort,ev,basis,onz,stan)" lemma="feit">feit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.26" pos="VG(onder)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.27" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.28" pos="N(soort,ev,basis,zijd,stan)" lemma="invoer">invoer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.29" pos="VZ(init)" lemma="uit">uit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.30" pos="N(eigen,ev,basis,onz,stan)" lemma="Duitsland">Duitsland</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.31" pos="ADJ(vrij,basis,zonder)" lemma="stil">stil</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.32" pos="WW(pv,verl,ev)" lemma="liggen">lag</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.1.w.33" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.5.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.1">Een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.2">chemicus</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.3">uit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.4">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.5">Australische</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.6">Melbourne</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.7">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.8">George</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.9">Nicholas</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.10">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.11">ontdekte</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.12">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.13">1915</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.14">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.15">synthetische</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.16">oplossing</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.17">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.18">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.19">zelfs</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.20">zuiverder</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.21">was</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.22">dan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.23">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.24">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.25">oplosbaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.26">was</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.27">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.1" pos="LID(onbep,stan,agr)" lemma="een">Een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="chemicus">chemicus</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.3" pos="VZ(init)" lemma="uit">uit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.4" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.5" pos="ADJ(prenom,basis,met-e,stan)" lemma="Australisch">Australische</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="melbourne">Melbourne</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.7" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.8" pos="SPEC(deeleigen)" lemma="_">George</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.9" pos="SPEC(deeleigen)" lemma="_">Nicholas</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.10" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.11" pos="WW(pv,verl,ev)" lemma="ontdekken">ontdekte</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.12" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.13" pos="TW(hoofd,vrij)" lemma="1915">1915</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.14" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.15" pos="ADJ(prenom,basis,met-e,stan)" lemma="synthetisch">synthetische</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.16" pos="N(soort,ev,basis,zijd,stan)" lemma="oplossing">oplossing</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.17" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.18" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.19" pos="BW()" lemma="zelfs">zelfs</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.20" pos="ADJ(vrij,comp,zonder)" lemma="zuiver">zuiverder</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.21" pos="WW(pv,verl,ev)" lemma="zijn">was</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.22" pos="BW()" lemma="dan">dan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.23" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.24" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.25" pos="ADJ(prenom,basis,zonder)" lemma="oplosbaar">oplosbaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.26" pos="WW(pv,verl,ev)" lemma="zijn">was</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.2.w.27" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.5.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.1">Hij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.2">noemde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.3">dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.4">Aspro</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.5">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.6">wat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.7">later</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.8">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.9">gehele</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.10">wereld</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.11">veroverde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.12">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.1" pos="VNW(pers,pron,nomin,vol,3,ev,masc)" lemma="hij">Hij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.2" pos="WW(pv,verl,ev)" lemma="noemen">noemde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.3" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dit">dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.4" pos="SPEC(deeleigen)" lemma="_">Aspro</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.5" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.6" pos="VNW(vb,pron,stan,vol,3o,ev)" lemma="wat">wat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.7" pos="ADJ(vrij,comp,zonder)" lemma="laat">later</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.8" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.9" pos="ADJ(prenom,basis,met-e,stan)" lemma="geheel">gehele</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="wereld">wereld</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.11" pos="WW(pv,verl,ev)" lemma="veroveren">veroverde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.5.s.3.w.12" pos="LET()" lemma=".">.</w>
           </s>
         </p>
       </div>
       <div xml:id="WR-P-E-J-0000125009.div.4">
         <head xml:id="WR-P-E-J-0000125009.head.4">
           <s xml:id="WR-P-E-J-0000125009.head.4.s.1">
-            <w xml:id="WR-P-E-J-0000125009.head.4.s.1.w.1">Pijnstillende</w>
-            <w xml:id="WR-P-E-J-0000125009.head.4.s.1.w.2">werking</w>
+            <w xml:id="WR-P-E-J-0000125009.head.4.s.1.w.1" pos="ADJ(prenom,basis,met-e,stan)" lemma="Pijnstillende">Pijnstillende</w>
+            <w xml:id="WR-P-E-J-0000125009.head.4.s.1.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="werking">werking</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.head.4.s.2">
-            <w xml:id="WR-P-E-J-0000125009.head.4.s.2.w.1">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.head.4.s.2.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
           </s>
         </head>
         <p xml:id="WR-P-E-J-0000125009.p.6">
           <s xml:id="WR-P-E-J-0000125009.p.6.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.1">Pijn</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.2">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.3">veroorzaakt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.4">door</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.5">verschillende</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.6">stoffen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.7">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.8">vrijkomen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.9">bij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.10">beschadigingen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.11">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.1" pos="N(soort,ev,basis,zijd,stan)" lemma="pijn">Pijn</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.2" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.3" pos="WW(pv,tgw,met-t)" lemma="veroorzaken">veroorzaakt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.4" pos="VZ(init)" lemma="door">door</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.5" pos="ADJ(prenom,basis,met-e,stan)" lemma="verschillend">verschillende</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.6" pos="N(soort,mv,basis)" lemma="stof">stoffen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.7" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.8" pos="N(soort,mv,basis)" lemma="vrijkomen">vrijkomen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.9" pos="VZ(init)" lemma="bij">bij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.10" pos="N(soort,mv,basis)" lemma="beschadiging">beschadigingen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.1.w.11" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.1">Werkende</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.2">cellen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.3">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.4">beschadigd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.5">weefsel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.6">geven</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.7">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.8">stoffen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.9">af</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.10">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.11">onder</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.12">invloed</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.13">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.14">o.a.</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.15">cytokinen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.16">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.17">mitogenen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.18">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.1" pos="ADJ(prenom,basis,met-e,stan)" lemma="Werkende">Werkende</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.2" pos="N(soort,mv,basis)" lemma="cel">cellen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.3" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.4" pos="WW(vd,prenom,zonder)" lemma="beschadigen">beschadigd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.5" pos="N(soort,ev,basis,onz,stan)" lemma="weefsel">weefsel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.6" pos="WW(pv,tgw,mv)" lemma="geven">geven</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.7" pos="VNW(aanw,det,stan,prenom,zonder,rest)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.8" pos="N(soort,mv,basis)" lemma="stof">stoffen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.9" pos="VZ(fin)" lemma="af">af</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.10" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.11" pos="VZ(init)" lemma="onder">onder</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.12" pos="N(soort,ev,basis,zijd,stan)" lemma="invloed">invloed</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.13" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.14" pos="BW()" lemma="o.a.">o.a.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.15" pos="N(soort,mv,basis)" lemma="cytokine">cytokinen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.16" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.17" pos="N(soort,mv,basis)" lemma="mitogeen">mitogenen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.2.w.18" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.1">Deze</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.2">stoffen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.3">werken</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.4">dan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.5">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.6">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.7">zenuwuiteinden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.8">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.9">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.10">pijnsignaal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.11">naar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.12">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.13">hersenen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.14">doorsturen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.15">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.1" pos="VNW(aanw,det,stan,prenom,met-e,rest)" lemma="deze">Deze</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.2" pos="N(soort,mv,basis)" lemma="stof">stoffen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.3" pos="WW(pv,tgw,mv)" lemma="werken">werken</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.4" pos="BW()" lemma="dan">dan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.5" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.6" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.7" pos="N(soort,mv,basis)" lemma="zenuwuiteinde">zenuwuiteinden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.8" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.9" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.10" pos="N(soort,ev,basis,onz,stan)" lemma="pijnsignaal">pijnsignaal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.11" pos="VZ(init)" lemma="naar">naar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.12" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.13" pos="N(soort,mv,basis)" lemma="hersenen">hersenen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.14" pos="WW(inf,vrij,zonder)" lemma="doorsturen">doorsturen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.3.w.15" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.4">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.1">Een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.2">hormoon</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.3">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.4">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.5">daarin</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.6">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.7">belangrijke</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.8">rol</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.9">speelt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.10">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.11">prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.12">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.1" pos="LID(onbep,stan,agr)" lemma="een">Een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.2" pos="N(soort,ev,basis,onz,stan)" lemma="hormoon">hormoon</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.3" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.4" pos="VG(onder)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.5" pos="BW()" lemma="daarin">daarin</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.6" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.7" pos="ADJ(prenom,basis,met-e,stan)" lemma="belangrijk">belangrijke</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="rol">rol</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.9" pos="WW(pv,tgw,met-t)" lemma="spelen">speelt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.10" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.11" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.4.w.12" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.5">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.1">Prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.2">geeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.3">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.4">alleen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.5">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.6">pijnsignaal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.7">af</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.8">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.9">maar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.10">speelt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.11">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.12">belangrijke</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.13">rol</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.14">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.15">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.16">hele</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.17">lichaam</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.18">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.1" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">Prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.2" pos="WW(pv,tgw,met-t)" lemma="geven">geeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.3" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.4" pos="BW()" lemma="alleen">alleen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.5" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="pijnsignaal">pijnsignaal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.7" pos="VZ(fin)" lemma="af">af</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.8" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.9" pos="VG(neven)" lemma="maar">maar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.10" pos="WW(pv,tgw,met-t)" lemma="spelen">speelt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.11" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.12" pos="ADJ(prenom,basis,met-e,stan)" lemma="belangrijk">belangrijke</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="rol">rol</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.14" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.15" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.16" pos="ADJ(prenom,basis,met-e,stan)" lemma="heel">hele</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.17" pos="N(soort,ev,basis,onz,stan)" lemma="lichaam">lichaam</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.5.w.18" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.6">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.1">Daarom</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.2">eerst</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.3">wat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.4">meer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.5">over</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.6">Prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.7">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.1" pos="BW()" lemma="daarom">Daarom</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.2" pos="BW()" lemma="eerst">eerst</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.3" pos="VNW(onbep,pron,stan,vol,3o,ev)" lemma="wat">wat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.4" pos="VNW(onbep,grad,stan,vrij,zonder,comp)" lemma="veel">meer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.5" pos="VZ(init)" lemma="over">over</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">Prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.6.w.7" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.7">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.1">Prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.2">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.3">geproduceerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.4">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.5">cellen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.6">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.7">werkt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.8">alleen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.9">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.10">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.11">buurt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.12">waar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.13">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.14">geproduceerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.15">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.16">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.17">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.18">dan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.19">afgebroken</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.20">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.1" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">Prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.2" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.3" pos="WW(vd,vrij,zonder)" lemma="produceren">geproduceerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.4" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.5" pos="N(soort,mv,basis)" lemma="cel">cellen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.6" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.7" pos="WW(pv,tgw,met-t)" lemma="werken">werkt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.8" pos="BW()" lemma="alleen">alleen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.9" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.10" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.11" pos="N(soort,ev,basis,zijd,stan)" lemma="buurt">buurt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.12" pos="VNW(vb,adv-pron,obl,vol,3o,getal)" lemma="waar">waar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.13" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.14" pos="WW(vd,vrij,zonder)" lemma="produceren">geproduceerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.15" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.16" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.17" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.18" pos="BW()" lemma="dan">dan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.19" pos="WW(vd,vrij,zonder)" lemma="afbreken">afgebroken</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.7.w.20" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.8">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.1">Het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.2">stimuleert</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.3">naast</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.4">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.5">pijnreactie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.6">ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.7">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.8">ontstekingsreactie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.9">wanneer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.10">er</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.11">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.12">infectie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.13">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.14">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.15">zorgt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.16">voor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.17">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.18">verhoging</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.19">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.20">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.21">lichaamstemperatuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.22">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.1" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">Het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.2" pos="WW(pv,tgw,met-t)" lemma="stimuleren">stimuleert</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.3" pos="VZ(init)" lemma="naast">naast</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.4" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="pijnreactie">pijnreactie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.6" pos="BW()" lemma="ook">ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.7" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="ontstekingsreactie">ontstekingsreactie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.9" pos="VG(onder)" lemma="wanneer">wanneer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.10" pos="VNW(aanw,adv-pron,stan,red,3,getal)" lemma="er">er</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.11" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.12" pos="N(soort,ev,basis,zijd,stan)" lemma="infectie">infectie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.13" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.14" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.15" pos="WW(pv,tgw,met-t)" lemma="zorgen">zorgt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.16" pos="VZ(init)" lemma="voor">voor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.17" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.18" pos="N(soort,ev,basis,zijd,stan)" lemma="verhoging">verhoging</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.19" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.20" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.21" pos="N(soort,ev,basis,zijd,stan)" lemma="lichaamstemperatuur">lichaamstemperatuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.8.w.22" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.9">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.1">In</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.2">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.3">cellen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.4">speelt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.5">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.6">cyclooxygenase</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.7">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.8">COX</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.9">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.10">enzym</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.11">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.12">onmisbare</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.13">rol</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.14">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.15">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.16">maken</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.17">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.18">prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.19">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.1" pos="VZ(init)" lemma="in">In</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.2" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.3" pos="N(soort,mv,basis)" lemma="cel">cellen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.4" pos="WW(pv,tgw,met-t)" lemma="spelen">speelt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.5" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="cyclooxygenase">cyclooxygenase</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.7" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="cox">COX</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.9" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="enzym">enzym</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.11" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.12" pos="ADJ(prenom,basis,met-e,stan)" lemma="onmisbaar">onmisbare</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="rol">rol</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.14" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.15" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.16" pos="WW(inf,nom,zonder,zonder-n)" lemma="maken">maken</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.17" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.18" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.9.w.19" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.10">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.1">Cyclooxygenase</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.2">katalyseert</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.3">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.4">omzetting</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.5">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.6">arachidonzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.7">naar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.8">prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.9">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.10">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.11">reactie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.12">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.13">anders</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.14">vrijwel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.15">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.16">verloopt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.17">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.1" pos="N(soort,ev,basis,zijd,stan)" lemma="cyclooxygenase">Cyclooxygenase</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.2" pos="WW(pv,tgw,met-t)" lemma="katalyseren">katalyseert</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.3" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.4" pos="N(soort,ev,basis,zijd,stan)" lemma="omzetting">omzetting</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.5" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="arachidonzuur">arachidonzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.7" pos="VZ(init)" lemma="naar">naar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.9" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.10" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.11" pos="N(soort,ev,basis,zijd,stan)" lemma="reactie">reactie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.12" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.13" pos="BW()" lemma="ander">anders</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.14" pos="BW()" lemma="vrijwel">vrijwel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.15" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.16" pos="WW(pv,tgw,met-t)" lemma="verlopen">verloopt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.10.w.17" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.11">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.2">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.3">voorkomt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.4">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.5">werking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.6">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.7">Cyclooxygenase</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.8">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.9">voorkomt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.10">daarmee</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.11">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.12">vorming</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.13">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.14">prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.15">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.16">waardoor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.17">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.18">groot</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.19">gedeelte</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.20">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.21">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.22">pijn</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.23">verdwijnt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.24">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.25">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.26">ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.27">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.28">koorts</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.29">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.30">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.31">ontsteking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.32">geremd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.33">worden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.34">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.35">omdat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.36">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.37">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.38">prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.39">deze</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.40">reacties</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.41">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.42">meer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.43">kan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.44">veroorzaken</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.45">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.3" pos="WW(pv,tgw,met-t)" lemma="voorkomen">voorkomt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.4" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="werking">werking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.6" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.7" pos="N(eigen,ev,basis,onz,stan)" lemma="Cyclooxygenase">Cyclooxygenase</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.8" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.9" pos="WW(pv,tgw,met-t)" lemma="voorkomen">voorkomt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.10" pos="BW()" lemma="daarmee">daarmee</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.11" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.12" pos="N(soort,ev,basis,zijd,stan)" lemma="vorming">vorming</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.13" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.14" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.15" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.16" pos="BW()" lemma="waardoor">waardoor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.17" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.18" pos="ADJ(prenom,basis,zonder)" lemma="groot">groot</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.19" pos="N(soort,ev,basis,onz,stan)" lemma="gedeelte">gedeelte</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.20" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.21" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.22" pos="N(soort,ev,basis,zijd,stan)" lemma="pijn">pijn</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.23" pos="WW(pv,tgw,met-t)" lemma="verdwijnen">verdwijnt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.24" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.25" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.26" pos="BW()" lemma="ook">ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.27" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.28" pos="N(soort,ev,basis,zijd,stan)" lemma="koorts">koorts</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.29" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.30" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.31" pos="N(soort,ev,basis,zijd,stan)" lemma="ontsteking">ontsteking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.32" pos="WW(vd,vrij,zonder)" lemma="remmen">geremd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.33" pos="WW(pv,tgw,mv)" lemma="worden">worden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.34" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.35" pos="VG(onder)" lemma="omdat">omdat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.36" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.37" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.38" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.39" pos="VNW(aanw,det,stan,prenom,met-e,rest)" lemma="deze">deze</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.40" pos="N(soort,mv,basis)" lemma="reactie">reacties</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.41" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.42" pos="VNW(onbep,grad,stan,vrij,zonder,comp)" lemma="veel">meer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.43" pos="WW(pv,tgw,ev)" lemma="kunnen">kan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.44" pos="WW(inf,vrij,zonder)" lemma="veroorzaken">veroorzaken</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.11.w.45" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.12">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.1">Aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.2">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.3">dus</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.4">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.5">inhibitor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.6">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.7">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.8">stof</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.9">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.10">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.11">werking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.12">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.13">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.14">eiwit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.15">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.16">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.17">dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.18">geval</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.19">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.20">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.21">COX</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.22">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.23">remt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.24">of</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.25">stopt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.26">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.2" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.3" pos="BW()" lemma="dus">dus</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.4" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="inhibitor">inhibitor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.6" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.7" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="stof">stof</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.9" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.10" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.11" pos="N(soort,ev,basis,zijd,stan)" lemma="werking">werking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.12" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.13" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.14" pos="N(soort,ev,basis,onz,stan)" lemma="eiwit">eiwit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.15" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.16" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.17" pos="VNW(aanw,det,stan,prenom,zonder,evon)" lemma="dit">dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.18" pos="N(soort,ev,basis,onz,stan)" lemma="geval">geval</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.19" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.20" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.21" pos="N(soort,ev,basis,zijd,stan)" lemma="cox">COX</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.22" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.23" pos="WW(pv,tgw,met-t)" lemma="remmen">remt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.24" pos="VG(neven)" lemma="of">of</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.25" pos="WW(pv,tgw,met-t)" lemma="stoppen">stopt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.12.w.26" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.13">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.1">Daarnaast</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.2">speelt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.3">prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.4">ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.5">nog</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.6">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.7">rol</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.8">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.9">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.10">normaal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.11">functioneren</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.12">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.1" pos="BW()" lemma="daarnaast">Daarnaast</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.2" pos="WW(pv,tgw,met-t)" lemma="spelen">speelt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.3" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.4" pos="BW()" lemma="ook">ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.5" pos="BW()" lemma="nog">nog</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.6" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.7" pos="N(soort,ev,basis,zijd,stan)" lemma="rol">rol</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.8" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.9" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.10" pos="ADJ(prenom,basis,zonder)" lemma="normaal">normaal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.11" pos="WW(inf,vrij,zonder)" lemma="functioneren">functioneren</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.13.w.12" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.14">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.2">prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.3">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.4">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.5">gemaakt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.6">door</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.7">COX-1</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.8">werkt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.9">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.10">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.11">normale</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.12">processen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.13">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.14">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.15">boodschapper</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.16">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.3" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.4" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.5" pos="WW(vd,vrij,zonder)" lemma="maken">gemaakt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.6" pos="VZ(init)" lemma="door">door</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.7" pos="N(eigen,ev,basis,zijd,stan)" lemma="Cox-1">COX-1</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.8" pos="WW(pv,tgw,met-t)" lemma="werken">werkt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.9" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.10" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.11" pos="ADJ(prenom,basis,met-e,stan)" lemma="normaal">normale</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.12" pos="N(soort,mv,basis)" lemma="proces">processen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.13" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.14" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.15" pos="N(soort,ev,basis,zijd,stan)" lemma="boodschapper">boodschapper</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.14.w.16" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.15">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.2">prostaglandine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.3">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.4">werkt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.5">bij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.6">beschadiging</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.7">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.8">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.9">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.10">rol</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.11">speelt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.12">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.13">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.14">pijnsignaal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.15">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.16">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.17">gemaakt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.18">door</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.19">COX-2</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.20">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="prostaglandine">prostaglandine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.3" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.4" pos="WW(pv,tgw,met-t)" lemma="werken">werkt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.5" pos="VZ(init)" lemma="bij">bij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="beschadiging">beschadiging</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.7" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.8" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.9" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="rol">rol</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.11" pos="WW(pv,tgw,met-t)" lemma="spelen">speelt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.12" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.13" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.14" pos="N(soort,ev,basis,onz,stan)" lemma="pijnsignaal">pijnsignaal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.15" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.16" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.17" pos="WW(vd,vrij,zonder)" lemma="maken">gemaakt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.18" pos="VZ(init)" lemma="door">door</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.19" pos="N(eigen,ev,basis,zijd,stan)" lemma="Cox-2">COX-2</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.15.w.20" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.16">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.1">COX-1</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.2">kan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.3">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.4">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.5">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.6">functioneert</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.7">maagbloedingen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.8">e.d.</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.9">veroorzaken</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.10">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Cox-1">COX-1</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.2" pos="WW(pv,tgw,ev)" lemma="kunnen">kan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.3" pos="VG(onder)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.4" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.5" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.6" pos="WW(pv,tgw,met-t)" lemma="functioneren">functioneert</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.7" pos="N(soort,mv,basis)" lemma="maagbloeding">maagbloedingen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.8" pos="SPEC(afk)" lemma="_">e.d.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.9" pos="WW(inf,vrij,zonder)" lemma="veroorzaken">veroorzaken</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.16.w.10" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.17">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.1">Er</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.2">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.3">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.4">sinds</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.5">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.6">aantal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.7">jaren</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.8">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.9">aantal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.10">andere</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.11">geneesmiddelen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.12">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.13">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.14">markt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.15">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.16">selectief</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.17">COX-2</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.18">remmen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.19">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.1" pos="VNW(aanw,adv-pron,stan,red,3,getal)" lemma="er">Er</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.2" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.3" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.4" pos="VZ(init)" lemma="sinds">sinds</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.5" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.6" pos="N(soort,ev,basis,onz,stan)" lemma="aantal">aantal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.7" pos="N(soort,mv,basis)" lemma="jaar">jaren</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.8" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.9" pos="N(soort,ev,basis,onz,stan)" lemma="aantal">aantal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.10" pos="ADJ(prenom,basis,met-e,stan)" lemma="ander">andere</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.11" pos="N(soort,mv,basis)" lemma="geneesmiddel">geneesmiddelen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.12" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.13" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.14" pos="N(soort,ev,basis,zijd,stan)" lemma="markt">markt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.15" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.16" pos="ADJ(vrij,basis,zonder)" lemma="selectief">selectief</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.17" pos="N(eigen,ev,basis,zijd,stan)" lemma="Cox-2">COX-2</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.18" pos="WW(inf,vrij,zonder)" lemma="remmen">remmen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.17.w.19" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.6.s.18">
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.18.w.1">Zie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.18.w.2">COX-2</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.18.w.3">remmers</w>
-            <w xml:id="WR-P-E-J-0000125009.p.6.s.18.w.4">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.18.w.1" pos="WW(pv,tgw,ev)" lemma="zien">Zie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.18.w.2" pos="N(eigen,ev,basis,zijd,stan)" lemma="Cox-2">COX-2</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.18.w.3" pos="N(soort,mv,basis)" lemma="remmer">remmers</w>
+            <w xml:id="WR-P-E-J-0000125009.p.6.s.18.w.4" pos="LET()" lemma=".">.</w>
           </s>
         </p>
       </div>
       <div xml:id="WR-P-E-J-0000125009.div.5">
         <head xml:id="WR-P-E-J-0000125009.head.5">
           <s xml:id="WR-P-E-J-0000125009.head.5.s.1">
-            <w xml:id="WR-P-E-J-0000125009.head.5.s.1.w.1">Andere</w>
-            <w xml:id="WR-P-E-J-0000125009.head.5.s.1.w.2">werkingen</w>
+            <w xml:id="WR-P-E-J-0000125009.head.5.s.1.w.1" pos="ADJ(prenom,basis,met-e,stan)" lemma="ander">Andere</w>
+            <w xml:id="WR-P-E-J-0000125009.head.5.s.1.w.2" pos="N(soort,mv,basis)" lemma="werking">werkingen</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.head.5.s.2">
-            <w xml:id="WR-P-E-J-0000125009.head.5.s.2.w.1">Werking</w>
-            <w xml:id="WR-P-E-J-0000125009.head.5.s.2.w.2">op</w>
-            <w xml:id="WR-P-E-J-0000125009.head.5.s.2.w.3">de</w>
-            <w xml:id="WR-P-E-J-0000125009.head.5.s.2.w.4">bloedplaatjes</w>
+            <w xml:id="WR-P-E-J-0000125009.head.5.s.2.w.1" pos="N(soort,ev,basis,zijd,stan)" lemma="werking">Werking</w>
+            <w xml:id="WR-P-E-J-0000125009.head.5.s.2.w.2" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.head.5.s.2.w.3" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.head.5.s.2.w.4" pos="N(soort,mv,dim)" lemma="bloedplaatje">bloedplaatjes</w>
           </s>
         </head>
         <p xml:id="WR-P-E-J-0000125009.p.7">
           <s xml:id="WR-P-E-J-0000125009.p.7.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.1">Aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.2">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.3">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.4">alleen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.5">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.6">analgeticum</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.7">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.8">pijnstillend</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.9">middel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.10">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.11">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.12">maar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.13">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.14">heeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.15">ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.16">nog</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.17">andere</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.18">effecten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.19">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.20">ons</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.21">lichaam</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.22">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.2" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.3" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.4" pos="BW()" lemma="alleen">alleen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.5" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.6" pos="N(soort,ev,basis,onz,stan)" lemma="analgeticum">analgeticum</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.7" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.8" pos="ADJ(prenom,basis,zonder)" lemma="pijnstillend">pijnstillend</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.9" pos="N(soort,ev,basis,onz,stan)" lemma="middel">middel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.10" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.11" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.12" pos="VG(neven)" lemma="maar">maar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.13" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.14" pos="WW(pv,tgw,met-t)" lemma="hebben">heeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.15" pos="BW()" lemma="ook">ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.16" pos="BW()" lemma="nog">nog</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.17" pos="ADJ(prenom,basis,met-e,stan)" lemma="ander">andere</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.18" pos="N(soort,mv,basis)" lemma="effect">effecten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.19" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.20" pos="VNW(pr,pron,obl,vol,1,mv)" lemma="ons">ons</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.21" pos="N(soort,ev,basis,onz,stan)" lemma="lichaam">lichaam</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.1.w.22" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.7.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.1">Aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.2">heeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.3">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.4">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.5">onomkeerbaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.6">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.7">effect</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.8">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.9">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.10">bloedplaatjes</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.11">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.12">belemmert</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.13">deze</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.14">om</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.15">samen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.16">te</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.17">klonteren</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.18">:</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.19">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.20">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.21">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.22">trombocytenaggregatieremmer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.23">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.2" pos="WW(pv,tgw,met-t)" lemma="hebben">heeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.3" pos="TW(hoofd,vrij)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.4" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.5" pos="ADJ(prenom,basis,zonder)" lemma="onomkeerbaar">onomkeerbaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.6" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.7" pos="N(soort,ev,basis,onz,stan)" lemma="effect">effect</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.8" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.9" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.10" pos="N(soort,mv,dim)" lemma="bloedplaatje">bloedplaatjes</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.11" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.12" pos="WW(pv,tgw,met-t)" lemma="belemmeren">belemmert</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.13" pos="VNW(aanw,det,stan,prenom,met-e,rest)" lemma="deze">deze</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.14" pos="VZ(init)" lemma="om">om</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.15" pos="BW()" lemma="samen">samen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.16" pos="VZ(init)" lemma="te">te</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.17" pos="WW(inf,vrij,zonder)" lemma="klonteren">klonteren</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.18" pos="LET()" lemma=":">:</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.19" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.20" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.21" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.22" pos="N(soort,ev,basis,zijd,stan)" lemma="trombocytenaggregatieremmer">trombocytenaggregatieremmer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.2.w.23" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.7.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.1">Hierdoor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.2">vermindert</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.3">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.4">stelpend</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.5">vermogen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.6">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.7">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.8">bloed</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.9">bij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.10">bloedvatbeschadiging</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.11">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.1" pos="BW()" lemma="hierdoor">Hierdoor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.2" pos="WW(pv,tgw,met-t)" lemma="verminderen">vermindert</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.3" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.4" pos="ADJ(prenom,basis,zonder)" lemma="stelpend">stelpend</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.5" pos="N(soort,ev,basis,onz,stan)" lemma="vermogen">vermogen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.6" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.7" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.8" pos="N(soort,ev,basis,onz,stan)" lemma="bloed">bloed</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.9" pos="VZ(init)" lemma="bij">bij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="bloedvatbeschadiging">bloedvatbeschadiging</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.3.w.11" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.7.s.4">
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.2">vaak</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.3">gebruikte</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.4">benaming</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.5">'</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.6">bloedverdunner</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.7">'</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.8">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.9">onjuist</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.10">-</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.11">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.12">bloed</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.13">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.14">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.15">dunner</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.16">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.2" pos="BW()" lemma="vaak">vaak</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.3" pos="WW(vd,prenom,met-e)" lemma="gebruiken">gebruikte</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.4" pos="N(soort,ev,basis,zijd,stan)" lemma="benaming">benaming</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.5" pos="LET()" lemma="'">'</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="bloedverdunner">bloedverdunner</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.7" pos="LET()" lemma="'">'</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.8" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.9" pos="ADJ(vrij,basis,zonder)" lemma="onjuist">onjuist</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.10" pos="LET()" lemma="-">-</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.11" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.12" pos="N(soort,ev,basis,onz,stan)" lemma="bloed">bloed</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.13" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.14" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.15" pos="ADJ(vrij,comp,zonder)" lemma="dun">dunner</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.4.w.16" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.7.s.5">
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.1">Dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.2">effect</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.3">treedt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.4">al</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.5">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.6">na</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.7">1/4</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.8">aspirinetablet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.9">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.10">houdt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.11">aan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.12">tot</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.13">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.14">uitgeschakelde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.15">bloedplaatjes</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.16">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.17">na</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.18">ongeveer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.19">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.20">week</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.21">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.22">allemaal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.23">zijn</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.24">vervangen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.25">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.1" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dit">Dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.2" pos="N(soort,ev,basis,onz,stan)" lemma="effect">effect</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.3" pos="WW(pv,tgw,met-t)" lemma="treden">treedt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.4" pos="BW()" lemma="al">al</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.5" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.6" pos="VZ(init)" lemma="na">na</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.7" pos="TW(hoofd,prenom,stan)" lemma="1/4">1/4</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.8" pos="N(soort,ev,basis,onz,stan)" lemma="aspirinetablet">aspirinetablet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.9" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.10" pos="WW(pv,tgw,met-t)" lemma="houden">houdt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.11" pos="VZ(init)" lemma="aan">aan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.12" pos="VZ(init)" lemma="tot">tot</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.13" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.14" pos="ADJ(prenom,basis,met-e,stan)" lemma="uitgeschakelde">uitgeschakelde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.15" pos="N(soort,mv,dim)" lemma="bloedplaatje">bloedplaatjes</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.16" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.17" pos="VZ(init)" lemma="na">na</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.18" pos="BW()" lemma="ongeveer">ongeveer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.19" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.20" pos="N(soort,ev,basis,zijd,stan)" lemma="week">week</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.21" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.22" pos="BW()" lemma="allemaal">allemaal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.23" pos="WW(pv,tgw,mv)" lemma="zijn">zijn</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.24" pos="WW(vd,vrij,zonder)" lemma="vervangen">vervangen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.5.w.25" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.7.s.6">
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.1">Voor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.2">dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.3">laatste</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.4">effect</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.5">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.6">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.7">middel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.8">tegenwoordig</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.9">zeer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.10">veel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.11">voorgeschreven</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.12">aan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.13">mensen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.14">die</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.15">eerder</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.16">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.17">beroerte</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.18">of</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.19">hartaanval</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.20">hebben</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.21">gehad</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.22">;</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.23">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.24">vermindert</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.25">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.26">kans</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.27">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.28">herhaling</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.29">met</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.30">ca</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.31">40</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.32">%</w>
-            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.33">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.1" pos="VZ(init)" lemma="voor">Voor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.2" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dit">dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.3" pos="ADJ(prenom,sup,met-e,stan)" lemma="laat">laatste</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.4" pos="N(soort,ev,basis,onz,stan)" lemma="effect">effect</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.5" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.6" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.7" pos="N(soort,ev,basis,onz,stan)" lemma="middel">middel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.8" pos="ADJ(vrij,basis,zonder)" lemma="tegenwoordig">tegenwoordig</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.9" pos="BW()" lemma="zeer">zeer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.10" pos="VNW(onbep,grad,stan,vrij,zonder,basis)" lemma="veel">veel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.11" pos="WW(vd,vrij,zonder)" lemma="voorschrijven">voorgeschreven</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.12" pos="VZ(init)" lemma="aan">aan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.13" pos="N(soort,mv,basis)" lemma="mens">mensen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.14" pos="VNW(betr,pron,stan,vol,persoon,getal)" lemma="die">die</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.15" pos="BW()" lemma="eerder">eerder</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.16" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.17" pos="N(soort,ev,basis,zijd,stan)" lemma="beroerte">beroerte</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.18" pos="VG(neven)" lemma="of">of</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.19" pos="N(soort,ev,basis,zijd,stan)" lemma="hartaanval">hartaanval</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.20" pos="WW(pv,tgw,mv)" lemma="hebben">hebben</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.21" pos="WW(vd,vrij,zonder)" lemma="hebben">gehad</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.22" pos="LET()" lemma=";">;</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.23" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.24" pos="WW(pv,tgw,met-t)" lemma="verminderen">vermindert</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.25" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.26" pos="N(soort,mv,basis)" lemma="kan">kans</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.27" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.28" pos="N(soort,ev,basis,zijd,stan)" lemma="herhaling">herhaling</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.29" pos="VZ(init)" lemma="met">met</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.30" pos="BW()" lemma="ca">ca</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.31" pos="TW(hoofd,prenom,stan)" lemma="40">40</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.32" pos="N(soort,ev,basis,onz,stan)" lemma="%">%</w>
+            <w xml:id="WR-P-E-J-0000125009.p.7.s.6.w.33" pos="LET()" lemma=".">.</w>
           </s>
         </p>
       </div>
       <div xml:id="WR-P-E-J-0000125009.div.6">
         <head xml:id="WR-P-E-J-0000125009.head.6">
           <s xml:id="WR-P-E-J-0000125009.head.6.s.1">
-            <w xml:id="WR-P-E-J-0000125009.head.6.s.1.w.1">Andere</w>
+            <w xml:id="WR-P-E-J-0000125009.head.6.s.1.w.1" pos="ADJ(prenom,basis,met-e,stan)" lemma="ander">Andere</w>
           </s>
         </head>
         <p xml:id="WR-P-E-J-0000125009.p.8">
           <s xml:id="WR-P-E-J-0000125009.p.8.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.1">Ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.2">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.3">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.4">gebied</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.5">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.6">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.7">kanker-preventie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.8">liggen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.9">er</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.10">mogelijk</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.11">toepassingen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.12">voor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.13">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.14">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.15">aangezien</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.16">deze</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.17">tumorvorming</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.18">tegengaat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.19">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.1" pos="BW()" lemma="ook">Ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.2" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.3" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.4" pos="N(soort,ev,basis,onz,stan)" lemma="gebied">gebied</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.5" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.6" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.7" pos="N(soort,ev,basis,zijd,stan)" lemma="kanker-preventie">kanker-preventie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.8" pos="WW(pv,tgw,mv)" lemma="liggen">liggen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.9" pos="VNW(aanw,adv-pron,stan,red,3,getal)" lemma="er">er</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.10" pos="ADJ(vrij,basis,zonder)" lemma="mogelijk">mogelijk</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.11" pos="N(soort,mv,basis)" lemma="toepassing">toepassingen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.12" pos="VZ(init)" lemma="voor">voor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.14" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.15" pos="VG(onder)" lemma="aangezien">aangezien</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.16" pos="VNW(aanw,det,stan,prenom,met-e,rest)" lemma="deze">deze</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.17" pos="N(soort,ev,basis,zijd,stan)" lemma="tumorvorming">tumorvorming</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.18" pos="N(soort,ev,basis,zijd,stan)" lemma="tegengaat">tegengaat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.1.w.19" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.8.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.1">Het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.2">dagelijks</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.3">slikken</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.4">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.5">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.6">kleine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.7">dosis</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.8">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.9">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.10">gedurende</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.11">5</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.12">jaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.13">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.14">zou</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.15">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.16">kans</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.17">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.18">tumoren</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.19">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.20">slokdarm</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.21">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.22">darmstelsel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.23">met</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.24">twee</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.25">derde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.26">doen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.27">afnemen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.28">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.1" pos="LID(bep,stan,evon)" lemma="het">Het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.2" pos="ADJ(prenom,basis,zonder)" lemma="dagelijks">dagelijks</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.3" pos="N(soort,ev,basis,onz,stan)" lemma="slikken">slikken</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.4" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.5" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.6" pos="ADJ(prenom,basis,met-e,stan)" lemma="klein">kleine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.7" pos="N(soort,ev,basis,zijd,stan)" lemma="dosis">dosis</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.9" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.10" pos="VZ(init)" lemma="gedurende">gedurende</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.11" pos="TW(hoofd,vrij)" lemma="5">5</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.12" pos="N(soort,ev,basis,onz,stan)" lemma="jaar">jaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.13" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.14" pos="WW(pv,verl,ev)" lemma="zullen">zou</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.15" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.16" pos="N(soort,mv,basis)" lemma="kan">kans</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.17" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.18" pos="N(soort,mv,basis)" lemma="tumor">tumoren</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.19" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.20" pos="N(soort,ev,basis,zijd,stan)" lemma="slokdarm">slokdarm</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.21" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.22" pos="N(soort,ev,basis,onz,stan)" lemma="darmstelsel">darmstelsel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.23" pos="VZ(init)" lemma="met">met</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.24" pos="TW(hoofd,prenom,stan)" lemma="twee">twee</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.25" pos="TW(rang,prenom,stan)" lemma="derde">derde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.26" pos="WW(pv,tgw,mv)" lemma="doen">doen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.27" pos="WW(inf,vrij,zonder)" lemma="afnemen">afnemen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.2.w.28" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.8.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.1">Naar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.2">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.3">schijnt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.4">heeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.5">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.6">ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.7">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.8">positieve</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.9">werking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.10">tegen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.11">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.12">ziekte</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.13">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.14">Alzheimer</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.15">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.16">zwangerschaps-</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.17">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.18">darm-</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.19">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.20">hart-</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.21">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.22">vaatziekten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.23">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.1" pos="VZ(init)" lemma="naar">Naar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.2" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.3" pos="WW(pv,tgw,met-t)" lemma="schijnen">schijnt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.4" pos="WW(pv,tgw,met-t)" lemma="hebben">heeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.6" pos="BW()" lemma="ook">ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.7" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.8" pos="ADJ(prenom,basis,met-e,stan)" lemma="positief">positieve</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.9" pos="N(soort,ev,basis,zijd,stan)" lemma="werking">werking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.10" pos="VZ(init)" lemma="tegen">tegen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.11" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.12" pos="N(soort,ev,basis,zijd,stan)" lemma="ziekte">ziekte</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.13" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.14" pos="N(soort,ev,basis,onz,stan)" lemma="alzheimer">Alzheimer</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.15" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.16" pos="SPEC(afgebr)" lemma="_">zwangerschaps-</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.17" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.18" pos="SPEC(afgebr)" lemma="_">darm-</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.19" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.20" pos="SPEC(afgebr)" lemma="_">hart-</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.21" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.22" pos="N(soort,mv,basis)" lemma="vaatziekte">vaatziekten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.8.s.3.w.23" pos="LET()" lemma=".">.</w>
           </s>
         </p>
       </div>
       <div xml:id="WR-P-E-J-0000125009.div.7">
         <head xml:id="WR-P-E-J-0000125009.head.7">
           <s xml:id="WR-P-E-J-0000125009.head.7.s.1">
-            <w xml:id="WR-P-E-J-0000125009.head.7.s.1.w.1">Bijwerkingen</w>
+            <w xml:id="WR-P-E-J-0000125009.head.7.s.1.w.1" pos="N(soort,mv,basis)" lemma="bijwerking">Bijwerkingen</w>
           </s>
         </head>
         <p xml:id="WR-P-E-J-0000125009.p.9">
           <s xml:id="WR-P-E-J-0000125009.p.9.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.1">Aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.2">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.3">vrij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.4">sterk</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.5">maagprikkelend</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.6">:</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.7">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.8">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.9">nu</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.10">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.11">nieuw</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.12">geneesmiddel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.13">zou</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.14">moeten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.15">worden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.16">geregistreerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.17">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.18">pijnstiller</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.19">zou</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.20">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.21">waarschijnlijk</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.22">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.23">lukken</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.24">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.2" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.3" pos="BW()" lemma="vrij">vrij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.4" pos="ADJ(vrij,basis,zonder)" lemma="sterk">sterk</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.5" pos="ADJ(vrij,basis,zonder)" lemma="maagprikkelend">maagprikkelend</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.6" pos="LET()" lemma=":">:</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.7" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.8" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.9" pos="BW()" lemma="nu">nu</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.10" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.11" pos="ADJ(prenom,basis,zonder)" lemma="nieuw">nieuw</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.12" pos="N(soort,ev,basis,onz,stan)" lemma="geneesmiddel">geneesmiddel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.13" pos="WW(pv,verl,ev)" lemma="zullen">zou</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.14" pos="WW(pv,tgw,mv)" lemma="moeten">moeten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.15" pos="WW(inf,vrij,zonder)" lemma="worden">worden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.16" pos="WW(inf,vrij,zonder)" lemma="geregistreerd">geregistreerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.17" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.18" pos="N(soort,ev,basis,zijd,stan)" lemma="pijnstiller">pijnstiller</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.19" pos="WW(pv,verl,ev)" lemma="zullen">zou</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.20" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.21" pos="ADJ(vrij,basis,zonder)" lemma="waarschijnlijk">waarschijnlijk</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.22" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.23" pos="WW(inf,vrij,zonder)" lemma="lukken">lukken</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.1.w.24" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.9.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.1">Bij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.2">gebruik</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.3">kunnen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.4">maag-klachten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.5">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.6">zelfs</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.7">maagbloedingen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.8">ontstaan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.9">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.1" pos="VZ(init)" lemma="bij">Bij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.2" pos="N(soort,ev,basis,onz,stan)" lemma="gebruik">gebruik</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.3" pos="WW(pv,tgw,mv)" lemma="kunnen">kunnen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.4" pos="N(soort,mv,basis)" lemma="maag-klacht">maag-klachten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.5" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.6" pos="BW()" lemma="zelfs">zelfs</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.7" pos="N(soort,mv,basis)" lemma="maagbloeding">maagbloedingen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.8" pos="WW(pv,tgw,mv)" lemma="ontstaan">ontstaan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.2.w.9" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.9.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.1">Aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.2">heeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.3">vooral</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.4">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.5">hoge</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.6">doseringen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.7">ernstige</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.8">bijwerkingen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.9">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.10">met</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.11">name</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.12">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.13">al</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.14">genoemde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.15">maagbloedingen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.16">maar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.17">ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.18">oorsuizen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.19">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.20">doofheid</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.21">kunnen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.22">optreden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.23">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.1" pos="N(eigen,ev,basis,zijd,stan)" lemma="Aspirine">Aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.2" pos="WW(pv,tgw,met-t)" lemma="hebben">heeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.3" pos="BW()" lemma="vooral">vooral</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.4" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.5" pos="ADJ(prenom,basis,met-e,stan)" lemma="hoog">hoge</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.6" pos="N(soort,mv,basis)" lemma="dosering">doseringen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.7" pos="ADJ(prenom,basis,met-e,stan)" lemma="ernstig">ernstige</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.8" pos="N(soort,mv,basis)" lemma="bijwerking">bijwerkingen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.9" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.10" pos="VZ(init)" lemma="met">met</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.11" pos="N(soort,ev,basis,dat)" lemma="naam">name</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.12" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.13" pos="BW()" lemma="al">al</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.14" pos="WW(vd,prenom,met-e)" lemma="noemen">genoemde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.15" pos="N(soort,mv,basis)" lemma="maagbloeding">maagbloedingen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.16" pos="VG(neven)" lemma="maar">maar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.17" pos="BW()" lemma="ook">ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.18" pos="N(soort,mv,basis)" lemma="oorsuizen">oorsuizen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.19" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.20" pos="N(soort,ev,basis,zijd,stan)" lemma="doofheid">doofheid</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.21" pos="WW(pv,tgw,mv)" lemma="kunnen">kunnen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.22" pos="WW(inf,vrij,zonder)" lemma="optreden">optreden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.3.w.23" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.9.s.4">
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.1">Ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.2">weet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.3">men</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.4">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.5">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.6">gebruik</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.7">ervan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.8">tijdelijk</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.9">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.10">aanmaak</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.11">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.12">testosteron</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.13">vermindert</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.14">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.15">maar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.16">dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.17">neveneffect</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.18">heeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.19">geen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.20">blijvende</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.21">of</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.22">erg</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.23">schadelijke</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.24">werking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.25">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.1" pos="BW()" lemma="ook">Ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.2" pos="WW(pv,tgw,ev)" lemma="weten">weet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.3" pos="VNW(pers,pron,nomin,red,3p,ev,masc)" lemma="men">men</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.4" pos="VG(onder)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.5" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.6" pos="N(soort,ev,basis,onz,stan)" lemma="gebruik">gebruik</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.7" pos="BW()" lemma="ervan">ervan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.8" pos="ADJ(vrij,basis,zonder)" lemma="tijdelijk">tijdelijk</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.9" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="aanmaak">aanmaak</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.11" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.12" pos="N(soort,ev,basis,onz,stan)" lemma="testosteron">testosteron</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.13" pos="WW(pv,tgw,met-t)" lemma="verminderen">vermindert</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.14" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.15" pos="VG(neven)" lemma="maar">maar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.16" pos="VNW(aanw,det,stan,prenom,zonder,evon)" lemma="dit">dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.17" pos="N(soort,ev,basis,onz,stan)" lemma="neveneffect">neveneffect</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.18" pos="WW(pv,tgw,met-t)" lemma="hebben">heeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.19" pos="VNW(onbep,det,stan,prenom,zonder,agr)" lemma="geen">geen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.20" pos="WW(od,prenom,met-e)" lemma="blijven">blijvende</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.21" pos="VG(neven)" lemma="of">of</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.22" pos="ADJ(vrij,basis,zonder)" lemma="erg">erg</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.23" pos="ADJ(prenom,basis,met-e,stan)" lemma="schadelijk">schadelijke</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.24" pos="N(soort,ev,basis,zijd,stan)" lemma="werking">werking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.4.w.25" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.9.s.5">
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.1">Naast</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.2">gebruik</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.3">bij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.4">zwangerschap</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.5">of</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.6">toediening</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.7">aan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.8">baby's</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.9">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.10">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.11">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.12">liefst</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.13">ook</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.14">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.15">met</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.16">alcohol</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.17">gebruikt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.18">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.19">omdat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.20">dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.21">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.22">kans</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.23">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.24">maagklachten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.25">kan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.26">verhogen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.27">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.1" pos="VZ(init)" lemma="naast">Naast</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.2" pos="N(soort,ev,basis,onz,stan)" lemma="gebruik">gebruik</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.3" pos="VZ(init)" lemma="bij">bij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.4" pos="N(soort,ev,basis,zijd,stan)" lemma="zwangerschap">zwangerschap</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.5" pos="VG(neven)" lemma="of">of</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="toediening">toediening</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.7" pos="VZ(init)" lemma="aan">aan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.8" pos="N(soort,mv,basis)" lemma="baby">baby's</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.9" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.10" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.11" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.12" pos="BW()" lemma="lief">liefst</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.13" pos="BW()" lemma="ook">ook</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.14" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.15" pos="VZ(init)" lemma="met">met</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.16" pos="N(soort,ev,basis,zijd,stan)" lemma="alcohol">alcohol</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.17" pos="WW(pv,tgw,met-t)" lemma="gebruiken">gebruikt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.18" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.19" pos="VG(onder)" lemma="omdat">omdat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.20" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dit">dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.21" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.22" pos="N(soort,mv,basis)" lemma="kan">kans</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.23" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.24" pos="N(soort,mv,basis)" lemma="maagklacht">maagklachten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.25" pos="WW(pv,tgw,ev)" lemma="kunnen">kan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.26" pos="WW(inf,vrij,zonder)" lemma="verhogen">verhogen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.9.s.5.w.27" pos="LET()" lemma=".">.</w>
           </s>
         </p>
         <p xml:id="WR-P-E-J-0000125009.p.10">
           <s xml:id="WR-P-E-J-0000125009.p.10.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.10.s.1.w.1">Advies</w>
-            <w xml:id="WR-P-E-J-0000125009.p.10.s.1.w.2">voor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.10.s.1.w.3">gebruik</w>
-            <w xml:id="WR-P-E-J-0000125009.p.10.s.1.w.4">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.10.s.1.w.5">pijnstiller</w>
+            <w xml:id="WR-P-E-J-0000125009.p.10.s.1.w.1" pos="N(soort,ev,basis,onz,stan)" lemma="advies">Advies</w>
+            <w xml:id="WR-P-E-J-0000125009.p.10.s.1.w.2" pos="VZ(init)" lemma="voor">voor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.10.s.1.w.3" pos="N(soort,ev,basis,onz,stan)" lemma="gebruik">gebruik</w>
+            <w xml:id="WR-P-E-J-0000125009.p.10.s.1.w.4" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.10.s.1.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="pijnstiller">pijnstiller</w>
           </s>
         </p>
         <p xml:id="WR-P-E-J-0000125009.p.11">
           <s xml:id="WR-P-E-J-0000125009.p.11.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.1">Voor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.2">gebruik</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.3">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.4">eenvoudige</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.5">pijnstiller</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.6">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.7">medisch</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.8">gezien</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.9">algemeen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.10">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.11">voorkeur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.12">gegeven</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.13">aan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.14">paracetamol</w>
-            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.15">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.1" pos="VZ(init)" lemma="voor">Voor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.2" pos="N(soort,ev,basis,onz,stan)" lemma="gebruik">gebruik</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.3" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.4" pos="ADJ(prenom,basis,met-e,stan)" lemma="eenvoudig">eenvoudige</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="pijnstiller">pijnstiller</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.6" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.7" pos="ADJ(prenom,basis,zonder)" lemma="medisch">medisch</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.8" pos="WW(vd,prenom,zonder)" lemma="zien">gezien</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.9" pos="ADJ(nom,basis,zonder,zonder-n)" lemma="algemeen">algemeen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.10" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.11" pos="N(soort,ev,basis,zijd,stan)" lemma="voorkeur">voorkeur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.12" pos="WW(vd,vrij,zonder)" lemma="geven">gegeven</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.13" pos="VZ(init)" lemma="aan">aan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.14" pos="N(soort,ev,basis,zijd,stan)" lemma="paracetamol">paracetamol</w>
+            <w xml:id="WR-P-E-J-0000125009.p.11.s.1.w.15" pos="LET()" lemma=".">.</w>
           </s>
         </p>
       </div>
       <div xml:id="WR-P-E-J-0000125009.div.8">
         <head xml:id="WR-P-E-J-0000125009.head.8">
           <s xml:id="WR-P-E-J-0000125009.head.8.s.1">
-            <w xml:id="WR-P-E-J-0000125009.head.8.s.1.w.1">Synthese</w>
-            <w xml:id="WR-P-E-J-0000125009.head.8.s.1.w.2">van</w>
-            <w xml:id="WR-P-E-J-0000125009.head.8.s.1.w.3">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.head.8.s.1.w.1" pos="N(soort,ev,basis,zijd,stan)" lemma="synthese">Synthese</w>
+            <w xml:id="WR-P-E-J-0000125009.head.8.s.1.w.2" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.head.8.s.1.w.3" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
           </s>
         </head>
         <p xml:id="WR-P-E-J-0000125009.p.12">
           <s xml:id="WR-P-E-J-0000125009.p.12.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.1">Bij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.2">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.3">maken</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.4">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.5">acetylsalicylzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.6">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.7">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.8">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.9">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.10">laboratorium</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.11">schaal</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.12">gaat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.13">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.14">om</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.15">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.16">opbrengst</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.17">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.18">enkele</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.19">grammen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.20">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.1" pos="VZ(init)" lemma="bij">Bij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.2" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.3" pos="WW(inf,nom,zonder,zonder-n)" lemma="maken">maken</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.4" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.5" pos="N(soort,ev,basis,onz,stan)" lemma="acetylsalicylzuur">acetylsalicylzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.6" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.7" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.8" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.9" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.10" pos="N(soort,ev,basis,onz,stan)" lemma="laboratorium">laboratorium</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.11" pos="N(soort,ev,basis,zijd,stan)" lemma="schaal">schaal</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.12" pos="WW(pv,tgw,met-t)" lemma="gaan">gaat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.13" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.14" pos="VZ(init)" lemma="om">om</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.15" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.16" pos="N(soort,ev,basis,zijd,stan)" lemma="opbrengst">opbrengst</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.17" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.18" pos="VNW(onbep,det,stan,prenom,met-e,rest)" lemma="enkel">enkele</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.19" pos="N(soort,mv,basis)" lemma="gram">grammen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.1.w.20" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.12.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.1">Bij</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.2">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.3">bereiding</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.4">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.5">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.6">kan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.7">worden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.8">uitgegaan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.9">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.10">verschillende</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.11">begin</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.12">producten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.13">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.14">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.15">deze</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.16">beschrijving</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.17">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.18">uitgegaan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.19">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.20">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.21">beginstof</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.22">salicylzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.23">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.1" pos="VZ(init)" lemma="bij">Bij</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.2" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.3" pos="N(soort,ev,basis,zijd,stan)" lemma="bereiding">bereiding</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.4" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.6" pos="WW(pv,tgw,ev)" lemma="kunnen">kan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.7" pos="WW(inf,vrij,zonder)" lemma="worden">worden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.8" pos="WW(vd,vrij,zonder)" lemma="uitgaan">uitgegaan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.9" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.10" pos="ADJ(prenom,basis,met-e,stan)" lemma="verschillend">verschillende</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.11" pos="N(soort,ev,basis,onz,stan)" lemma="begin">begin</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.12" pos="N(soort,mv,basis)" lemma="product">producten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.13" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.14" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.15" pos="VNW(aanw,det,stan,prenom,met-e,rest)" lemma="deze">deze</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.16" pos="N(soort,ev,basis,zijd,stan)" lemma="beschrijving">beschrijving</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.17" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.18" pos="WW(vd,vrij,zonder)" lemma="uitgaan">uitgegaan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.19" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.20" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.21" pos="N(soort,ev,basis,zijd,stan)" lemma="beginstof">beginstof</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.22" pos="N(soort,ev,basis,onz,stan)" lemma="salicylzuur">salicylzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.2.w.23" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.12.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.1">Dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.2">heeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.3">als</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.4">voordeel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.5">dat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.6">er</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.7">maar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.8">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.9">synthese</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.10">stap</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.11">uitgevoerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.12">hoeft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.13">te</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.14">worden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.15">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.1" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dit">Dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.2" pos="WW(pv,tgw,met-t)" lemma="hebben">heeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.3" pos="VZ(init)" lemma="als">als</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.4" pos="N(soort,ev,basis,onz,stan)" lemma="voordeel">voordeel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.5" pos="VG(onder)" lemma="dat">dat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.6" pos="VNW(aanw,adv-pron,stan,red,3,getal)" lemma="er">er</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.7" pos="BW()" lemma="maar">maar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.8" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.9" pos="N(soort,ev,basis,zijd,stan)" lemma="synthese">synthese</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="stap">stap</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.11" pos="WW(vd,vrij,zonder)" lemma="uitvoeren">uitgevoerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.12" pos="WW(pv,tgw,met-t)" lemma="hoeven">hoeft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.13" pos="VZ(init)" lemma="te">te</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.14" pos="WW(inf,vrij,zonder)" lemma="worden">worden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.3.w.15" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.12.s.4">
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.1">Uitgaande</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.2">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.3">salicylzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.4">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.5">azijnzuuranhydride</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.6">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.7">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.8">salicylzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.9">veresterd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.10">volgens</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.11">nevenstaande</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.12">reactie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.13">:</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.1" pos="VZ(init)" lemma="uitgaande">Uitgaande</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.2" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.3" pos="N(soort,ev,basis,onz,stan)" lemma="salicylzuur">salicylzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.4" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.5" pos="N(soort,ev,basis,zijd,stan)" lemma="azijnzuuranhydride">azijnzuuranhydride</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.6" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.7" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.8" pos="N(soort,ev,basis,onz,stan)" lemma="salicylzuur">salicylzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.9" pos="ADJ(vrij,basis,zonder)" lemma="veresterd">veresterd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.10" pos="VZ(init)" lemma="volgens">volgens</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.11" pos="ADJ(prenom,basis,met-e,stan)" lemma="nevenstaand">nevenstaande</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.12" pos="N(soort,ev,basis,zijd,stan)" lemma="reactie">reactie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.12.s.4.w.13" pos="LET()" lemma=":">:</w>
           </s>
         </p>
         <p xml:id="WR-P-E-J-0000125009.p.13">
           <s xml:id="WR-P-E-J-0000125009.p.13.s.1">
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.1">Zoals</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.2">te</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.3">zien</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.4">boven</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.5">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.6">reactiepijl</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.7">vindt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.8">deze</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.9">synthese</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.10">plaats</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.11">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.12">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.13">zuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.14">milieu</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.15">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.1" pos="VG(onder)" lemma="zoals">Zoals</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.2" pos="VZ(init)" lemma="te">te</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.3" pos="WW(inf,vrij,zonder)" lemma="zien">zien</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.4" pos="VZ(init)" lemma="boven">boven</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.5" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="reactiepijl">reactiepijl</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.7" pos="WW(pv,tgw,met-t)" lemma="vinden">vindt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.8" pos="VNW(aanw,det,stan,prenom,met-e,rest)" lemma="deze">deze</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.9" pos="N(soort,ev,basis,zijd,stan)" lemma="synthese">synthese</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.10" pos="N(soort,ev,basis,zijd,stan)" lemma="plaats">plaats</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.11" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.12" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="zuur">zuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.14" pos="N(soort,ev,basis,onz,stan)" lemma="milieu">milieu</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.1.w.15" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.13.s.2">
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.1">In</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.2">dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.3">geval</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.4">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.5">gekozen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.6">voor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.7">geconcentreerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.8">fosforzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.9">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.1" pos="VZ(init)" lemma="in">In</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.2" pos="VNW(aanw,det,stan,prenom,zonder,evon)" lemma="dit">dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.3" pos="N(soort,ev,basis,onz,stan)" lemma="geval">geval</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.4" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.5" pos="WW(vd,vrij,zonder)" lemma="kiezen">gekozen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.6" pos="VZ(init)" lemma="voor">voor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.7" pos="WW(vd,prenom,zonder)" lemma="concentreren">geconcentreerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.8" pos="N(soort,ev,basis,onz,stan)" lemma="fosforzuur">fosforzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.2.w.9" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.13.s.3">
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.1">Na</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.2">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.3">reactie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.4">moet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.5">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.6">hoofdproduct</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.7">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.8">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.9">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.10">gescheiden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.11">worden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.12">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.13">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.14">bijproducten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.15">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.16">azijnzuur</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.17">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.18">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.19">gereageerde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.20">reactanten</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.21">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.22">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.23">dit</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.24">gebeurt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.25">door</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.26">middel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.27">van</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.28">herkristallisatie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.29">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.1" pos="VZ(init)" lemma="na">Na</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.2" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.3" pos="N(soort,ev,basis,zijd,stan)" lemma="reactie">reactie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.4" pos="WW(pv,tgw,ev)" lemma="moeten">moet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.5" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="hoofdproduct">hoofdproduct</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.7" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.8" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.9" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.10" pos="WW(vd,vrij,zonder)" lemma="scheiden">gescheiden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.11" pos="WW(inf,vrij,zonder)" lemma="worden">worden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.12" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.13" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.14" pos="N(soort,mv,basis)" lemma="bijproduct">bijproducten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.15" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.16" pos="N(soort,ev,basis,zijd,stan)" lemma="azijnzuur">azijnzuur</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.17" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.18" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.19" pos="ADJ(prenom,basis,met-e,stan)" lemma="gereageerde">gereageerde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.20" pos="N(soort,mv,basis)" lemma="reactant">reactanten</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.21" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.22" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.23" pos="VNW(aanw,pron,stan,vol,3o,ev)" lemma="dit">dit</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.24" pos="WW(pv,tgw,met-t)" lemma="gebeuren">gebeurt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.25" pos="VZ(init)" lemma="door">door</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.26" pos="N(soort,ev,basis,onz,stan)" lemma="middel">middel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.27" pos="VZ(init)" lemma="van">van</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.28" pos="N(soort,ev,basis,zijd,stan)" lemma="herkristallisatie">herkristallisatie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.3.w.29" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.13.s.4">
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.2">herkristallisatie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.3">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.4">uitgevoerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.5">door</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.6">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.7">ruwe</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.8">product</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.9">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.10">te</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.11">lossen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.12">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.13">methanol</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.14">(</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.15">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.16">een</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.17">reflux</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.18">opstelling</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.19">)</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.20">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.21">dan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.22">net</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.23">genoeg</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.24">water</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.25">toe</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.26">te</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.27">voegen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.28">zodat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.29">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.30">verontreinigingen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.31">uitkristalliseren</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.32">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.33">maar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.34">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.35">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.36">niet</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.37">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.2" pos="N(soort,ev,basis,zijd,stan)" lemma="herkristallisatie">herkristallisatie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.3" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.4" pos="WW(vd,vrij,zonder)" lemma="uitvoeren">uitgevoerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.5" pos="VZ(init)" lemma="door">door</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.6" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.7" pos="ADJ(prenom,basis,met-e,stan)" lemma="ruw">ruwe</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.8" pos="N(soort,ev,basis,onz,stan)" lemma="product">product</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.9" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.10" pos="VZ(init)" lemma="te">te</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.11" pos="WW(inf,vrij,zonder)" lemma="lossen">lossen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.12" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.13" pos="N(soort,ev,basis,zijd,stan)" lemma="methanol">methanol</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.14" pos="LET()" lemma="(">(</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.15" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.16" pos="LID(onbep,stan,agr)" lemma="een">een</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.17" pos="N(soort,ev,basis,zijd,stan)" lemma="reflux">reflux</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.18" pos="N(soort,ev,basis,zijd,stan)" lemma="opstelling">opstelling</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.19" pos="LET()" lemma=")">)</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.20" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.21" pos="BW()" lemma="dan">dan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.22" pos="BW()" lemma="net">net</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.23" pos="BW()" lemma="genoeg">genoeg</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.24" pos="N(soort,ev,basis,onz,stan)" lemma="water">water</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.25" pos="VZ(init)" lemma="toe">toe</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.26" pos="VZ(init)" lemma="te">te</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.27" pos="WW(inf,vrij,zonder)" lemma="voegen">voegen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.28" pos="VG(onder)" lemma="zodat">zodat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.29" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.30" pos="N(soort,mv,basis)" lemma="verontreiniging">verontreinigingen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.31" pos="WW(inf,vrij,zonder)" lemma="uitkristalliseren">uitkristalliseren</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.32" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.33" pos="VG(neven)" lemma="maar">maar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.34" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.35" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.36" pos="BW()" lemma="niet">niet</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.4.w.37" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.13.s.5">
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.1">Het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.2">hete</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.3">mengsel</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.4">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.5">nu</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.6">gefiltreerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.7">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.8">waardoor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.9">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.10">verontreinigingen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.11">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.12">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.13">filter</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.14">achterblijven</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.15">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.16">alleen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.17">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.18">zuivere</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.19">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.20">in</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.21">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.22">filtraat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.23">komt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.24">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.1" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">Het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.2" pos="ADJ(prenom,basis,met-e,stan)" lemma="heet">hete</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.3" pos="N(soort,ev,basis,onz,stan)" lemma="mengsel">mengsel</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.4" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.5" pos="BW()" lemma="nu">nu</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.6" pos="WW(vd,vrij,zonder)" lemma="filtreren">gefiltreerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.7" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.8" pos="BW()" lemma="waardoor">waardoor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.9" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.10" pos="N(soort,mv,basis)" lemma="verontreiniging">verontreinigingen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.11" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.12" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.13" pos="N(soort,ev,basis,onz,stan)" lemma="filter">filter</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.14" pos="WW(pv,tgw,mv)" lemma="achterblijven">achterblijven</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.15" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.16" pos="BW()" lemma="alleen">alleen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.17" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.18" pos="ADJ(prenom,basis,met-e,stan)" lemma="zuiver">zuivere</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.19" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.20" pos="VZ(init)" lemma="in">in</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.21" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.22" pos="N(soort,ev,basis,onz,stan)" lemma="filtraat">filtraat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.23" pos="WW(pv,tgw,met-t)" lemma="komen">komt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.5.w.24" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.13.s.6">
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.1">Na</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.2">deze</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.3">filtratie</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.4">wordt</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.5">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.6">filtraat</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.7">gekoeld</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.8">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.9">opnieuw</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.10">gefiltreerd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.11">,</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.12">de</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.13">gezuiverde</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.14">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.15">blijft</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.16">nu</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.17">achter</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.18">op</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.19">het</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.20">filter</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.21">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.1" pos="VZ(init)" lemma="na">Na</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.2" pos="VNW(aanw,det,stan,prenom,met-e,rest)" lemma="deze">deze</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.3" pos="N(soort,ev,basis,zijd,stan)" lemma="filtratie">filtratie</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.4" pos="WW(pv,tgw,met-t)" lemma="worden">wordt</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.5" pos="VNW(pers,pron,stan,red,3,ev,onz)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.6" pos="N(soort,ev,basis,zijd,stan)" lemma="filtraat">filtraat</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.7" pos="ADJ(vrij,basis,zonder)" lemma="gekoeld">gekoeld</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.8" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.9" pos="BW()" lemma="opnieuw">opnieuw</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.10" pos="WW(vd,vrij,zonder)" lemma="filtreren">gefiltreerd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.11" pos="LET()" lemma=",">,</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.12" pos="LID(bep,stan,rest)" lemma="de">de</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.13" pos="ADJ(prenom,basis,met-e,stan)" lemma="gezuiverde">gezuiverde</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.14" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.15" pos="WW(pv,tgw,met-t)" lemma="blijven">blijft</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.16" pos="BW()" lemma="nu">nu</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.17" pos="VZ(init)" lemma="achter">achter</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.18" pos="VZ(init)" lemma="op">op</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.19" pos="LID(bep,stan,evon)" lemma="het">het</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.20" pos="N(soort,ev,basis,onz,stan)" lemma="filter">filter</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.6.w.21" pos="LET()" lemma=".">.</w>
           </s>
           <s xml:id="WR-P-E-J-0000125009.p.13.s.7">
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.1">De</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.2">verkregen</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.3">aspirine</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.4">kan</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.5">nu</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.6">worden</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.7">gedroogd</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.8">en</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.9">is</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.10">klaar</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.11">voor</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.12">verpakking</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.13">of</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.14">gebruik</w>
-            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.15">.</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.1" pos="LID(bep,stan,rest)" lemma="de">De</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.2" pos="WW(vd,prenom,zonder)" lemma="verkrijgen">verkregen</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.3" pos="N(soort,ev,basis,zijd,stan)" lemma="aspirine">aspirine</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.4" pos="WW(pv,tgw,ev)" lemma="kunnen">kan</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.5" pos="BW()" lemma="nu">nu</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.6" pos="WW(pv,tgw,mv)" lemma="worden">worden</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.7" pos="WW(vd,vrij,zonder)" lemma="drogen">gedroogd</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.8" pos="VG(neven)" lemma="en">en</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.9" pos="WW(pv,tgw,ev)" lemma="zijn">is</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.10" pos="ADJ(vrij,basis,zonder)" lemma="klaar">klaar</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.11" pos="VZ(init)" lemma="voor">voor</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.12" pos="N(soort,ev,basis,zijd,stan)" lemma="verpakking">verpakking</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.13" pos="VG(neven)" lemma="of">of</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.14" pos="N(soort,ev,basis,onz,stan)" lemma="gebruik">gebruik</w>
+            <w xml:id="WR-P-E-J-0000125009.p.13.s.7.w.15" pos="LET()" lemma=".">.</w>
           </s>
         </p>
       </div>
