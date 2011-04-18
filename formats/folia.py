@@ -18,6 +18,8 @@ from sys import stderr
 from StringIO import StringIO
 from pynlpl.formats.imdi import RELAXNG_IMDI
 import inspect
+import glob
+import os
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -465,7 +467,7 @@ class AbstractElement(object):
                     
 
         
-        id = dcoipos = dcoilemma = None
+        id = dcoipos = dcoilemma = dcoicorrection = dcoicorrectionoriginal = None
         for key, value in node.attrib.items():
             if key == '{http://www.w3.org/XML/1998/namespace}id':
                 id = value
@@ -483,6 +485,10 @@ class AbstractElement(object):
             elif Class is Word and  key == 'lemma':
                 dcoilemma = value
                 continue
+            elif Class is Word and  key == 'correction':
+                dcoicorrection = value #class
+            elif Class is Word and  key == 'original':
+                dcoicorrectionoriginal = value                
             elif Class is Gap and  key == 'reason':
                 key = 'class'
             elif Class is Gap and  key == 'hand':
@@ -515,6 +521,10 @@ class AbstractElement(object):
             if not AnnotationType.LEMMA in doc.annotationdefaults:
                 doc.declare(AnnotationType.LEMMA, set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset')
             instance.append( LemmaAnnotation(doc, cls=dcoilemma) )            
+        if dcoicorrection and dcoicorrectionoriginal:
+            if not AnnotationType.CORRECTION in doc.annotationdefaults:
+                doc.declare(AnnotationType.CORRECTION, set='http://ilk.uvt.nl/folia/sets/dcoi-corrections.foliaset')
+            instance.append( Correction(cls=dcoicorrection, original=dcoicorrectionoriginal, new=text) )                        
         return instance        
             
     def resolveword(self, id):
@@ -1762,22 +1772,22 @@ class Corpus:
         if not self.restrict_to_collection:
             for f in glob.glob(self.corpusdir+"/*." + self.extension):
                 if self.conditionf(f):
-                    try:
-                        yield Document(file=f)
-                    except:
-                        print >>sys.stderr, "Error, unable to parse " + f
-                        if not self.ignoreerrors:
-                            raise
+                    #try:
+                    yield Document(file=f)
+                    #except:
+                    #    print >>sys.stderr, "Error, unable to parse " + f
+                    #    if not self.ignoreerrors:
+                    #        raise
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
                     if self.conditionf(f):
-                        try:
-                            yield Document(file=f)
-                        except:
-                            print >>sys.stderr, "Error, unable to parse " + f
-                            if not self.ignoreerrors:
-                                raise
+                        #try:
+                        yield Document(file=f)
+                        #except:
+                        #    print >>sys.stderr, "Error, unable to parse " + f
+                        #    if not self.ignoreerrors:
+                        #        raise
 
 
 
