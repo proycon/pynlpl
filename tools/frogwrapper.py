@@ -8,6 +8,7 @@ import getopt
 import lxml.etree
 import sys
 import os
+import codecs
 
 if __name__ == "__main__":
     sys.path.append(sys.path[0] + '/../..')
@@ -41,21 +42,24 @@ def usage():
     print >>sys.stderr,"\t-E [encoding]      Encoding of input file (default: utf-8)"
     
 try:
-    opts, files = getopt.getopt(sys.argv[1:], "hSPINE", ["txt=","xml=", "folia=",'legacy','tok','selectsen=','selectpar=','idattrib='])
+    opts, files = getopt.getopt(sys.argv[1:], "hSPINEp:", ["txt=","xml=", "folia=",'legacy','tok','selectsen=','selectpar=','idattrib='])
 except getopt.GetoptError, err:
     # print help information and exit:
     print str(err)
     usage()
+    sys.exit(1)
 
 
 textfile = xmlfile = None
-foliaid = legacy = None
+foliaid = 'UNTITLED'
+legacy = None
 tok = False
 idinfirstcolumn = False
 encoding = 'utf-8'
 mode='s'
 xpathselect = ''
 idattrib=''
+port = None
 
 for o, a in opts:
     if o == "-h":
@@ -101,9 +105,6 @@ if not port:
 elif (not textfile and not xmlfile or textfile and xmlfile):
     print >> sys.stderr,"ERROR: Specify a file with either --txt or --xml"
     sys.exit(2)
-elif sentenceperline and paragraphperline:
-    print >> sys.stderr,"ERROR: Can't set both -s and -p"
-    sys.exit(2)
 elif xmlfile and not xpathselect:
     print >> sys.stderr,"ERROR: You need to specify --selectsen or --selectpar when using --xml"
     sys.exit(2)
@@ -113,8 +114,8 @@ frogclient = FrogClient('localhost',port)
 idmap = []
 data = []
 
-if txtfile:
-    f = codecs.open(txtfile, 'r', encoding)
+if textfile:
+    f = codecs.open(textfile, 'r', encoding)
     for line in f.readlines():
         if idinfirstcolumn:
             id, line = line.split('\t',1)
@@ -142,8 +143,9 @@ foliadoc.declare(folia.AnnotationType.TOKEN, set='http://ilk.uvt.nl/folia/sets/u
 foliadoc.declare(folia.AnnotationType.POS, set='http://ilk.uvt.nl/folia/sets/cgn-legacy.foliaset', annotator='Frog',annotatortype=folia.AnnotatorType.AUTO)
 foliadoc.declare(folia.AnnotationType.LEMMA, set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset', annotator='Frog',annotatortype=folia.AnnotatorType.AUTO)
 foliadoc.language('nld')
-text =  Text(foliadoc, generate_id_in=foliadoc) 
+text =  folia.Text(foliadoc, id=foliadoc.id + '.text.1') 
 foliadoc.append(text)
+
 
 curid = None
 for (fragment, id) in zip(data,idmap):

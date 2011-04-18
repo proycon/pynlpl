@@ -1367,9 +1367,9 @@ class Document(object):
         except KeyError:
             raise
             
-    def append(self):
-        #TODO: implement
-        pass
+    def append(self,text):
+        assert isinstance(text, Text)
+        self.data.append(text)
 
 
     def xmldeclarations(self):
@@ -1744,7 +1744,7 @@ class Division(AbstractStructureElement):
 
 Division.ACCEPTED_DATA = (Division, Paragraph, Sentence, List, Figure)
 
-class Text(AbstractElement):
+class Text(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure)
