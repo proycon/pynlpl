@@ -1570,10 +1570,16 @@ class Document(object):
             #generic handling (FoLiA)
             Class = XML2CLASS[node.tag[nslen:]]                
             return Class.parsexml(node,self)
-        elif node.tag[:nslendcoi] == '{' + NSDCOI + '}' and node.tag[nslendcoi:] in XML2CLASS:
+        elif node.tag[:nslendcoi] == '{' + NSDCOI + '}':
             #generic handling (D-Coi)
-            Class = XML2CLASS[node.tag[nslendcoi:]]                
-            return Class.parsexml(node,self)            
+            if node.tag[nslendcoi:] in XML2CLASS:
+                Class = XML2CLASS[node.tag[nslendcoi:]]                
+                return Class.parsexml(node,self)     
+            elif node.tag[nslendcoi:][0:3] == 'div': #support for div0, div1, etc:
+                Class = Division
+                return Class.parsexml(node,self)     
+            else:       
+                raise Exception("Unknown DCOI XML tag: " + node.tag)
         else:
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
         
