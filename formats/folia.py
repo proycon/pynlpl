@@ -1774,22 +1774,22 @@ class Corpus:
         if not self.restrict_to_collection:
             for f in glob.glob(self.corpusdir+"/*." + self.extension):
                 if self.conditionf(f):
-                    #try:
-                    yield Document(file=f)
-                    #except:
-                    #    print >>sys.stderr, "Error, unable to parse " + f
-                    #    if not self.ignoreerrors:
-                    #        raise
+                    try:
+                        yield Document(file=f)
+                    except:
+                        print >>sys.stderr, "Error, unable to parse " + f
+                        if not self.ignoreerrors:
+                            raise
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
                     if self.conditionf(f):
-                        #try:
-                        yield Document(file=f)
-                        #except:
-                        #    print >>sys.stderr, "Error, unable to parse " + f
-                        #    if not self.ignoreerrors:
-                        #        raise
+                        try:
+                            yield Document(file=f)
+                        except:
+                            print >>sys.stderr, "Error, unable to parse " + f
+                            if not self.ignoreerrors:
+                                raise
 
 
 
