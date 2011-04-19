@@ -62,7 +62,11 @@ class FrogClient:
                 elif line:
                     line = line.split('\t') #split on tab
                     if len(line) > 4 and line[0].isdigit(): #first column is token number
-
+                        if line[0] == '1' and tp_output:
+                            if self.parser:
+                                tp_output.append( (None,None,None,None, None, None) )
+                            else:
+                                tp_output.append( (None,None,None,None) )                                
                         try:
                             word,lemma,morph,pos,parse1,parse2 = line[1:]
                         except:
