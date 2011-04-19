@@ -1492,6 +1492,10 @@ class Document(object):
         if not annotationtype in self.annotations:
             self.annotations.append(annotationtype)
         self.annotationdefaults[annotationtype] = kwargs
+    
+    def declared(self, annotationtype):
+        return annotationtype in self.annotations
+        
         
     def defaultset(self, annotationtype):
         try:
