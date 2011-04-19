@@ -83,7 +83,7 @@ class Test2Sanity(unittest.TestCase):
         w = self.doc.words(0) # shortcut for doc.words()[0]         
         self.assertTrue( isinstance(w, folia.Word) )
         self.assertEqual( w.id , 'WR-P-E-J-0000000001.head.1.s.1.w.1' )         
-        self.assertEqual( w.text , "Stemma" ) 
+        self.assertEqual( w.text() , "Stemma" ) 
         self.assertEqual( str(w) , "Stemma" ) 
         self.assertEqual( unicode(w) , u"Stemma" ) 
         
@@ -94,7 +94,7 @@ class Test2Sanity(unittest.TestCase):
         w = self.doc.words(-1) # shortcut for doc.words()[0]         
         self.assertTrue( isinstance(w, folia.Word) )
         self.assertEqual( w.id , 'WR-P-E-J-0000000001.p.1.s.8.w.17' ) 
-        self.assertEqual( w.text , "." )             
+        self.assertEqual( w.text() , "." )             
         self.assertEqual( str(w) , "." )             
         
     def test006_first_sentence(self):                                    
@@ -103,8 +103,8 @@ class Test2Sanity(unittest.TestCase):
         s = self.doc.sentences(1)
         self.assertTrue( isinstance(s, folia.Sentence) )
         self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.1' )
-        self.assertEqual( s.text, None ) #no text DIRECTLY associated with the sentence
-        self.assertEqual( str(s), "Stemma is een ander woord voor stamboom . " ) 
+        self.assertRaises( folia.NoSuchText, s.text) #no text DIRECTLY associated with the sentence
+        self.assertEqual( str(s), "Stemma is een ander woord voor stamboom ." ) 
         
     def test007_index(self):                                    
         """Sanity check - Index"""            
@@ -113,7 +113,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertTrue( isinstance(w, folia.Word) )
         self.assertEqual( self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] , self.doc.index['WR-P-E-J-0000000001.p.1.s.2.w.7'] )         
         self.assertEqual( w.id , 'WR-P-E-J-0000000001.p.1.s.2.w.7' )         
-        self.assertEqual( w.text , "stamboom" ) 
+        self.assertEqual( w.text() , "stamboom" ) 
         
     def test008_division(self):                                    
         """Sanity check - Division + head""" 
@@ -275,7 +275,7 @@ class Test3Edit(unittest.TestCase):
                     
         self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' ) 
         self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )     
-        self.assertEqual( w.text, 'stippellijn')    
+        self.assertEqual( w.text(), 'stippellijn')    
         
         
     def test007_addcorrection2(self):        

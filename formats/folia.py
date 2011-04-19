@@ -33,14 +33,18 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N = (0,1,2,3,4)
 
 class AnnotationType:
-    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ALTERNATIVE, PHON = range(12)
+    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ERRORDETECTION, ALTERNATIVE, PHON = range(13)
     
     #Alternative is a special one, not declared and not used except for ID generation
+                  
           
 class MetaDataType:
     NATIVE, CMDI, IMDI = range(3)     
     
 class NoSuchAnnotation(Exception):
+    pass
+
+class NoSuchText(Exception):
     pass
 
 class DuplicateAnnotationError(Exception):
@@ -160,8 +164,30 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     else:
         object.n = None    
     
+    
+    
+    #set index
     if object.doc and object.id:
         object.doc.index[object.id] = object
+        
+        
+    if object.ALLOWTEXT:
+        if isinstance(object, Word):
+            if 'text' in kwargs:
+                if kwargs['text']:
+                    object.settext(kwargs['text'], True) #default text is corrected text
+                del kwargs['text']
+        else:
+            if 'text' in kwargs:
+                if kwargs['text']:
+                    object.settext(kwargs['text'], False) #default text is pre-corrected text
+                del kwargs['text']
+            if 'correctedtext' in kwargs:
+                if kwargs['correctedtext']:
+                    object.settext(kwargs['correctedtext'], True)
+                del kwargs['correctedtext']
+    elif 'text' in kwargs or 'correctedtext' in kwargs:
+        raise ValueError("Text specified for an element that does not allow it is required for " + object.__class__.__name__)
 
     if doc.debug >= 2:
         print >>stderr, "   @id           = ", repr(object.id)
@@ -196,15 +222,10 @@ class AbstractElement(object):
         self.doc = doc
         self.parent = None
         self.data = []
-        
         if self.ALLOWTEXT:
-            if 'text' in kwargs:
-                self.text = kwargs['text']
-                del kwargs['text']
-            else:
-                self.text = None 
+            self.textdata = []
         
-        
+            
         kwargs = parsecommonarguments(self, doc, self.ANNOTATIONTYPE, self.REQUIRED_ATTRIBS, self.OPTIONAL_ATTRIBS,**kwargs)
         for child in args:
             self.append(child)
@@ -220,6 +241,29 @@ class AbstractElement(object):
             raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)        
         
 
+    def text(self):
+        """If there is a corrected text, it will be selected, otherwise uncorrected text, and if text exists and error will be raised. Note that text() only covers explicitly provided text! Use unicode() or str() otherwise"""
+        if not self.ALLOWTEXT:
+            raise NotImplementedError("No text allowed for " + self.__class__.__name__) #on purpose        
+        if len(self.textdata) == 0:
+            raise NoSuchText
+        return self.textdata[-1].value #newest by default
+    
+    def uncorrectedtext(self):
+        if not self.ALLOWTEXT or isinstance(self,Word):
+            raise NotImplementedError #on purpose            
+        for t in self.textdata:
+            if not t.corrected:
+                return t.corrected
+        raise NoSuchText
+        
+    def correctedtext(self):
+        if not self.ALLOWTEXT:
+            raise NotImplementedError #on purpose            
+        for i in range(1,len(self.textdata) + 1):
+            if self.textdata[-i].corrected:
+                return self.textdata[-i].value
+        raise NoSuchText
 
     def __len__(self):
         return len(self.data)
@@ -237,17 +281,45 @@ class AbstractElement(object):
         except KeyError:
             raise
 
-    def __unicode__(self):
+    def __unicode__(self): #alias for text()
         if self.ALLOWTEXT:
-            return self.text
+            if self.textdata:
+                return self.text()
+            elif self.data:
+                return " ".join( [ unicode(x) for x in self.data if x.ALLOWTEXT ] )                
         else:
-            raise NotImplementedError #on purpose
+            raise NotImplementedError("No text available on " + self.__class__.__name__) #on purpose
     
     def __str__(self):
         if self.ALLOWTEXT:
             return unicode(self).encode('utf-8')
         else:
             raise NotImplementedError #on purpose    
+        
+    def settext(self, text, corrected=False):
+        """Set text: may take TextContent element, unicode, or string (utf-8). Only in the latter two cases, the corrected parameter will be consulted. Existing texts will be *REPLACED*"""
+        if not self.ALLOWTEXT:
+            raise NotImplementedError #on purpose
+        if isinstance(text, TextContent):
+            replace = None
+            prepend = False
+            for i, t in enumerate(self.textdata):
+                if t.corrected == text.corrected:
+                    replace = t
+                elif not text.corrected:
+                    prepend = True                
+            if replace:
+                self.textdata[replace] = text
+            elif prepend:
+                self.textdata.insert(0,text)
+            else:
+                self.textdata.append(text)                            
+        elif isinstance(text, unicode):
+            assert corrected in [False,'inline',True]
+            self.settext(TextContent(self.doc, value=text, corrected=corrected))
+        elif isinstance(text, str):
+            assert corrected in [False,'inline',True]
+            self.settext(TextContent(self.doc, value=unicode(text,'utf-8'), corrected=corrected))
         
             
     def append(self, child):
@@ -272,7 +344,7 @@ class AbstractElement(object):
         #Some attributes only need to be added if they are not the same as what's already set in the declaration    
         try:
             if self.set and (not self.ANNOTATIONTYPE in self.doc.annotationdefaults or not 'set' in self.doc.annotationdefaults[self.ANNOTATIONTYPE] or self.set != self.doc.annotationdefaults[self.ANNOTATIONTYPE]['set']):
-                attribs['set'] = self.set        
+                attribs['{' + NSFOLIA + '}set'] = self.set        
         except AttributeError:
             pass
         
@@ -632,7 +704,121 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation):
             return self.id + '.' + xmltag + '.' + str(self.maxid[xmltag] + 1)
         else:
             return self.id + '.' + xmltag + '.1'
+
+
+class TextContent(AbstractElement):
+    XMLTAG = 't'
+    
+    def __init__(self, doc, *args, **kwargs):
         
+        if isinstance(kwargs['value'], unicode):
+            self.value = kwargs['value']   
+            del kwargs['value'] 
+        elif isinstance(kwargs['value'], str):
+            self.value = unicode(kwargs['value'],'utf-8')        
+            del kwargs['value']
+        else:
+            raise Exception("Invalid value: " + repr(kwargs['value']))
+
+        #Correct can be True, False or 'inline'
+        if 'corrected' in kwargs:
+            self.corrected = kwargs['corrected']
+            del kwargs['corrected']
+        else:
+            self.corrected = False
+
+        
+        if 'offset' in kwargs: #offset
+            self.offset = int(kwargs['offset'])
+            del kwargs['offset']
+        else:
+            self.offset = None            
+
+        if 'newoffset' in kwargs: #new offset
+            self.newoffset = int(kwargs['newoffset'])
+            del kwargs['offset']
+        else:
+            self.offset = None            
+
+            
+        if 'ref' in kwargs: #reference to offset
+            if isinstance(self.ref, AbstractElement):
+                self.ref = kwargs['ref']
+            else:
+                self.ref = doc.index[kwargs['ref']]
+            del kwargs['ref']
+        else:
+            self.ref = None #will be set upon parent.append()
+            
+        if 'length' in kwargs:
+            self.length = int(kwargs['length'])
+        else:
+            self.length = len(self.value)
+            
+        super(TextContent,self).__init__(doc, *args, **kwargs)
+    
+    def __unicode__(self):
+        return self.value
+        
+    def __str__(self):
+        return self.value.encode('utf-8')
+        
+    def append(self, child):
+        raise NotImplementedError #on purpose
+    
+    def __iter__(self):
+        return iter(self.value)
+    
+    def __len__(self):    
+        return len(self.value)
+        
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        nslen = len(NSFOLIA) + 2
+        args = []
+        kwargs = {}
+        kwargs['value'] = node.text
+        kwargs['corrected'] = False
+        if 'corrected' in node.attrib:
+            if node.attrib['corrected'] == 'yes':
+                kwargs['corrected'] = True
+            elif node.attrib['corrected'] == 'inline':
+                kwargs['corrected'] = 'inline'
+            elif node.attrib['corrected'] == 'no':
+                kwargs['corrected'] = False
+            else:
+                raise Exception("Invalid value for corrected: ", node.attrib['corrected'])
+        
+        if 'offset' in node.attrib:
+            kwargs['offset'] = int(node.attrib['offset'])
+        elif 'newoffset' in node.attrib:
+            kwargs['newoffset'] = int(node.attrib['newoffset'])
+        elif 'length' in node.attrib:
+            kwargs['length'] = int(node.attrib['length'])
+        elif 'ref' in node.attrib:
+            kwargs['ref'] = node.attrib['ref']
+
+        return TextContent(doc, **kwargs)
+    
+    
+    def xml(self, attribs = None,elements = None, skipchildren = False):   
+        global NSFOLIA
+        attribs = {}  
+        if not self.offset is None:
+            attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
+        if not self.newoffset is None:
+            attribs['{' + NSFOLIA + '}newoffset'] = str(self.newoffset)
+        if self.length != len(self.value):
+            attribs['{' + NSFOLIA + '}length'] = str(self.length)
+        if self.ref != self.parent.parent:
+            attribs['{' + NSFOLIA + '}ref'] = self.ref.id
+        if self.corrected == 'inline':
+            attribs['{' + NSFOLIA + '}corrected'] = 'inline'
+        elif self.corrected:
+            attribs['{' + NSFOLIA + '}corrected'] = 'yes'
+            
+        return super(TextContent,self).xml(attribs, elements, True)
 
 class Word(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -737,7 +923,7 @@ class Word(AbstractStructureElement):
                 del kwargs['alternative']
         else:
             c = Correction(self.doc, **kwargs)
-            self.text = newtext
+            self.settext(newtext)
         self.append( c )
         return c 
         
@@ -858,6 +1044,24 @@ class AbstractAnnotationLayer(AbstractElement):
             del kwargs['set']
         super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
 
+class ErrorDetection(AbstractElement):
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
+    XMLTAG = 'errordetection'
+    
+    def __init__(self,  doc, *args, **kwargs):
+        if not 'error' in kwargs:    
+            raise Exception("Expected attribute: error=yes/no")
+            
+        if kwargs['error'] is True or kwargs['error'].lower() == 'yes' or kwargs['error'].lower() == 'true':
+            self.error = True
+        else:
+            self.error = False
+            
+            
+            
+    
+    
             
 class Correction(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -869,6 +1073,8 @@ class Correction(AbstractElement):
         if 'new' in kwargs:
             if isinstance(kwargs['new'], AbstractElement) or isinstance(kwargs['new'], unicode):
                 self.new = [ kwargs['new'] ]
+            elif isinstance(kwargs['new'], TextContent):
+                self.original = [ kwargs['new'].value ]                
             elif isinstance(kwargs['new'], str):
                 self.new = [ unicode(kwargs['new'],'utf-8') ]
             elif isinstance(kwargs['new'], list):                
@@ -881,6 +1087,8 @@ class Correction(AbstractElement):
         if 'original' in kwargs:
             if isinstance(kwargs['original'], AbstractElement)  or isinstance(kwargs['original'], unicode):
                 self.original = [ kwargs['original'] ]
+            elif isinstance(kwargs['original'], TextContent):
+                self.original = [ kwargs['original'].value ]
             elif isinstance(kwargs['original'], str):
                 self.original = [ unicode(kwargs['original'],'utf-8') ]                
             elif isinstance(kwargs['original'], list):
@@ -1071,14 +1279,10 @@ class Quote(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = ()    
     XMLTAG = 'quote'
+    ALLOWTEXT = True
     #ACCEPTED DATA defined later below
     
     def __init__(self,  doc, *args, **kwargs):
-        if 'text' in kwargs:
-            self.text = kwargs['text']
-            del kwargs['text'] 
-        else:
-            self.text = None 
         super(Quote,self).__init__(doc, *args, **kwargs)
 
     def __unicode__(self):
@@ -1106,29 +1310,12 @@ class Sentence(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer)
+    ALLOWTEXT = True
     XMLTAG = 's'
     
     def __init__(self,  doc, *args, **kwargs):
-        if 'text' in kwargs:
-            self.text = kwargs['text']
-            del kwargs['text'] 
-        else:
-            self.text = None 
         super(Sentence,self).__init__(doc, *args, **kwargs)
-
-    def __unicode__(self):
-        s = u""
-        for e in self.data:
-            if isinstance(e, Word):
-                s += unicode(e)
-                if e.space:
-                    s += ' '
-        if not s and self.text:
-            return self.text            
-        return s
-
-    def __str__(self):    
-        return unicode(self).encode('utf-8')        
+     
                 
     def resolveword(self, id):
         for child in self:
