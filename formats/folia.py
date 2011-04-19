@@ -377,8 +377,9 @@ class AbstractElement(object):
         e  = E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
         
         try:
-            if self.ALLOWTEXT and self.text:
-                e.append( E.t(self.text) )
+            if self.ALLOWTEXT:
+                for t in self.textdata:
+                    e.append(t.xml()) 
         except AttributeError:
             pass                
             
@@ -778,7 +779,6 @@ class TextContent(AbstractElement):
         nslen = len(NSFOLIA) + 2
         args = []
         kwargs = {}
-        kwargs['value'] = node.text
         kwargs['corrected'] = False
         if 'corrected' in node.attrib:
             if node.attrib['corrected'] == 'yes':
@@ -804,6 +804,8 @@ class TextContent(AbstractElement):
     
     def xml(self, attribs = None,elements = None, skipchildren = False):   
         global NSFOLIA
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
         attribs = {}  
         if not self.offset is None:
             attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
@@ -818,8 +820,8 @@ class TextContent(AbstractElement):
         elif self.corrected:
             attribs['{' + NSFOLIA + '}corrected'] = 'yes'
             
-        return super(TextContent,self).xml(attribs, elements, True)
-
+        return E.t(self.value, **attribs)
+        
 class Word(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
@@ -912,7 +914,7 @@ class Word(AbstractStructureElement):
 
     def correcttext(self, newtext, **kwargs):
         kwargs['new'] = newtext
-        kwargs['original'] = self.text        
+        kwargs['original'] = self.text()       
         if not 'id' in kwargs:
             kwargs['id'] = self.generate_id(Correction)
         if 'alternative' in kwargs :
@@ -1020,7 +1022,7 @@ class AbstractSpanAnnotation(AbstractAnnotation):
                 #Include REFERENCES to word items instead of word items themselves
                 attribs['{' + NSFOLIA + '}id'] = child.id                    
                 if child.text:
-                    attribs['{' + NSFOLIA + '}t'] = child.text
+                    attribs['{' + NSFOLIA + '}t'] = child.text()
                 e.append( E.wref(**attribs) )
             else:
                 e.append( child.xml() )
@@ -1080,7 +1082,7 @@ class Correction(AbstractElement):
             elif isinstance(kwargs['new'], list):                
                 self.new = kwargs['new']
             else:
-                raise Exception("Invalid type for new: ")
+                raise Exception("Invalid type for new: " + repr(kwargs['new']))
             del kwargs['new'] 
         else:
             raise Exception("No new= argument specified!")
@@ -1094,7 +1096,7 @@ class Correction(AbstractElement):
             elif isinstance(kwargs['original'], list):
                 self.original = kwargs['original']
             else:
-                raise Exception("Invalid type for original")
+                raise Exception("Invalid type for original: " + repr(kwargs['original']))
             del kwargs['original'] 
         else:
             raise Exception("No original= argument specified!") 
