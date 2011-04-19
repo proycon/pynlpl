@@ -126,7 +126,7 @@ if textfile:
     f.close()
         
 if xmlfile:
-    xmldoc = ElementTree.parse(filename)
+    xmldoc = lxml.etree.parse(xmlfile)
     for node in xmldoc.xpath(xpathselect):
         if idattrib:
             if idattrib in node.attrib:
