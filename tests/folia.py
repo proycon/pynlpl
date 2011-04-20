@@ -298,10 +298,31 @@ class Test3Edit(unittest.TestCase):
         self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' ) 
         self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippellijn' ) 
         
+class Test4Edit(unittest.TestCase):
+        def test001_create(self):
+            """Creating a FoLiA Document from scratch"""
+            self.doc = folia.Document(id='example')
+            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')
         
+            self.assertEqual(self.doc.defaultset(folia.AnnotationType.TOKEN), 'adhocset')
+            self.assertEqual(self.doc.defaultannotator(folia.AnnotationType.TOKEN), 'proycon')
+    
+            text = folia.Text(self.doc, id=self.doc.id + '.text.1')
+            self.doc.append( text )
             
+            text.append(
+                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="online"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
+                ]
+                )
+            )
         
-
+            self.assertEqual( len(self.doc.index[self.doc.id + '.s.1']), 5)
+    
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="folia.xsl"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dcoi="http://lands.let.ru.nl/projects/d-coi/ns/1.0" xml:id="WR-P-E-J-0000000001">
