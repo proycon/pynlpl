@@ -305,10 +305,10 @@ class AbstractElement(object):
             prepend = False
             for i, t in enumerate(self.textdata):
                 if t.corrected == text.corrected:
-                    replace = t
+                    replace = i
                 elif not text.corrected:
                     prepend = True                
-            if replace:
+            if not replace is None:
                 self.textdata[replace] = text
             elif prepend:
                 self.textdata.insert(0,text)
@@ -905,7 +905,11 @@ class Word(AbstractStructureElement):
         return self.annotation(DomainAnnotation,set)        
 
 
-    
+    def settext(self, text, corrected=True):
+        if isinstance(text, TextContent) and not text.corrected:
+            raise Exception("Can only add text content with corrected=yes")
+        return super(Word,self).settext(text,True)
+        
     def resolveword(self, id):
         if id == self.id:
             return self
