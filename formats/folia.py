@@ -1330,7 +1330,7 @@ class Sentence(AbstractStructureElement):
                 return r
         return None
         
-    def splitword(self, originalword, newwords, **kwargs):
+    def splitword(self, originalword, *newwords, **kwargs):
         if isinstance(originalword, str) or isinstance(originalword, unicode):
             originalword = self.doc[originalword]            
         if not originalword in self or not isinstance(originalword, Word):
@@ -1340,11 +1340,11 @@ class Sentence(AbstractStructureElement):
             
         if not isinstance(newwords, list) or not all( [ isinstance(w, Word) for w in newwords ] ):
             raise Exception("Second argument, new words, must be a list of Word instances!")
+
+        if not 'id' in kwargs and not 'generate_id_in' in kwargs:
+            kwargs['generate_id_in'] = self
             
         kwargs['new'] = newwords
-        if not 'id' in kwargs:
-            #TODO: calculate new ID
-            raise NotImplementedError()
         insertindex = self.data.index(originalword)        
         c = Correction(self.doc, **kwargs)
         self.data.insert( insertindex , c)
@@ -1361,9 +1361,9 @@ class Sentence(AbstractStructureElement):
             kwargs['original'] = word
             
         kwargs['new'] = []
-        if not 'id' in kwargs:
-            #TODO: calculate new ID
-            raise NotImplementedError()
+        if not 'id' in kwargs and not 'generate_id_in' in kwargs:
+            kwargs['generate_id_in'] = self
+            
         insertindex = self.data.index(word)        
         c = Correction(self.doc, **kwargs)
         self.data.insert( insertindex , c)
@@ -1384,16 +1384,14 @@ class Sentence(AbstractStructureElement):
         kwargs['original'] = []
         kwargs['new'] = newword
         
-        if not 'id' in kwargs:
-            #TODO: calculate new ID
-            raise NotImplementedError()
+        if not 'id' in kwargs and not 'generate_id_in' in kwargs:
+            kwargs['generate_id_in'] = self
         c = Correction(self.doc, **kwargs)
         self.data.insert( insertindex, c )
         c.parent = self
         return c 
         
-    def mergewords(self, originalwords, newword, **kwargs):
-        #TODO!
+    def mergewords(self, newword,  originalwords,**kwargs):
         for w in originalwords:            
             if not isinstance(w, Word) or not w in self:
                 raise Exception("Original word not found or not a Word instance!")    
@@ -1401,12 +1399,10 @@ class Sentence(AbstractStructureElement):
         
         if not isinstance(newword, Word):        
             raise Exception("New word must be a Word instance")
-        kwargs['new'] = newword
-        if not 'id' in kwargs:
-            #TODO: calculate new ID
-            raise NotImplementedError()        
-        
-        
+
+        if not 'id' in kwargs and not 'generate_id_in' in kwargs:
+            kwargs['generate_id_in'] = self
+            
         insertindex = self.data.index(originalword)        
         c = Correction(self.doc, **kwargs)
         self.data.insert( insertindex, c )
