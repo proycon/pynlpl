@@ -324,7 +324,8 @@ class Test4Create(unittest.TestCase):
             self.assertEqual( len(self.doc.index[self.doc.id + '.s.1']), 5)
         
 class Test5Correction(unittest.TestCase):
-        def test001_splitcorrection(self):         
+        def test001_splitcorrection(self):  
+            """Correction - Split corrections"""
             self.doc = folia.Document(id='example')
             self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
             text = folia.Text(self.doc, id=self.doc.id + '.text.1')
@@ -345,10 +346,16 @@ class Test5Correction(unittest.TestCase):
             w = self.doc.index[self.doc.id + '.s.1.w.4']
             
             s.splitword( w, folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
+                        
+            print s[3]
+            print "DEBUG: ", str(s)
             
             self.assertEqual( len(s), 6 )
             
+            
+            
         def test002_mergecorrection(self):         
+            """Correction - Merge corrections"""
             self.doc = folia.Document(id='example')
             self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
             text = folia.Text(self.doc, id=self.doc.id + '.text.1')

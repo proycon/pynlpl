@@ -286,7 +286,7 @@ class AbstractElement(object):
             if self.textdata:
                 return self.text()
             elif self.data:
-                return " ".join( [ unicode(x) for x in self.data if x.ALLOWTEXT ] )                
+                return " ".join( [ unicode(x) for x in self.data if x.ALLOWTEXT ] )  #TODO: space attribute ignored?      
         else:
             raise NotImplementedError("No text available on " + self.__class__.__name__) #on purpose
     
@@ -294,7 +294,7 @@ class AbstractElement(object):
         if self.ALLOWTEXT:
             return unicode(self).encode('utf-8')
         else:
-            raise NotImplementedError #on purpose    
+            raise NotImplementedError("No text available on " + self.__class__.__name__) #on purpose
         
     def settext(self, text, corrected=False):
         """Set text: may take TextContent element, unicode, or string (utf-8). Only in the latter two cases, the corrected parameter will be consulted. Existing texts will be *REPLACED*"""
@@ -706,6 +706,23 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation):
         else:
             return self.id + '.' + xmltag + '.1'
 
+    def words(self, index = None):
+        if index is None:            
+            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])
+        else:
+            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])[index]
+                   
+    def paragraphs(self, index = None):
+        if index is None:
+            return sum([ t.select(Paragraph) for t in self.data ],[])
+        else:
+            return sum([ t.select(Paragraph) for t in self.data ],[])[index]
+    
+    def sentences(self, index = None):
+        if index is None:
+            return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])
+        else:
+            return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])[index]
 
 class TextContent(AbstractElement):
     XMLTAG = 't'
@@ -1107,6 +1124,22 @@ class Correction(AbstractElement):
         if self.new and self.original and self.new[0].__class__ != self.original[0].__class__:
             raise Exception("New and Original are of different types!")             
         super(Correction,self).__init__(doc, *args, **kwargs)
+    
+    def __unicode__(self):
+        o = []
+        try:
+            for s in self.new:
+                o.append(unicode(s))
+            if o:
+                return " ".join(o) #TODO: space attribute ignored?
+            else:
+                return ""
+        except:
+            raise Exception("Only corrections with text elements can be converted into strings")             
+        
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+        
 
     def xml(self, attribs = None, elements = None, skipchildren = False):
         if not attribs: attribs = {}
@@ -1330,6 +1363,20 @@ class Sentence(AbstractStructureElement):
                 return r
         return None
         
+    def __unicode__(self):
+        if self.textdata:
+            return self.text()
+        else:
+            o = ""
+            for e in self.words():
+                o += unicode(e)
+                if e.space == ' ' or e.space is True:
+                    o += ' '
+                elif e.space:
+                    o += e.space                    
+            return o
+        
+        
     def splitword(self, originalword, *newwords, **kwargs):
         if isinstance(originalword, str) or isinstance(originalword, unicode):
             originalword = self.doc[originalword]            
@@ -1347,8 +1394,8 @@ class Sentence(AbstractStructureElement):
         kwargs['new'] = newwords
         insertindex = self.data.index(originalword)        
         c = Correction(self.doc, **kwargs)
-        self.data.insert( insertindex , c)
-        self.remove(originalword)
+        originalword.parent = c
+        self.data[insertindex] = c 
         c.parent = self
         return c 
         
@@ -1805,9 +1852,9 @@ class Document(object):
         
     def words(self, index = None):
         if index is None:            
-            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation,Correction]) for t in self.data ],[])
+            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])
         else:
-            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation,Correction]) for t in self.data ],[])[index]
+            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])[index]
                     
     def __str__(self):
         return ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
