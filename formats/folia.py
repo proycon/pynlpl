@@ -1083,7 +1083,7 @@ class Correction(AbstractElement):
                 self.original = [ kwargs['new'].value ]                
             elif isinstance(kwargs['new'], str):
                 self.new = [ unicode(kwargs['new'],'utf-8') ]
-            elif isinstance(kwargs['new'], list):                
+            elif isinstance(kwargs['new'], list) or isinstance(kwargs['new'], tuple):                
                 self.new = kwargs['new']
             else:
                 raise Exception("Invalid type for new: " + repr(kwargs['new']))
@@ -1097,14 +1097,14 @@ class Correction(AbstractElement):
                 self.original = [ kwargs['original'].value ]
             elif isinstance(kwargs['original'], str):
                 self.original = [ unicode(kwargs['original'],'utf-8') ]                
-            elif isinstance(kwargs['original'], list):
+            elif isinstance(kwargs['original'], list) or isinstance(kwargs['original'], tuple):
                 self.original = kwargs['original']
             else:
                 raise Exception("Invalid type for original: " + repr(kwargs['original']))
             del kwargs['original'] 
         else:
             raise Exception("No original= argument specified!") 
-        if self.new.__class__ != self.original.__class__ and not isinstance(self.new,str) and not isinstance(self.new,unicode):
+        if self.new and self.original and self.new[0].__class__ != self.original[0].__class__:
             raise Exception("New and Original are of different types!")             
         super(Correction,self).__init__(doc, *args, **kwargs)
 
@@ -1338,7 +1338,7 @@ class Sentence(AbstractStructureElement):
         else:
             kwargs['original'] = originalword
             
-        if not isinstance(newwords, list) or not all( [ isinstance(w, Word) for w in newwords ] ):
+        if not all( [ isinstance(w, Word) for w in newwords ] ):
             raise Exception("Second argument, new words, must be a list of Word instances!")
 
         if not 'id' in kwargs and not 'generate_id_in' in kwargs:
@@ -1391,7 +1391,7 @@ class Sentence(AbstractStructureElement):
         c.parent = self
         return c 
         
-    def mergewords(self, newword,  originalwords,**kwargs):
+    def mergewords(self, newword,  *originalwords,**kwargs):
         for w in originalwords:            
             if not isinstance(w, Word) or not w in self:
                 raise Exception("Original word not found or not a Word instance!")    
@@ -1402,12 +1402,14 @@ class Sentence(AbstractStructureElement):
 
         if not 'id' in kwargs and not 'generate_id_in' in kwargs:
             kwargs['generate_id_in'] = self
-            
-        insertindex = self.data.index(originalword)        
+        
+        kwargs['new'] = newword       
+        insertindex = self.data.index(originalwords[0])        
         c = Correction(self.doc, **kwargs)
         self.data.insert( insertindex, c )
         c.parent = self
-        self.remove(original)        
+        for w in originalwords:            
+            self.remove(w)        
         return c 
         
 

@@ -368,7 +368,7 @@ class Test5Correction(unittest.TestCase):
         
             s = self.doc.index[self.doc.id + '.s.1']
                                
-            s.mergewords( folia.Word(id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.5'], self.doc.index[self.doc.id + '.s.1.w.6'] )
+            s.mergewords( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.5'], self.doc.index[self.doc.id + '.s.1.w.6'] )
            
             self.assertEqual( len(s), 5 )
             
