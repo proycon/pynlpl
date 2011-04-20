@@ -298,7 +298,7 @@ class Test3Edit(unittest.TestCase):
         self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' ) 
         self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippellijn' ) 
         
-class Test4Edit(unittest.TestCase):
+class Test4Create(unittest.TestCase):
         def test001_create(self):
             """Creating a FoLiA Document from scratch"""
             self.doc = folia.Document(id='example')
@@ -322,6 +322,56 @@ class Test4Edit(unittest.TestCase):
             )
         
             self.assertEqual( len(self.doc.index[self.doc.id + '.s.1']), 5)
+        
+class Test5Correction(unittest.TestCase):
+        def test001_splitcorrection(self):         
+            self.doc = folia.Document(id='example')
+            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
+            text = folia.Text(self.doc, id=self.doc.id + '.text.1')
+            self.doc.append( text )
+            
+            text.append(
+                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="online"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
+                ]
+                )
+            )
+        
+            s = self.doc.index[self.doc.id + '.s.1']
+            w = self.doc.index[self.doc.id + '.s.1.w.4']
+            
+            s.splitword( w, folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
+            
+            self.assertEqual( len(s), 6 )
+            
+        def test002_mergecorrection(self):         
+            self.doc = folia.Document(id='example')
+            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
+            text = folia.Text(self.doc, id=self.doc.id + '.text.1')
+            self.doc.append( text )
+            
+            text.append(
+                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="on"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text="line"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
+                ]
+                )
+            )
+        
+            s = self.doc.index[self.doc.id + '.s.1']
+                               
+            s.mergewords( folia.Word(id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.5'], self.doc.index[self.doc.id + '.s.1.w.6'] )
+           
+            self.assertEqual( len(s), 5 )
+            
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="folia.xsl"?>
