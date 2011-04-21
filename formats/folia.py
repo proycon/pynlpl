@@ -313,7 +313,10 @@ class AbstractElement(object):
             elif prepend:
                 self.textdata.insert(0,text)
             else:
-                self.textdata.append(text)                            
+                self.textdata.append(text)  
+            text.parent = self
+            if not text.ref and self.parent:
+                text.ref = self.parent 
         elif isinstance(text, unicode):
             assert corrected in [False,'inline',True]
             self.settext(TextContent(self.doc, value=text, corrected=corrected))
@@ -376,12 +379,9 @@ class AbstractElement(object):
             
         e  = E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
         
-        try:
-            if self.ALLOWTEXT:
-                for t in self.textdata:
-                    e.append(t.xml()) 
-        except AttributeError:
-            pass                
+        if self.ALLOWTEXT:
+            for t in self.textdata:
+                e.append(t.xml()) 
             
         #append children:
         if not skipchildren and self.data:
@@ -706,11 +706,12 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation):
         else:
             return self.id + '.' + xmltag + '.1'
 
-    def words(self, index = None):
-        if index is None:            
-            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])
+    def words(self, index = None):        
+        if index is None:         
+            print "D:", self.select(Word,None,True,[AbstractSpanAnnotation])
+            return self.select(Word,None,True,[AbstractSpanAnnotation])
         else:
-            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])[index]
+            return sum(self.select(Word,None,True,[AbstractSpanAnnotation]),[])[index]
                    
     def paragraphs(self, index = None):
         if index is None:
@@ -756,7 +757,7 @@ class TextContent(AbstractElement):
             self.newoffset = int(kwargs['newoffset'])
             del kwargs['offset']
         else:
-            self.offset = None            
+            self.newoffset = None            
 
             
         if 'ref' in kwargs: #reference to offset
@@ -830,11 +831,11 @@ class TextContent(AbstractElement):
             attribs['{' + NSFOLIA + '}newoffset'] = str(self.newoffset)
         if self.length != len(self.value):
             attribs['{' + NSFOLIA + '}length'] = str(self.length)
-        if self.ref != self.parent.parent:
+        if self.parent and self.ref and self.ref != self.parent.parent:
             attribs['{' + NSFOLIA + '}ref'] = self.ref.id
         if self.corrected == 'inline':
             attribs['{' + NSFOLIA + '}corrected'] = 'inline'
-        elif self.corrected:
+        elif self.corrected and not isinstance(self.parent, Word):
             attribs['{' + NSFOLIA + '}corrected'] = 'yes'
             
         return E.t(self.value, **attribs)

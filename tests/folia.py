@@ -104,7 +104,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertTrue( isinstance(s, folia.Sentence) )
         self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.1' )
         self.assertRaises( folia.NoSuchText, s.text) #no text DIRECTLY associated with the sentence
-        self.assertEqual( str(s), "Stemma is een ander woord voor stamboom ." ) 
+        self.assertEqual( str(s), "Stemma is een ander woord voor stamboom . " ) 
         
     def test007_index(self):                                    
         """Sanity check - Index"""            
@@ -347,7 +347,8 @@ class Test5Correction(unittest.TestCase):
             
             s.splitword( w, folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
                         
-            print s[3]
+            print repr(s[3])
+            print repr(s.data)
             print "DEBUG: ", str(s)
             
             self.assertEqual( len(s), 6 )
@@ -374,6 +375,7 @@ class Test5Correction(unittest.TestCase):
             )
         
             s = self.doc.index[self.doc.id + '.s.1']
+            
                                
             s.mergewords( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.5'], self.doc.index[self.doc.id + '.s.1.w.6'] )
            
