@@ -1448,7 +1448,7 @@ class Sentence(AbstractStructureElement):
         insertindex = self.data.index(word)        
         c = Correction(self.doc, **kwargs)
         self.data[insertindex] = c
-        self.remove(word)
+        word.parent = c
         c.parent = self
         return c 
         
@@ -1457,7 +1457,7 @@ class Sentence(AbstractStructureElement):
             prevword = self.doc[prevword]            
         if not prevword in self or not isinstance(prevword, Word):
             raise Exception("Previous word not found or not instance of Word!")
-        if not newword in self or not isinstance(newword, Word):
+        if not isinstance(newword, Word):
             raise Exception("New word no instance of Word!")
         
         insertindex = self.data.index(prevword)
