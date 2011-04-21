@@ -708,7 +708,6 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation):
 
     def words(self, index = None):        
         if index is None:         
-            print "D:", self.select(Word,None,True,[AbstractSpanAnnotation])
             return self.select(Word,None,True,[AbstractSpanAnnotation])
         else:
             return sum(self.select(Word,None,True,[AbstractSpanAnnotation]),[])[index]
@@ -1149,6 +1148,40 @@ class Correction(AbstractElement):
         elements.append( E.new( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.new ] ) ) 
         elements.append( E.original( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.original ] ) )    
         return super(Correction,self).xml(attribs,elements, True)  
+
+    def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
+        """Select on Correction only descrends in "NEW" branch"""
+        l = []
+        if not node:
+            node = self        
+        for e in self.new:
+            ignore = False                            
+            for c in ignorelist:
+                if c == e.__class__ or issubclass(e.__class__,c):
+                    ignore = True
+                    break
+            if ignore: 
+                continue
+        
+            if isinstance(e, cls):                
+                if not set is None:
+                    try:
+                        if e.set != set:
+                            continue
+                    except:
+                        continue
+                l.append(e)
+            if recursive and isinstance(e, AbstractElement):
+                for e2 in e.select(cls, set, recursive, ignorelist, e):
+                    if not set is None:
+                        try:
+                            if e2.set != set:
+                                continue
+                        except:
+                            continue
+                    l.append(e2)
+        return l
+        
 
     @classmethod
     def parsexml(Class, node, doc):

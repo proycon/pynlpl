@@ -347,11 +347,7 @@ class Test5Correction(unittest.TestCase):
             
             s.splitword( w, folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
                         
-            print "DATA:" , repr(s.data)
-            print "WORDS: ", s.words()
-            print "STRING: ", str(s)
-            
-            self.assertEqual( len(s), 6 )
+            self.assertEqual( len(s.words()), 6 )
             
             
             
