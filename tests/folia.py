@@ -396,7 +396,7 @@ class Test5Correction(unittest.TestCase):
                 ]
                 )
             )
-        
+            s = self.doc.index[self.doc.id + '.s.1']
             s.deleteword(self.doc.index[self.doc.id + '.s.1.w.4'])
             self.assertEqual( len(s.words()), 5 )
 
@@ -417,8 +417,8 @@ class Test5Correction(unittest.TestCase):
                 ]
                 )
             )
-            
-            s.inswertword( folia.Word(self.doc, id=self.doc.id+'.s.1.w.3b',text='groot'),  self.doc.index[self.doc.id + '.s.1.w.3'])
+            s = self.doc.index[self.doc.id + '.s.1']
+            s.insertword( folia.Word(self.doc, id=self.doc.id+'.s.1.w.3b',text='groot'),  self.doc.index[self.doc.id + '.s.1.w.3'])
             self.assertEqual( len(s.words()), 6 )
 
             
