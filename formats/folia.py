@@ -1447,12 +1447,12 @@ class Sentence(AbstractStructureElement):
             
         insertindex = self.data.index(word)        
         c = Correction(self.doc, **kwargs)
-        self.data.insert( insertindex , c)
+        self.data[insertindex] = c
         self.remove(word)
         c.parent = self
         return c 
         
-    def insertword(self, prevword, newword, **kwargs):
+    def insertword(self, newword, prevword, **kwargs):
         if isinstance(prevword, str) or isinstance(prevword, unicode):
             prevword = self.doc[prevword]            
         if not prevword in self or not isinstance(prevword, Word):

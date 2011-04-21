@@ -375,7 +375,52 @@ class Test5Correction(unittest.TestCase):
                                
             s.mergewords( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.5'], self.doc.index[self.doc.id + '.s.1.w.6'] )
            
-            self.assertEqual( len(s), 5 )
+            self.assertEqual( len(s.words()), 5 )
+            
+            
+        def test003_deletecorrection(self):         
+            """Correction - Deletion"""
+            self.doc = folia.Document(id='example')
+            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
+            text = folia.Text(self.doc, id=self.doc.id + '.text.1')
+            self.doc.append( text )
+            
+            text.append(
+                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="Ik"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="zie"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="een"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="groot"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text="huis"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
+                ]
+                )
+            )
+        
+            s.deleteword(self.doc.index[self.doc.id + '.s.1.w.4'])
+            self.assertEqual( len(s.words()), 5 )
+
+        def test004_insertcorrection(self):         
+            """Correction - Insert"""
+            self.doc = folia.Document(id='example')
+            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
+            text = folia.Text(self.doc, id=self.doc.id + '.text.1')
+            self.doc.append( text )
+            
+            text.append(
+                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="Ik"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="zie"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="een"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="huis"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
+                ]
+                )
+            )
+            
+            s.inswertword( folia.Word(self.doc, id=self.doc.id+'.s.1.w.3b',text='groot'),  self.doc.index[self.doc.id + '.s.1.w.3'])
+            self.assertEqual( len(s.words()), 6 )
+
             
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
