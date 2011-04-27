@@ -205,7 +205,7 @@ def start(id, cmdline):
 
     errlog.write("#PID:     " + str(process.pid) + '\n')
 
-    os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' 0s " >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
+    os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' 0:00:00 " >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
     os.system("ps uh " + str(process.pid) + ' >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
 
     #write process file
@@ -240,18 +240,17 @@ def wait(id, process):
                 break
             time.sleep(POLLINTERVAL)
             now = datetime.datetime.now()
-            duration = int(now - begintime)
-            if duration % RESINTERVAL == 0: #every ten minutes
+            duration = now - begintime
+            if duration.seconds % RESINTERVAL == 0: #every ten minutes
                 #write resource
-                os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + str(duration) + 's " >> ' + EXPLOGDIR + '/' + id + '.res')
+                os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + str(duration) + ' " >> ' + EXPLOGDIR + '/' + id + '.res')
                 os.system("ps uh " + str(process.pid) + ' >> ' + EXPLOGDIR + '/' + id + '.res')
             if now.hour == DAILYMAILHOUR and not mailed:                
                 mailed = True
                 errlogfile =  EXPLOGDIR + '/' + id + '.err'
                 logfile =  EXPLOGDIR + '/' + id + '.log'
                 reslogfile =  EXPLOGDIR + '/' + id + '.res'
-                days = round(duration / float(3600*24))
-                os.system('tail -n 25 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Daily process report for " + id + " on " + HOST + " (" + str(days) + "d)\"" + MAILTO)
+                os.system('tail -n 25 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Daily process report for " + id + " on " + HOST + " (" +str(duration.days) + "d)\"" + MAILTO)
             elif now.hour < DAILYMAILHOUR:
                 mailed = False                        
 
@@ -259,7 +258,7 @@ def wait(id, process):
 
 
     endtime = datetime.datetime.now()
-    duration = int(endtime - begintime)
+    duration = endtime - begintime
     mail = True
 
     #delete process file
