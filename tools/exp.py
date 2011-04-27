@@ -465,7 +465,7 @@ else:
                         elif os.path.exists(EXPLOGDIR + id + '.log') and os.path.exists(EXPLOGDIR + id + '.err'):
                             #catch very common errors from err output (backward compatibility with old exp tools):                            
                             ferr = open(EXPLOGDIR + id + '.err','r')
-                            firstline = f.read(15)
+                            firstline = ferr.read(15)
                             failed = (firstline[0:9] != "#COMMAND:")                                            
                             if not failed:
                                 lastline = tail(EXPLOGDIR + id + '.err', ferr)
