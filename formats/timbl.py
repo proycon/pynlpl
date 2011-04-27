@@ -77,11 +77,10 @@ class TimblOutput:
             label = instance[i]
             try:
                 score = float(instance[i+1].rstrip(","))
-                key = label
-                dist[key] = score
+                dist[label] = score
             except:
                 print >>stderr, "ERROR: pynlpl.input.timbl.TimblOutput -- Could not fetch score for class '" + label + "', expected float, but found '"+instance[i+1].rstrip(",")+"'. Attempting to compensate..."
-                del dist[key]
+                del dist[label]
                 i = i - 1
             i += 2
 
