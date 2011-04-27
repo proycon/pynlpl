@@ -52,6 +52,12 @@ def green(s):
    reset=CSI+"m"
    return CSI+"32m" + s + CSI + "0m"   
 
+
+def yellow(s):
+   CSI="\x1B["
+   reset=CSI+"m"
+   return CSI+"33m" + s + CSI + "0m"   
+
    
 def blue(s):
    CSI="\x1B["
@@ -297,22 +303,38 @@ else:
                     ps(host)
     elif command == 'history':
         filter = ''
-        date = datetime.datetime.now().strftime("%Y%m")
         if len(sys.argv) >= 3:
-            filter = sys.argv[2]
-            if len(filter) == 6 and filter.isdigit():
-                date = filter
-                filter = ''
-        historyfile = PROCDIR + '/' + date + '.history'
-        if os.path.exists(historyfile):
-            if filter == '*':
-                os.system("cat " + PROCDIR + '/*.history')
-            elif filter:
-                os.system("cat " + historyfile + " | grep " + filter)
-            else:
-                os.system("cat " + historyfile)
-        else:
-            print "No history available"
+            filters = sys.argv[2:]
+                    
+            
+        for historyfile in sorted(glob.glob(PROCDIR+'/*.history')): 
+            match = True
+            for filter in filters:
+                if len(filter) == 6 and filter.isdigit():
+                    if historyfile[-8:8] != filter:
+                        match = False
+                        break
+            if not match:
+                continue
+                        
+            output = []
+            f = open(historyfile)
+            for line in f:
+                if not filters:
+                    match = True
+                else:
+                    match = False
+                    for filter in filters:
+                        if not (len(filter) == 6 and filter.isdigit()):
+                            if line.find(filter) != -1:
+                                match = True
+                                break
+                if match:
+                    fields = line.split(' ',7)
+                    date,weekday, time, userhost, id,prompt, cmdline = fields
+                    print date + ' ' + weekday + ' ' + time + ' ' + green(userhost) + bold(id) + bold(prompt) + blue(cmdline)                                    
+            f.close()
+                        
     else:
         print >>sys.stderr,"Unknown command: " + command
         usage()
