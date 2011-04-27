@@ -122,6 +122,7 @@ def start(id, cmdline):
 
     HISTORYFILE = PROCDIR + '/' + datetime.datetime.now().strftime("%Y%m") + '.history'
 
+
     dir = os.path.dirname(id)
     base_id = os.path.basename(id)
 
@@ -231,8 +232,15 @@ if len(sys.argv) < 2:
 else:
     command = sys.argv[1]
     if command == 'start':
-        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
-        wait(id, start(id, " ".join(sys.argv[3:])))
+        id = sys.argv[2] if len(sys.argv) >= 4 else usage()
+	if id[0:2] == "./": usage()
+        ret = os.system('which ' + sys.argv[3])
+        if ret != 0:
+           print >>sys.stderr,"Command not found: ", sys.argv[3]
+        else:
+           pid = start(id, " ".join(sys.argv[3:]))
+           if pid:
+              wait(id, pid)
     elif command == 'stop':
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
         #find the process
@@ -242,7 +250,7 @@ else:
             pid = int(f.readline())
             f.close()
             #kill the process
-            os.kill(pid,11)
+	    os.system('kill ' + str(pid))
             #delete process file
             try:
                 os.unlink(procfilename)
@@ -304,7 +312,7 @@ else:
             else:
                 os.system("cat " + historyfile)
         else:
-            print "No history evailable"
+            print "No history available"
     else:
         print >>sys.stderr,"Unknown command: " + command
         usage()
