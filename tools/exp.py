@@ -52,10 +52,23 @@ def green(s):
    reset=CSI+"m"
    return CSI+"32m" + s + CSI + "0m"   
 
+   
+def blue(s):
+   CSI="\x1B["
+   reset=CSI+"m"
+   return CSI+"34m" + s + CSI + "0m"   
+   
+
+def magenta(s):
+   CSI="\x1B["
+   reset=CSI+"m"
+   return CSI+"35m" + s + CSI + "0m"   
+
 def ps(host, dir = ""):
     global HOST
     found = False
     pids = None
+    out = ""
     if dir:
         pattern = PROCDIR + '/' + host + '/' + dir + '/*'
     else:
@@ -77,14 +90,27 @@ def ps(host, dir = ""):
                 pid = int(f.readline())
             except:
                 continue
-            pids.append(pid)
             cmdline = f.readline()
             f.close()
-            print "%-33s %-22s %-6s\n\t%s" % (bold(expid), host, green(str(pid)), cmdline.strip())
-     
+            if HOST == host:
+                pids.append( pid )
+                pidstring = green(str(pid))
+                #sanity check, check if pid really still exists:
+                if not os.path.exists('/proc/' + str(pid)):
+                   os.unlink(filename)
+                   continue
+            else:
+                pidstring = magenta(str(pid))
+            out +=  "%-33s %-22s %-6s\n  --> %s\n" % (bold(expid), host,pidstring, blue(cmdline.strip()))
+    
     if HOST == host and found and pids:
-        os.system("ps u " + " ".join([ str(p) for p in pids ]))
+        print "---"
+        print "USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND"
+        for pid, filename in pids:
+              os.system("ps uh " + " ".join([ str(p) for p in pids ]))
+        print "---"
 
+    if out: print out
     return found
 
 def start(id, cmdline):
