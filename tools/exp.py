@@ -436,7 +436,10 @@ else:
                             #catch very common errors from err output (backward compatibility with old exp tools):
                             failed = True
                             ferr = open(EXPLOGDIR + id + '.err','r')
-                            for l in ferr: 
+                            for i,l in enumerate(ferr): 
+                                if i > 1000: #don't read too much
+                                    prompt = bold(yellow('UNKNOWN $'))                                    
+                                    break
                                 if l[:8] == '/bin/sh:' or l[:10] == '/bin/bash:':
                                     failed = True
                                     break
@@ -445,10 +448,11 @@ else:
                                 else:
                                     failed = True
                             ferr.close()
-                            if failed:
-                                prompt =  bold(red('FAILED $'))                                                                       
-                            else:
-                                prompt = bold(green('SUCCESS $'))                            
+                            if prompt.find('UNKNOWN') == -1:
+                                if failed:
+                                    prompt =  bold(red('FAILED $'))                                                                       
+                                else:
+                                    prompt = bold(green('SUCCESS $'))                            
                         else:
                             prompt = bold(red('MISSING $'))
                     else:
