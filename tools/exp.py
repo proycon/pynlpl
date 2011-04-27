@@ -280,7 +280,7 @@ def wait(id, process):
     f = open(errlogfile,'a')
     f.write("#END:      " + endtime.strftime("%a %Y-%m-%d %H:%M:%S") + '\n')
     if errors:
-        f.write("#ERRORCODE: " + str(errorcode))
+        f.write("#ERRORCODE: " + str(errorcode) + "\n")
     f.write("#DURATION: " + str(duration) + '\n')
     f.close()
     
@@ -292,7 +292,7 @@ def wait(id, process):
         f = open(EXPLOGDIR + '/' + id + '.failed','w')
         f.write(str(errorcode))
         f.close()
-    else:
+    else:f
         printfile = logfile
         title = "Experiment " + id + " on " + HOST + " finished succesfully (in " + str(duration).split('.')[0] + ')'
 
