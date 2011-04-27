@@ -302,7 +302,7 @@ else:
                     host = os.path.basename(hostdir)
                     ps(host)
     elif command == 'history':
-        filter = ''
+        filters = []
         if len(sys.argv) >= 3:
             filters = sys.argv[2:]
                     
@@ -318,6 +318,7 @@ else:
                 continue
                         
             output = []
+            prevcmdline = ""
             f = open(historyfile)
             for line in f:
                 if not filters:
@@ -331,10 +332,16 @@ else:
                                 break
                 if match:
                     fields = line.split(' ',7)
-                    date,weekday, time, userhost, id,prompt, cmdline = fields
-                    print date + ' ' + weekday + ' ' + time + ' ' + green(userhost) + bold(id) + bold(prompt) + blue(cmdline)                                    
+                    date,weekday, time,empty, userhost, id,prompt, cmdline = fields
+		    out =  yellow(date[0:4] + '-' + date[4:6] + '-' + date[6:8] + ' ' + weekday + ' ' + time) + ' ' + green(userhost) +' ' +bold(id) + ' ' + bold(prompt) +' ' +cmdline
+		    if cmdline == prevcmdline:
+			#duplicate, replace:
+			output[-1] = out
+		    else:
+			output.append(out)
+	   	    prevcmdline = cmdline	   
             f.close()
-                        
+            print "\n".join(output)                        
     else:
         print >>sys.stderr,"Unknown command: " + command
         usage()
