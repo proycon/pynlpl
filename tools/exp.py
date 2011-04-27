@@ -78,6 +78,36 @@ def magenta(s):
    CSI="\x1B["
    reset=CSI+"m"
    return CSI+"35m" + s + CSI + "0m"   
+   
+   
+def tail(filepath, f, read_size=1024): #source: Manu Garg, http://www.manugarg.com/2007/04/tailing-in-python.html
+  """
+  This function returns the last line of a file.
+  Args:
+    filepath: path to file
+    read_size:  data is read in chunks of this size (optional, default=1024)
+  Raises:
+    IOError if file cannot be processed.
+  """
+  #f = open(filepath, 'rU')    # U is to open it with Universal newline support
+  offset = read_size
+  f.seek(0, 2)
+  file_size = f.tell()
+  while 1:
+    if file_size < offset:
+      offset = file_size
+    f.seek(-1*offset, 2)
+    read_str = f.read(offset)
+    # Remove newline at the end
+    if read_str[offset - 1] == '\n':
+      read_str = read_str[0:-1]
+    lines = read_str.split('\n')
+    if len(lines) > 1:  # Got a line
+      return lines[len(lines) - 1]
+    if offset == file_size:   # Reached the beginning
+      return read_str
+    offset += read_size
+  #f.close()
 
 def ps(host, dir = ""):
     global HOST
@@ -433,26 +463,18 @@ else:
                         if os.path.exists(EXPLOGDIR + id + '.failed'):
                             prompt =  bold(red('FAILED $'))                                             
                         elif os.path.exists(EXPLOGDIR + id + '.log') and os.path.exists(EXPLOGDIR + id + '.err'):
-                            #catch very common errors from err output (backward compatibility with old exp tools):
-                            failed = True
+                            #catch very common errors from err output (backward compatibility with old exp tools):                            
                             ferr = open(EXPLOGDIR + id + '.err','r')
-                            for i,l in enumerate(ferr): 
-                                if i > 1000: #don't read too much
-                                    prompt = bold(yellow('UNKNOWN $'))                                    
-                                    break
-                                if l[:8] == '/bin/sh:' or l[:10] == '/bin/bash:':
-                                    failed = True
-                                    break
-                                if l[:10] == '#DURATION:':
-                                    failed = False
-                                else:
-                                    failed = True
-                            ferr.close()
-                            if prompt.find('UNKNOWN') == -1:
-                                if failed:
-                                    prompt =  bold(red('FAILED $'))                                                                       
-                                else:
-                                    prompt = bold(green('SUCCESS $'))                            
+                            firstline = f.read(15)
+                            failed = (firstline[0:9] != "#COMMAND:")                                            
+                            if not failed:
+                                lastline = tail(EXPLOGDIR + id + '.err', ferr)
+                                failed = (lastline[:10] != "#DURATION")
+                            ferr.close()                            
+                            if failed:
+                                prompt =  bold(red('FAILED $'))                                                                       
+                            else:
+                                prompt = bold(green('SUCCESS $'))                            
                         else:
                             prompt = bold(red('MISSING $'))
                     else:
