@@ -409,11 +409,11 @@ else:
                     if userhost.split('@')[1] == HOST:
                         userhost = green(userhost)                        
                         if os.path.exists(EXPLOGDIR + id + '.failed'):
-                            prompt = 'FAILED ' + bold(red('FAILED $'))                        
+                            prompt =  bold(red('FAILED $'))                        
                         elif os.path.exists(EXPLOGDIR + id + '.log') and os.path.exists(EXPLOGDIR + id + '.err'):
-                            prompt = 'SUCCESS ' + bold(green('OK $'))                            
+                            prompt = bold(green('SUCCESS $'))                            
                         else:
-                            prompt = bold(yellow('??? $'))
+                            prompt = bold(yellow('MISSING $'))
                     else:
                         userhost = magenta(userhost)
                         prompt = bold(magenta(prompt))    
