@@ -292,7 +292,7 @@ def wait(id, process):
         f = open(EXPLOGDIR + '/' + id + '.failed','w')
         f.write(str(errorcode))
         f.close()
-    else:f
+    else:
         printfile = logfile
         title = "Experiment " + id + " on " + HOST + " finished succesfully (in " + str(duration).split('.')[0] + ')'
 
