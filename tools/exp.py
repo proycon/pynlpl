@@ -434,13 +434,16 @@ else:
                             prompt =  bold(red('FAILED $'))                                             
                         elif os.path.exists(EXPLOGDIR + id + '.log') and os.path.exists(EXPLOGDIR + id + '.err'):
                             #catch very common errors from err output (backward compatibility with old exp tools):
-                            failed = False
+                            failed = True
                             ferr = open(EXPLOGDIR + id + '.err','r')
                             for l in ferr: 
                                 if l[:8] == '/bin/sh:' or l[:10] == '/bin/bash:':
                                     failed = True
                                     break
-                                break
+                                if l[:10] == '#DURATION:':
+                                    failed = False
+                                else:
+                                    failed = True
                             ferr.close()
                             if failed:
                                 prompt =  bold(red('FAILED $'))                                                                       
