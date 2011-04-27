@@ -112,8 +112,7 @@ def ps(host, dir = ""):
     if HOST == host and found and pids:
         print "---"
         print "USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND"
-        for pid, filename in pids:
-              os.system("ps uh " + " ".join([ str(p) for p in pids ]))
+        os.system("ps uh " + " ".join([ str(p) for p in pids ]))
         print "---"
 
     if out: print out
