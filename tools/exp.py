@@ -469,7 +469,7 @@ else:
                             failed = (firstline[0:9] != "#COMMAND:")                                            
                             if not failed:
                                 lastline = tail(EXPLOGDIR + id + '.err', ferr)
-                                failed = (lastline[:10] != "#DURATION")
+                                failed = (lastline[:10] != "#DURATION:")
                             ferr.close()                            
                             if failed:
                                 prompt =  bold(red('FAILED $'))                                                                       
