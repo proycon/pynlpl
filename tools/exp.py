@@ -203,7 +203,8 @@ def wait(id, process):
                 errors = False
                 break
             elif process.returncode > 0:
-                errors = True
+                errorcode = process.returncode
+                errors = True                
                 break
             time.sleep(POLLINTERVAL)
             now = datetime.datetime.now()
@@ -238,19 +239,26 @@ def wait(id, process):
 
     #mail = (duration > 60) #we won't mail if we finish in less than a minute
     logfile = EXPLOGDIR + '/' + id + '.log'
-    errlogfile = EXPLOGDIR + '/' + id + '.err'
+    errlogfile = EXPLOGDIR + '/' + id + '.err'    
     f = open(logfile,'a')
     f.write("#END:      " + endtime.strftime("%a %Y-%m-%d %H:%M:%S") + '\n')
     f.write("#DURATION: " + str(duration) + '\n')
     f.close()
     f = open(errlogfile,'a')
     f.write("#END:      " + endtime.strftime("%a %Y-%m-%d %H:%M:%S") + '\n')
+    if errors:
+        f.write("#ERRORCODE: " + str(errorcode))
     f.write("#DURATION: " + str(duration) + '\n')
     f.close()
+    
 
     if errors:
         printfile = errlogfile
         title = "Experiment " + id + " on " + HOST + " finished with errors (in " + str(duration).split('.')[0] + ')'
+        
+        f = open(EXPLOGDIR + '/' + id + '.failed','w')
+        f.write(str(errorcode))
+        f.close()
     else:
         printfile = logfile
         title = "Experiment " + id + " on " + HOST + " finished succesfully (in " + str(duration).split('.')[0] + ')'
@@ -397,13 +405,26 @@ else:
                 if match:
                     fields = line.split(' ',7)
                     date,weekday, time,empty, userhost, id,prompt, cmdline = fields
-		    out =  yellow(date[0:4] + '-' + date[4:6] + '-' + date[6:8] + ' ' + weekday + ' ' + time) + ' ' + green(userhost) +' ' +bold(id) + ' ' + bold(prompt) +' ' +cmdline
-		    if cmdline == prevcmdline:
-			#duplicate, replace:
-			output[-1] = out
-		    else:
-			output.append(out)
-	   	    prevcmdline = cmdline	   
+                    
+                    if userhost.split('@')[1] == HOST:
+                        userhost = green(userhost)                        
+                        if os.path.exists(EXPLOGDIR + id + '.failed') and os.path.exists(EXPLOGDIR + id + '.log') and os.path.exists(EXPLOGDIR + id + '.err'):
+                            prompt = bold(red(prompt))
+                        elif os.path.exists(EXPLOGDIR + id + '.log') and os.path.exists(EXPLOGDIR + id + '.err'):
+                            prompt = bold(green(prompt))                            
+                        else:
+                            prompt = bold(yellow(prompt))
+                    else:
+                        userhost = magenta(userhost)
+                        prompt = bold(magenta(prompt))    
+                    
+                    out = yellow(date[0:4] + '-' + date[4:6] + '-' + date[6:8] + ' ' + weekday + ' ' + time) + ' ' + userhost +' ' +bold(id) + ' ' + prompt +' ' +cmdline
+                    if cmdline == prevcmdline:
+                        #duplicate, replace:
+                        output[-1] = out
+                    else:
+                        output.append(out)
+                        prevcmdline = cmdline	   
             f.close()
             print "\n".join(output)                        
     else:
