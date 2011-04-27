@@ -422,14 +422,20 @@ else:
                     fields = line.split(' ',7)
                     date,weekday, time,empty, userhost, id,prompt, cmdline = fields
                     
-                    if userhost.split('@')[1] == HOST:
+                    if os.path.exists(PROCDIR + '/' + userhost.split('@')[1] + '/' + id):
+                        if userhost.split('@')[1] == HOST:
+                            userhost = green(userhost)                        
+                        else:
+                            userhost = magenta(userhost)
+                        prompt =  bold(yellow('RUNNING $'))                                                    
+                    elif userhost.split('@')[1] == HOST:
                         userhost = green(userhost)                        
                         if os.path.exists(EXPLOGDIR + id + '.failed'):
-                            prompt =  bold(red('FAILED $'))                        
+                            prompt =  bold(red('FAILED $'))                                             
                         elif os.path.exists(EXPLOGDIR + id + '.log') and os.path.exists(EXPLOGDIR + id + '.err'):
                             prompt = bold(green('SUCCESS $'))                            
                         else:
-                            prompt = bold(yellow('MISSING $'))
+                            prompt = bold(red('MISSING $'))
                     else:
                         userhost = magenta(userhost)
                         prompt = bold(magenta(prompt))    
