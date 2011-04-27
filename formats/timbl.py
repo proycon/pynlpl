@@ -79,7 +79,7 @@ class TimblOutput:
                 score = float(instance[i+1].rstrip(","))
                 dist[label] = score
             except:
-                print >>stderr, "ERROR: pynlpl.input.timbl.TimblOutput -- Could not fetch score for class '" + label + "', expected float, but found '"+instance[i+1].rstrip(",")+"'. Instance= " + " ".join(instance). ".. Attempting to compensate..."
+                print >>stderr, "ERROR: pynlpl.input.timbl.TimblOutput -- Could not fetch score for class '" + label + "', expected float, but found '"+instance[i+1].rstrip(",")+"'. Instance= " + " ".join(instance)+ ".. Attempting to compensate..."
                 i = i - 1
             i += 2
 
