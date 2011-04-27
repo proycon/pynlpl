@@ -177,8 +177,8 @@ def start(id, cmdline):
         os.makedirs(EXPLOGDIR + '/' + dir)
     except OSError:
         pass
-
-    starttime =  datetime.datetime.now().strftime("%Y-%m-%d %a %H:%M:%S")
+    now = datetime.datetime.now()
+    starttime =  now.strftime("%Y-%m-%d %a %H:%M:%S")
     log = open(EXPLOGDIR + '/' + dir + '/'+ base_id + '.log','w')
     log.write("#COMMAND:  " + cmdline + '\n')
     log.write("#CWD:  " + os.getcwd() + '\n')
@@ -205,7 +205,7 @@ def start(id, cmdline):
 
     errlog.write("#PID:     " + str(process.pid) + '\n')
 
-    os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + duration + 's " >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
+    os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' 0s " >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
     os.system("ps uh " + str(process.pid) + ' >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
 
     #write process file
@@ -216,7 +216,7 @@ def start(id, cmdline):
 
     #write history file
     f = open(HISTORYFILE,'a')
-    f.write(datetime.datetime.now().strftime("%Y%m%d %a %H:%M:%S") + ' ' + ' ' + USER + '@' + HOST + ' ' + id + ' $ ' + cmdline + '\n')
+    f.write(now.strftime("%Y%m%d %a %H:%M:%S") + ' ' + ' ' + USER + '@' + HOST + ' ' + id + ' $ ' + cmdline + '\n')
     f.close()
     
 
