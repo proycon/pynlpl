@@ -272,6 +272,7 @@ def wait(id, process):
     #mail = (duration > 60) #we won't mail if we finish in less than a minute
     logfile = EXPLOGDIR + '/' + id + '.log'
     errlogfile = EXPLOGDIR + '/' + id + '.err'    
+    reslogfile = EXPLOGDIR + '/' + id + '.res'
     f = open(logfile,'a')
     f.write("#END:      " + endtime.strftime("%a %Y-%m-%d %H:%M:%S") + '\n')
     f.write("#DURATION: " + str(duration) + '\n')
@@ -303,7 +304,7 @@ def wait(id, process):
     print
     os.system('cat ' + printfile) #to stdout
     if mail:
-        os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + resfile + " | mail -s \""+title+"\" " + MAILTO)
+        os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \""+title+"\" " + MAILTO)
 
 
 
