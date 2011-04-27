@@ -32,8 +32,9 @@ if not os.path.isdir(EXPLOGDIR):
 def usage():
     print "Syntax: exp start    EXPERIMENT-ID COMMAND"
     print "        exp stop     EXPERIMENT-ID"
+    print "        exp kill     EXPERIMENT-ID"
     print "        exp ps       [HOST]"
-    print "        exp history  [YEARMONTH/FILTER]"
+    print "        exp history  [YEARMONTH/FILTERKEYWORD]"
     print "        exp log      EXPERIMENT-ID"
     print "        exp errlog   EXPERIMENT-ID"
     print "        exp reslog   EXPERIMENT-ID"
@@ -41,6 +42,7 @@ def usage():
     print "        exp auditlog EXPERIMENT-ID"
     print "        exp auditerr EXPERIMENT-ID"
     print "        exp auditres EXPERIMENT-ID"
+    print "        exp mailstat EXPERIMENT-ID"
     sys.exit(2)
 
 def bold(s):
@@ -217,7 +219,7 @@ def wait(id, process):
                 mailed = True
                 errlogfile =  EXPLOGDIR + '/' + id + '.err'
                 logfile =  EXPLOGDIR + '/' + id + '.log'
-                reslogfile =  EXPLOGDIR + '/' + id + '.log'
+                reslogfile =  EXPLOGDIR + '/' + id + '.res'
                 days = round(duration / float(3600*24))
                 os.system('tail -n 25 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Daily process report for " + id + " on " + HOST + " (" + str(days) + "d)\"" + MAILTO)
             elif now.hour < DAILYMAILHOUR:
@@ -289,7 +291,7 @@ else:
            pid = start(id, " ".join(sys.argv[3:]))
            if pid:
               wait(id, pid)
-    elif command == 'stop':
+    elif command in ['stop', 'kill']:
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
         #find the process
         procfilename = PROCDIR + '/' + HOST + '/' + id
@@ -298,13 +300,17 @@ else:
             pid = int(f.readline())
             f.close()
             #kill the process
-	    os.system('kill ' + str(pid))
+            if command == 'kill':
+                ret = os.system('kill -s 11 ' + str(pid))
+            else:
+                ret = os.system('kill ' + str(pid))
             #delete process file
-            try:
-                os.unlink(procfilename)
-            except:
-                print >> sys.stderr,"ERROR REMOVING PROCESS FILE!"
-                pass
+            if ret == 0:
+                try:
+                    os.unlink(procfilename)
+                except:
+                    print >> sys.stderr,"ERROR REMOVING PROCESS FILE!"
+                    pass
         else:
             print >>sys.stderr, "No such experiment on the current host"
     elif command in ['stdout','log','out']:
@@ -359,6 +365,16 @@ else:
             os.system("tail -f " + resfile + ' ' + logfile + ' ' + errfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"
+    elif command in ['mailstat','mail','mailstatus']:
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
+        if os.path.exists(logfile):
+            errlogfile =  EXPLOGDIR + '/' + id + '.err'
+            logfile =  EXPLOGDIR + '/' + id + '.log'
+            reslogfile =  EXPLOGDIR + '/' + id + '.res'
+            days = round(duration / float(3600*24))
+            os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Requested process report for " + id + " on " + HOST + " (" + str(days) + "d)\"" + MAILTO)        
+        else:
+            print "No such experiment running on " + host
     elif command == 'ps' or command == 'ls':
         if len(sys.argv) >= 3:
             host = sys.argv[2]
