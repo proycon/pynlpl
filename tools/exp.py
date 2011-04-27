@@ -36,6 +36,21 @@ def usage():
     print "        exp audit   EXPERIMENT-ID"
     sys.exit(2)
 
+def bold(s):
+   CSI="\x1B["
+   reset=CSI+"m"
+   return CSI+"1m" + s + CSI + "0m"
+
+
+def red(s):
+   CSI="\x1B["
+   reset=CSI+"m"
+   return CSI+"31m" + s + CSI + "0m"
+   
+def green(s):
+   CSI="\x1B["
+   reset=CSI+"m"
+   return CSI+"32m" + s + CSI + "0m"   
 
 def ps(host, dir = ""):
     global HOST
@@ -65,7 +80,7 @@ def ps(host, dir = ""):
             pids.append(pid)
             cmdline = f.readline()
             f.close()
-            print "%-33s %-22s %-6s %s" % (expid, host, str(pid), cmdline.strip())
+            print "%-33s %-22s %-6s\n\t%s" % (bold(expid), host, green(str(pid)), cmdline.strip())
      
     if HOST == host and found and pids:
         os.system("ps u " + " ".join([ str(p) for p in pids ]))
