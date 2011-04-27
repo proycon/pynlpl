@@ -20,6 +20,9 @@ USER = os.getenv("USER")
 HOMEDIR = os.getenv("HOME")
 PROCDIR = HOMEDIR + '/.expproc'
 EXPLOGDIR = '/exp/' + USER + '/explogs/'
+DAILYMAILHOUR = 6
+POLLINTERVAL = 30 #poll every 30 seconds
+RESINTERVAL = 600 #every 10 minutes (update resource logs)
 
 if not os.path.isdir(PROCDIR):
     os.mkdir(PROCDIR)
@@ -27,13 +30,17 @@ if not os.path.isdir(EXPLOGDIR):
     os.mkdir(EXPLOGDIR)
 
 def usage():
-    print "Syntax: exp start   EXPERIMENT-ID COMMAND"
-    print "        exp stop    EXPERIMENT-ID"
-    print "        exp ps      [HOST]"
-    print "        exp history [YEARMONTH/FILTER]"
-    print "        exp log     EXPERIMENT-ID"
-    print "        exp errlog  EXPERIMENT-ID"
-    print "        exp audit   EXPERIMENT-ID"
+    print "Syntax: exp start    EXPERIMENT-ID COMMAND"
+    print "        exp stop     EXPERIMENT-ID"
+    print "        exp ps       [HOST]"
+    print "        exp history  [YEARMONTH/FILTER]"
+    print "        exp log      EXPERIMENT-ID"
+    print "        exp errlog   EXPERIMENT-ID"
+    print "        exp reslog   EXPERIMENT-ID"
+    print "        exp audit    EXPERIMENT-ID"
+    print "        exp auditlog EXPERIMENT-ID"
+    print "        exp auditerr EXPERIMENT-ID"
+    print "        exp auditres EXPERIMENT-ID"
     sys.exit(2)
 
 def bold(s):
@@ -127,7 +134,6 @@ def start(id, cmdline):
 
     HISTORYFILE = PROCDIR + '/' + datetime.datetime.now().strftime("%Y%m") + '.history'
 
-
     dir = os.path.dirname(id)
     base_id = os.path.basename(id)
 
@@ -151,11 +157,21 @@ def start(id, cmdline):
     errlog.write("#USER:     " + USER + '\n')
     errlog.write("#HOST:     " + HOST + '\n')
     errlog.write("#START:    " + starttime + '\n')
+    reslog = open(EXPLOGDIR + '/' + dir + '/'+ base_id + '.res','w')
+    reslog.write("#COMMAND:  " + cmdline + '\n')
+    reslog.write("#USER:     " + USER + '\n')
+    reslog.write("#HOST:     " + HOST + '\n')
+    reslog.write("#START:    " + starttime + '\n')
+    reslog.close()
+
 
 
     process = subprocess.Popen(cmdline, shell=True,stdout=log,stderr=errlog)
 
     errlog.write("#PID:     " + str(process.pid) + '\n')
+
+    os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + duration + 's " >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
+    os.system("ps uh " + str(process.pid) + ' >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
 
     #write process file
     f = open(PROCDIR + '/' + HOST + '/' + dir + '/' + base_id ,'w')
@@ -167,12 +183,13 @@ def start(id, cmdline):
     f = open(HISTORYFILE,'a')
     f.write(datetime.datetime.now().strftime("%Y%m%d %a %H:%M:%S") + ' ' + ' ' + USER + '@' + HOST + ' ' + id + ' $ ' + cmdline + '\n')
     f.close()
+    
 
     return process
 
 
 def wait(id, process):
-    global MAILTO, HOST
+    global MAILTO, HOST, DAILYMAILHOUR, POLLINTERVAL, RESINTERVAL
 
     begintime = datetime.datetime.now()
 
@@ -185,7 +202,22 @@ def wait(id, process):
             elif process.returncode > 0:
                 errors = True
                 break
-            time.sleep(30)
+            time.sleep(POLLINTERVAL)
+            now = datetime.datetime.now()
+            duration = now - begintime
+            if duration % RESINTERVAL == 0: #every ten minutes
+                #write resource
+                os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + duration + 's " >> ' + EXPLOGDIR + '/' + id + '.res')
+                os.system("ps uh " + str(process.pid) + ' >> ' + EXPLOGDIR + '/' + id + '.res')
+            if now.hour == DAILYMAILHOUR and not mailed:                
+                mailed = True
+                errlogfile =  EXPLOGDIR + '/' + id + '.err'
+                logfile =  EXPLOGDIR + '/' + id + '.log'
+                reslogfile =  EXPLOGDIR + '/' + id + '.log'
+                days = round(duration / float(3600*24))
+                os.system('tail -n 25 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Daily process report for " + id + " on " + HOST + " (" + str(days) + "d)\"" + MAILTO)
+            elif now.hour < DAILYMAILHOUR:
+                mailed = False                        
 
     del process
 
@@ -228,7 +260,7 @@ def wait(id, process):
     print
     os.system('cat ' + printfile) #to stdout
     if mail:
-        os.system('tail -n 100 ' + printfile + " | mail -s \""+title+"\" " + MAILTO)
+        os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + resfile + " | mail -s \""+title+"\" " + MAILTO)
 
 
 
@@ -279,11 +311,41 @@ else:
             os.system("cat " + logfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"
-    elif command == 'audit':
+    elif command in ['res', 'reslog','resources']:
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
+        logfile =  EXPLOGDIR + id + '.res'
+        if os.path.exists(logfile):
+            os.system("cat " + logfile)
+        else:
+            print >>sys.stderr, "No such experiment on the current host"            
+    elif command == 'auditlog':
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
         logfile =  EXPLOGDIR + id + '.log'
         if os.path.exists(logfile):
             os.system("tail -f " + logfile)
+        else:
+            print >>sys.stderr, "No such experiment on the current host"        
+    elif command == 'auditerr':
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
+        errfile =  EXPLOGDIR + id + '.err'
+        if os.path.exists(errfile):
+            os.system("tail -f " + errfile)
+        else:
+            print >>sys.stderr, "No such experiment on the current host"
+    elif command == 'auditres':
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
+        resfile =  EXPLOGDIR + id + '.res'
+        if os.path.exists(resfile):
+            os.system("tail -f " + resfile)
+        else:
+            print >>sys.stderr, "No such experiment on the current host"            
+    elif command == 'audit':
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
+        logfile =  EXPLOGDIR + id + '.log'
+        errfile =  EXPLOGDIR + id + '.err'
+        resfile =  EXPLOGDIR + id + '.res'
+        if os.path.exists(logfile):
+            os.system("tail -f " + resfile + ' ' + logfile + ' ' + errfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"
     elif command == 'ps' or command == 'ls':
