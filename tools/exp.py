@@ -240,10 +240,10 @@ def wait(id, process):
                 break
             time.sleep(POLLINTERVAL)
             now = datetime.datetime.now()
-            duration = now - begintime
+            duration = int(now - begintime)
             if duration % RESINTERVAL == 0: #every ten minutes
                 #write resource
-                os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + duration + 's " >> ' + EXPLOGDIR + '/' + id + '.res')
+                os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + str(duration) + 's " >> ' + EXPLOGDIR + '/' + id + '.res')
                 os.system("ps uh " + str(process.pid) + ' >> ' + EXPLOGDIR + '/' + id + '.res')
             if now.hour == DAILYMAILHOUR and not mailed:                
                 mailed = True
@@ -259,7 +259,7 @@ def wait(id, process):
 
 
     endtime = datetime.datetime.now()
-    duration = endtime - begintime
+    duration = int(endtime - begintime)
     mail = True
 
     #delete process file
