@@ -27,7 +27,7 @@ class WSDSystemOutput(object):
     def append(self, word_id, senses):
        assert (not word_id in self.data)
        if isinstance(senses, Distribution):
-            self.data[word_id] = ( (x[0],y) for x,y in senses ) #TODO: this is a patch, something's not right in Distribution?
+            self.data[word_id] = ( (x,y) for x,y in senses ) #PATCH UNDONE (#TODO: this is a patch, something's not right in Distribution?)
             return
        else:
            assert isinstance(senses, list) and len(senses) >= 1
