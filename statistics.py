@@ -159,6 +159,9 @@ class FrequencyList:
 
     def __repr__(self):
         return repr(self._count)
+        
+    def __str__(self):
+        return "\n".join(self.output())        
 
 class Distribution:
     """A distribution can be created over a FrequencyList or a plain dictionary with numeric values. It will be normalized automatically."""
@@ -250,10 +253,22 @@ class Distribution:
         for type, count in  self._dist.items():
             yield type, count
 
-    def output(self,delimiter = '\t'):
-        for type, prob in self:    
-            yield " ".join(type) + delimiter + str(prob)
+    def output(self,delimiter = '\t', freqlist = None):
+        for type, prob in self:   
+            if freqlist:
+                if isinstance(type,list) or isinstance(type, tuple):
+                    yield " ".join(type) + delimiter + str(freqlist[type]) + delimiter + str(prob)
+                else:
+                    yield type + delimiter + str(freqlist[type]) + delimiter + str(prob)
+            else:
+                if isinstance(type,list) or isinstance(type, tuple):
+                    yield " ".join(type) + delimiter + str(prob)
+                else:
+                    yield type + delimiter + str(prob)
+                
 
+    def __str__(self):
+        return "\n".join(self.output())
 
     def __repr__(self):
         return repr(self._dist)
