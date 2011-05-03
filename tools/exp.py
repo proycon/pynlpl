@@ -169,6 +169,11 @@ def start(id, cmdline):
     dir = os.path.dirname(id)
     base_id = os.path.basename(id)
 
+
+    
+    
+    
+    
     try:
         os.makedirs(PROCDIR + '/' + HOST + '/' + dir)
     except OSError:
@@ -177,6 +182,10 @@ def start(id, cmdline):
         os.makedirs(EXPLOGDIR + '/' + dir)
     except OSError:
         pass
+        
+    if os.path.exists(EXPLOGDIR + '/' + id + '.failed'):
+        os.unlink(EXPLOGDIR + '/' + id + '.failed')
+        
     now = datetime.datetime.now()
     starttime =  now.strftime("%Y-%m-%d %a %H:%M:%S")
     log = open(EXPLOGDIR + '/' + dir + '/'+ base_id + '.log','w')

@@ -167,8 +167,8 @@ class CorpusFiles(Corpus):
                 for f in glob.glob(d+ "/*." + self.extension):
                     if self.conditionf(f):
                         yield f
-
-
+                        
+                        
 class CorpusX(Corpus):
     def __iter__(self):
         if not self.restrict_to_collection:
