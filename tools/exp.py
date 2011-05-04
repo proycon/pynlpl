@@ -31,18 +31,44 @@ if not os.path.isdir(EXPLOGDIR):
 
 def usage():
     print "Syntax: exp start    EXPERIMENT-ID COMMAND"
+    print "          - Start an experiment"
     print "        exp stop     EXPERIMENT-ID"
+    print "          - Stop an experiment (gently)"
     print "        exp kill     EXPERIMENT-ID"
+    print "          - Stop an experiment (forcibly)"
     print "        exp ps       [HOST]"
+    print "          - View process list (optionally for only the given host)"
     print "        exp history  [YEARMONTH/FILTERKEYWORD]"
+    print "          - View experiment history (optionally with filter keyword of time filter (YYYYMM))"
     print "        exp log      EXPERIMENT-ID"
+    print "          - View standard output of experiment"
     print "        exp errlog   EXPERIMENT-ID"
+    print "          - View error output of experiment"
     print "        exp reslog   EXPERIMENT-ID"
+    print "          - View resource usage log of experiment (periodic ps output)"
     print "        exp audit    EXPERIMENT-ID"
+    print "          - Follow all output of a running experiment live"
     print "        exp auditlog EXPERIMENT-ID"
     print "        exp auditerr EXPERIMENT-ID"
     print "        exp auditres EXPERIMENT-ID"
     print "        exp mailstat EXPERIMENT-ID"
+    print "          - Force a report to be mailed about this experiment"
+    #print "        exp initbatch BATCH-ID [MODE]"
+    #print "          - initialise a (manual) batch experiment"
+    #print "        exp add BATCH-ID EXPERIMENT-ID COMMAND"
+    #print "          - Add an experiment to the batch's queue"
+    #print "        exp startbatch BATCH-ID PROCESSES [COMMAND]"
+    #print "          - start the batch. The batch must have been previously initialised and filled (with exp add). "
+    #print "            Or command is specified that contains variables that will be auto-expanded"  
+    #print "            Variable syntax:"
+    #print "                {1,2,3}  expands to 1 on first run, 2 on second,  3 on third" 
+    #print '                {"foo","bar"}  expands to "foo" on fist run, "bar" on second'
+    #print "                {1-6}    range (1,2,3,4,5,6)"
+    #print "                {2-6:2}  range with step size (2,4,6)"
+    #print "                {{1}}    Expands to the same value as the first variable (1 can be any number)"
+
+    
+
     sys.exit(2)
 
 def bold(s):
