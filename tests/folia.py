@@ -298,6 +298,23 @@ class Test3Edit(unittest.TestCase):
         self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' ) 
         self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippellijn' ) 
         
+    def test009_addaltcorrection2(self):            
+        """Edit Check - Adding an alternative and a selected correction"""        
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
+        w.correcttext('stippel-lijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto', alternative=True) 
+        
+        w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+            
+        alt = w.alternatives(folia.AnnotationType.CORRECTION)        
+        self.assertEqual( alt[0].annotation(folia.Correction).id ,'WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1' ) 
+        self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' ) 
+        self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippel-lijn' )         
+                            
+        self.assertEqual( w.annotation(folia.Correction).id ,'WR-P-E-J-0000000001.p.1.s.8.w.11.correction.2' ) 
+        self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' ) 
+        self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )     
+        self.assertEqual( w.text(), 'stippellijn')            
+        
 class Test4Create(unittest.TestCase):
         def test001_create(self):
             """Creating a FoLiA Document from scratch"""
