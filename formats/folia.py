@@ -168,7 +168,10 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     
     #set index
     if object.doc and object.id:
-        object.doc.index[object.id] = object
+        if object.id in object.doc.index:
+            raise Exception("Duplicate ID not permitted: " + object.id)
+        else:
+            object.doc.index[object.id] = object
         
         
     if object.ALLOWTEXT:
@@ -669,14 +672,15 @@ class AllowGenerateID(object):
         except:
             pass
             
-        if self.data:
-            for c in self.data:
-                try:
-                    tmp = c._getmaxid(xmltag)
-                    if tmp > maxid:
-                        maxid = tmp
-                except AttributeError:
-                    continue
+        #if self.data: #NOT RECURSIVE ON PURPOSE!
+        #    for c in self.data:
+        #        try:
+        #            tmp = c._getmaxid(xmltag)
+        #            if tmp > maxid:
+        #                maxid = tmp
+        #        except AttributeError:
+        #            continue
+        #print repr(self), self.maxid, "\n"
         return maxid
             
         
@@ -691,12 +695,15 @@ class AllowGenerateID(object):
                 if len(fields) > 1 and fields[-1].isdigit():
                     if not child.XMLTAG in self.maxid:
                         self.maxid[child.XMLTAG] = int(fields[-1])
+                        #print "set maxid on " + repr(self) + ", " + child.XMLTAG + " to " + fields[-1]
                     else:
                         if self.maxid[child.XMLTAG] < int(fields[-1]):
                            self.maxid[child.XMLTAG] = int(fields[-1]) 
+                           #print "set maxid on " + repr(self) + ", " + child.XMLTAG + " to " + fields[-1] 
         except AttributeError:
             pass        
                 
+        
 
     def generate_id(self, cls):
         if isinstance(cls,str):
@@ -707,8 +714,13 @@ class AllowGenerateID(object):
             except:
                 raise Exception("Expected a class such as Alternative, Correction, etc...")
                 
-        return self.id + '.' + xmltag + '.' + str(self._getmaxid(xmltag) + 1)
-
+        maxid = self._getmaxid(xmltag) 
+        i = 0
+        while True:
+            i += 1
+            id = self.id + '.' + xmltag + '.' + str(self._getmaxid(xmltag) + i)
+            if not id in self.doc.index:
+                return id    
                  
                  
 class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
