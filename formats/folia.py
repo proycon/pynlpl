@@ -70,8 +70,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         raise ValueError("ID is required for " + object.__class__.__name__)
     else:
         object.id = None
-        
-
 
     if 'set' in kwargs:
         if not Attrib.CLASS in supported:
@@ -166,12 +164,8 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     
     
     
-    #set index
-    if object.doc and object.id:
-        if object.id in object.doc.index:
-            raise Exception("Duplicate ID not permitted: " + object.id)
-        else:
-            object.doc.index[object.id] = object
+    
+            
         
         
     if object.ALLOWTEXT:
@@ -200,6 +194,17 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         print >>stderr, "   @annotatortype= ", repr(object.annotatortype)
         print >>stderr, "   @confidence   = ", repr(object.confidence)
         print >>stderr, "   @n            = ", repr(object.n)
+        
+                
+    #set index
+    if object.id:
+        if object.id in doc.index:
+            if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Duplicate ID not permitted:" + object.id
+            raise Exception("Duplicate ID not permitted: " + object.id)
+        else:
+            if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + object.id
+            doc.index[object.id] = object
+
     
     return kwargs
     
@@ -587,9 +592,9 @@ class AbstractElement(object):
                                                             
         if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
         instance = Class(doc, *args, **kwargs)
-        if id:
-            if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + id
-            doc.index[id] = instance
+        #if id:
+        #    if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + id
+        #    doc.index[id] = instance
         if dcoipos:
             if not AnnotationType.POS in doc.annotationdefaults:
                 doc.declare(AnnotationType.POS, set='http://ilk.uvt.nl/folia/sets/cgn-legacy.foliaset')
