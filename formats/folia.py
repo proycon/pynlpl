@@ -659,21 +659,32 @@ class AllowTokenAnnotation(object):
                     except AttributeError:
                         continue
         return l
+
+class AllowGenerateID(object):
+    def _getmaxid(self, xmltag):        
+        maxid = 0
+        try:
+            if xmltag in self.maxid:
+                maxid = self.maxid[xmltag]
+        except:
+            pass
             
-class AbstractStructureElement(AbstractElement, AllowTokenAnnotation):
-    def __init__(self, doc, *args, **kwargs):    
-        self.maxid = {}
-        super(AbstractStructureElement,self).__init__(doc, *args, **kwargs)
-    
-    def resolveword(self, id): 
-        for child in self:
-            r =  child.resolveword(id)            
-            if r:
-                return r
-        return None          
-        
+        if self.data:
+            for c in self.data:
+                try:
+                    tmp = c._getmaxid(xmltag)
+                    if tmp > maxid:
+                        maxid = tmp
+                except AttributeError:
+                    continue
+        return maxid
+            
         
     def _setmaxid(self, child):
+        try:
+            self.maxid
+        except AttributeError:
+            self.maxid = {}            
         try:
             if child.id and child.XMLTAG:
                 fields = child.id.split(self.doc.IDSEPARATOR)
@@ -685,13 +696,8 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation):
                            self.maxid[child.XMLTAG] = int(fields[-1]) 
         except AttributeError:
             pass        
-            
-
-                 
-    def append(self, child):
-        super(AbstractStructureElement,self).append(child)
-        self._setmaxid(child)  
                 
+
     def generate_id(self, cls):
         if isinstance(cls,str):
             xmltag = cls
@@ -700,27 +706,26 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation):
                 xmltag = cls.XMLTAG
             except:
                 raise Exception("Expected a class such as Alternative, Correction, etc...")
-        
-        
-        return self.id + '.' + xmltag + '.' + str(self._get_maxid(xmltag) + 1)
+                
+        return self.id + '.' + xmltag + '.' + str(self._getmaxid(xmltag) + 1)
+
+                 
+                 
+class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
+    def __init__(self, doc, *args, **kwargs):            
+        super(AbstractStructureElement,self).__init__(doc, *args, **kwargs)
     
-            
-    def _get_maxid(self, xmltag):        
-        maxid = 0
-        if xmltag in self.maxid:
-            maxid = self.maxid[xmltag]
-        if self.data:
-            for c in self.data:
-                try:
-                    tmp = c._get_maxid(xmltag)
-                    if tmp > maxid:
-                        maxid = tmp
-                except AttributeError:
-                    continue
+    def resolveword(self, id): 
+        for child in self:
+            r =  child.resolveword(id)            
+            if r:
+                return r
+        return None          
         
-        return maxid
-            
-        
+    def append(self, child):
+        super(AbstractStructureElement,self).append(child)
+        self._setmaxid(child)     
+                
 
     def words(self, index = None):        
         if index is None:         
@@ -954,7 +959,7 @@ class Word(AbstractStructureElement):
         kwargs['original'] = self.text()       
         if not 'id' in kwargs:
             kwargs['id'] = self.generate_id(Correction)
-        if 'alternative' in kwargs :
+        if 'alternative' in kwargs:
             if kwargs['alternative']:
                 del kwargs['alternative']
                 c = Alternative(self.doc, Correction(self.doc, **kwargs), id=self.generate_id(Alternative))            
@@ -1046,9 +1051,12 @@ class AbstractAnnotation(AbstractElement):
             if isinstance(f, Feature) and f.subset == subset:
                 return f.cls
 
-class AbstractTokenAnnotation(AbstractAnnotation): pass
+class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID): 
+    def append(self, child):
+        super(AbstractTokenAnnotation,self).append(child)
+        self._setmaxid(child)
     
-class AbstractSpanAnnotation(AbstractAnnotation): 
+class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID): 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
         global NSFOLIA
         if not attribs: attribs = {}
@@ -1071,6 +1079,7 @@ class AbstractSpanAnnotation(AbstractAnnotation):
             #Accept Word instances instead of WordReference, references will be automagically used upon serialisation
             self.data.append(child)
             child.parent = self
+            self._setmaxid(child)
         else:
             return super(AbstractSpanAnnotation,self).append(child)    
             
@@ -1246,7 +1255,7 @@ class Correction(AbstractElement):
             doc.index[value] = instance
         return instance   
             
-class Alternative(AbstractElement, AllowTokenAnnotation):
+class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     ACCEPTED_DATA = (AbstractTokenAnnotation, Correction)
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
