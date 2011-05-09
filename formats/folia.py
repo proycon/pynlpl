@@ -701,10 +701,26 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation):
             except:
                 raise Exception("Expected a class such as Alternative, Correction, etc...")
         
+        
+        return self.id + '.' + xmltag + '.' + str(self._get_maxid(xmltag) + 1)
+    
+            
+    def _get_maxid(self, xmltag):        
+        maxid = 0
         if xmltag in self.maxid:
-            return self.id + '.' + xmltag + '.' + str(self.maxid[xmltag] + 1)
-        else:
-            return self.id + '.' + xmltag + '.1'
+            maxid = self.maxid[xmltag]
+        if self.data:
+            for c in self.data:
+                try:
+                    tmp = c._get_maxid(xmltag)
+                    if tmp > maxid:
+                        maxid = tmp
+                except AttributeError:
+                    continue
+        
+        return maxid
+            
+        
 
     def words(self, index = None):        
         if index is None:         
