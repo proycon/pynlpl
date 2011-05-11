@@ -1534,7 +1534,10 @@ class Sentence(AbstractStructureElement):
         for w in originalwords:            
             self.remove(w)        
         return c 
+
         
+    def words(self):
+        return self.select(Word)           
 
 Quote.ACCEPTED_DATA = (Word, Sentence, Quote)        
 
@@ -1556,7 +1559,11 @@ class Paragraph(AbstractStructureElement):
     def __str__(self):    
         return unicode(self).encode('utf-8')        
     
-    
+    def sentences(self):
+        return self.select(Sentence)
+        
+    def words(self):
+        return self.select(Word)    
                               
                 
 class Head(AbstractStructureElement):
