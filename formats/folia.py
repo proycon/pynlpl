@@ -1147,7 +1147,7 @@ class Correction(AbstractElement):
     XMLTAG = 'correction'
 
     def __init__(self,  doc, *args, **kwargs):
-        if not (('new' in kwargs and 'original' in kwargs) or (('suggestions' in kwargs or 'suggestion' in kwargs) and 'current' in kwargs):
+        if not (('new' in kwargs and 'original' in kwargs) or (('suggestions' in kwargs or 'suggestion' in kwargs) and 'current' in kwargs)):
              raise Exception("Excepted either new= and original= arguments, or suggestions= and current= arguments.")
                          
         self.suggestions = []        
