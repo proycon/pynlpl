@@ -337,6 +337,8 @@ class AbstractElement(object):
         if child.__class__ in self.ACCEPTED_DATA or child.__class__.__base__ in self.ACCEPTED_DATA:
             self.data.append(child)
             child.parent = self
+        elif child.ALLOWTEXT:
+            self.settext(child)
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ )
             
@@ -987,13 +989,13 @@ class Word(AbstractStructureElement):
         
         if 'suggestions' in kwargs:    
             suggestions = []
-            for s in suggestions:
+            for s in kwargs['suggestions']:
                 if isinstance(s,Suggestion):
                     suggestions.append(s)
                 elif isinstance(s, AbstractTokenAnnotation) or isinstance(s, TextContent ):
                     suggestions.append( Suggestion(self.doc, s) )
                 elif isinstance(s, unicode) or isinstance(s, str):
-                    suggestions.append( Suggestion(self.doc, TextContent(self.doc, value=s, corrected=True)) )        
+                    suggestions.append( Suggestion(self.doc, text=TextContent(self.doc, value=s, corrected=True)) )        
                 else:
                     raise Exception("Unexpected type for suggestion")
             kwargs['suggestions'] = suggestions
@@ -1177,17 +1179,16 @@ class Correction(AbstractElement):
                          
         self.suggestions = []        
         if 'suggestion' in kwargs:             
-            kwargs['suggestions'] = [kwargs['suggestion']]
+            kwargs['suggestions'] = [ kwargs['suggestion'] ]
             del kwargs['suggestion']
+            
         if 'suggestions' in kwargs: 
             for suggestion in kwargs['suggestions']:
                 if not isinstance(suggestion, Suggestion):
                     raise Exception("Suggestion has to be of type Suggestion, got " + str(type(suggestion)))                
                 self.suggestions.append(suggestion)
             del kwargs['suggestions']            
-        
-        
-            
+                    
         if 'current' in kwargs:            
             if not isinstance(kwargs['current'], list):
                 self.current = [kwargs['current']]
@@ -1252,13 +1253,14 @@ class Correction(AbstractElement):
         if not attribs: attribs = {}
         if not elements: elements = []
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
-        elements.append( E.new( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.new ] ) ) 
-        elements.append( E.original( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.original ] ) )    
+        if self.new or self.original:
+            elements.append( E.new( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.new ] ) ) 
+            elements.append( E.original( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.original ] ) )    
         if self.suggestions:
-                for suggestion in self.suggestions:
-                    elements.append( suggestion.xml() )
+            for suggestion in self.suggestions:
+                elements.append( suggestion.xml() )
         if self.current:
-                elements.append( E.current( *[ x.xml() for x in self.current ] ) ) 
+            elements.append( E.current( *[ x.xml() for x in self.current ] ) ) 
         return super(Correction,self).xml(attribs,elements, True)  
 
     def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
@@ -1332,6 +1334,7 @@ class Correction(AbstractElement):
                 else:
                     kwargs['new'] = [ doc.parsexml(x) for x in subnode ] 
              elif subnode.tag == '{' + NSFOLIA + '}suggestion':
+                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode suggestion"
                  kwargs['suggestions'].append( doc.parsexml(subnode) )
              elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]

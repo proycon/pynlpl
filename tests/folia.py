@@ -293,9 +293,9 @@ class Test3Edit(unittest.TestCase):
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         w.correcttext(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
                     
-        self.assertTrue( isinstance(w.annotation(folia.Correction) ,folia.Correction) )
-        self.assertEqual( w.annotation(folia.Correction).suggestions[0] , 'stippelijn' )
-        self.assertEqual( w.text(), 'stippellijn')    
+        self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
+        self.assertEqual( w.annotation(folia.Correction).suggestions[0].text() , 'stippellijn' )
+        self.assertEqual( w.text(), 'stippelijn')    
     
     #def test008_addaltcorrection(self):            
     #    """Edit Check - Adding alternative corrections"""        
