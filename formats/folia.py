@@ -1124,7 +1124,19 @@ class ErrorDetection(AbstractElement):
             self.error = False
             
             
-            
+                        
+class Suggestion(AbstractElement):
+    REQUIRED_ATTRIBS = (Attrib.ID,)
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ANNOTATIONTYPE = AnnotationType.SUGGESTION
+    ACCEPTED_DATA = (AbstractTokenAnnotation, Word)
+    XMLTAG = 'suggestion'
+    
+    
+    
+
+    
+
     
     
             
@@ -1135,6 +1147,31 @@ class Correction(AbstractElement):
     XMLTAG = 'correction'
 
     def __init__(self,  doc, *args, **kwargs):
+        if not (('new' in kwargs and 'original' in kwargs) or (('suggestions' in kwargs or 'suggestion' in kwargs) and 'current' in kwargs):
+             raise Exception("Excepted either new= and original= arguments, or suggestions= and current= arguments.")
+                         
+        self.suggestions = []        
+        if 'suggestion' in kwargs:             
+            kwargs['suggestions'] = [kwargs['suggestion']]
+            del kwargs['suggestion']
+        if 'suggestions' in kwargs: 
+            for suggestion in kwargs['suggestions']:
+                if not isinstance(kwargs['suggestion'], Suggestion):
+                    raise Exception("Suggestion has to be of type Suggestion")                
+                self.suggestions.append(suggestion)
+            del kwargs['suggestions']            
+        
+        
+            
+        if 'current' in kwargs:            
+            if not isinstance(kwargs['current'], list):
+                self.current = [kwargs['current']]
+            else:
+                self.current = kwargs['current']
+            del kwargs['current']
+        else:
+            self.current = []
+        
         if 'new' in kwargs:
             if isinstance(kwargs['new'], AbstractElement) or isinstance(kwargs['new'], unicode):
                 self.new = [ kwargs['new'] ]
@@ -1148,7 +1185,8 @@ class Correction(AbstractElement):
                 raise Exception("Invalid type for new: " + repr(kwargs['new']))
             del kwargs['new'] 
         else:
-            raise Exception("No new= argument specified!")
+            self.new = []            
+            
         if 'original' in kwargs:
             if isinstance(kwargs['original'], AbstractElement)  or isinstance(kwargs['original'], unicode):
                 self.original = [ kwargs['original'] ]
@@ -1162,7 +1200,9 @@ class Correction(AbstractElement):
                 raise Exception("Invalid type for original: " + repr(kwargs['original']))
             del kwargs['original'] 
         else:
-            raise Exception("No original= argument specified!") 
+            self.original = []
+            
+            
         if self.new and self.original and self.new[0].__class__ != self.original[0].__class__:
             raise Exception("New and Original are of different types!")             
         super(Correction,self).__init__(doc, *args, **kwargs)
@@ -1189,14 +1229,24 @@ class Correction(AbstractElement):
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
         elements.append( E.new( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.new ] ) ) 
         elements.append( E.original( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.original ] ) )    
+        if self.suggestions:
+                for suggestion in self.suggestions:
+                    elements.append( suggestion.xml() )
+        if self.current:
+                elements.append( E.current( *[ x.xml() for x in self.current ] ) ) 
         return super(Correction,self).xml(attribs,elements, True)  
 
     def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
-        """Select on Correction only descrends in "NEW" branch"""
+        """Select on Correction only descends in either "NEW" or "ACTUAL" branch"""
         l = []
         if not node:
-            node = self        
-        for e in self.new:
+            node = self  
+        
+        if self.new:
+            source = self.new
+        elif self.actual:
+            source = self.current
+        for e in source:
             ignore = False                            
             for c in ignorelist:
                 if c == e.__class__ or issubclass(e.__class__,c):
@@ -1221,7 +1271,7 @@ class Correction(AbstractElement):
                                 continue
                         except:
                             continue
-                    l.append(e2)
+                    l.append(e2)                    
         return l
         
 
@@ -1234,6 +1284,8 @@ class Correction(AbstractElement):
         kwargs = {}
         kwargs['original'] = []
         kwargs['new'] = []
+        kwargs['actual'] = []
+        kwargs['suggestions'] = []
         for subnode in node:
              if subnode.tag == '{' + NSFOLIA + '}original':                        
                 if len(subnode) == 1:
@@ -1251,6 +1303,14 @@ class Correction(AbstractElement):
                         kwargs['new'] = [ ( doc.parsexml(subnode[0]) ) ]
                 else:
                     kwargs['new'] = [ doc.parsexml(x) for x in subnode ] 
+             elif subnode.tag == '{' + NSFOLIA + '}suggestion':
+                if len(subnode) == 1:
+                    if subnode[0].tag == '{' + NSFOLIA + '}t':
+                        kwargs['suggestions'] = [ subnode[0].text ]
+                    else:
+                        kwargs['suggestions'] = [ ( doc.parsexml(subnode[0]) ) ]
+                else:
+                    kwargs['new'] = [ doc.parsexml(x) for x in subnode ]                     
              elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
                 args.append( doc.parsexml(subnode) )
