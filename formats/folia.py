@@ -33,7 +33,7 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N = (0,1,2,3,4)
 
 class AnnotationType:
-    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ERRORDETECTION, ALTERNATIVE, PHON = range(13)
+    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON = range(13)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
