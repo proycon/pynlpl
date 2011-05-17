@@ -33,7 +33,7 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N = (0,1,2,3,4)
 
 class AnnotationType:
-    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON = range(13)
+    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON = range(14)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -1237,14 +1237,14 @@ class Correction(AbstractElement):
         return super(Correction,self).xml(attribs,elements, True)  
 
     def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
-        """Select on Correction only descends in either "NEW" or "ACTUAL" branch"""
+        """Select on Correction only descends in either "NEW" or "CURRENT" branch"""
         l = []
         if not node:
             node = self  
         
         if self.new:
             source = self.new
-        elif self.actual:
+        elif self.current:
             source = self.current
         for e in source:
             ignore = False                            
@@ -1284,7 +1284,7 @@ class Correction(AbstractElement):
         kwargs = {}
         kwargs['original'] = []
         kwargs['new'] = []
-        kwargs['actual'] = []
+        kwargs['current'] = []
         kwargs['suggestions'] = []
         for subnode in node:
              if subnode.tag == '{' + NSFOLIA + '}original':                        
@@ -1325,6 +1325,13 @@ class Correction(AbstractElement):
             elif key[:nslen] == '{' + NSFOLIA + '}':
                 key = key[nslen:]
             kwargs[key] = value                                    
+        
+        if not kwargs['current']:
+            del kwargs['current']
+        if not kwargs['suggestions']:
+            del kwargs['suggestions']
+    
+    
                                 
         if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
         instance = Class(doc, *args, **kwargs)
