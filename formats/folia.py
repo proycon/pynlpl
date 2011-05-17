@@ -766,6 +766,8 @@ class TextContent(AbstractElement):
     XMLTAG = 't'
     
     def __init__(self, doc, *args, **kwargs):
+        if not 'value' in kwargs:
+            raise Exception("TextContent expects value= parameter")
         
         if isinstance(kwargs['value'], unicode):
             self.value = kwargs['value']   
@@ -854,6 +856,7 @@ class TextContent(AbstractElement):
         elif 'ref' in node.attrib:
             kwargs['ref'] = node.attrib['ref']
 
+        kwargs['value'] = node.text
         return TextContent(doc, **kwargs)
     
     
@@ -970,21 +973,43 @@ class Word(AbstractStructureElement):
             return self
         else:
             return None
+    
 
-    def correcttext(self, newtext, **kwargs):
-        kwargs['new'] = newtext
-        kwargs['original'] = self.text()       
+    def correcttext(self, **kwargs):        
+        if 'new' in kwargs:
+            kwargs['original'] = self.text()                               
+        elif not 'suggestions' in kwargs and not 'suggestion' in kwargs:
+            raise Exception("No new= or suggestions= specified")
+        
+        if 'suggestion' in kwargs:
+            kwargs['suggestions'] = [kwargs['suggestion']]
+            del kwargs['suggestion']
+        
+        if 'suggestions' in kwargs:    
+            suggestions = []
+            for s in suggestions:
+                if isinstance(s,Suggestion):
+                    suggestions.append(s)
+                elif isinstance(s, AbstractTokenAnnotation) or isinstance(s, TextContent ):
+                    suggestions.append( Suggestion(self.doc, s) )
+                elif isinstance(s, unicode) or isinstance(s, str):
+                    suggestions.append( Suggestion(self.doc, TextContent(self.doc, value=s, corrected=True)) )        
+                else:
+                    raise Exception("Unexpected type for suggestion")
+            kwargs['suggestions'] = suggestions
+            
         if not 'id' in kwargs:
             kwargs['id'] = self.generate_id(Correction)
-        if 'alternative' in kwargs:
-            if kwargs['alternative']:
-                del kwargs['alternative']
-                c = Alternative(self.doc, Correction(self.doc, **kwargs), id=self.generate_id(Alternative))            
-            else:
-                del kwargs['alternative']
-        else:
-            c = Correction(self.doc, **kwargs)
-            self.settext(newtext)
+        #if 'alternative' in kwargs:
+        #    if kwargs['alternative']:
+        #        del kwargs['alternative']
+        #        c = Alternative(self.doc, Correction(self.doc, **kwargs), id=self.generate_id(Alternative))            
+        #    else:
+        #        del kwargs['alternative']
+        #else:
+        c = Correction(self.doc, **kwargs)
+        if 'new' in kwargs:
+            self.settext(kwargs['new'])
         self.append( c )
         return c 
         
@@ -1126,10 +1151,10 @@ class ErrorDetection(AbstractElement):
             
                         
 class Suggestion(AbstractElement):
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.SUGGESTION
     ACCEPTED_DATA = (AbstractTokenAnnotation, Word)
+    ALLOWTEXT = True
     XMLTAG = 'suggestion'
     
     
@@ -1147,7 +1172,7 @@ class Correction(AbstractElement):
     XMLTAG = 'correction'
 
     def __init__(self,  doc, *args, **kwargs):
-        if not (('new' in kwargs and 'original' in kwargs) or (('suggestions' in kwargs or 'suggestion' in kwargs) and 'current' in kwargs)):
+        if not (('new' in kwargs and 'original' in kwargs) or (('suggestions' in kwargs or 'suggestion' in kwargs))):
              raise Exception("Excepted either new= and original= arguments, or suggestions= and current= arguments.")
                          
         self.suggestions = []        
@@ -1156,8 +1181,8 @@ class Correction(AbstractElement):
             del kwargs['suggestion']
         if 'suggestions' in kwargs: 
             for suggestion in kwargs['suggestions']:
-                if not isinstance(kwargs['suggestion'], Suggestion):
-                    raise Exception("Suggestion has to be of type Suggestion")                
+                if not isinstance(suggestion, Suggestion):
+                    raise Exception("Suggestion has to be of type Suggestion, got " + str(type(suggestion)))                
                 self.suggestions.append(suggestion)
             del kwargs['suggestions']            
         
@@ -1246,6 +1271,9 @@ class Correction(AbstractElement):
             source = self.new
         elif self.current:
             source = self.current
+        else:
+            return l #empty list
+            
         for e in source:
             ignore = False                            
             for c in ignorelist:
@@ -1304,13 +1332,7 @@ class Correction(AbstractElement):
                 else:
                     kwargs['new'] = [ doc.parsexml(x) for x in subnode ] 
              elif subnode.tag == '{' + NSFOLIA + '}suggestion':
-                if len(subnode) == 1:
-                    if subnode[0].tag == '{' + NSFOLIA + '}t':
-                        kwargs['suggestions'] = [ subnode[0].text ]
-                    else:
-                        kwargs['suggestions'] = [ ( doc.parsexml(subnode[0]) ) ]
-                else:
-                    kwargs['new'] = [ doc.parsexml(x) for x in subnode ]                     
+                 kwargs['suggestions'].append( doc.parsexml(subnode) )
              elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
                 args.append( doc.parsexml(subnode) )

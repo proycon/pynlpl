@@ -271,7 +271,7 @@ class Test3Edit(unittest.TestCase):
     def test006_addcorrection(self):        
         """Edit Check - Correcting Text"""
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+        w.correcttext(new='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
                     
         self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' ) 
         self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )     
@@ -288,32 +288,40 @@ class Test3Edit(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).original[0] ,oldpos ) 
         self.assertEqual( w.annotation(folia.Correction).new[0] ,'newpos' )     
     
+    def test008_addsuggestion(self):
+        """Edit Check - Suggesting a text correction"""        
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
+        w.correcttext(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+                    
+        self.assertTrue( isinstance(w.annotation(folia.Correction) ,folia.Correction) )
+        self.assertEqual( w.annotation(folia.Correction).suggestions[0] , 'stippelijn' )
+        self.assertEqual( w.text(), 'stippellijn')    
     
-    def test008_addaltcorrection(self):            
-        """Edit Check - Adding alternative corrections"""        
-        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto', alternative=True) 
-            
-        alt = w.alternatives(folia.AnnotationType.CORRECTION)        
-        self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' ) 
-        self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippellijn' ) 
+    #def test008_addaltcorrection(self):            
+    #    """Edit Check - Adding alternative corrections"""        
+    #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
+    #    w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto', alternative=True) 
+    #        
+    #    alt = w.alternatives(folia.AnnotationType.CORRECTION)        
+    #    self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' ) 
+    #    self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippellijn' ) 
         
-    def test009_addaltcorrection2(self):            
-        """Edit Check - Adding an alternative and a selected correction"""        
-        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        w.correcttext('stippel-lijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto', alternative=True) 
+    #def test009_addaltcorrection2(self):            
+    #    """Edit Check - Adding an alternative and a selected correction"""        
+    #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
+    #    w.correcttext('stippel-lijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto', alternative=True) 
         
-        w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+    #    w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
             
-        alt = w.alternatives(folia.AnnotationType.CORRECTION)        
-        self.assertEqual( alt[0].annotation(folia.Correction).id ,'WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1' ) 
-        self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' ) 
-        self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippel-lijn' )         
+    #    alt = w.alternatives(folia.AnnotationType.CORRECTION)        
+    #    self.assertEqual( alt[0].annotation(folia.Correction).id ,'WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1' ) 
+    #    self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' ) 
+    #    self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippel-lijn' )         
                             
-        self.assertEqual( w.annotation(folia.Correction).id ,'WR-P-E-J-0000000001.p.1.s.8.w.11.correction.2' ) 
-        self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' ) 
-        self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )     
-        self.assertEqual( w.text(), 'stippellijn')            
+    #    self.assertEqual( w.annotation(folia.Correction).id ,'WR-P-E-J-0000000001.p.1.s.8.w.11.correction.2' ) 
+    #    self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' ) 
+    #    self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )     
+    #    self.assertEqual( w.text(), 'stippellijn')            
         
 class Test4Create(unittest.TestCase):
         def test001_create(self):
@@ -1335,6 +1343,14 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <t>onzekere</t>
               <pos class="ADJ(prenom,basis,met-e,stan)"/>
               <lemma class="onzeker"/>
+              <correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14.c.1" class="spelling">
+                <suggestion>
+                    <t>twijfelachtige</t>
+                </suggestion>
+                <suggestion>
+                    <t>ongewisse</t>
+                </suggestion>
+              </correction>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.15">
               <t>verwantschap</t>
