@@ -1228,7 +1228,15 @@ class ErrorDetection(AbstractElement):
             self.error = True
         else:
             self.error = False
-            
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):   
+        if not attribs: attribs = {}
+        if self.error:
+            attribs['error'] = 'yes'
+        else:
+            attribs['error'] = 'no'
+        return super(Correction,self).xml(attribs,elements, True)  
+    
             
                         
 class Suggestion(AbstractElement):
@@ -1239,10 +1247,6 @@ class Suggestion(AbstractElement):
     XMLTAG = 'suggestion'
     
     
-    
-
-    
-
     
     
             
