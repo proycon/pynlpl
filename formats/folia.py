@@ -976,12 +976,29 @@ class Word(AbstractStructureElement):
         else:
             return None
     
+    def getcorrection(self,set=None,cls=None):
+        try:
+            return self.getcorrections(set,cls)[0]
+        except:
+            raise NoSuchAnnotation
+    
+    def getcorrections(self, set=None,cls=None):
+        try:
+            l = []        
+            for correction in self.annotations(Correction):
+                if ((not set or correction.set == set) and (not cls or correction.cls == cls)):
+                    l.append(correction)
+            return l
+        except NoSuchAnnotation:
+            raise
+    
 
     def correcttext(self, **kwargs):        
         if 'new' in kwargs:
-            kwargs['original'] = self.text()                               
+            kwargs['original'] = self.text()              
         elif not 'suggestions' in kwargs and not 'suggestion' in kwargs:
             raise Exception("No new= or suggestions= specified")
+                
         
         if 'suggestion' in kwargs:
             kwargs['suggestions'] = [kwargs['suggestion']]
@@ -1009,10 +1026,29 @@ class Word(AbstractStructureElement):
         #    else:
         #        del kwargs['alternative']
         #else:
-        c = Correction(self.doc, **kwargs)
+        
+        if 'reuse' in kwargs:
+            #reuse an existing correction instead of making a new one
+            if isinstance(kwargs['reuse'], Correction):
+                c = kwargs['reuse']
+            else: #assume it's an index
+                c = self.doc.index[kwargs['reuse']]
+            del kwargs['reuse']
+            if 'new' in kwargs:
+                c.setnew(kwargs['new'])
+            if 'original' in kwargs:
+                c.setnew(kwargs['original'])
+            if 'current' in kwargs:
+                c.setcurrent(kwargs['current'])
+            if 'suggestions' in kwargs:
+                for suggestion in kwargs['suggestions']:
+                    c.addsuggestion(suggestion)
+        else:
+            c = Correction(self.doc, **kwargs)
+            self.append( c )    
         if 'new' in kwargs:
             self.settext(kwargs['new'])
-        self.append( c )
+        
         return c 
         
         
@@ -1184,46 +1220,23 @@ class Correction(AbstractElement):
             
         if 'suggestions' in kwargs: 
             for suggestion in kwargs['suggestions']:
-                if not isinstance(suggestion, Suggestion):
-                    raise Exception("Suggestion has to be of type Suggestion, got " + str(type(suggestion)))                
-                self.suggestions.append(suggestion)
+                self.addsuggestion(suggestion)                
             del kwargs['suggestions']            
                     
         if 'current' in kwargs:            
-            if not isinstance(kwargs['current'], list):
-                self.current = [kwargs['current']]
-            else:
-                self.current = kwargs['current']
+            self.setcurrent(kwargs['current'])
             del kwargs['current']
         else:
             self.current = []
         
         if 'new' in kwargs:
-            if isinstance(kwargs['new'], AbstractElement) or isinstance(kwargs['new'], unicode):
-                self.new = [ kwargs['new'] ]
-            elif isinstance(kwargs['new'], TextContent):
-                self.original = [ kwargs['new'].value ]                
-            elif isinstance(kwargs['new'], str):
-                self.new = [ unicode(kwargs['new'],'utf-8') ]
-            elif isinstance(kwargs['new'], list) or isinstance(kwargs['new'], tuple):                
-                self.new = kwargs['new']
-            else:
-                raise Exception("Invalid type for new: " + repr(kwargs['new']))
+            self.setnew(kwargs['new'])
             del kwargs['new'] 
         else:
             self.new = []            
             
         if 'original' in kwargs:
-            if isinstance(kwargs['original'], AbstractElement)  or isinstance(kwargs['original'], unicode):
-                self.original = [ kwargs['original'] ]
-            elif isinstance(kwargs['original'], TextContent):
-                self.original = [ kwargs['original'].value ]
-            elif isinstance(kwargs['original'], str):
-                self.original = [ unicode(kwargs['original'],'utf-8') ]                
-            elif isinstance(kwargs['original'], list) or isinstance(kwargs['original'], tuple):
-                self.original = kwargs['original']
-            else:
-                raise Exception("Invalid type for original: " + repr(kwargs['original']))
+            self.setoriginal(kwargs['original'])
             del kwargs['original'] 
         else:
             self.original = []
@@ -1232,7 +1245,54 @@ class Correction(AbstractElement):
         if self.new and self.original and self.new[0].__class__ != self.original[0].__class__:
             raise Exception("New and Original are of different types!")             
         super(Correction,self).__init__(doc, *args, **kwargs)
-    
+        
+
+    def setnew(self, e):
+        if isinstance(e, AbstractElement) or isinstance(e, unicode):
+            self.new = [ e ]
+        elif isinstance(e, TextContent):
+            self.new = [ e.value ]                
+        elif isinstance(e, str):
+            self.new = [ unicode(e,'utf-8') ]
+        elif isinstance(e, list) or isinstance(e, tuple):                
+            self.new =e
+        else:
+            raise Exception("Invalid type for new: " + repr(e))
+
+    def setcurrent(self, e):
+        if isinstance(e, AbstractElement) or isinstance(e, unicode):
+            self.current = [ e ]
+        elif isinstance(e, TextContent):
+            self.current = [ e.value ]                
+        elif isinstance(e, str):
+            self.current = [ unicode(e,'utf-8') ]
+        elif isinstance(e, list) or isinstance(e, tuple):                
+            self.current =e
+        else:
+            raise Exception("Invalid type for current: " + repr(e))
+
+
+    def setoriginal(self, e):            
+        if isinstance(e, AbstractElement) or isinstance(e, unicode):
+            self.original = [ e ]
+        elif isinstance(e, TextContent):
+            self.original = [ e.value ]                
+        elif isinstance(e, str):
+            self.original = [ unicode(e,'utf-8') ]
+        elif isinstance(e, list) or isinstance(e, tuple):                
+            self.original = e
+        else:
+            raise Exception("Invalid type for original: " + repr(e))
+        
+    def addsuggestion(self, suggestion, **kwargs):
+        if isinstance(suggestion, TextContent) or isinstance(suggestion, AbstractTokenAnnotation):    
+            suggestion = Suggestion(suggestion, **kwargs)
+        elif isinstance(suggestion, str) or isinstance(suggestion, unicode):    
+            suggestion = Suggestion(TextContent(value=suggestion, corrected=True, **kwargs))
+        elif not isinstance(suggestion, Suggestion):
+            raise Exception("Suggestion has to be of type Suggestion, got " + str(type(suggestion)))
+        self.suggestions.append(suggestion)
+            
     def __unicode__(self):
         o = []
         try:
