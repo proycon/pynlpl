@@ -945,7 +945,7 @@ class Word(AbstractStructureElement):
             child.parent = self
             self._setmaxid(child)
         else:
-            raise TypeError("Invalid type")
+            raise TypeError("Invalid type for Word:" + str(type(child)))
 
 
     def sentence(self):
@@ -1215,7 +1215,7 @@ class AbstractAnnotationLayer(AbstractElement):
             del kwargs['set']
         super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
 
-class ErrorDetection(AbstractElement):
+class ErrorDetection(AbstractExtendedTokenAnnotation):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
     XMLTAG = 'errordetection'
@@ -1225,6 +1225,8 @@ class ErrorDetection(AbstractElement):
             self.error = False
         else:
             self.error = True
+        super(ErrorDetection,self).__init__(doc, *args, **kwargs)
+
 
     def xml(self, attribs = None,elements = None, skipchildren = False):   
         if not attribs: attribs = {}
