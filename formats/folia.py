@@ -1135,6 +1135,9 @@ class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID):
     def append(self, child):
         super(AbstractTokenAnnotation,self).append(child)
         self._setmaxid(child)
+
+class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation): 
+    pass
     
 class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID): 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
@@ -1396,6 +1399,14 @@ class Correction(AbstractElement):
              elif subnode.tag == '{' + NSFOLIA + '}suggestion':
                  if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode suggestion"
                  kwargs['suggestions'].append( doc.parsexml(subnode) )
+             elif subnode.tag == '{' + NSFOLIA + '}current':
+                if len(subnode) == 1:
+                    if subnode[0].tag == '{' + NSFOLIA + '}t':
+                        kwargs['current'] = [ subnode[0].text ]
+                    else:
+                        kwargs['current'] = [ ( doc.parsexml(subnode[0]) ) ]
+                else:
+                    kwargs['current'] = [ doc.parsexml(x) for x in subnode ] 
              elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
                 args.append( doc.parsexml(subnode) )
@@ -1519,7 +1530,7 @@ class PhonAnnotation(AbstractTokenAnnotation):
     XMLTAG = 'phon'
 
 
-class DomainAnnotation(AbstractTokenAnnotation):
+class DomainAnnotation(AbstractExtendedTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.DOMAIN
@@ -1576,7 +1587,7 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction)
     ALLOWTEXT = True
     XMLTAG = 's'
     
@@ -1696,7 +1707,7 @@ Quote.ACCEPTED_DATA = (Word, Sentence, Quote)
 class Paragraph(AbstractStructureElement):    
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Sentence,)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction)
     XMLTAG = 'p'
     ALLOWTEXT = True
     
@@ -2220,12 +2231,12 @@ class Division(AbstractStructureElement):
         extraelements.append(E.optional( E.ref(name='head') ))
         return super(Division,cls).relaxng(includechildren, extraattribs , extraelements)
 
-Division.ACCEPTED_DATA = (Division, Paragraph, Sentence, List, Figure)
+Division.ACCEPTED_DATA = (Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation)
 
 class Text(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure)
+    ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation)
     XMLTAG = 'text' 
         
     def paragraphs(self):            
