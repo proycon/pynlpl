@@ -1037,7 +1037,7 @@ class Word(AbstractStructureElement):
             if 'new' in kwargs:
                 c.setnew(kwargs['new'])
             if 'original' in kwargs:
-                c.setnew(kwargs['original'])
+                c.setoriginal(kwargs['original'])
             if 'current' in kwargs:
                 c.setcurrent(kwargs['current'])
             if 'suggestions' in kwargs:
