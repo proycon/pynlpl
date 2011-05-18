@@ -948,8 +948,48 @@ class Word(AbstractStructureElement):
             raise TypeError("Invalid type")
 
 
+    def sentence(self):
+        #return the sentence this word is a part of, otherwise return None
+        e = self;
+        while e.parent: 
+            if isinstance(e, Sentence):
+                return e
+            e = e.parent
+        return None
+        
+        
+    def paragraph(self):
+        #return the paragraph this sentence is a part of (None otherwise)
+        e = self;
+        while e.parent: 
+            if isinstance(e, Paragraph):
+                return e
+            e = e.parent  
+        return None        
+        
+    def division(self):
+        #return the division this sentence is a part of (None otherwise)
+        e = self;
+        while e.parent: 
+            if isinstance(e, Division):
+                return e
+            e = e.parent  
+        return None
+                
         
 
+    def incorrection(self):
+        #Is this word part of a correction? If so, return correction, otherwise return None
+        e = self;
+        while e.parent: 
+            if isinstance(e, Correction):
+                return e
+            if isinstance(e, Sentence):
+                break
+            e = e.parent
+        return None
+        
+        
 
     def pos(self,set=None):
         """Return the PoS annotation (will return only one if there are multiple!)"""
@@ -1614,7 +1654,24 @@ class Sentence(AbstractStructureElement):
                 elif e.space:
                     o += e.space                    
             return o
-        
+
+    def paragraph(self):
+        #return the sentence this sentence is a part of (None otherwise)
+        e = self;
+        while e.parent: 
+            if isinstance(e, Paragraph):
+                return e
+            e = e.parent  
+        return None
+ 
+    def division(self):
+        #return the division this sentence is a part of (None otherwise)
+        e = self;
+        while e.parent: 
+            if isinstance(e, Division):
+                return e
+            e = e.parent  
+        return None
         
     def splitword(self, originalword, *newwords, **kwargs):
         if isinstance(originalword, str) or isinstance(originalword, unicode):
