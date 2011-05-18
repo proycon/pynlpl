@@ -1221,13 +1221,10 @@ class ErrorDetection(AbstractElement):
     XMLTAG = 'errordetection'
     
     def __init__(self,  doc, *args, **kwargs):
-        if not 'error' in kwargs:    
-            raise Exception("Expected attribute: error=yes/no")
-            
-        if kwargs['error'] is True or kwargs['error'].lower() == 'yes' or kwargs['error'].lower() == 'true':
-            self.error = True
-        else:
+        if 'error' in kwargs and (kwargs['error'] is False or kwargs['error'].lower() == 'no' or kwargs['error'].lower() == 'false'):
             self.error = False
+        else:
+            self.error = True
 
     def xml(self, attribs = None,elements = None, skipchildren = False):   
         if not attribs: attribs = {}
