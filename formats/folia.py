@@ -1031,7 +1031,7 @@ class Word(AbstractStructureElement):
             return l
         except NoSuchAnnotation:
             raise
-    
+        
 
     def correcttext(self, **kwargs):        
         if 'new' in kwargs:
