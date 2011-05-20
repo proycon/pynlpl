@@ -163,6 +163,43 @@ class Test2Sanity(unittest.TestCase):
         self.assertRaises( folia.NoSuchAnnotation, w.annotation, folia.SenseAnnotation) #exception
 
 
+
+    def test012_correction(self):
+        """Sanity check - Correction - Text""" 
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.31.c.1']
+        c = w.annotation(folia.Correction)
+        
+        self.assertEqual( len(c.new), 1) 
+        self.assertEqual( len(c.original), 1) 
+        
+        self.assertEqual(  w.text(), 'vierkante')
+        self.assertEqual( c.new[0], 'vierkante') 
+        self.assertEqual( c.original[0], 'vierkant') 
+        
+    def test013_correction(self):
+        """Sanity check - Correction - Token Annotation""" 
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.32']
+                
+        self.assertEqual( len(c.new), 1) 
+        self.assertEqual( len(c.original), 1) 
+        
+        self.assertEqual( w.annotation(LemmaAnnotation).cls , 'haak')
+        self.assertEqual( c.new[0].cls, 'haak') 
+        self.assertEqual( c.original[0].cls, 'haaak') 
+        
+
+    def test014_correction(self):                                        
+        """Sanity check - Correction - Suggestions (text)""" 
+        #grab first word
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.14']
+        c = w.annotation(folia.Correction)
+        self.assertTrue( isinstance(c, folia.Correction) ) 
+        self.assertEqual( len(c.suggestions), 2 ) 
+        self.assertEqual( str(c.suggestions[0]), 'twijfelachtige' ) 
+        self.assertEqual( str(c.suggestions[1]), 'ongewisse' ) 
+        
+
+
     def test099_write(self):        
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
@@ -1202,6 +1239,14 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.6.w.31">
               <t>vierkante</t>
+              <correction xml:id="WR-P-E-J-0000000001.p.1.s.6.w.31.c.1">
+                <new>
+                 <t>vierkante</t>
+                </new>
+                <original>
+                 <t>vierkant</t>
+                </original>
+              </correction>
               <pos class="ADJ(prenom,basis,met-e,stan)"/>
               <lemma class="vierkant"/>
             </w>
@@ -1209,6 +1254,14 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <t>haken</t>
               <pos class="N(soort,mv,basis)"/>
               <lemma class="haak"/>
+              <correction xml:id="WR-P-E-J-0000000001.p.1.s.6.w.32.c.1">
+                <new>              
+                 <lemma class="haak"/>
+                </new>
+                <original>
+                 <lemma class="haaak"/>
+                </original>
+               </correction>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.6.w.33">
               <t>geplaatst</t>
