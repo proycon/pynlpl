@@ -980,13 +980,18 @@ class Word(AbstractStructureElement):
 
     def incorrection(self):
         #Is this word part of a correction? If so, return correction, otherwise return None
-        e = self;
-        while e.parent: 
+        e = self
+        if not e.parent:
+            print "NO PARENT FOR " + e.id  +  ' ' + str(type(e))
+        
+        while e.parent:
+            
             if isinstance(e, Correction):
                 return e
             if isinstance(e, Sentence):
                 break
             e = e.parent
+        
         return None
         
         
@@ -1221,10 +1226,14 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
     XMLTAG = 'errordetection'
     
     def __init__(self,  doc, *args, **kwargs):
-        if 'error' in kwargs and (kwargs['error'] is False or kwargs['error'].lower() == 'no' or kwargs['error'].lower() == 'false'):
-            self.error = False
+        if 'error' in kwargs:            
+            if (kwargs['error'] is False or kwargs['error'].lower() == 'no' or kwargs['error'].lower() == 'false'):
+                self.error = False
+            else:
+                self.error = True
+            del kwargs['error']
         else:
-            self.error = True
+            self.error = True        
         super(ErrorDetection,self).__init__(doc, *args, **kwargs)
 
 
@@ -1266,7 +1275,7 @@ class Correction(AbstractElement):
             
         if 'suggestions' in kwargs: 
             for suggestion in kwargs['suggestions']:
-                self.addsuggestion(suggestion)                
+                self.addsuggestion(suggestion)          
             del kwargs['suggestions']            
                     
         if 'current' in kwargs:            
@@ -1304,6 +1313,9 @@ class Correction(AbstractElement):
             self.new =e
         else:
             raise Exception("Invalid type for new: " + repr(e))
+        for x in self.new:
+            if isinstance(x, AbstractElement):
+                x.parent = self              
 
     def setcurrent(self, e):
         if isinstance(e, AbstractElement) or isinstance(e, unicode):
@@ -1316,7 +1328,9 @@ class Correction(AbstractElement):
             self.current =e
         else:
             raise Exception("Invalid type for current: " + repr(e))
-
+        for x in self.current:
+            if isinstance(x, AbstractElement):
+                x.parent = self  
 
     def setoriginal(self, e):            
         if isinstance(e, AbstractElement) or isinstance(e, unicode):
@@ -1329,15 +1343,25 @@ class Correction(AbstractElement):
             self.original = e
         else:
             raise Exception("Invalid type for original: " + repr(e))
+        for x in self.original:
+            if isinstance(x, AbstractElement):
+                x.parent = self            
         
     def addsuggestion(self, suggestion, **kwargs):
         if isinstance(suggestion, TextContent) or isinstance(suggestion, AbstractTokenAnnotation):    
-            suggestion = Suggestion(suggestion, **kwargs)
+            child = suggestion
+            suggestion = Suggestion(child, **kwargs)
+            child.parent = suggestion
         elif isinstance(suggestion, str) or isinstance(suggestion, unicode):    
-            suggestion = Suggestion(TextContent(value=suggestion, corrected=True, **kwargs))
+            suggestion = Suggestion(TextContent(self.doc, value=suggestion, corrected=True, **kwargs))
         elif not isinstance(suggestion, Suggestion):
-            raise Exception("Suggestion has to be of type Suggestion, got " + str(type(suggestion)))
+            raise Exception("Suggestion has to be of type Suggestion, got " + str(type(suggestion)))                
         self.suggestions.append(suggestion)
+        suggestion.parent = self      
+        print "DEBUG: ",  suggestion, type(suggestion), len(suggestion)
+        for x in suggestion:
+            print 'DEBUG:    ', x, type(x), len(x), type(x.parent)            
+            x.parent = suggestion
             
     def __unicode__(self):
         o = []

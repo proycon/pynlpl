@@ -166,7 +166,7 @@ class Test2Sanity(unittest.TestCase):
 
     def test012_correction(self):
         """Sanity check - Correction - Text""" 
-        w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.31.c.1']
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.31']
         c = w.annotation(folia.Correction)
         
         self.assertEqual( len(c.new), 1) 
@@ -179,11 +179,12 @@ class Test2Sanity(unittest.TestCase):
     def test013_correction(self):
         """Sanity check - Correction - Token Annotation""" 
         w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.32']
+        c = w.annotation(folia.Correction)
                 
         self.assertEqual( len(c.new), 1) 
         self.assertEqual( len(c.original), 1) 
         
-        self.assertEqual( w.annotation(LemmaAnnotation).cls , 'haak')
+        self.assertEqual( w.annotation(folia.LemmaAnnotation).cls , 'haak')
         self.assertEqual( c.new[0].cls, 'haak') 
         self.assertEqual( c.original[0].cls, 'haaak') 
         
@@ -493,6 +494,8 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
       <token-annotation annotator="ilktok" annotatortype="auto" />
       <pos-annotation set="cgn-combinedtags" annotator="tadpole" annotatortype="auto" />
       <lemma-annotation set="lemmas-nl" annotator="tadpole" annotatortype="auto" />
+      <correction-annotation set="corrections" annotator="proycon" annotatortype="manual" />
+      <errordetection-annotation set="corrections" annotator="proycon" annotatortype="manual" />
     </annotations>
     <imdi:METATRANSCRIPT xmlns="http://lands.let.ru.nl/projects/d-coi/ns/1.0" xmlns:d-coi="http://lands.let.ru.nl/projects/d-coi/ns/1.0" Date="2009-01-27" Type="SESSION" Version="1">
     <imdi:Session>
@@ -1368,9 +1371,10 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <lemma class=","/>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.9">
-              <t>terwijl</t>
+              <t>terweil</t>
+              <errordetection class="spelling" error="yes" />
               <pos class="VG(onder)"/>
-              <lemma class="terwijl"/>
+              <lemma class="terweil"/>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.10">
               <t>een</t>
