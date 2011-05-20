@@ -277,6 +277,9 @@ class AbstractElement(object):
     def __len__(self):
         return len(self.data)
         
+    def __nonzero__(self):
+        return True
+        
     def __iter__(self):
         """Iterate over children"""
         return iter(self.data)
