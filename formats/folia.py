@@ -25,8 +25,9 @@ NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 
 class AnnotatorType:
-    AUTO = 0
-    MANUAL = 1
+    UNSET = 0
+    AUTO = 1
+    MANUAL = 2
     
 
 class Attrib:
@@ -1956,9 +1957,9 @@ class Document(object):
             attribs = {}
             for key, value in self.annotationdefaults[annotationtype].items():                
                 if key == 'annotatortype':
-                    if value:
+                    if value == AnnotatorType.MANUAL:
                         attribs['{' + NSFOLIA + '}' + key] = 'manual'
-                    else:
+                    elif value == AnnotatorType.AUTO:
                         attribs['{' + NSFOLIA + '}' + key] = 'auto'
                 elif value:
                     attribs['{' + NSFOLIA + '}' + key] = value
