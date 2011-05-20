@@ -1243,7 +1243,7 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
             attribs['error'] = 'yes'
         else:
             attribs['error'] = 'no'
-        return super(Correction,self).xml(attribs,elements, True)  
+        return super(ErrorDetection,self).xml(attribs,elements, True)  
     
             
                         
