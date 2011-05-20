@@ -1944,6 +1944,7 @@ class Document(object):
     def xmldeclarations(self):
         l = []
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        
         for annotationtype in self.annotations:
             label = None
             #Find the 'label' for the declarations dynamically (aka: AnnotationType --> String)
@@ -1954,7 +1955,12 @@ class Document(object):
             #gather attribs
             attribs = {}
             for key, value in self.annotationdefaults[annotationtype].items():                
-                if value:
+                if key == 'annotatortype':
+                    if value:
+                        attribs['{' + NSFOLIA + '}' + key] = 'manual'
+                    else:
+                        attribs['{' + NSFOLIA + '}' + key] = 'auto'
+                elif value:
                     attribs['{' + NSFOLIA + '}' + key] = value
             if label:
                 l.append( E._makeelement('{' + NSFOLIA + '}' + label.lower() + '-annotation', **attribs) )
