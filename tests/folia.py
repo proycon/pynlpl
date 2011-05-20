@@ -202,12 +202,15 @@ class Test2Sanity(unittest.TestCase):
     def test015_parenttest(self):                                        
         """Sanity check - Checking if all elements know who's their daddy""" 
         
-        def check(parent):
+        def check(parent,indent = ''):            
             for child in parent:
-                self.assertEqual( child.parent, parent)
-                check(child)
+                print indent + repr(child)
+                if not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
+                    self.assertEqual( child.parent, parent)                
+                    check(child, indent + '  ')
                 
-        check(self.doc.data[0])
+        print repr(self.doc.data[0])
+        check(self.doc.data[0],'  ')
 
     def test099_write(self):        
         """Sanity Check - Writing to file"""
