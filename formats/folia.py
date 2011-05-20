@@ -1359,9 +1359,9 @@ class Correction(AbstractElement):
             raise Exception("Suggestion has to be of type Suggestion, got " + str(type(suggestion)))                
         self.suggestions.append(suggestion)
         suggestion.parent = self      
-        print "DEBUG: ",  suggestion, type(suggestion), len(suggestion)
+        #print "DEBUG: ",  suggestion, type(suggestion), len(suggestion)
         for x in suggestion:
-            print 'DEBUG:    ', x, type(x), len(x), type(x.parent)            
+            #print 'DEBUG:    ', x, type(x), len(x), type(x.parent)            
             x.parent = suggestion
             
     def __unicode__(self):
