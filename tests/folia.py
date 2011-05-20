@@ -202,13 +202,42 @@ class Test2Sanity(unittest.TestCase):
     def test015_parenttest(self):                                        
         """Sanity check - Checking if all elements know who's their daddy""" 
         
-        def check(parent,indent = ''):            
+    
+        
+        
+        def check(parent, indent = ''):         
             for child in parent:
                 print indent + repr(child)
-                if not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
+                if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
                     self.assertEqual( child.parent, parent)                
-                    check(child, indent + '  ')
-                
+                    check(child, indent + '  ')                        
+
+            if isinstance(parent, folia.Correction):   
+                if parent.suggestions:
+                    for child in parent.suggestions:
+                        print indent + repr(child)
+                        if isinstance(child, folia.AbstractElement) and  not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
+                            self.assertEqual( child.parent, parent)                
+                            check(child, indent + '  ')                                            
+                if parent.current:
+                    for child in parent.current:
+                        print indent + repr(child)
+                        if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
+                            self.assertEqual( child.parent, parent)                
+                            check(child, indent + '  ')                                            
+                if parent.new:
+                    for child in parent.new:
+                        print indent + repr(child)
+                        if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
+                            self.assertEqual( child.parent, parent)                
+                            check(child, indent + '  ')                                            
+                if parent.original:
+                    for child in parent.original:
+                        print indent + repr(child)
+                        if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
+                            self.assertEqual( child.parent, parent)                
+                            check(child, indent + '  ')                                            
+
         print repr(self.doc.data[0])
         check(self.doc.data[0],'  ')
 
