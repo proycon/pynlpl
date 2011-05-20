@@ -54,7 +54,7 @@ class Test1Read(unittest.TestCase):
         global DCOIEXAMPLE
         doc = folia.Document(tree=lxml.etree.parse(StringIO(DCOIEXAMPLE.encode('iso-8859-15'))))
         self.assertTrue(isinstance(doc,folia.Document))
-        
+                        
 class Test2Sanity(unittest.TestCase):
     
     def setUp(self):
@@ -199,7 +199,15 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( str(c.suggestions[0]), 'twijfelachtige' ) 
         self.assertEqual( str(c.suggestions[1]), 'ongewisse' ) 
         
-
+    def test015_parenttest(self):                                        
+        """Sanity check - Checking if all elements know who's their daddy""" 
+        
+        def check(parent):
+            for child in parent:
+                self.assertEqual( child.parent, parent)
+                check(child)
+                
+        check(self.doc.data[0])
 
     def test099_write(self):        
         """Sanity Check - Writing to file"""
