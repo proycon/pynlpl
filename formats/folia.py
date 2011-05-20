@@ -982,17 +982,15 @@ class Word(AbstractStructureElement):
     def incorrection(self):
         #Is this word part of a correction? If so, return correction, otherwise return None
         e = self
-        if not e.parent:
-            print "NO PARENT FOR " + e.id  +  ' ' + str(type(e))
         
-        while e.parent:
+        
+        while not e.parent is None:            
+                if isinstance(e, Correction):
+                    return e
+                if isinstance(e, Sentence):
+                    break
+                e = e.parent
             
-            if isinstance(e, Correction):
-                return e
-            if isinstance(e, Sentence):
-                break
-            e = e.parent
-        
         return None
         
         
@@ -1326,12 +1324,13 @@ class Correction(AbstractElement):
         elif isinstance(e, str):
             self.current = [ unicode(e,'utf-8') ]
         elif isinstance(e, list) or isinstance(e, tuple):                
-            self.current =e
+            self.current = e
         else:
             raise Exception("Invalid type for current: " + repr(e))
         for x in self.current:
             if isinstance(x, AbstractElement):
                 x.parent = self  
+
 
     def setoriginal(self, e):            
         if isinstance(e, AbstractElement) or isinstance(e, unicode):
