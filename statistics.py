@@ -153,12 +153,17 @@ class FrequencyList:
         """Print a representation of the frequency list"""
         for type, count in self:
             if isinstance(type,tuple) or isinstance(type,list):
-                yield " ".join(type) + delimiter + str(count)
+                yield u" ".join(type) + delimiter + str(count)
             else:
                 yield type + delimiter + str(count)
 
     def __repr__(self):
         return repr(self._count)
+        
+        
+    def __unicode__(self):
+        return u"\n".join(self.output())   
+        
         
     def __str__(self):
         return "\n".join(self.output())        
@@ -257,15 +262,19 @@ class Distribution:
         for type, prob in self:   
             if freqlist:
                 if isinstance(type,list) or isinstance(type, tuple):
-                    yield " ".join(type) + delimiter + str(freqlist[type]) + delimiter + str(prob)
+                    yield u" ".join(type) + delimiter + str(freqlist[type]) + delimiter + str(prob)
                 else:
                     yield type + delimiter + str(freqlist[type]) + delimiter + str(prob)
             else:
                 if isinstance(type,list) or isinstance(type, tuple):
-                    yield " ".join(type) + delimiter + str(prob)
+                    yield u" ".join(type) + delimiter + str(prob)
                 else:
                     yield type + delimiter + str(prob)
                 
+
+    def __unicode__(self):
+        return u"\n".join(self.output())
+
 
     def __str__(self):
         return "\n".join(self.output())
