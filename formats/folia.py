@@ -1705,6 +1705,8 @@ class Sentence(AbstractStructureElement):
             e = e.parent  
         return None
         
+        
+        
     def splitword(self, originalword, *newwords, **kwargs):
         if isinstance(originalword, str) or isinstance(originalword, unicode):
             originalword = self.doc[originalword]            
@@ -1734,15 +1736,51 @@ class Sentence(AbstractStructureElement):
         c.parent = self
         return c 
         
+        
+    def mergewords(self, newword,  *originalwords,**kwargs):
+        for w in originalwords:            
+            if not isinstance(w, Word) or not w in self:
+                raise Exception("Original word not found or not a Word instance!")    
+        
+        
+        if not isinstance(newword, Word):        
+            raise Exception("New word must be a Word instance")
+
+        if not 'id' in kwargs and not 'generate_id_in' in kwargs:
+            kwargs['generate_id_in'] = self
+        
+        if 'suggest' in kwargs and kwargs['suggest']:            
+            kwargs['suggestion'] = Suggestion(self.doc, newword)
+            kwargs['current'] = originalwords
+            del kwargs['suggest']
+        else:            
+            kwargs['original'] = originalwords                
+            if not 'new' in kwargs:
+                kwargs['new'] = newword    
+        insertindex = self.data.index(originalwords[0])        
+        c = Correction(self.doc, **kwargs)
+        self.data.insert( insertindex, c )
+        c.parent = self
+        for w in originalwords:            
+            self.remove(w)        
+        return c 
+        
+        
     def deleteword(self, word, **kwargs):
         if isinstance(word, str) or isinstance(word, unicode):
             word = self.doc[word]            
         if not word in self or not isinstance(word, Word):
             raise Exception("Original not found or not instance of Word!")
-        else:
-            kwargs['original'] = word
+        
             
-        kwargs['new'] = []
+
+        if 'suggest' in kwargs and kwargs['suggest']:            
+            kwargs['current'] = word
+            kwargs['suggestions'] = []
+        else:            
+            kwargs['original'] = word
+            kwargs['new'] = []
+            
         if not 'id' in kwargs and not 'generate_id_in' in kwargs:
             kwargs['generate_id_in'] = self
             
@@ -1763,35 +1801,18 @@ class Sentence(AbstractStructureElement):
         
         insertindex = self.data.index(prevword)
     
-        kwargs['original'] = []
-        kwargs['new'] = newword
+        
+        if 'suggest' in kwargs and kwargs['suggest']:            
+            kwargs['suggestion'] = newword
+        else:
+            kwargs['original'] = []
+            kwargs['new'] = newword
         
         if not 'id' in kwargs and not 'generate_id_in' in kwargs:
             kwargs['generate_id_in'] = self
         c = Correction(self.doc, **kwargs)
         self.data.insert( insertindex, c )
         c.parent = self
-        return c 
-        
-    def mergewords(self, newword,  *originalwords,**kwargs):
-        for w in originalwords:            
-            if not isinstance(w, Word) or not w in self:
-                raise Exception("Original word not found or not a Word instance!")    
-        kwargs['original'] = originalwords                
-        
-        if not isinstance(newword, Word):        
-            raise Exception("New word must be a Word instance")
-
-        if not 'id' in kwargs and not 'generate_id_in' in kwargs:
-            kwargs['generate_id_in'] = self
-        
-        kwargs['new'] = newword       
-        insertindex = self.data.index(originalwords[0])        
-        c = Correction(self.doc, **kwargs)
-        self.data.insert( insertindex, c )
-        c.parent = self
-        for w in originalwords:            
-            self.remove(w)        
         return c 
 
         
