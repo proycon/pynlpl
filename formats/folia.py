@@ -1777,6 +1777,7 @@ class Sentence(AbstractStructureElement):
         if 'suggest' in kwargs and kwargs['suggest']:            
             kwargs['current'] = word
             kwargs['suggestions'] = []
+            del kwargs['suggest']
         else:            
             kwargs['original'] = word
             kwargs['new'] = []
@@ -1804,6 +1805,7 @@ class Sentence(AbstractStructureElement):
         
         if 'suggest' in kwargs and kwargs['suggest']:            
             kwargs['suggestion'] = newword
+            del kwargs['suggest']
         else:
             kwargs['original'] = []
             kwargs['new'] = newword
