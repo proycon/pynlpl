@@ -1055,7 +1055,7 @@ class Word(AbstractStructureElement):
         if not attribs: attribs = {}
         if not self.space:
             attribs['space'] = 'no'
-        return super(ErrorDetection,self).xml(attribs,elements, True)  
+        return super(Word,self).xml(attribs,elements, True)  
 
                 
         
