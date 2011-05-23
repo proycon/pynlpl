@@ -427,14 +427,17 @@ class Test4Create(unittest.TestCase):
             self.assertEqual( len(self.doc.index[self.doc.id + '.s.1']), 5)
         
 class Test5Correction(unittest.TestCase):
-        def test001_splitcorrection(self):  
-            """Correction - Split corrections"""
+        def setUp(self):
             self.doc = folia.Document(id='example')
             self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
-            text = folia.Text(self.doc, id=self.doc.id + '.text.1')
-            self.doc.append( text )
+            self.text = folia.Text(self.doc, id=self.doc.id + '.text.1')
+            self.doc.append( self.text )            
+     
+        
+        def test001_splitcorrection(self):  
+            """Correction - Split correction"""
             
-            text.append(
+            self.text.append(
                 folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
@@ -444,24 +447,43 @@ class Test5Correction(unittest.TestCase):
                 ]
                 )
             )
-        
-            s = self.doc.index[self.doc.id + '.s.1']
+                    
+            
             w = self.doc.index[self.doc.id + '.s.1.w.4']
             
-            s.splitword( w, folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
-                        
+            w.split( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
+            
+            s = self.doc.index[self.doc.id + '.s.1']            
             self.assertEqual( len(s.words()), 6 )
             
+        
+        def test001_splitcorrection2(self):  
+            """Correction - Split suggestion"""
+            
+            self.text.append(
+                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="online"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
+                ]
+                )
+            )
+                    
+            
+            w = self.doc.index[self.doc.id + '.s.1.w.4']
+            
+            s = self.doc.index[self.doc.id + '.s.1'] 
+            w.split( folia.Word(self.doc, generate_id_in=s, text="on"), folia.Word(self.doc, generate_id_in=s, text="line"), suggest=True )
+            
+                       
+            self.assertEqual( len(s.words()), 5 )
             
             
         def test002_mergecorrection(self):         
             """Correction - Merge corrections"""
-            self.doc = folia.Document(id='example')
-            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
-            text = folia.Text(self.doc, id=self.doc.id + '.text.1')
-            self.doc.append( text )
-            
-            text.append(
+            self.text.append(
                 folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
@@ -471,8 +493,8 @@ class Test5Correction(unittest.TestCase):
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
                 ]
                 )
-            )
-        
+            )       
+            
             s = self.doc.index[self.doc.id + '.s.1']
             
                                
@@ -483,12 +505,8 @@ class Test5Correction(unittest.TestCase):
             
         def test003_deletecorrection(self):         
             """Correction - Deletion"""
-            self.doc = folia.Document(id='example')
-            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
-            text = folia.Text(self.doc, id=self.doc.id + '.text.1')
-            self.doc.append( text )
-            
-            text.append(
+
+            self.text.append(
                 folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="Ik"),
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="zie"),
@@ -505,12 +523,7 @@ class Test5Correction(unittest.TestCase):
 
         def test004_insertcorrection(self):         
             """Correction - Insert"""
-            self.doc = folia.Document(id='example')
-            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
-            text = folia.Text(self.doc, id=self.doc.id + '.text.1')
-            self.doc.append( text )
-            
-            text.append(
+            self.text.append(
                 folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="Ik"),
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="zie"),

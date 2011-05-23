@@ -1039,6 +1039,8 @@ class Word(AbstractStructureElement):
         except NoSuchAnnotation:
             raise
         
+    def split(self, *newwords, **kwargs):
+        self.sentence().splitword(self, *newwords, **kwargs)
 
     def correcttext(self, **kwargs):        
         if 'new' in kwargs:
@@ -1712,12 +1714,19 @@ class Sentence(AbstractStructureElement):
             kwargs['original'] = originalword
             
         if not all( [ isinstance(w, Word) for w in newwords ] ):
-            raise Exception("Second argument, new words, must be a list of Word instances!")
+            raise Exception("New words must be Word instances!")
 
         if not 'id' in kwargs and not 'generate_id_in' in kwargs:
             kwargs['generate_id_in'] = self
-            
-        kwargs['new'] = newwords
+
+        
+        if 'suggest' in kwargs and kwargs['suggest']:            
+            kwargs['suggestion'] = Suggestion(self.doc, *newwords)
+            kwargs['current'] = originalword
+            del kwargs['suggest']
+        else:            
+            if not 'new' in kwargs:
+                kwargs['new'] = newwords
         insertindex = self.data.index(originalword)        
         c = Correction(self.doc, **kwargs)
         originalword.parent = c
