@@ -1038,7 +1038,27 @@ class Word(AbstractStructureElement):
             return l
         except NoSuchAnnotation:
             raise
+    
+    @classmethod
+    def parsexml(Class, node, doc):
+        assert Class is Word
+        global NSFOLIA
+        nslen = len(NSFOLIA) + 2
+        super(Word,Class).__init__(Class, node, doc)
+        if 'space' in node:
+            if node['space'] == 'no':
+                self.space = False
+
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):   
+        if not attribs: attribs = {}
+        if not self.space:
+            attribs['space'] = 'no'
+        return super(ErrorDetection,self).xml(attribs,elements, True)  
+
+                
         
+    
     def split(self, *newwords, **kwargs):
         self.sentence().splitword(self, *newwords, **kwargs)
 
@@ -1136,6 +1156,7 @@ class Word(AbstractStructureElement):
                             done[c.XMLTAG] = True
         
         return super(Word,cls).relaxng(includechildren, extraattribs , extraelements)
+
 
 
 
