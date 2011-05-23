@@ -1044,10 +1044,11 @@ class Word(AbstractStructureElement):
         assert Class is Word
         global NSFOLIA
         nslen = len(NSFOLIA) + 2
-        super(Word,Class).parsexml(node, doc)
+        instance = super(Word,Class).parsexml(node, doc)
         if 'space' in node:
             if node['space'] == 'no':
-                self.space = False
+                instance.space = False
+        return instance
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):   
