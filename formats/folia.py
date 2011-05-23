@@ -341,7 +341,7 @@ class AbstractElement(object):
         if child.__class__ in self.ACCEPTED_DATA or child.__class__.__base__ in self.ACCEPTED_DATA:
             self.data.append(child)
             child.parent = self
-        elif child.ALLOWTEXT:
+        elif child and child.ALLOWTEXT:
             self.settext(child)
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ )
