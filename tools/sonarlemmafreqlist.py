@@ -24,6 +24,4 @@ for i, doc in enumerate(Corpus(sonardir)):
 
 freqlist.save('sonarlemmafreqlist.txt')
             
-print freqlist
-
-
+print freqlist.encode('utf-8')
