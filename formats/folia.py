@@ -1967,7 +1967,7 @@ class Document(object):
         if not filename:
             raise Exception("No filename specified")
         f = open(filename,'w')
-        f.write(str(self))
+        f.write(self.xmlstring())
         f.close()
 
     def setcmdi(self,filename):
@@ -2248,9 +2248,28 @@ class Document(object):
             return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])
         else:
             return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])[index]
+            
+
+    def text(self):
+        s = ""
+        for t in self.data:
+            if s: s += "\n\n\n"
+            s = t.text()            
                     
-    def __str__(self):
+    def xmlstring(self):
         return ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
+
+    def __unicode__(self):
+        s = u""
+        for c in self.data:
+            try:
+                s += unicode(c)
+            except:
+                continue
+        return s
+        
+    def __str__(self): #returns utf-8 string
+        return unicode(self).encode('utf-8')
         
     
 class Gap(AbstractElement):    
@@ -2393,7 +2412,7 @@ class Text(AbstractStructureElement):
         return self.select(Sentence)
         
     def words(self):
-        return self.select(Word)
+        return self.select(Word)        
 
 
 class Corpus:
