@@ -2291,7 +2291,8 @@ class Document(object):
                 continue
         return s
         
-        
+    def __str__(self):    
+        return unicode(self).encode('utf-8')
     
 class Gap(AbstractElement):    
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
