@@ -293,20 +293,28 @@ class AbstractElement(object):
         except KeyError:
             raise
 
-    def __unicode__(self): #alias for text()
-        if self.ALLOWTEXT:
-            if self.textdata:
-                return self.text()
-            elif self.data:
-                return " ".join( [ unicode(x) for x in self.data if x.ALLOWTEXT ] )  #TODO: space attribute ignored?      
-        else:
-            raise NotImplementedError("No text available on " + self.__class__.__name__) #on purpose
+    def __unicode__(self):
+        #get the most actual text:
+        # - first see if there is a text element (with corrected attribute)
+        # - if not, descend into children to grab dynamically
+        # - if that yields no results, try to get the uncorrected text (this may raise an exception if it too fails)
+        try:
+            return self.correctedtext()
+        except NoSuchText:        
+            #descend into children
+            s = ""
+            for e in self:
+                try:                    
+                    s += unicode(e) + " " #space separated by default, override for other behaviour
+                except:
+                    continue
+            if s.strip():
+                return s.strip()
+            else:                
+                return self.uncorrectedtext()
     
     def __str__(self):
-        if self.ALLOWTEXT:
-            return unicode(self).encode('utf-8')
-        else:
-            raise NotImplementedError("No text available on " + self.__class__.__name__) #on purpose
+        return unicode(self).encode('utf-8')
         
     def settext(self, text, corrected=False):
         """Set text: may take TextContent element, unicode, or string (utf-8). Only in the latter two cases, the corrected parameter will be consulted. Existing texts will be *REPLACED*"""
@@ -1391,19 +1399,32 @@ class Correction(AbstractElement):
             x.parent = suggestion
             
     def __unicode__(self):
-        o = []
-        try:
+        s = ""
+        if self.current:
+            for e in self.current:
+                try:
+                    if isinstance(e, Word):
+                        s += unicode(e)
+                        if e.space:
+                            s += ' '
+                    else:
+                        s += unicode(e)
+                except:
+                    continue
+        elif self.new:
             for s in self.new:
-                o.append(unicode(s))
-            if o:
-                return " ".join(o) #TODO: space attribute ignored?
-            else:
-                return ""
-        except:
-            raise Exception("Only corrections with text elements can be converted into strings")             
+                try:
+                    if isinstance(e, Word):
+                        s += unicode(e)
+                        if e.space:
+                            s += ' '
+                    else:
+                        s += unicode(e)
+                except:
+                    continue
+        return s
         
-    def __str__(self):
-        return unicode(self).encode('utf-8')
+    
         
 
     def xml(self, attribs = None, elements = None, skipchildren = False):
@@ -1708,6 +1729,7 @@ class Sentence(AbstractStructureElement):
                 elif e.space:
                     o += e.space                    
             return o
+
 
     def paragraph(self):
         #return the sentence this sentence is a part of (None otherwise)
@@ -2262,14 +2284,13 @@ class Document(object):
     def __unicode__(self):
         s = u""
         for c in self.data:
+            if s: s += "\n\n"
             try:
                 s += unicode(c)
             except:
                 continue
         return s
         
-    def __str__(self): #returns utf-8 string
-        return unicode(self).encode('utf-8')
         
     
 class Gap(AbstractElement):    
@@ -2386,7 +2407,25 @@ class Division(AbstractStructureElement):
         return self.select(Sentence)
         
     def words(self):
-        return self.select(Word)            
+        return self.select(Word)     
+        
+    def __unicode__(self):
+        try:
+            return self.correctedtext()
+        except NoSuchText:        
+            #descend into children
+            s = ""
+            for e in self:
+                try:               
+                    es = unicode(e)
+                    if es:                    
+                        s += es + "\n\n"
+                except:
+                    continue
+            if s.strip():
+                return s.strip()
+            else:                
+                return self.uncorrectedtext()
 
     @classmethod        
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -2414,6 +2453,24 @@ class Text(AbstractStructureElement):
     def words(self):
         return self.select(Word)        
 
+    def __unicode__(self):
+        try:
+            return self.correctedtext()
+        except NoSuchText:        
+            #descend into children
+            s = ""
+            for e in self:
+                try:               
+                    es = unicode(e)
+                    if es:                    
+                        s += es + "\n\n"
+                except:
+                    continue
+            if s.strip():
+                return s.strip()
+            else:                
+                return self.uncorrectedtext()
+        
 
 class Corpus:
     def __init__(self,corpusdir, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, ignoreerrors=False):
@@ -2527,4 +2584,5 @@ for c in vars().values():
             XML2CLASS[c.XMLTAG] = c
     except: 
         continue
+
 
