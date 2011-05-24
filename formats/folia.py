@@ -1804,9 +1804,9 @@ class Sentence(AbstractStructureElement):
         
     def mergewords(self, newword,  *originalwords,**kwargs):
         for w in originalwords:            
-            if not isinstance(w, Word) or not w in self:
-                raise Exception("Original word not found or not a Word instance!")    
-        
+            if not isinstance(w, Word):
+                raise Exception("Original word is not a Word instance: " + str(type(w)))    
+                    
         
         if not isinstance(newword, Word):        
             raise Exception("New word must be a Word instance")
@@ -1834,8 +1834,8 @@ class Sentence(AbstractStructureElement):
     def deleteword(self, word, **kwargs):
         if isinstance(word, str) or isinstance(word, unicode):
             word = self.doc[word]            
-        if not word in self or not isinstance(word, Word):
-            raise Exception("Original not found or not instance of Word!")
+        if not isinstance(word, Word):
+            raise Exception("Original not instance of Word!")
         
             
 
