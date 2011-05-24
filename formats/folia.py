@@ -300,7 +300,7 @@ class AbstractElement(object):
         # - if that yields no results, try to get the uncorrected text (this may raise an exception if it too fails)
         try:
             return self.correctedtext()
-        except NoSuchText:        
+        except:        
             #descend into children
             s = ""
             for e in self:
@@ -745,6 +745,24 @@ class AllowGenerateID(object):
 class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     def __init__(self, doc, *args, **kwargs):            
         super(AbstractStructureElement,self).__init__(doc, *args, **kwargs)
+
+    def __unicode__(self):
+        try:
+            return self.correctedtext()
+        except:        
+            #descend into children
+            s = ""
+            for e in self:
+                try:               
+                    es = unicode(e)
+                    if es:                    
+                        s += es + "\n\n" #bigger gap between structure elements
+                except:
+                    continue
+            if s.strip():
+                return s.strip()
+            else:                
+                return self.uncorrectedtext()    
     
     def resolveword(self, id): 
         for child in self:
@@ -2410,23 +2428,6 @@ class Division(AbstractStructureElement):
     def words(self):
         return self.select(Word)     
         
-    def __unicode__(self):
-        try:
-            return self.correctedtext()
-        except NoSuchText:        
-            #descend into children
-            s = ""
-            for e in self:
-                try:               
-                    es = unicode(e)
-                    if es:                    
-                        s += es + "\n\n"
-                except:
-                    continue
-            if s.strip():
-                return s.strip()
-            else:                
-                return self.uncorrectedtext()
 
     @classmethod        
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -2457,7 +2458,7 @@ class Text(AbstractStructureElement):
     def __unicode__(self):
         try:
             return self.correctedtext()
-        except NoSuchText:        
+        except:        
             #descend into children
             s = ""
             for e in self:
