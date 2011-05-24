@@ -413,6 +413,9 @@ class AbstractElement(object):
             for e2 in elements:
                 e.append(e2)
         return e
+
+    def xmlstring(self):
+        return ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=True, encoding='utf-8')        
         
         
     def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
@@ -1081,7 +1084,7 @@ class Word(AbstractStructureElement):
         if not attribs: attribs = {}
         if not self.space:
             attribs['space'] = 'no'
-        return super(Word,self).xml(attribs,elements, True)  
+        return super(Word,self).xml(attribs,elements, False)  
 
                 
         
@@ -1295,7 +1298,7 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
             attribs['error'] = 'yes'
         else:
             attribs['error'] = 'no'
-        return super(ErrorDetection,self).xml(attribs,elements, True)  
+        return super(ErrorDetection,self).xml(attribs,elements, False)  
     
             
                         
