@@ -1779,7 +1779,7 @@ class Sentence(AbstractStructureElement):
     def splitword(self, originalword, *newwords, **kwargs):
         if isinstance(originalword, str) or isinstance(originalword, unicode):
             originalword = self.doc[originalword]            
-        if not originalword in self or not isinstance(originalword, Word):
+        if originalword.sentence() != self:
             raise Exception("Original not found or not instance of Word!")
         else:
             kwargs['original'] = originalword
