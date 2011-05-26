@@ -1802,14 +1802,15 @@ class Sentence(AbstractStructureElement):
             c.original = c.current
             c.current = None
             c.setnew(kwargs['new'])            
+            return c
         else:            
             if not 'new' in kwargs:
                 kwargs['new'] = newwords
-            insertindex = self.data.index(originalword)        
-            c = Correction(self.doc, **kwargs)
-            originalword.parent = c
-            self.data[insertindex] = c 
-            c.parent = self
+        insertindex = self.data.index(originalword)        
+        c = Correction(self.doc, **kwargs)
+        originalword.parent = c
+        self.data[insertindex] = c 
+        c.parent = self
         return c 
         
         
@@ -1824,8 +1825,7 @@ class Sentence(AbstractStructureElement):
 
         if not 'id' in kwargs and not 'generate_id_in' in kwargs:
             kwargs['generate_id_in'] = self
-        
-        
+                
         if 'suggest' in kwargs and kwargs['suggest']:            
             kwargs['suggestion'] = Suggestion(self.doc, newword)
             kwargs['current'] = originalwords
@@ -1838,20 +1838,21 @@ class Sentence(AbstractStructureElement):
             c.original = c.current
             c.current = None
             c.setnew(kwargs['new'])
+            return c
         else:            
             kwargs['original'] = originalwords                
             if not 'new' in kwargs:
                 kwargs['new'] = newword    
                         
-            insertindex = self.data.index(originalwords[0])        
-            c = Correction(self.doc, **kwargs)
-            self.data.insert( insertindex, c )
-            c.parent = self
-            
-            for w in originalwords:                    
-                self.remove(w)        
-        return c 
+        insertindex = self.data.index(originalwords[0])        
+        c = Correction(self.doc, **kwargs)
+        self.data.insert( insertindex, c )
+        c.parent = self
         
+        for w in originalwords:                    
+            self.remove(w)        
+        return c 
+    
         
     def deleteword(self, word, **kwargs):
         if isinstance(word, str) or isinstance(word, unicode):
