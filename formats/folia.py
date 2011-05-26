@@ -1795,8 +1795,7 @@ class Sentence(AbstractStructureElement):
             kwargs['suggestion'] = Suggestion(self.doc, *newwords)
             kwargs['current'] = originalword
             del kwargs['suggest']
-        elif 'reuse' in kwargs and kwargs['reuse']:
-            kwargs['original'] = originalwords                
+        elif 'reuse' in kwargs and kwargs['reuse']:            
             if not 'new' in kwargs:
                 kwargs['new'] = newword    
             c = self.doc[kwargs['reuse']]
