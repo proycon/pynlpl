@@ -356,8 +356,9 @@ class Test3Edit(unittest.TestCase):
         self.assertEqual( w.text(), 'stippellijn')    
         
         
-    def test007_addcorrection2(self):        
+    def test007_addcorrection2(self):                
         """Edit Check - Correcting a Token Annotation element"""        
+        #TODO: THIS TEST FAILS, SHOULD BE FIXED, TEST MAY CHANGE
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         oldpos = w.annotation(folia.PosAnnotation)
         newpos = folia.PosAnnotation(self.doc, cls='N(soort,ev,basis,zijd,stan)')
@@ -368,6 +369,7 @@ class Test3Edit(unittest.TestCase):
     
     def test008_addsuggestion(self):
         """Edit Check - Suggesting a text correction"""        
+        #TODO: THIS TEST FAILS NOW, BUT SHOULDN'T
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         w.correcttext(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
                     
