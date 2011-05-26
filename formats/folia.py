@@ -969,8 +969,9 @@ class Word(AbstractStructureElement):
             elif isinstance(child, AbstractTokenAnnotation):
                 #sanity check, there may be no other child within the same set
                 try:
-                    self.annotation(child.__class__, child.set)
-                    raise DuplicateAnnotationError
+                    if not child.ALLOWDUPLICATES:
+                        self.annotation(child.__class__, child.set)
+                        raise DuplicateAnnotationError
                 except NoSuchAnnotation:
                     #good, that's what we want
                     pass
@@ -1232,6 +1233,8 @@ class AbstractAnnotation(AbstractElement):
                 return f.cls
 
 class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID): 
+    ALLOWDUPLICATES = False #Allow duplicates within the same set? 
+
     def append(self, child):
         super(AbstractTokenAnnotation,self).append(child)
         self._setmaxid(child)
@@ -1279,6 +1282,7 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
     XMLTAG = 'errordetection'
+    ALLOWDUPLICATES = True #Allow duplicates within the same set 
     
     def __init__(self,  doc, *args, **kwargs):
         if 'error' in kwargs:            
