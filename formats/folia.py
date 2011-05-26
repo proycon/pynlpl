@@ -1818,20 +1818,31 @@ class Sentence(AbstractStructureElement):
         if not 'id' in kwargs and not 'generate_id_in' in kwargs:
             kwargs['generate_id_in'] = self
         
+        
         if 'suggest' in kwargs and kwargs['suggest']:            
             kwargs['suggestion'] = Suggestion(self.doc, newword)
             kwargs['current'] = originalwords
             del kwargs['suggest']
+        elif 'reuse' in kwargs and kwargs['reuse']:
+            kwargs['original'] = originalwords                
+            if not 'new' in kwargs:
+                kwargs['new'] = newword    
+            c = self.doc[kwargs['reuse']]
+            c.original = c.current
+            c.current = None
+            c.setnew(kwargs['new'])
         else:            
             kwargs['original'] = originalwords                
             if not 'new' in kwargs:
                 kwargs['new'] = newword    
-        insertindex = self.data.index(originalwords[0])        
-        c = Correction(self.doc, **kwargs)
-        self.data.insert( insertindex, c )
-        c.parent = self
-        for w in originalwords:            
-            self.remove(w)        
+                        
+            insertindex = self.data.index(originalwords[0])        
+            c = Correction(self.doc, **kwargs)
+            self.data.insert( insertindex, c )
+            c.parent = self
+            
+            for w in originalwords:                    
+                self.remove(w)        
         return c 
         
         
