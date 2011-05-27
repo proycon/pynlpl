@@ -315,6 +315,10 @@ class AbstractElement(object):
 
     def copy(self):
         """Make a deep copy"""
+        kwargs = {}
+        if self.id:
+            
+        
         #TODO
         return None
                             
@@ -1461,14 +1465,15 @@ class Correction(AbstractElement):
         if not attribs: attribs = {}
         if not elements: elements = []
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
-        if self.new or self.original:
+        if self.current:
+            elements.append( E.current( *[ x.xml() for x in self.current ] ) ) 
+        elif self.new or self.original:
             elements.append( E.new( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.new ] ) ) 
             elements.append( E.original( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.original ] ) )    
         if self.suggestions:
             for suggestion in self.suggestions:
                 elements.append( suggestion.xml() )
-        if self.current:
-            elements.append( E.current( *[ x.xml() for x in self.current ] ) ) 
+        
         return super(Correction,self).xml(attribs,elements, True)  
 
     def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
@@ -1798,7 +1803,9 @@ class Sentence(AbstractStructureElement):
         
         if 'suggest' in kwargs and kwargs['suggest']:            
             kwargs['suggestion'] = Suggestion(self.doc, *newwords)
-            kwargs['current'] = originalword        
+            kwargs['current'] = originalword   
+            if 'new' in kwargs:
+                del kwargs['new']     
         elif 'reuse' in kwargs and kwargs['reuse']:            
             if not 'new' in kwargs:
                 kwargs['new'] = newwords    
