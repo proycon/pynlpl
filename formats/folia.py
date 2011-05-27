@@ -1148,15 +1148,36 @@ class Word(AbstractStructureElement):
             else: #assume it's an index
                 c = self.doc.index[kwargs['reuse']]
             del kwargs['reuse']
+            
+            if not c.new and not c.original and c.suggestions and ('new' in kwargs or 'original' in kwargs):
+                #What was previously only a suggestion, now becomes a real correction
+                #If annotator, annotatortypes
+                #are associated with the correction as a whole, move it to the suggestions
+                #correction-wide annotator, annotatortypes will be overwritten
+                for suggestion in c.suggestions:
+                    if c.annotator and not suggestion.annotator:
+                        suggestion.annotator = c.annotator
+                    if c.annotatortype and not suggestion.annotatortype:
+                        suggestion.annotatortype = c.annotatortype
+                                            
             if 'new' in kwargs:
-                c.setnew(kwargs['new'])
+                c.setnew(kwargs['new'])      
             if 'original' in kwargs:
                 c.setoriginal(kwargs['original'])
             if 'current' in kwargs:
+                if 'original' in kwargs or 'new' in kwargs: raise Exception("When setting current=, original= and new= can not be set!") 
                 c.setcurrent(kwargs['current'])
             if 'suggestions' in kwargs:
                 for suggestion in kwargs['suggestions']:
                     c.addsuggestion(suggestion)
+                    
+            if 'annotator' in kwargs:
+                c.annotator = kwargs['annotator']
+            if 'annotatortype' in kwargs:
+                c.annotatortype = kwargs['annotatortype']
+            if 'confidence' in kwargs:
+                c.confidence = float(kwargs['confidence'])
+                
         else:
             c = Correction(self.doc, **kwargs)
             self.append( c )    
