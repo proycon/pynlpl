@@ -315,8 +315,7 @@ class AbstractElement(object):
 
     def copy(self):
         """Make a deep copy"""
-        kwargs = {}
-        if self.id:
+        kwargs = {}    
             
         
         #TODO
