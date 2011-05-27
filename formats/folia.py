@@ -316,6 +316,10 @@ class AbstractElement(object):
     def copy(self):
         """Make a deep copy"""
         kwargs = {}    
+        if self.id:
+            kwargs['id'] = id
+        if self.set:
+            kwargs['set'] = set
             
         
         #TODO
@@ -1926,9 +1930,7 @@ class Sentence(AbstractStructureElement):
         c.parent = self
         return c 
 
-        
-    def words(self):
-        return self.select(Word)           
+
 
 Quote.ACCEPTED_DATA = (Word, Sentence, Quote)        
 
