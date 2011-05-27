@@ -1187,13 +1187,17 @@ class Word(AbstractStructureElement):
         return c 
         
         
-        
-            
-    def correctannotation(self, original, new, **kwargs):
+
+                    
+    def correctannotation(self, original, new, **kwargs):                
         if not original in self:            
             raise Exception("Original not found!")
         else:
             kwargs['original'] = original
+            
+        #if not 'suggestions' in kwargs and not 'suggestion' in kwargs:
+        #    raise Exception("No suggestions= specified")            
+            
         kwargs['new'] = new
         if not 'id' in kwargs:
             kwargs['id'] = self.generate_id(Correction)
@@ -1207,6 +1211,7 @@ class Word(AbstractStructureElement):
         self.append( c )
         return c 
         
+    
 
     @classmethod        
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
