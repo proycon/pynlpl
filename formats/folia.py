@@ -263,7 +263,7 @@ class AbstractElement(object):
             raise NotImplementedError #on purpose            
         for t in self.textdata:
             if not t.corrected:
-                return t.corrected
+                return t.value
         raise NoSuchText
         
     def correctedtext(self):
@@ -312,6 +312,10 @@ class AbstractElement(object):
                 return s.strip()
             else:                
                 return self.uncorrectedtext()
+                
+                
+    def __str__(self):        
+        return unicode(self).encode('utf-8')
 
     def copy(self):
         """Make a deep copy"""
@@ -325,8 +329,6 @@ class AbstractElement(object):
         #TODO
         return None
                             
-    def __str__(self):
-        return unicode(self).encode('utf-8')
         
     def settext(self, text, corrected=False):
         """Set text: may take TextContent element, unicode, or string (utf-8). Only in the latter two cases, the corrected parameter will be consulted. Existing texts will be *REPLACED*"""
