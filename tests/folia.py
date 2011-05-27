@@ -362,14 +362,13 @@ class Test3Edit(unittest.TestCase):
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         oldpos = w.annotation(folia.PosAnnotation)
         newpos = folia.PosAnnotation(self.doc, cls='N(soort,ev,basis,zijd,stan)')
-        w.correct(w.annotation(oldpos),newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+        w.correctannotation(oldpos,newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
                     
         self.assertEqual( w.annotation(folia.Correction).original[0] ,oldpos ) 
-        self.assertEqual( w.annotation(folia.Correction).new[0] ,'newpos' )     
+        self.assertEqual( w.annotation(folia.Correction).new[0] ,newpos )     
     
     def test008_addsuggestion(self):
         """Edit Check - Suggesting a text correction"""        
-        #TODO: THIS TEST FAILS NOW, BUT SHOULDN'T
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         w.correcttext(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
                     

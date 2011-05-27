@@ -1169,9 +1169,10 @@ class Word(AbstractStructureElement):
         
             
     def correctannotation(self, original, new, **kwargs):
-        if not original in self:
-            kwargs['original'] = original
+        if not original in self:            
             raise Exception("Original not found!")
+        else:
+            kwargs['original'] = original
         kwargs['new'] = new
         if not 'id' in kwargs:
             kwargs['id'] = self.generate_id(Correction)
@@ -1339,7 +1340,7 @@ class Correction(AbstractElement):
 
     def __init__(self,  doc, *args, **kwargs):
         if not (('new' in kwargs and 'original' in kwargs) or (('suggestions' in kwargs or 'suggestion' in kwargs))):
-             raise Exception("Excepted either new= and original= arguments, or suggestions= and current= arguments.")
+             raise Exception("Expected either new= and original= arguments, or suggestions= and current= arguments.")
                          
         self.suggestions = []        
         if 'suggestion' in kwargs:             
