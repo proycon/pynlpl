@@ -349,7 +349,7 @@ class Test3Edit(unittest.TestCase):
     def test006_addcorrection(self):        
         """Edit Check - Correcting Text"""
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        w.correcttext(new='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+        w.correcttext(new='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
                     
         self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' ) 
         self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )     
@@ -362,7 +362,7 @@ class Test3Edit(unittest.TestCase):
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         oldpos = w.annotation(folia.PosAnnotation)
         newpos = folia.PosAnnotation(self.doc, cls='N(soort,ev,basis,zijd,stan)')
-        w.correctannotation(oldpos,newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+        w.correctannotation(oldpos,newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
                     
         self.assertEqual( w.annotation(folia.Correction).original[0] ,oldpos ) 
         self.assertEqual( w.annotation(folia.Correction).new[0] ,newpos )     
@@ -370,7 +370,7 @@ class Test3Edit(unittest.TestCase):
     def test008_addsuggestion(self):
         """Edit Check - Suggesting a text correction"""        
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        w.correcttext(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
+        w.correcttext(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
                     
         self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
         self.assertEqual( w.annotation(folia.Correction).suggestions[0].text() , 'stippellijn' )
@@ -538,6 +538,32 @@ class Test5Correction(unittest.TestCase):
             s.insertword( folia.Word(self.doc, id=self.doc.id+'.s.1.w.3b',text='groot'),  self.doc.index[self.doc.id + '.s.1.w.3'])
             self.assertEqual( len(s.words()), 6 )
 
+        def test005_reusecorrection(self):     
+            """Correction - Re-using a correction with only suggestions"""
+            global FOLIAEXAMPLE
+            self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
+            
+            w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
+            w.correcttext(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
+            c = w.annotation(folia.Correction)
+                    
+            self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
+            self.assertEqual( w.annotation(folia.Correction).suggestions[0].text() , 'stippellijn' )
+            self.assertEqual( w.text(), 'stippelijn')  
+            
+            w.correcttext(new='stippellijn',set='corrections',cls='spelling',annotator='John Doe', annotatortype=folia.AnnotatorType.MANUAL,reuse=c.id)
+            
+            self.assertEqual( w.text(), 'stippellijn')    
+            self.assertEqual( len(list(w.annotations(folia.Correction))), 1 )
+            self.assertEqual( w.annotation(folia.Correction).suggestions[0].text() , 'stippellijn' )
+            self.assertEqual( w.annotation(folia.Correction).suggestions[0].annotator , 'testscript' )
+            self.assertEqual( w.annotation(folia.Correction).suggestions[0].annotatortype , folia.AnnotatorType.AUTO)
+            self.assertEqual( w.annotation(folia.Correction).new[0] , 'stippellijn' )
+            self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
+            self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
+            
+            
+            
             
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
