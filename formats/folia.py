@@ -312,7 +312,12 @@ class AbstractElement(object):
                 return s.strip()
             else:                
                 return self.uncorrectedtext()
-    
+
+    def copy(self):
+        """Make a deep copy"""
+        #TODO
+        return None
+                            
     def __str__(self):
         return unicode(self).encode('utf-8')
         
@@ -1793,8 +1798,7 @@ class Sentence(AbstractStructureElement):
         
         if 'suggest' in kwargs and kwargs['suggest']:            
             kwargs['suggestion'] = Suggestion(self.doc, *newwords)
-            kwargs['current'] = originalword
-            del kwargs['suggest']
+            kwargs['current'] = originalword        
         elif 'reuse' in kwargs and kwargs['reuse']:            
             if not 'new' in kwargs:
                 kwargs['new'] = newwords    
@@ -1806,6 +1810,10 @@ class Sentence(AbstractStructureElement):
         else:            
             if not 'new' in kwargs:
                 kwargs['new'] = newwords
+
+        if 'suggest' in kwargs:
+            del kwargs['suggest']
+                
         insertindex = self.data.index(originalword)        
         c = Correction(self.doc, **kwargs)
         originalword.parent = c
@@ -1826,10 +1834,9 @@ class Sentence(AbstractStructureElement):
         if not 'id' in kwargs and not 'generate_id_in' in kwargs:
             kwargs['generate_id_in'] = self
                 
-        if 'suggest' in kwargs and kwargs['suggest']:            
+        if 'suggest' in kwargs and kwargs['suggest']:
             kwargs['suggestion'] = Suggestion(self.doc, newword)
-            kwargs['current'] = originalwords
-            del kwargs['suggest']
+            kwargs['current'] = originalwords            
         elif 'reuse' in kwargs and kwargs['reuse']:
             kwargs['original'] = originalwords                
             if not 'new' in kwargs:
@@ -1843,6 +1850,9 @@ class Sentence(AbstractStructureElement):
             kwargs['original'] = originalwords                
             if not 'new' in kwargs:
                 kwargs['new'] = newword    
+
+        if 'suggest' in kwargs:
+            del kwargs['suggest']
                         
         insertindex = self.data.index(originalwords[0])        
         c = Correction(self.doc, **kwargs)
@@ -1865,13 +1875,15 @@ class Sentence(AbstractStructureElement):
         if 'suggest' in kwargs and kwargs['suggest']:            
             kwargs['current'] = word
             kwargs['suggestions'] = []
-            del kwargs['suggest']
         else:            
             kwargs['original'] = word
             kwargs['new'] = []
             
         if not 'id' in kwargs and not 'generate_id_in' in kwargs:
             kwargs['generate_id_in'] = self
+            
+        if 'suggest' in kwargs:
+            del kwargs['suggest']            
             
         insertindex = self.data.index(word)        
         c = Correction(self.doc, **kwargs)
@@ -1893,13 +1905,16 @@ class Sentence(AbstractStructureElement):
         
         if 'suggest' in kwargs and kwargs['suggest']:            
             kwargs['suggestion'] = newword
-            del kwargs['suggest']
         else:
             kwargs['original'] = []
             kwargs['new'] = newword
         
         if not 'id' in kwargs and not 'generate_id_in' in kwargs:
             kwargs['generate_id_in'] = self
+            
+        if 'suggest' in kwargs:
+            del kwargs['suggest']            
+            
         c = Correction(self.doc, **kwargs)
         self.data.insert( insertindex, c )
         c.parent = self
