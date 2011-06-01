@@ -172,7 +172,6 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( len(c.new()), 1) 
         self.assertEqual( len(c.original()), 1) 
         
-        import pdb; pdb.set_trace()
         self.assertEqual( w.text(), 'vierkante')
         self.assertEqual( c.new(0), 'vierkante') 
         self.assertEqual( c.original(0) , 'vierkant') 
