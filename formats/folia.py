@@ -4,7 +4,7 @@
 #   http://ilk.uvt.nl/~mvgompel
 #   proycon AT anaproy DOT nl
 #
-#   Module for reading and writing FoLiA XML
+#   Module for reading, editing and writing FoLiA XML
 #
 #   Licensed under GPLv3
 #
@@ -211,8 +211,8 @@ class AbstractElement(object):
     ACCEPTED_DATA = () #List of accepted data, classes inherited from AbstractElement
     ANNOTATIONTYPE = None #Annotation type (Member of AnnotationType class)
     XMLTAG = None #XML-tag associated with this element
-    OCCURENCES = 0 #Number of times this element may occur in its parent (0=unlimited, default=0)
-    OCCURENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
+    OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited, default=0)
+    OCCURRENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
 
     MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.UNCORRECTED #Specifies the minimum text correction level allowed (only if allowed at all in ACCEPTED_DATA), this will be the default for any textcontent set
     TEXTDELIMITER = " " #Delimiter to use when dynamically gathering text from child elements
@@ -247,6 +247,9 @@ class AbstractElement(object):
             - If that yields no text, it will resort to the original uncorrected text
             - If none is found, a NoSuchText exception is raised.
         """
+        
+        #TODO: Implement handling of INLINE corrected textcontent
+        
         if not (corrected is None):
             if self.MINTEXTCORRECTIONLEVEL > corrected:
                 raise NotImplementedError("No such text allowed for " + self.__class__.__name__) #on purpose        
@@ -328,7 +331,7 @@ class AbstractElement(object):
     def addable(Class, parent, set=None, raiseexceptions=True):
         """Tests whether a new element of this class can be added to the parent. Returns a boolean or raises ValueError exceptions (unless set to ignore)!
         
-         This will use OCCURENCES, but may be overidden for more customised behaviour"""
+         This will use OCCURRENCES, but may be overidden for more customised behaviour"""
         
         if not Class in parent.ACCEPTED_DATA and not Class.__base__ in parent.ACCEPTED_DATA:
             if raiseexceptions: 
@@ -336,10 +339,10 @@ class AbstractElement(object):
             else:
                 return False
                 
-        if Class.OCCURENCES > 0:
+        if Class.OCCURRENCES > 0:
             #check if the parent doesn't have too many already
             count = len(list(parent.select(Class,None,False))) #non recursive
-            if count > Class.OCCURENCES:
+            if count > Class.OCCURRENCES:
                 if raiseexceptions:
                     raise ValueError("Unable to add another object of type " + child.__class__.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum.")                
                 else:
@@ -347,7 +350,7 @@ class AbstractElement(object):
             
             if set and Attrib.ID in REQUIRED_ATTRIBS:
                 count = len(list(parent.select(Class,set,False))) #non recursive
-                if count > Class.OCCURENCESPERSET:
+                if count > Class.OCCURRENCESPERSET:
                     if raiseexceptions:
                         raise ValueError("Unable to add another object of set " + set + " and  type " + child.__class__.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum for the set.")                
                     else:
@@ -372,9 +375,8 @@ class AbstractElement(object):
         If a *class* derived from AbstractElement is passed as first argument, an instance will first be created and then appended.
                     
         Keyword arguments:
-            alternative     - If set to True, the *replaced* element will be made into an alternative. Simply use append() if you want the added element
-            to be an alternative.   
-            
+            alternative     - If set to True, the element will be made into an alternative. 
+            corrected       - Used only when passing strings to be made into TextContent elements.
         """
         
         
@@ -406,7 +408,10 @@ class AbstractElement(object):
             child.parent = self    
         elif isinstance(child,str) or isinstance(child,unicode) and TextContent in self.ACCEPTED_DATA:
             #you can pass strings directly (just for convenience), will be made into textcontent automatically.
-            child = TextContent(self.doc, child) #MAYBE TODO: corrected attribute?
+            if 'corrected' in kwargs:
+                child = TextContent(self.doc, child, corrected=kwargs['corrected'] ) #MAYBE TODO: corrected attribute?
+            else: 
+                child = TextContent(self.doc, child, corrected=self.MINTEXTCORRECTIONLEVEL )
             self.data.append(child)
             child.parent = self
         else:
@@ -507,11 +512,24 @@ class AbstractElement(object):
         e  = E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
         
             
-        #append children:
         if not skipchildren and self.data:
+            #append children,
+            # we want make sure that text elements are in the right order,
+            # so we first put them in  a list
+            textelements = []
+            otherelements = []
             for child in self:
+                if isinstance(child, TextContent):
+                    if child.corrected == TextCorrectionLevel.UNCORRECTED:
+                        textelements.insert(0, child)                
+                    else:
+                        textelements.append(child)                
+                else:
+                    otherelements.append(child)
+            for child in textelements+otherelements:
                 e.append(child.xml())
-        if elements:
+        
+        if elements: #extra elements
             for e2 in elements:
                 e.append(e2)
         return e
@@ -884,7 +902,12 @@ class TextContent(AbstractElement):
     
     def __init__(self, doc, *args, **kwargs):
         if not 'value' in kwargs:
-            raise Exception("TextContent expects value= parameter")
+            if args and (isinstance(args[0], unicode) or isinstance(args[0], str)):
+                kwargs['value'] = args[0]
+                del args[0]
+            else:
+                raise Exception("TextContent expects value= parameter")
+            
         
         if isinstance(kwargs['value'], unicode):
             self.value = kwargs['value']   
@@ -1362,7 +1385,7 @@ class AbstractAnnotation(AbstractElement):
                 return f.cls
 
 class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID): 
-    OCCURENCESPERSET = 1 #Do not allow duplicates within the same set
+    OCCURRENCESPERSET = 1 #Do not allow duplicates within the same set
 
     def append(self, child):
         super(AbstractTokenAnnotation,self).append(child)
@@ -1372,7 +1395,7 @@ class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation):
     pass
     
 class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID): 
-    OCCURENCESPERSET = 0 #Allow duplicates within the same set
+    OCCURRENCESPERSET = 0 #Allow duplicates within the same set
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
@@ -1412,7 +1435,6 @@ class AbstractAnnotationLayer(AbstractElement):
 
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
-    ANNOTATIONTYPE = AnnotationType.SUGGESTION
     ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent)
     
 
@@ -1420,7 +1442,7 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
     XMLTAG = 'errordetection'
-    OCCURENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
+    OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     
     def __init__(self,  doc, *args, **kwargs):
         if 'error' in kwargs:            
@@ -1444,122 +1466,59 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
     
             
                         
-class Suggestion(AbstractElement):
+class Suggestion(AbstractCorrectionChild):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.SUGGESTION
-    ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent)
     XMLTAG = 'suggestion'
-    OCCURENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
+    OCCURRENCES = 0 #unlimited
+    OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
 
+class New(AbstractCorrectionChild):
+    REQUIRED_ATTRIBS = (),
+    OPTIONAL_ATTRIBS = (),    
+    OCCURRENCES = 1
+    XMLTAG = 'new'
     
+class Original(AbstractCorrectionChild):
+    REQUIRED_ATTRIBS = (),
+    OPTIONAL_ATTRIBS = (),    
+    OCCURRENCES = 1
+    XMLTAG = 'original'
+    
+class Current(AbstractCorrectionChild):
+    REQUIRED_ATTRIBS = (),
+    OPTIONAL_ATTRIBS = (),    
+    OCCURRENCES = 1
+    XMLTAG = 'current'         
             
 class Correction(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ACCEPTED_DATA = (New,Original,Current, Suggestion)
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
-    OCCURENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
+    OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
 
 
     def __init__(self,  doc, *args, **kwargs):
         if not (('new' in kwargs and 'original' in kwargs) or (('suggestions' in kwargs or 'suggestion' in kwargs))):
              raise Exception("Expected either new= and original= arguments, or suggestions= and current= arguments.")
-                         
-        self.suggestions = []        
-        if 'suggestion' in kwargs:             
-            kwargs['suggestions'] = [ kwargs['suggestion'] ]
-            del kwargs['suggestion']
-            
-        if 'suggestions' in kwargs: 
-            for suggestion in kwargs['suggestions']:
-                self.addsuggestion(suggestion)          
-            del kwargs['suggestions']            
-                    
-        if 'current' in kwargs:            
-            self.setcurrent(kwargs['current'])
-            del kwargs['current']
-        else:
-            self.current = []
-        
-        if 'new' in kwargs:
-            self.setnew(kwargs['new'])
-            del kwargs['new'] 
-        else:
-            self.new = []            
-            
-        if 'original' in kwargs:
-            self.setoriginal(kwargs['original'])
-            del kwargs['original'] 
-        else:
-            self.original = []
-            
-            
-        if self.new and self.original and self.new[0].__class__ != self.original[0].__class__:
-            raise Exception("New and Original are of different types!")             
+        elif 'current' in kwargs and ('new' in kwargs or 'original' in kwargs):
+             raise Exception("Can't set current= with new= or original=")            
         super(Correction,self).__init__(doc, *args, **kwargs)
         
-
-    def setnew(self, e):
-        if isinstance(e, AbstractElement) or isinstance(e, unicode):
-            self.new = [ e ]
-        elif isinstance(e, TextContent):
-            self.new = [ e.value ]                
-        elif isinstance(e, str):
-            self.new = [ unicode(e,'utf-8') ]
-        elif isinstance(e, list) or isinstance(e, tuple):                
-            self.new =e
-        else:
-            raise Exception("Invalid type for new: " + repr(e))
-        for x in self.new:
-            if isinstance(x, AbstractElement):
-                x.parent = self              
-
-    def setcurrent(self, e):
-        if isinstance(e, AbstractElement) or isinstance(e, unicode):
-            self.current = [ e ]
-        elif isinstance(e, TextContent):
-            self.current = [ e.value ]                
-        elif isinstance(e, str):
-            self.current = [ unicode(e,'utf-8') ]
-        elif isinstance(e, list) or isinstance(e, tuple):                
-            self.current = e
-        else:
-            raise Exception("Invalid type for current: " + repr(e))
-        for x in self.current:
-            if isinstance(x, AbstractElement):
-                x.parent = self  
-
-
-    def setoriginal(self, e):            
-        if isinstance(e, AbstractElement) or isinstance(e, unicode):
-            self.original = [ e ]
-        elif isinstance(e, TextContent):
-            self.original = [ e.value ]                
-        elif isinstance(e, str):
-            self.original = [ unicode(e,'utf-8') ]
-        elif isinstance(e, list) or isinstance(e, tuple):                
-            self.original = e
-        else:
-            raise Exception("Invalid type for original: " + repr(e))
-        for x in self.original:
-            if isinstance(x, AbstractElement):
-                x.parent = self            
+    def new():
+        return self.select(New,None,False)
         
-    def addsuggestion(self, suggestion, **kwargs):
-        if isinstance(suggestion, TextContent) or isinstance(suggestion, AbstractTokenAnnotation):    
-            child = suggestion
-            suggestion = Suggestion(child, **kwargs)
-            child.parent = suggestion
-        elif isinstance(suggestion, str) or isinstance(suggestion, unicode):    
-            suggestion = Suggestion(TextContent(self.doc, value=suggestion, corrected=True, **kwargs))
-        elif not isinstance(suggestion, Suggestion):
-            raise Exception("Suggestion has to be of type Suggestion, got " + str(type(suggestion)))                
-        self.suggestions.append(suggestion)
-        suggestion.parent = self      
-        #print "DEBUG: ",  suggestion, type(suggestion), len(suggestion)
-        for x in suggestion:
-            #print 'DEBUG:    ', x, type(x), len(x), type(x.parent)            
-            x.parent = suggestion
+    def original():
+        return self.select(Original,None,False, False)
+        
+    def current():
+        return self.select(Current,None,False)        
+    
+    def suggestions():
+        return self.select(Suggestion,None,False, False)    
+              
             
     def __unicode__(self):
         s = ""
@@ -1588,131 +1547,19 @@ class Correction(AbstractElement):
         return s
         
     
-        
-
-    def xml(self, attribs = None, elements = None, skipchildren = False):
-        if not attribs: attribs = {}
-        if not elements: elements = []
-        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
-        if self.current:
-            elements.append( E.current( *[ x.xml() for x in self.current ] ) ) 
-        elif self.new or self.original:
-            elements.append( E.new( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.new ] ) ) 
-            elements.append( E.original( *[ x.xml() if isinstance(x, AbstractElement) else E.t(x) for x in self.original ] ) )    
-        if self.suggestions:
-            for suggestion in self.suggestions:
-                elements.append( suggestion.xml() )
-        
-        return super(Correction,self).xml(attribs,elements, True)  
-
     def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
         """Select on Correction only descends in either "NEW" or "CURRENT" branch"""
-        l = []
-        if not node:
-            node = self  
-        
-        if self.new:
-            source = self.new
-        elif self.current:
-            source = self.current
+        if ignorelist is False:
+            #to override and go into all branches, set ignorelist explictly to False
+            return super(Correction,self).select(cls,set,recursive, ignorelist, node)
         else:
-            return l #empty list
-            
-        for e in source:
-            ignore = False                            
-            for c in ignorelist:
-                if c == e.__class__ or issubclass(e.__class__,c):
-                    ignore = True
-                    break
-            if ignore: 
-                continue
+            ignorelist = copy(ignorelist) #we don't want to alter an passed ignorelist (by ref)
+            ignorelist.append(Original)
+            ignorelist.append(Suggestion)
+            return super(Correction,self).select(cls,set,recursive, ignorelist, node)
         
-            if isinstance(e, cls):                
-                if not set is None:
-                    try:
-                        if e.set != set:
-                            continue
-                    except:
-                        continue
-                l.append(e)
-            if recursive and isinstance(e, AbstractElement):
-                for e2 in e.select(cls, set, recursive, ignorelist, e):
-                    if not set is None:
-                        try:
-                            if e2.set != set:
-                                continue
-                        except:
-                            continue
-                    l.append(e2)                    
-        return l
-        
+Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction)
 
-    @classmethod
-    def parsexml(Class, node, doc):
-        assert issubclass(Class, AbstractElement)
-        global NSFOLIA
-        nslen = len(NSFOLIA) + 2
-        args = []
-        kwargs = {}
-        kwargs['original'] = []
-        kwargs['new'] = []
-        kwargs['current'] = []
-        kwargs['suggestions'] = []
-        for subnode in node:
-             if subnode.tag == '{' + NSFOLIA + '}original':                        
-                if len(subnode) == 1:
-                    if subnode[0].tag == '{' + NSFOLIA + '}t':
-                        kwargs['original'] = [ subnode[0].text ]
-                    else:
-                        kwargs['original'] = [ doc.parsexml(subnode[0]) ]
-                else:
-                    kwargs['original'] = [ doc.parsexml(x) for x in subnode ] 
-             elif subnode.tag == '{' + NSFOLIA + '}new':
-                if len(subnode) == 1:
-                    if subnode[0].tag == '{' + NSFOLIA + '}t':
-                        kwargs['new'] = [ subnode[0].text ]
-                    else:
-                        kwargs['new'] = [ ( doc.parsexml(subnode[0]) ) ]
-                else:
-                    kwargs['new'] = [ doc.parsexml(x) for x in subnode ] 
-             elif subnode.tag == '{' + NSFOLIA + '}suggestion':
-                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode suggestion"
-                 kwargs['suggestions'].append( doc.parsexml(subnode) )
-             elif subnode.tag == '{' + NSFOLIA + '}current':
-                if len(subnode) == 1:
-                    if subnode[0].tag == '{' + NSFOLIA + '}t':
-                        kwargs['current'] = [ subnode[0].text ]
-                    else:
-                        kwargs['current'] = [ ( doc.parsexml(subnode[0]) ) ]
-                else:
-                    kwargs['current'] = [ doc.parsexml(x) for x in subnode ] 
-             elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
-                if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
-                args.append( doc.parsexml(subnode) )
-             elif doc.debug >= 1:
-                print >>stderr, "[PyNLPl FoLiA DEBUG] Ignoring subnode outside of FoLiA namespace: " + subnode.tag
-                    
-        id = None
-        for key, value in node.attrib.items():
-            if key == '{http://www.w3.org/XML/1998/namespace}id':
-                id = value
-                key = 'id'
-            elif key[:nslen] == '{' + NSFOLIA + '}':
-                key = key[nslen:]
-            kwargs[key] = value                                    
-        
-        if not kwargs['current']:
-            del kwargs['current']
-        if not kwargs['suggestions']:
-            del kwargs['suggestions']
-    
-    
-                                
-        if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
-        instance = Class(doc, *args, **kwargs)
-        if id:
-            doc.index[value] = instance
-        return instance   
             
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -2054,18 +1901,7 @@ class Paragraph(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent)
     XMLTAG = 'p'
-    
-    
-     
-        
-    def __unicode__(self):
-        p = u" ".join( ( unicode(x) for x in self.data if isinstance(x, Sentence) ) )
-        if not p and self.text:
-            return self.text            
-        return p
-
-    def __str__(self):    
-        return unicode(self).encode('utf-8')        
+    TEXTDELIMITER = "\n"
     
     def sentences(self):
         return self.select(Sentence)
@@ -2078,6 +1914,7 @@ class Head(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Sentence,)
+    TEXTDELIMITER = ' '
     XMLTAG = 'head'          
     
     def __init__(self, doc, *args, **kwargs):
@@ -2088,15 +1925,6 @@ class Head(AbstractStructureElement):
             self.text = None 
         super(Head, self).__init__(doc, *args, **kwargs)    
         
-    def __unicode__(self):
-        p = u" ".join( ( unicode(x) for x in self.data if isinstance(x, Sentence) ) )
-        if not p and self.text:
-            return self.text            
-        return p
-
-
-
-
 class Query(object):
     """An XPath query on FoLiA"""
     def __init__(self, node, expression):
@@ -2106,10 +1934,6 @@ class Query(object):
     def __iter__(self):
         raise NotImplementedError
         
-
-
-
-
 
 class Document(object):
     
