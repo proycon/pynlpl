@@ -268,17 +268,31 @@ class AbstractElement(object):
                 #try to get text dynamically from children
                 s = ""
                 for e in self:
-                    try:                    
-                        s += unicode(e) + TEXTDELIMITER
+                    try:                  
+                        delimiter = e.overridetextdelimiter()
+                        if delimiter is None:
+                            delimiter = self.TEXTDELIMITER #default delimiter set by parent
+                        s += unicode(e) + delimiter
                     except:
                         continue                
-                if s.strip() == "":
-                    #Resort to original uncorrected text
+                        
+                if s.strip():
+                    return s
+                elif self.MINTEXTCORRECTIONLEVEL <= TextCorrectionLevel.UNCORRECTED:
+                    #Resort to original uncorrected text (if available)
                     return self.text(TextCorrectionLevel.UNCORRECTED)
+                else:
+                    #No text
+                    raise NoSuchText
                       
     def originaltext(self):
         """Alias for uncorrectedtext"""
         return self.text(TextCorrectionLevel.UNCORRECTED)
+        
+    def overridetextdelimiter(self):
+        """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override)"""
+        return None #do not override
+        
     
     def __len__(self):
         return len(self.data)
@@ -319,9 +333,9 @@ class AbstractElement(object):
         """Does this element have text?"""
         if corrected is None:
             #regardless of correctionlevel:
-            return (len(self.selection(TextContent,None,False)) > 0)
+            return (len(self.select(TextContent,None,False)) > 0)
         else:
-            return (len([ x for x in self.selection(TextContent,None,False) if x.corrected == corrected]) > 0)            
+            return (len([ x for x in self.select(TextContent,None,False) if x.corrected == corrected]) > 0)            
     
             
     def settext(self, text, corrected=MINTEXTCORRECTIONLEVEL):
@@ -897,6 +911,22 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         else:
             return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])[index]
 
+class AbstractAnnotation(AbstractElement):
+    def feat(self,subset):
+        for f in self:
+            if isinstance(f, Feature) and f.subset == subset:
+                return f.cls
+
+class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID): 
+    OCCURRENCESPERSET = 1 #Do not allow duplicates within the same set
+
+    def append(self, child):
+        super(AbstractTokenAnnotation,self).append(child)
+        self._setmaxid(child)
+
+class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation): 
+    pass
+
 class TextContent(AbstractElement):
     XMLTAG = 't'
     
@@ -970,6 +1000,13 @@ class TextContent(AbstractElement):
                 self.ref = self.parent.parent
         except:
             pass
+            
+        if self.corrected == TextCorrectionLevel.UNCORRECTED or self.corrected == TextCorrectionLevel.CORRECTED:
+            #there can be only one of this type.
+            for child in self.parent:
+                if not child is self and isinstance(child, TextContent) and child.corrected == self.corrected:            
+                    raise DuplicateAnnotationError("Text element with same corrected status (except for inline) may not occur multiple times!")
+            
     
     def __iter__(self):
         return iter(self.value)
@@ -995,7 +1032,7 @@ class TextContent(AbstractElement):
         nslen = len(NSFOLIA) + 2
         args = []
         kwargs = {}
-        kwargs['corrected'] = False
+        kwargs['corrected'] = TextCorrectionLevel.UNCORRECTED
         if 'corrected' in node.attrib:
             if node.attrib['corrected'] == 'yes':
                 kwargs['corrected'] = TextCorrectionLevel.CORRECTED
@@ -1044,6 +1081,7 @@ class Word(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     XMLTAG = 'w'
     ANNOTATIONTYPE = AnnotationType.TOKEN
+    ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent)
     
     MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.CORRECTED
     
@@ -1056,56 +1094,6 @@ class Word(AbstractStructureElement):
         super(Word,self).__init__(doc, *args, **kwargs)
                 
         
-    
-    def append(self, child):
-        if isinstance(child, AbstractTokenAnnotation) or isinstance(child, Alternative) or isinstance(child, Correction):
-            if isinstance(child, Correction):
-                #TODO: replace other child within the same set
-                #TODO: make sure there are not other corrections on the same thing 
-                
-                conflicts = []                
-                
-                #Are there correction already?
-                if self.hasannotation(Correction):
-                    #are there conflicts with the correction that is about to be added?
-                    corrections = self.annotations(Correction)
-                    for correction in corrections:            
-                        for element1 in child.new:
-                            for element2 in correction.new:
-                                if element1.__class__ == element2.__class__:
-                                    if element1.set == element2.set:
-                                        if not correction in conflicts:
-                                            conflicts.append(correction)
-                                            break                
-                
-                if conflicts:
-                    if len(conflicts) >= 2:
-                        raise Exception("Unable to add correction. Unresolvable conflict with existing corrections")                                
-                    else:                        
-                        conflict = conflicts[0]
-                        if conflict.new == child.original:
-                            #good, we can nest
-                            #TODO: ID trouble?
-                            self.data.remove(conflict)
-                            child.original = [conflict]                                                        
-                        else:
-                            raise Exception("Unable to add correction. Unresolvable conflict with existing correction")                                
-                
-            elif isinstance(child, AbstractTokenAnnotation):
-                #sanity check, there may be no other child within the same set
-                try:
-                    if not child.ALLOWDUPLICATES:
-                        self.annotation(child.__class__, child.set)
-                        raise DuplicateAnnotationError
-                except NoSuchAnnotation:
-                    #good, that's what we want
-                    pass
-            self.data.append(child)
-            child.parent = self
-            self._setmaxid(child)
-        else:
-            raise TypeError("Invalid type for Word:" + str(type(child)))
-
 
     def sentence(self):
         #return the sentence this word is a part of, otherwise return None
@@ -1166,12 +1154,13 @@ class Word(AbstractStructureElement):
     def domain(self,set=None):
         return self.annotation(DomainAnnotation,set)        
 
+    def overridetextdelimiter(self):
+        """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override)"""
+        if word.space:
+            return ' '
+        else:
+            return ''
 
-    def settext(self, text, corrected=True):
-        if isinstance(text, TextContent) and not text.corrected:
-            raise Exception("Can only add text content with corrected=yes")
-        return super(Word,self).settext(text,True)
-        
     def resolveword(self, id):
         if id == self.id:
             return self
@@ -1272,15 +1261,15 @@ class Word(AbstractStructureElement):
                         suggestion.annotatortype = c.annotatortype
                                             
             if 'new' in kwargs:
-                c.setnew(kwargs['new'])      
+                c.replace(kwargs['new'])      
             if 'original' in kwargs:
-                c.setoriginal(kwargs['original'])
+                c.replace(kwargs['original'])
             if 'current' in kwargs:
                 if 'original' in kwargs or 'new' in kwargs: raise Exception("When setting current=, original= and new= can not be set!") 
-                c.setcurrent(kwargs['current'])
+                c.replace(kwargs['current'])
             if 'suggestions' in kwargs:
                 for suggestion in kwargs['suggestions']:
-                    c.addsuggestion(suggestion)
+                    c.append(suggestion)
                     
             if 'annotator' in kwargs:
                 c.annotator = kwargs['annotator']
@@ -1293,7 +1282,7 @@ class Word(AbstractStructureElement):
             c = Correction(self.doc, **kwargs)
             self.append( c )    
         if 'new' in kwargs:
-            self.settext(kwargs['new'])
+            self.replace(kwargs['new'], corrected=TextCorrectionLevel.CORRECTED)
         
         return c 
         
@@ -1378,21 +1367,7 @@ class Feature(AbstractElement):
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.Element(E.attribute(name='subset'), E.attribute(name='class'), E.empty(),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
 
-class AbstractAnnotation(AbstractElement):
-    def feat(self,subset):
-        for f in self:
-            if isinstance(f, Feature) and f.subset == subset:
-                return f.cls
 
-class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID): 
-    OCCURRENCESPERSET = 1 #Do not allow duplicates within the same set
-
-    def append(self, child):
-        super(AbstractTokenAnnotation,self).append(child)
-        self._setmaxid(child)
-
-class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation): 
-    pass
     
 class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID): 
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
@@ -1479,17 +1454,48 @@ class New(AbstractCorrectionChild):
     OCCURRENCES = 1
     XMLTAG = 'new'
     
+    @classmethod
+    def addable(Class, parent, set=None, raiseexceptions=True):
+        if not super(New,Class).addable(parent,set,raiseexceptions): return False
+        if any( ( isinstance(c, Current) for c in parent ) ):
+            if raiseexceptions:
+                raise ValueError("Can't add New element to Correction if there is a Current item")
+            else:
+                return False
+        return True
+    
 class Original(AbstractCorrectionChild):
     REQUIRED_ATTRIBS = (),
     OPTIONAL_ATTRIBS = (),    
     OCCURRENCES = 1
     XMLTAG = 'original'
     
+    @classmethod
+    def addable(Class, parent, set=None, raiseexceptions=True):
+        if not super(New,Class).addable(parent,set,raiseexceptions): return False        
+        if any( ( isinstance(c, Current)  for c in parent ) ):
+             if raiseexceptions:
+                raise Exception("Can't add Original item to Correction if there is a Current item")
+             else: 
+                return False
+        return True    
+    
+    
 class Current(AbstractCorrectionChild):
     REQUIRED_ATTRIBS = (),
     OPTIONAL_ATTRIBS = (),    
     OCCURRENCES = 1
     XMLTAG = 'current'         
+    
+    @classmethod
+    def addable(Class, parent, set=None, raiseexceptions=True):
+        if not super(New,Class).addable(parent,set,raiseexceptions): return False
+        if any( ( isinstance(c, New) or isinstance(c, Original) for c in parent ) ):
+            if raiseexceptions:
+                raise Exception("Can't add Current element to Correction if there is a New or Original element")
+            else: 
+                return False
+        return True    
             
 class Correction(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -1498,14 +1504,6 @@ class Correction(AbstractElement):
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
-
-
-    def __init__(self,  doc, *args, **kwargs):
-        if not (('new' in kwargs and 'original' in kwargs) or (('suggestions' in kwargs or 'suggestion' in kwargs))):
-             raise Exception("Expected either new= and original= arguments, or suggestions= and current= arguments.")
-        elif 'current' in kwargs and ('new' in kwargs or 'original' in kwargs):
-             raise Exception("Can't set current= with new= or original=")            
-        super(Correction,self).__init__(doc, *args, **kwargs)
         
     def new():
         return self.select(New,None,False)
@@ -1521,30 +1519,9 @@ class Correction(AbstractElement):
               
             
     def __unicode__(self):
-        s = ""
-        if self.current:
-            for e in self.current:
-                try:
-                    if isinstance(e, Word):
-                        s += unicode(e)
-                        if e.space:
-                            s += ' '
-                    else:
-                        s += unicode(e)
-                except:
-                    continue
-        elif self.new:
-            for s in self.new:
-                try:
-                    if isinstance(e, Word):
-                        s += unicode(e)
-                        if e.space:
-                            s += ' '
-                    else:
-                        s += unicode(e)
-                except:
-                    continue
-        return s
+        for e in self:
+            if isinstance(e, New) or isinstance(e, Current):
+                return unicode(e)
         
     
     def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
@@ -1689,18 +1666,6 @@ class Quote(AbstractStructureElement):
     def __init__(self,  doc, *args, **kwargs):
         super(Quote,self).__init__(doc, *args, **kwargs)
 
-    def __unicode__(self):
-        s = u""
-        for e in self.data:
-            if isinstance(e, Word):
-                s += unicode(e)
-                if e.space:
-                    s += ' '
-            elif isinstance(e, Sentence):
-                s += unicode(e)
-        if not s and self.text:
-            return self.text            
-        return s
 
     def resolveword(self, id):
         for child in self:
@@ -1732,7 +1697,7 @@ class Sentence(AbstractStructureElement):
         return bool(self.select(Correction))
 
     def paragraph(self):
-        #return the sentence this sentence is a part of (None otherwise)
+        """return the paragraph this sentence is a part of (None otherwise)"""
         e = self;
         while e.parent: 
             if isinstance(e, Paragraph):
@@ -1741,7 +1706,7 @@ class Sentence(AbstractStructureElement):
         return None
  
     def division(self):
-        #return the division this sentence is a part of (None otherwise)
+        """return the division this sentence is a part of (None otherwise)"""
         e = self;
         while e.parent: 
             if isinstance(e, Division):
@@ -1914,16 +1879,9 @@ class Head(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Sentence,)
+    OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'          
-    
-    def __init__(self, doc, *args, **kwargs):
-        if 'text' in kwargs:
-            self.text = kwargs['text']
-            del kwargs['text']
-        else:
-            self.text = None 
-        super(Head, self).__init__(doc, *args, **kwargs)    
         
 class Query(object):
     """An XPath query on FoLiA"""
@@ -2366,34 +2324,12 @@ class Division(AbstractStructureElement):
     XMLTAG = 'div'
     ANNOTATIONTYPE = AnnotationType.DIVISION
 
-    def __init__(self, doc, *args, **kwargs):
-        if 'head' in kwargs:
-            if not isinstance(kwargs['head'], Head):
-                raise ValueError("Head must be of type Head")        
-            head = kwargs['head']
-            del kwargs['head']
-        else:
-            head = None
-        super(Division, self).__init__(doc, *args, **kwargs)
-        if head:
-            self.append(head)
-        
-    def append(self, element):        
-        if isinstance(element, Head):
-            if self.data and isinstance(self.data[0], Head): #There can be only one, replace:
-                self.data[0] = element
-            else:
-                self.data.insert(0, element)
-        
-            element.parent = self
-        else:
-            super(Division,self).append(element)
             
     def head(self):
-        if self.data and isinstance(self.data[0], Head):
-            return self.data[0]
-        else:
-            raise NoSuchAnnotation()
+        for e in self.data:
+            if isinstance(e, Head):
+                return e
+        raise NoSuchAnnotation()
             
     def paragraphs(self):            
         return self.select(Paragraph)
@@ -2414,7 +2350,7 @@ class Division(AbstractStructureElement):
         extraelements.append(E.optional( E.ref(name='head') ))
         return super(Division,cls).relaxng(includechildren, extraattribs , extraelements)
 
-Division.ACCEPTED_DATA = (Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation)
+Division.ACCEPTED_DATA = (Division, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation)
 
 class Text(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
