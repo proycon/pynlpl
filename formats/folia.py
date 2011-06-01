@@ -279,7 +279,7 @@ class AbstractElement(object):
                         if delimiter is None:
                             delimiter = self.TEXTDELIMITER #default delimiter set by parent
                         s += unicode(e) + delimiter
-                    except NoSuchText, NoText:
+                    except NoSuchText:
                         continue                
                         
                 if s.strip():
@@ -289,7 +289,7 @@ class AbstractElement(object):
                     return self.text(TextCorrectionLevel.UNCORRECTED)
                 else:
                     #No text
-                    raise NoText
+                    raise NoSuchText
                       
     def originaltext(self):
         """Alias for uncorrectedtext"""
@@ -432,13 +432,8 @@ class AbstractElement(object):
         elif args:            
             raise Exception("Too many arguments specified. Only possible when first argument is a class and not an instance")
         
-        #Do the actual appending
-        if Class or child.__class__.addable(self, set): #(prevents calling addable again if already done above)
-            if 'alternative' in kwargs and kwargs['alternative']:
-                child = Alternative(self.doc, child, generate_id_in=self)
-            self.data.append(child)
-            child.parent = self    
-        elif isinstance(child,str) or isinstance(child,unicode) and TextContent in self.ACCEPTED_DATA:
+        #Do the actual appending        
+        if not Class and (isinstance(child,str) or isinstance(child,unicode)) and TextContent in self.ACCEPTED_DATA:
             #you can pass strings directly (just for convenience), will be made into textcontent automatically.
             if 'corrected' in kwargs:
                 child = TextContent(self.doc, child, corrected=kwargs['corrected'] ) #MAYBE TODO: corrected attribute?
@@ -446,6 +441,11 @@ class AbstractElement(object):
                 child = TextContent(self.doc, child, corrected=self.MINTEXTCORRECTIONLEVEL )
             self.data.append(child)
             child.parent = self
+        elif Class or child.__class__.addable(self, set): #(prevents calling addable again if already done above)
+            if 'alternative' in kwargs and kwargs['alternative']:
+                child = Alternative(self.doc, child, generate_id_in=self)
+            self.data.append(child)
+            child.parent = self                
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ + ". Type not allowed as child.")
 
@@ -912,8 +912,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         return None          
         
     def append(self, child, *args, **kwargs):
-        super(AbstractStructureElement,self).append(child, *args, **kwargs)
+        e = super(AbstractStructureElement,self).append(child, *args, **kwargs)
         self._setmaxid(child)     
+        return e
                 
 
     def words(self, index = None):        
@@ -944,8 +945,9 @@ class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID):
     OCCURRENCESPERSET = 1 #Do not allow duplicates within the same set
 
     def append(self, child, *args, **kwargs):
-        super(AbstractTokenAnnotation,self).append(child, *args, **kwargs)
+        e = super(AbstractTokenAnnotation,self).append(child, *args, **kwargs)
         self._setmaxid(child)
+        return e
 
 class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation): 
     pass
@@ -957,7 +959,7 @@ class TextContent(AbstractElement):
         if not 'value' in kwargs:
             if args and (isinstance(args[0], unicode) or isinstance(args[0], str)):
                 kwargs['value'] = args[0]
-                del args[0]
+                args = args[1:]
             else:
                 raise Exception("TextContent expects value= parameter")
             
@@ -1436,9 +1438,8 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
     def append(self, child, *args, **kwargs):
         if isinstance(child, Word) and WordReference in self.ACCEPTED_DATA:
             #Accept Word instances instead of WordReference, references will be automagically used upon serialisation
-            self.data.append(child, *args, **kwargs)
-            child.parent = self
-            self._setmaxid(child)
+            self.data.append(child)
+            return child
         else:
             return super(AbstractSpanAnnotation,self).append(child)    
             
@@ -1618,6 +1619,18 @@ class WordReference(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     XMLTAG = 'wref'
     ANNOTATIONTYPE = AnnotationType.TOKEN
+    
+    def __init__(self, doc, *args, **kwargs):
+        #Special constructor, not calling super constructor
+        if not 'id' in kwargs:
+            raise Exception("ID required for WordReference")
+        assert(isinstance(doc,Document))
+        self.doc = doc
+        self.id = kwargs['id']
+        self.annotator = None
+        self.annotatortype = None
+        self.confidence = None
+        self.n = None
     
     @classmethod
     def parsexml(Class, node, doc):
@@ -2045,6 +2058,7 @@ class Document(object):
     def append(self,text):
         assert isinstance(text, Text)
         self.data.append(text)
+        return text
 
     def create(self, Class, *args, **kwargs):
         """Create an element associated with this Document"""

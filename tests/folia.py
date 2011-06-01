@@ -220,8 +220,10 @@ class Test2Sanity(unittest.TestCase):
         #use diff to compare the two:
         retcode = os.system('diff -w -c /tmp/foliatest.xml /tmp/foliasavetest.xml')
         self.assertEqual( retcode, 0)
+
+
         
-class Test3Edit(unittest.TestCase):
+class Test4Edit(unittest.TestCase):
         
     def setUp(self):
         global FOLIAEXAMPLE
@@ -229,14 +231,14 @@ class Test3Edit(unittest.TestCase):
 
     
     def test001_addsentence(self):        
-        """Edit Check - Adding a sentence to last paragraph"""
+        """Edit Check - Adding a sentence to last paragraph (verbose)"""
         
         #grab last paragraph
         p = self.doc.paragraphs(-1)
                     
         #how many sentences?
-        tmp = len(p)
-                    
+        tmp = len(p.sentences())
+         
         #make a sentence            
         s = folia.Sentence(self.doc, generate_id_in=p)
         #add words to the sentence
@@ -268,11 +270,55 @@ class Test3Edit(unittest.TestCase):
         self.assertEqual( s[0].annotatortype, folia.AnnotatorType.AUTO )
         
         #addition to paragraph correct?
-        self.assertEqual( len(p) , tmp + 1)
+        self.assertEqual( len(p.sentences()) , tmp + 1)
         self.assertEqual( p[-1] , s)
         
+    def test001b_addsentence(self):        
+        """Edit Check - Adding a sentence to last paragraph (shortcut)"""
+        
+        #grab last paragraph
+        p = self.doc.paragraphs(-1)
+                    
+        #how many sentences?
+        tmp = len(p)                    
+                    
+        s = p.append(folia.Sentence)
+        s.append(folia.Word,'Dit')
+        s.append(folia.Word,'is')
+        s.append(folia.Word,'een')
+        s.append(folia.Word,'nieuwe')
+        w = s.append(folia.Word,'zin')
+        w2 = s.append(folia.Word,'.',cls='PUNCTUATION')
+        
+        self.assertEqual( len(s.words()), 6 ) #number of words in sentence
+        self.assertEqual( w.text(), 'zin' ) #text check
+        self.assertEqual( self.doc[w.id], w ) #index check
+        
+        #addition to paragraph correct?
+        self.assertEqual( len(p.sentences()) , tmp + 1)
+        self.assertEqual( p[-1] , s)
+        
+    def test001c_addsentence(self):        
+        """Edit Check - Adding a sentence to last paragraph (oneliner using document.create(), instances generated on the fly)"""
+        
+        #grab last paragraph
+        p = self.doc.paragraphs(-1)
+                    
+        #how many sentences?
+        tmp = len(p)                    
+                    
+        s = p.append(folia.Sentence, self.doc.create(folia.Word,'Dit'),  self.doc.create(folia.Word,'is'),  self.doc.create(folia.Word,'een'),  self.doc.create(folia.Word,'nieuwe'), self.doc.create(folia.Word,'zin'), self.doc.create(folia.Word,'.',cls='PUNCTUATION') )        
+        
+        self.assertEqual( len(s.words()), 6 ) #number of words in sentence
+        self.assertEqual( s.words(0).text(), 'Dit' ) #text check
+        self.assertEqual( self.doc[s.words(0).id], s.words(0) ) #index check
+        
+        #addition to paragraph correct?
+        self.assertEqual( len(p.sentences()) , tmp + 1)
+        self.assertEqual( p[-1] , s)        
+        
     def test002_addannotation(self):        
-        """Edit Check - Adding a token annotation (pos, lemma)"""
+        """Edit Check - Adding a token annotation (pos, lemma) (pre-generated instances)"""
          
         #grab a word (naam)
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
@@ -289,6 +335,26 @@ class Test3Edit(unittest.TestCase):
         l = w.annotation(folia.LemmaAnnotation, 'adhoclemma')
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )
+        
+    def test002b_addannotation(self):   
+        """Edit Check - Adding a token annotation (pos, lemma) (instances generated on the fly)"""
+        
+        #grab a word (naam)
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
+        
+        #add a pos annotation (in a different set than the one already present, to prevent conflict)
+        w.append( folia.PosAnnotation, set='adhocpos', cls='NOUN', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
+        w.append( folia.LemmaAnnotation, set='adhoclemma', cls='NAAM', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO )
+       
+        #retrieve and check
+        p = w.annotation(folia.PosAnnotation, 'adhocpos')
+        self.assertTrue( isinstance(p, folia.PosAnnotation) )
+        self.assertEqual( p.cls, 'NOUN' )
+        
+        l = w.annotation(folia.LemmaAnnotation, 'adhoclemma')
+        self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
+        self.assertEqual( l.cls, 'NAAM' )       
+    
 
     def test004_addinvalidannotation(self):        
         """Edit Check - Adding a token default-set annotation that clashes with the existing one"""        
