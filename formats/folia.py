@@ -38,6 +38,8 @@ class AnnotationType:
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
+class TextCorrectionLevel:
+    UNCORRECTED, INLINE, CORRECTED = range(3)                  
           
 class MetaDataType:
     NATIVE, CMDI, IMDI = range(3)     
@@ -165,28 +167,16 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     
     
     
-    
-            
+    if 'text' in kwargs:
+        object.settext(kwargs['text'])
+        del kwargs['text']
+    if 'correctedtext' in kwargs:
+        object.settext(kwargs['text'], TextCorrectionLevel.CORRECTED)
+        del kwargs['correctedtext']
+    if 'uncorrectedtext' in kwargs:
+        object.settext(kwargs['text'], TextCorrectionLevel.UNCORRECTED)        
+        del kwargs['uncorrectedtext']
         
-        
-    if object.ALLOWTEXT:
-        if isinstance(object, Word):
-            if 'text' in kwargs:
-                if kwargs['text']:
-                    object.settext(kwargs['text'], True) #default text is corrected text
-                del kwargs['text']
-        else:
-            if 'text' in kwargs:
-                if kwargs['text']:
-                    object.settext(kwargs['text'], False) #default text is pre-corrected text
-                del kwargs['text']
-            if 'correctedtext' in kwargs:
-                if kwargs['correctedtext']:
-                    object.settext(kwargs['correctedtext'], True)
-                del kwargs['correctedtext']
-    elif 'text' in kwargs or 'correctedtext' in kwargs:
-        raise ValueError("Text specified for an element that does not allow it is required for " + object.__class__.__name__)
-
     if doc.debug >= 2:
         print >>stderr, "   @id           = ", repr(object.id)
         print >>stderr, "   @set          = ", repr(object.set)
@@ -224,7 +214,7 @@ class AbstractElement(object):
     OCCURENCES = 0 #Number of times this element may occur in its parent (0=unlimited, default=0)
     OCCURENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
 
-    
+    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.UNCORRECTED #Specifies the minimum text correction level allowed (only if allowed at all in ACCEPTED_DATA), this will be the default for any textcontent set
     
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document):
@@ -264,6 +254,9 @@ class AbstractElement(object):
     def uncorrectedtext(self):
         if not TextContent in self.ACCEPTED_DATA:
             raise NotImplementedError("No text allowed for " + self.__class__.__name__) #on purpose        
+        elif self.MINTEXTCORRECTIONLEVEL > TextCorrectionLevel.UNCORRECTED:
+            raise NotImplementedError("No uncorrected text allowed for " + self.__class__.__name__) #on purpose        
+        
         text = None
         for child in self:
             if isinstance(child, TextContent) and not child.corrected:
@@ -289,7 +282,7 @@ class AbstractElement(object):
         return len(self.data)
         
     def __nonzero__(self):
-        return True
+        return True #any instance evaluates to True in boolean tests!! (important to distinguish from uninstantianted None values!)
         
     def __iter__(self):
         """Iterate over children"""
@@ -335,43 +328,23 @@ class AbstractElement(object):
             kwargs['id'] = id
         if self.set:
             kwargs['set'] = set
-            
-        
-        #TODO
-        return None
+        raise NotImplementedError #TODO: IMPLEMENT
                             
         
-    def settext(self, text, corrected=False):
-        """Set text: may take TextContent element, unicode, or string (utf-8). Only in the latter two cases, the corrected parameter will be consulted. Existing texts will be *REPLACED*"""
-        #TODO: make obsolete
-        if not self.ALLOWTEXT:
-            raise NotImplementedError #on purpose
-        if isinstance(text, TextContent):
-            replace = None
-            prepend = False
-            for i, t in enumerate(self.textdata):
-                if t.corrected == text.corrected:
-                    replace = i
-                elif not text.corrected:
-                    prepend = True                
-            if not replace is None:
-                self.textdata[replace] = text
-            elif prepend:
-                self.textdata.insert(0,text)
-            else:
-                self.textdata.append(text)  
-            text.parent = self
-            if not text.ref and self.parent:
-                text.ref = self.parent 
-        elif isinstance(text, unicode):
-            assert corrected in [False,'inline',True]
-            self.settext(TextContent(self.doc, value=text, corrected=corrected))
-        elif isinstance(text, str):
-            assert corrected in [False,'inline',True]
-            self.settext(TextContent(self.doc, value=unicode(text,'utf-8'), corrected=corrected))
+    def hastext(self,corrected=None):
+        """Does this element have text?"""
+        if corrected is None:
+            #regardless of correctionlevel:
+            return (len(self.selection(TextContent,None,False)) > 0)
+        else:
+            return (len([ x for x in self.selection(TextContent,None,False) if x.corrected == corrected]) > 0)            
+    
             
+    def settext(self, text, corrected=MINTEXTCORRECTIONLEVEL):
+        self.replace(TextContent, value=text, corrected=corrected) 
+
     @classmethod
-    def addable(parent, set=None, raiseexceptions=True):
+    def addable(Class, parent, set=None, raiseexceptions=True):
         """Tests whether a new element of this class can be added to the parent. Returns a boolean or raises ValueError exceptions (unless set to ignore)!
         
          This will use OCCURENCES, but may be overidden for more customised behaviour"""
@@ -404,6 +377,11 @@ class AbstractElement(object):
                     
                     
         return True
+        
+    
+    def postappend(self):
+        """This method will be called after an element is added to another. It can do extra checks and if necessary raise exceptions to prevent addition. By default it does nothing."""
+        pass
         
                 
     def append(self, child, *args, **kwargs):
@@ -453,7 +431,25 @@ class AbstractElement(object):
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ + ". Type not allowed as child.")
 
+        child.postappend():
         return child
+            
+    @classmethod
+    def findreplacables(parent, **kwargs):
+        """Find replacable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control"""
+        #obtain the set (if available, necessary for checking addability)
+        if 'set' in kwargs:
+            set = kwargs['set']
+        else: 
+            try:
+                set = child.set
+            except:
+                set = None                
+                   
+        if inspect.isclass(__class__):
+            return parent.select(__class__,set)       
+        else:
+            return parent.select(__class__,set)       
 
 
     def replace(self, child, *arg, **kwargs):
@@ -464,17 +460,10 @@ class AbstractElement(object):
             to be an alternative.        
         """
 
+        replace = self.findreplacables(child, **kwargs)
         
-        #obtain the set (if available, necessary for checking addability)
-        if 'set' in kwargs:
-            set = kwargs['set']
-        else: 
-            try:
-                set = child.set
-            except:
-                set = None                
-                        
-        replace = self.select(Class,set)
+
+        
         if len(replace) == 0:
             #nothing to replace, simply call append
             if 'alternative' in kwargs:
@@ -536,9 +525,6 @@ class AbstractElement(object):
             
         e  = E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
         
-        if self.ALLOWTEXT:
-            for t in self.textdata:
-                e.append(t.xml()) 
             
         #append children:
         if not skipchildren and self.data:
@@ -639,8 +625,8 @@ class AbstractElement(object):
             elif Attrib.N in cls.OPTIONAL_ATTRIBS:
                attribs.append( E.optional( E.attribute( name='n') ) )
             
-            if cls.ALLOWTEXT:
-                attribs.append( E.optional( E.ref(name='t') ) ) #yes, not actually an attrib, I know, but should go here
+            #if cls.ALLOWTEXT:
+            #    attribs.append( E.optional( E.ref(name='t') ) ) #yes, not actually an attrib, I know, but should go here
                         
             if extraattribs:
                     for e in extraattribs:
@@ -679,9 +665,7 @@ class AbstractElement(object):
         kwargs = {}
         text = None
         for subnode in node:
-            if subnode.tag == '{' + NSFOLIA + '}t' and Class.ALLOWTEXT:
-                text = subnode.text
-            elif subnode.tag[:nslen] == '{' + NSFOLIA + '}':
+            if subnode.tag[:nslen] == '{' + NSFOLIA + '}':
                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
                 args.append(doc.parsexml(subnode) )                
             elif subnode.tag[:nslendcoi] == '{' + NSDCOI + '}':
@@ -730,13 +714,10 @@ class AbstractElement(object):
             kwargs[key] = value
                                 
         #D-Coi support:
-        if dcoi and Class.ALLOWTEXT:
+        if dcoi and TextContent in Class.ACCEPTED_DATA:
             text = node.text.strip()
                     
-                                
-                                    
-        #if node.text and node.text.strip():
-        #   kwargs['value'] = node.text
+
         if text:
             kwargs['text'] = text
             if not AnnotationType.TOKEN in doc.annotationdefaults:                    
@@ -993,12 +974,31 @@ class TextContent(AbstractElement):
         
     def append(self, child):
         raise NotImplementedError #on purpose
+        
+    def postappend(self):
+        try:
+            if not self.ref and self.parent.parent and self.parent.parent.hastext():
+                self.ref = self.parent.parent
+        except:
+            pass
     
     def __iter__(self):
         return iter(self.value)
     
     def __len__(self):    
         return len(self.value)
+    
+    @classmethod
+    def findreplacables(Class, parent, **kwargs):
+        #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
+        if not 'corrected' in kwargs:
+            if Class.MINTEXTCORRECTIONLEVEL == TextCorrectionLevel.UNCORRECTED:
+                kwargs['corrected'] = TextCorrectionLevel.UNCORRECTED
+            else:
+                kwargs['corrected'] = TextCorrectionLevel.CORRECTED
+        replace = super(TextContent, Class).findreplacables(parent, **kwargs)
+        return  [ x for x in replace if x.corrected == kwargs['corrected']]
+        
         
     @classmethod
     def parsexml(Class, node, doc):
@@ -1009,11 +1009,11 @@ class TextContent(AbstractElement):
         kwargs['corrected'] = False
         if 'corrected' in node.attrib:
             if node.attrib['corrected'] == 'yes':
-                kwargs['corrected'] = True
+                kwargs['corrected'] = TextCorrectionLevel.CORRECTED
             elif node.attrib['corrected'] == 'inline':
-                kwargs['corrected'] = 'inline'
+                kwargs['corrected'] = TextCorrectionLevel.INLINE
             elif node.attrib['corrected'] == 'no':
-                kwargs['corrected'] = False
+                kwargs['corrected'] = TextCorrectionLevel.UNCORRECTED
             else:
                 raise Exception("Invalid value for corrected: ", node.attrib['corrected'])
         
@@ -1043,9 +1043,9 @@ class TextContent(AbstractElement):
             attribs['{' + NSFOLIA + '}length'] = str(self.length)
         if self.parent and self.ref and self.ref != self.parent.parent:
             attribs['{' + NSFOLIA + '}ref'] = self.ref.id
-        if self.corrected == 'inline':
+        if self.corrected == TextCorrectionLevel.INLINE:
             attribs['{' + NSFOLIA + '}corrected'] = 'inline'
-        elif self.corrected and not isinstance(self.parent, Word):
+        elif self.corrected == TextCorrectionLevel.CORRECTED and self.parent.MINTEXTCORRECTIONLEVEL < TextCorrectionLevel.CORRECTED:
             attribs['{' + NSFOLIA + '}corrected'] = 'yes'
             
         return E.t(self.value, **attribs)
@@ -1055,7 +1055,8 @@ class Word(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     XMLTAG = 'w'
     ANNOTATIONTYPE = AnnotationType.TOKEN
-    ALLOWTEXT = True
+    
+    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.CORRECTED
     
     def __init__(self, doc, *args, **kwargs):
         self.space = True
@@ -1395,7 +1396,7 @@ class AbstractAnnotation(AbstractElement):
                 return f.cls
 
 class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID): 
-    ALLOWDUPLICATES = False #Allow duplicates within the same set? 
+    OCCURENCESPERSET = 1 #Do not allow duplicates within the same set
 
     def append(self, child):
         super(AbstractTokenAnnotation,self).append(child)
@@ -1405,6 +1406,9 @@ class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation):
     pass
     
 class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID): 
+    OCCURENCESPERSET = 0 #Allow duplicates within the same set
+
+
     def xml(self, attribs = None,elements = None, skipchildren = False):  
         global NSFOLIA
         if not attribs: attribs = {}
@@ -1443,15 +1447,14 @@ class AbstractAnnotationLayer(AbstractElement):
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.SUGGESTION
-    ACCEPTED_DATA = (AbstractTokenAnnotation, Word)
-    ALLOWTEXT = True
+    ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent)
     
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
     XMLTAG = 'errordetection'
-    ALLOWDUPLICATES = True #Allow duplicates within the same set 
+    OCCURENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     
     def __init__(self,  doc, *args, **kwargs):
         if 'error' in kwargs:            
@@ -1478,12 +1481,10 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
 class Suggestion(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.SUGGESTION
-    ACCEPTED_DATA = (AbstractTokenAnnotation, Word)
-    ALLOWTEXT = True
+    ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent)
     XMLTAG = 'suggestion'
-    
-    
-    
+    OCCURENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
+
     
             
 class Correction(AbstractElement):
@@ -1491,6 +1492,8 @@ class Correction(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
+    OCCURENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
+
 
     def __init__(self,  doc, *args, **kwargs):
         if not (('new' in kwargs and 'original' in kwargs) or (('suggestions' in kwargs or 'suggestion' in kwargs))):
@@ -1867,7 +1870,7 @@ class Quote(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = ()    
     XMLTAG = 'quote'
-    ALLOWTEXT = True
+
     #ACCEPTED DATA defined later below
     
     def __init__(self,  doc, *args, **kwargs):
@@ -1897,8 +1900,7 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction)
-    ALLOWTEXT = True
+    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent)
     XMLTAG = 's'
     
     def __init__(self,  doc, *args, **kwargs):
@@ -2089,14 +2091,14 @@ class Sentence(AbstractStructureElement):
 
 
 
-Quote.ACCEPTED_DATA = (Word, Sentence, Quote)        
+Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent)        
 
 class Paragraph(AbstractStructureElement):    
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent)
     XMLTAG = 'p'
-    ALLOWTEXT = True
+    
     
      
         
@@ -2544,14 +2546,7 @@ class Gap(AbstractElement):
     def _len__(self):
         return 0
 
-        
-   
 
-
-        
-
-
-            
 
     
 class ListItem(AbstractStructureElement):
@@ -2559,19 +2554,12 @@ class ListItem(AbstractStructureElement):
     #ACCEPTED_DATA = (List, Sentence) #Defined below
     XMLTAG = 'listitem'
     
-    def __init__(self, doc, *args, **kwargs):
-        self.daWta = []
-        super( ListItem, self).__init__(doc, *args, **kwargs)
     
 class List(AbstractStructureElement):    
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
     ACCEPTED_DATA = (ListItem,)
     XMLTAG = 'list'
     
-    def __init__(self, doc, *args, **kwargs):
-        self.data = []
-        super( List, self).__init__(doc, *args, **kwargs)
-        
 
 ListItem.ACCEPTED_DATA = (List, Sentence)
 
