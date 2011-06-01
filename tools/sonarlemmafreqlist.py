@@ -13,15 +13,26 @@ from pynlpl.statistics import FrequencyList
 
 sonardir = sys.argv[1]
 
+
 freqlist = FrequencyList()
+lemmapos_freqlist = FrequencyList()
+poshead_freqlist = FrequencyList()
+pos_freqlist = FrequencyList()
 
 for i, doc in enumerate(Corpus(sonardir)):
     print >>sys.stderr, "#" + str(i) + " Processing " + doc.filename
     for word, id, pos, lemma in doc:
+        freqlist.count(word)
         if lemma and pos:
             poshead = pos.split('(')[0]
-            freqlist.count(lemma+'.'+poshead)
+            lemmapos_freqlist.count(lemma+'.'+poshead)
+            poshead_freqlist.count(poshead)
+            pos_freqlist.count(pos)
 
-freqlist.save('sonarlemmafreqlist.txt')
+freqlist.save('sonarfreqlist.txt')
+lemmapos_freqlist.save('sonarlemmaposfreqlist.txt')
+poshead_freqlist.save('sonarposheadfreqlist.txt')
+pos_freqlist.save('sonarposfreqlist.txt')
+
             
 print unicode(freqlist).encode('utf-8')
