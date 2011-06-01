@@ -197,7 +197,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertTrue( isinstance(c, folia.Correction) ) 
         self.assertEqual( len(c.suggestions()), 2 ) 
         self.assertEqual( str(c.suggestions(0).text()), 'twijfelachtige' ) 
-        self.assertEqual( str(c.suggestions(0).text()), 'ongewisse' ) 
+        self.assertEqual( str(c.suggestions(1).text()), 'ongewisse' ) 
         
     def test015_parenttest(self):                                        
         """Sanity check - Checking if all elements know who's their daddy""" 
