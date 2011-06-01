@@ -446,7 +446,7 @@ class AbstractElement(object):
                 child = TextContent(self.doc, child, corrected=self.MINTEXTCORRECTIONLEVEL )
             self.data.append(child)
             child.parent = self
-        elif Class or child.__class__.addable(self, set): #(prevents calling addable again if already done above)
+        elif Class or (isinstance(child, AbstractElement) and child.__class__.addable(self, set)): #(prevents calling addable again if already done above)
             if 'alternative' in kwargs and kwargs['alternative']:
                 child = Alternative(self.doc, child, generate_id_in=self)
             self.data.append(child)
@@ -1843,122 +1843,44 @@ class Sentence(AbstractStructureElement):
             e = e.parent  
         return None
         
+
+    def correctwords(self, originalwords, newwords, **kwargs):
+        """Generic correction method for words. You most likely want to use the helper functions
+           splitword() , mergewords(), deleteword(), insertword() instead"""
+        for w in originalwords:            
+            if not isinstance(w, Word):
+                raise Exception("Original word is not a Word instance: " + str(type(w)))    
+            elif w.sentence() != self:
+                raise Exception("Original not found as member of sentence!")               
+        for w in newwords:            
+            if not isinstance(w, Word):
+                raise Exception("New word is not a Word instance: " + str(type(w)))                    
+        if 'suggest' in kwargs and kwargs['suggest']:
+            del kwargs['suggest']
+            return self.correct(suggestion=newwords,current=originalwords, **kwargs)
+        else:
+            return self.correct(original=originalwords, new=newwords, **kwargs)
+
         
         
     def splitword(self, originalword, *newwords, **kwargs):
         if isinstance(originalword, str) or isinstance(originalword, unicode):
-            originalword = self.doc[originalword]            
-        if originalword.sentence() != self:
-            raise Exception("Original not found or not instance of Word!")
-        else:
-            kwargs['original'] = originalword
+            originalword = self.doc[originalword]   
+        return self.correctwords([originalword], newwords, **kwargs)
             
-        if not all( [ isinstance(w, Word) for w in newwords ] ):
-            raise Exception("New words must be Word instances!")
+            
 
-        if not 'id' in kwargs and not 'generate_id_in' in kwargs:
-            kwargs['generate_id_in'] = self
-
-        
-        if 'suggest' in kwargs and kwargs['suggest']:            
-            kwargs['suggestion'] = Suggestion(self.doc, *newwords)
-            kwargs['current'] = originalword   
-            if 'new' in kwargs:
-                del kwargs['new']     
-        elif 'reuse' in kwargs and kwargs['reuse']:            
-            if not 'new' in kwargs:
-                kwargs['new'] = newwords    
-            c = self.doc[kwargs['reuse']]
-            c.original = c.current
-            c.current = None
-            c.setnew(kwargs['new'])            
-            return c
-        else:            
-            if not 'new' in kwargs:
-                kwargs['new'] = newwords
-
-        if 'suggest' in kwargs:
-            del kwargs['suggest']
-                
-        insertindex = self.data.index(originalword)        
-        c = Correction(self.doc, **kwargs)
-        originalword.parent = c
-        self.data[insertindex] = c 
-        c.parent = self
-        return c 
-        
-        
-    def mergewords(self, newword,  *originalwords,**kwargs):
-        for w in originalwords:            
-            if not isinstance(w, Word):
-                raise Exception("Original word is not a Word instance: " + str(type(w)))    
-                    
-        
-        if not isinstance(newword, Word):        
-            raise Exception("New word must be a Word instance")
-
-        if not 'id' in kwargs and not 'generate_id_in' in kwargs:
-            kwargs['generate_id_in'] = self
-                
-        if 'suggest' in kwargs and kwargs['suggest']:
-            kwargs['suggestion'] = Suggestion(self.doc, newword)
-            kwargs['current'] = originalwords            
-        elif 'reuse' in kwargs and kwargs['reuse']:
-            kwargs['original'] = originalwords                
-            if not 'new' in kwargs:
-                kwargs['new'] = newword    
-            c = self.doc[kwargs['reuse']]
-            c.original = c.current
-            c.current = None
-            c.setnew(kwargs['new'])
-            return c
-        else:            
-            kwargs['original'] = originalwords                
-            if not 'new' in kwargs:
-                kwargs['new'] = newword    
-
-        if 'suggest' in kwargs:
-            del kwargs['suggest']
-                        
-        insertindex = self.data.index(originalwords[0])        
-        c = Correction(self.doc, **kwargs)
-        self.data.insert( insertindex, c )
-        c.parent = self
-        
-        for w in originalwords:                    
-            self.remove(w)        
-        return c 
-    
-        
+    def mergewords(self, newword, *originalwords, **kwargs):
+        return self.correctwords(originalwords, newword, **kwargs)
+            
     def deleteword(self, word, **kwargs):
         if isinstance(word, str) or isinstance(word, unicode):
-            word = self.doc[word]            
-        if not isinstance(word, Word):
-            raise Exception("Original not instance of Word!")
-        
-            
-
-        if 'suggest' in kwargs and kwargs['suggest']:            
-            kwargs['current'] = word
-            kwargs['suggestions'] = []
-        else:            
-            kwargs['original'] = word
-            kwargs['new'] = []
-            
-        if not 'id' in kwargs and not 'generate_id_in' in kwargs:
-            kwargs['generate_id_in'] = self
-            
-        if 'suggest' in kwargs:
-            del kwargs['suggest']            
-            
-        insertindex = self.data.index(word)        
-        c = Correction(self.doc, **kwargs)
-        self.data[insertindex] = c
-        word.parent = c
-        c.parent = self
-        return c 
+            word = self.doc[word]   
+        return self.correctwords([word], [], **kwargs)
+                
         
     def insertword(self, newword, prevword, **kwargs):
+        #TODO: Refactor
         if isinstance(prevword, str) or isinstance(prevword, unicode):
             prevword = self.doc[prevword]            
         if not prevword in self or not isinstance(prevword, Word):

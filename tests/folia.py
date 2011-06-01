@@ -574,14 +574,14 @@ class Test5Correction(unittest.TestCase):
             self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
             
             w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-            w.correcttext(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
+            w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
             c = w.annotation(folia.Correction)
                     
             self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
             self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
             self.assertEqual( w.text(), 'stippelijn')  
             
-            w.correcttext(new='stippellijn',set='corrections',cls='spelling',annotator='John Doe', annotatortype=folia.AnnotatorType.MANUAL,reuse=c.id)
+            w.correct(new='stippellijn',set='corrections',cls='spelling',annotator='John Doe', annotatortype=folia.AnnotatorType.MANUAL,reuse=c.id)
             
             self.assertEqual( w.text(), 'stippellijn')    
             self.assertEqual( len(list(w.annotations(folia.Correction))), 1 )
