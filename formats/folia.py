@@ -790,7 +790,115 @@ class AbstractElement(object):
         child.parent = None
         self.data.remove(child)
 
-class AllowTokenAnnotation(object):
+class AllowCorrections(object):
+    def correct(self, **kwargs):
+        if 'reuse' in kwargs:
+            #reuse an existing correction instead of making a new one
+            if isinstance(kwargs['reuse'], Correction):
+                c = kwargs['reuse']
+            else: #assume it's an index
+                try:
+                    c = self.doc.index[kwargs['reuse']]
+                    assert isinstance(c, Correction)
+                except:
+                    raise ValueError("reuse= must point to an existing correction (id or instance)!")
+            
+            suggestionsonly = (not c.hasnew() and not c.hasoriginal() and c.hassuggestions())
+        else:
+            if not 'id' in kwargs and not 'generate_id_in' in kwargs:
+                kwargs['generate_id_in'] = self                        
+            kwargs2 = copy(kwargs)
+            for x in ['new','original','suggestion', 'suggestions','current']:
+                if x in kwargs2:
+                    del kwargs2[x]
+            c = Correction(self.doc, **kwargs2)                        
+
+        addnew = False
+
+        if 'current' in kwargs:
+            if 'original' in kwargs or 'new' in kwargs: raise Exception("When setting current=, original= and new= can not be set!") 
+            if not isinstance(kwargs['current'], list): kwargs['current'] = [kwargs['current']] #support both lists (for multiple elements at once), as well as single element
+            c.replace(Current(self.doc, *kwargs['current']))
+            del kwargs['current']
+        if 'new' in kwargs:
+            if not isinstance(kwargs['new'], list): kwargs['new'] = [kwargs['new']] #support both lists (for multiple elements at once), as well as single element                        
+            addnew = New(self.doc, *kwargs['new'])
+            c.replace(addnew)
+            for current in c.select(Current): #delete current if present
+                c.remove(current)            
+            del kwargs['new']
+        if 'original' in kwargs:
+            if not isinstance(kwargs['original'], list): kwargs['original'] = [kwargs['original']] #support both lists (for multiple elements at once), as well as single element
+            c.replace(Original(self.doc, *kwargs['original']))
+            for o in kwargs['original']: #delete original from current element
+                if o in self:
+                    self.remove(o)            
+            for current in c.select(Current):  #delete current if present
+                c.remove(current)
+            del kwargs['original']        
+        elif addnew:
+            #original not specified, find automagically:
+            original = []
+            for new in addnew:
+                kwargs2 = {}
+                if isinstance(new, TextContent):
+                    kwargs2['corrected'] = new.corrected
+                try:
+                    set = new.set
+                except:
+                    set = None                
+                original += new.__class__.findreplacables(self, set, **kwargs2)
+            if not original:
+                raise Exception("No original= specified and unable to automatically infer")
+            else:
+                c.replace(Original(self.doc, *original))
+                for current in c.select(Current):  #delete current if present
+                    c.remove(current)       
+            
+        if addnew:
+            for original in c.original():
+                if original in self:
+                    self.remove(original)            
+            
+        if 'suggestion' in kwargs:
+            kwargs['suggestions'] = [kwargs['suggestion']]
+            del kwargs['suggestion']
+        if 'suggestions' in kwargs:
+            for suggestion in kwargs['suggestions']:
+                if isinstance(suggestion, Suggestion):
+                    c.append(suggestion)
+                else:
+                    c.append(Suggestion(self.doc, suggestion))                        
+            del kwargs['suggestions']
+            
+            
+        
+
+        if 'reuse' in kwargs:
+            if addnew and suggestionsonly:        
+                #What was previously only a suggestion, now becomes a real correction
+                #If annotator, annotatortypes
+                #are associated with the correction as a whole, move it to the suggestions
+                #correction-wide annotator, annotatortypes might be overwritten
+                for suggestion in c.suggestions:
+                    if c.annotator and not suggestion.annotator:
+                        suggestion.annotator = c.annotator
+                    if c.annotatortype and not suggestion.annotatortype:
+                        suggestion.annotatortype = c.annotatortype
+                                                                
+            if 'annotator' in kwargs:
+                c.annotator = kwargs['annotator']
+            if 'annotatortype' in kwargs:
+                c.annotatortype = kwargs['annotatortype']
+            if 'confidence' in kwargs:
+                c.confidence = float(kwargs['confidence'])                        
+            del kwargs['reuse']
+        else:
+            self.append(c)
+        return c 
+    
+
+class AllowTokenAnnotation(AllowCorrections):
     """Elements that allow token annotation (including extended annotation) must inherit from this class"""
     
     def annotations(self, annotationtype=None):
@@ -841,6 +949,7 @@ class AllowTokenAnnotation(object):
                     except AttributeError:
                         continue
         return l
+        
 
 class AllowGenerateID(object):
     def _getmaxid(self, xmltag):        
@@ -1132,7 +1241,7 @@ class TextContent(AbstractElement):
             
         return E.t(self.value, **attribs)
         
-class Word(AbstractStructureElement):
+class Word(AbstractStructureElement, AllowCorrections):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     XMLTAG = 'w'
@@ -1262,114 +1371,7 @@ class Word(AbstractStructureElement):
     def split(self, *newwords, **kwargs):
         self.sentence().splitword(self, *newwords, **kwargs)
 
-    
-    def correct(self, **kwargs):
-        if 'reuse' in kwargs:
-            #reuse an existing correction instead of making a new one
-            if isinstance(kwargs['reuse'], Correction):
-                c = kwargs['reuse']
-            else: #assume it's an index
-                try:
-                    c = self.doc.index[kwargs['reuse']]
-                    assert isinstance(c, Correction)
-                except:
-                    raise ValueError("reuse= must point to an existing correction (id or instance)!")
-            
-            suggestionsonly = (not c.hasnew() and not c.hasoriginal() and c.hassuggestions())
-        else:
-            if not 'id' in kwargs and not 'generate_id_in' in kwargs:
-                kwargs['generate_id_in'] = self                        
-            kwargs2 = copy(kwargs)
-            for x in ['new','original','suggestion', 'suggestions','current']:
-                if x in kwargs2:
-                    del kwargs2[x]
-            c = Correction(self.doc, **kwargs2)                        
-
-        addnew = False
-
-        if 'current' in kwargs:
-            if 'original' in kwargs or 'new' in kwargs: raise Exception("When setting current=, original= and new= can not be set!") 
-            if not isinstance(kwargs['current'], list): kwargs['current'] = [kwargs['current']] #support both lists (for multiple elements at once), as well as single element
-            c.replace(Current(self.doc, *kwargs['current']))
-            del kwargs['current']
-        if 'new' in kwargs:
-            if not isinstance(kwargs['new'], list): kwargs['new'] = [kwargs['new']] #support both lists (for multiple elements at once), as well as single element                        
-            addnew = New(self.doc, *kwargs['new'])
-            c.replace(addnew)
-            for current in c.select(Current): #delete current if present
-                c.remove(current)            
-            del kwargs['new']
-        if 'original' in kwargs:
-            if not isinstance(kwargs['original'], list): kwargs['original'] = [kwargs['original']] #support both lists (for multiple elements at once), as well as single element
-            c.replace(Original(self.doc, *kwargs['original']))
-            for o in kwargs['original']: #delete original from current element
-                if o in self:
-                    self.remove(o)            
-            for current in c.select(Current):  #delete current if present
-                c.remove(current)
-            del kwargs['original']        
-        elif addnew:
-            #original not specified, find automagically:
-            original = []
-            for new in addnew:
-                kwargs2 = {}
-                if isinstance(new, TextContent):
-                    kwargs2['corrected'] = new.corrected
-                try:
-                    set = new.set
-                except:
-                    set = None                
-                original += new.__class__.findreplacables(self, set, **kwargs2)
-            if not original:
-                raise Exception("No original= specified and unable to automatically infer")
-            else:
-                c.replace(Original(self.doc, *original))
-                for current in c.select(Current):  #delete current if present
-                    c.remove(current)       
-            
-        if addnew:
-            for original in c.original():
-                if original in self:
-                    self.remove(original)            
-            
-        if 'suggestion' in kwargs:
-            kwargs['suggestions'] = [kwargs['suggestion']]
-            del kwargs['suggestion']
-        if 'suggestions' in kwargs:
-            for suggestion in kwargs['suggestions']:
-                if isinstance(suggestion, Suggestion):
-                    c.append(suggestion)
-                else:
-                    c.append(Suggestion(self.doc, suggestion))                        
-            del kwargs['suggestions']
-            
-            
         
-
-        if 'reuse' in kwargs:
-            if addnew and suggestionsonly:        
-                #What was previously only a suggestion, now becomes a real correction
-                #If annotator, annotatortypes
-                #are associated with the correction as a whole, move it to the suggestions
-                #correction-wide annotator, annotatortypes might be overwritten
-                for suggestion in c.suggestions:
-                    if c.annotator and not suggestion.annotator:
-                        suggestion.annotator = c.annotator
-                    if c.annotatortype and not suggestion.annotatortype:
-                        suggestion.annotatortype = c.annotatortype
-                                                                
-            if 'annotator' in kwargs:
-                c.annotator = kwargs['annotator']
-            if 'annotatortype' in kwargs:
-                c.annotatortype = kwargs['annotatortype']
-            if 'confidence' in kwargs:
-                c.confidence = float(kwargs['confidence'])                        
-            del kwargs['reuse']
-        else:
-            self.append(c)
-        return c 
-            
-
     @classmethod        
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
         global NSFOLIA
