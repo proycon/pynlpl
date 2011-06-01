@@ -386,7 +386,7 @@ class Test4Edit(unittest.TestCase):
     def test008_addsuggestion(self):
         """Edit Check - Suggesting a text correction"""        
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        w.correcttext(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
+        w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
                     
         self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
         self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
@@ -1351,7 +1351,6 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <lemma class="tussen"/>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.6.w.31">
-              <t>vierkante</t>
               <correction xml:id="WR-P-E-J-0000000001.p.1.s.6.w.31.c.1">
                 <new>
                  <t>vierkante</t>
@@ -1366,7 +1365,6 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.6.w.32">
               <t>haken</t>
               <pos class="N(soort,mv,basis)"/>
-              <lemma class="haak"/>
               <correction xml:id="WR-P-E-J-0000000001.p.1.s.6.w.32.c.1">
                 <new>              
                  <lemma class="haak"/>

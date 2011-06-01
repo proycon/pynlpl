@@ -1282,7 +1282,7 @@ class Word(AbstractStructureElement):
                 elif isinstance(s, AbstractTokenAnnotation) or isinstance(s, TextContent ):
                     suggestions.append( Suggestion(self.doc, s) )
                 elif isinstance(s, unicode) or isinstance(s, str):
-                    suggestions.append( Suggestion(self.doc, text=TextContent(self.doc, value=s, corrected=True)) )        
+                    suggestions.append( Suggestion(self.doc, TextContent(self.doc, value=s, corrected=TextCorrectionLevel.CORRECTED)) )        
                 else:
                     raise Exception("Unexpected type for suggestion")
             kwargs['suggestions'] = suggestions
@@ -1435,13 +1435,10 @@ class Word(AbstractStructureElement):
         if addnew:
             for original in c.original():
                 if original in self:
-                    self.remove(original)
-            for new in addnew:
-                self.append(copy(new))
-            #add new element 
+                    self.remove(original)            
             
         if 'suggestion' in kwargs:
-            kwargs['suggestions'] = [kwargs['suggestions']]
+            kwargs['suggestions'] = [kwargs['suggestion']]
             del kwargs['suggestion']
         if 'suggestions' in kwargs:
             for suggestion in kwargs['suggestions']:
