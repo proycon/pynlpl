@@ -344,7 +344,9 @@ class AbstractElement(object):
             return (len([ x for x in self.select(TextContent,None,False) if x.corrected == corrected]) > 0)            
     
             
-    def settext(self, text, corrected=MINTEXTCORRECTIONLEVEL):
+    def settext(self, text, corrected=None):
+        if corrected is None:
+            corrected = self.MINTEXTCORRECTIONLEVEL
         self.replace(TextContent, value=text, corrected=corrected) 
 
     @classmethod
@@ -428,6 +430,9 @@ class AbstractElement(object):
             if Class.addable(self, set):
                 if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
                     kwargs['generate_id_in'] = self
+                if Class is TextContent:
+                    if not 'corrected' in kwargs:
+                        kwargs['corrected'] = self.MINTEXTCORRECTIONLEVEL                    
                 child = Class(self.doc, *args, **kwargs)
         elif args:            
             raise Exception("Too many arguments specified. Only possible when first argument is a class and not an instance")
@@ -448,7 +453,7 @@ class AbstractElement(object):
             child.parent = self                
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ + ". Type not allowed as child.")
-
+                
         child.postappend()
         return child
             
@@ -978,7 +983,7 @@ class TextContent(AbstractElement):
             self.corrected = kwargs['corrected']
             del kwargs['corrected']
         else:
-            self.corrected = False
+            self.corrected = None
 
         
         if 'offset' in kwargs: #offset
@@ -1042,6 +1047,13 @@ class TextContent(AbstractElement):
         except:
             pass
             
+    
+        if self.corrected is None:
+            self.corrected = self.parent.MINTEXTCORRECTIONLEVEL                    
+            
+        if self.corrected < self.parent.MINTEXTCORRECTIONLEVEL:
+            raise ValueError("Text Content (" + str(self.corrected) + ") must be of higher CorrectionLevel (" + str(self.parent.MINTEXTCORRECTIONLEVEL) + ")")
+            
         if self.corrected == TextCorrectionLevel.UNCORRECTED or self.corrected == TextCorrectionLevel.CORRECTED:
             #there can be only one of this type.
             for child in self.parent:
@@ -1077,7 +1089,6 @@ class TextContent(AbstractElement):
         nslen = len(NSFOLIA) + 2
         args = []
         kwargs = {}
-        kwargs['corrected'] = TextCorrectionLevel.UNCORRECTED
         if 'corrected' in node.attrib:
             if node.attrib['corrected'] == 'yes':
                 kwargs['corrected'] = TextCorrectionLevel.CORRECTED
@@ -1137,8 +1148,7 @@ class Word(AbstractStructureElement):
             self.space = kwargs['space']
             del kwargs['space']
         super(Word,self).__init__(doc, *args, **kwargs)
-                
-        
+                        
 
     def sentence(self):
         #return the sentence this word is a part of, otherwise return None

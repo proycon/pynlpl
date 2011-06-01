@@ -172,7 +172,8 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( len(c.new()), 1) 
         self.assertEqual( len(c.original()), 1) 
         
-        self.assertEqual(  w.text(), 'vierkante')
+        import pdb; pdb.set_trace()
+        self.assertEqual( w.text(), 'vierkante')
         self.assertEqual( c.new(0), 'vierkante') 
         self.assertEqual( c.original(0) , 'vierkant') 
         
@@ -411,6 +412,20 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
         self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
         self.assertEqual( w.text(), 'stippelijn')    
+        
+    def test009a_idclash(self):
+        """Edit Check - Adding a duplicate ID"""     
+        raise NotImplementedError
+        
+    def test009b_textcorrectionlevel(self):
+        """Edit Check - Adding TextContent of wrong level"""     
+        raise NotImplementedError
+
+    def test009c_duptextcontent(self):
+        """Edit Check - Adding duplicate textcontent"""     
+        raise NotImplementedError
+        
+        
     
     #def test008_addaltcorrection(self):            
     #    """Edit Check - Adding alternative corrections"""        
