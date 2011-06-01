@@ -98,12 +98,13 @@ class Test2Sanity(unittest.TestCase):
         
     def test006_first_sentence(self):                                    
         """Sanity check - Sentence"""                                
-        #grab last sentence
+        #grab second sentence
         s = self.doc.sentences(1)
         self.assertTrue( isinstance(s, folia.Sentence) )
         self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.1' )
-        self.assertRaises( folia.NoSuchText, s.text) #no text DIRECTLY associated with the sentence
-        self.assertEqual( str(s), "Stemma is een ander woord voor stamboom . " ) 
+        self.assertRaises( folia.NoSuchText, s.text, folia.TextCorrectionLevel.CORRECTED) #no text DIRECTLY associated with the sentence
+        self.assertRaises( folia.NoSuchText, s.text, folia.TextCorrectionLevel.UNCORRECTED) #no text DIRECTLY associated with the sentence
+        self.assertEqual( str(s), "Stemma is een ander woord voor stamboom ." )  #THIS TEST USED TO HAVE A TRAILING SPACE, REMOVED NOW WITH REFACTORED LIBRARY
         
     def test007_index(self):                                    
         """Sanity check - Index"""            
@@ -168,24 +169,24 @@ class Test2Sanity(unittest.TestCase):
         w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.31']
         c = w.annotation(folia.Correction)
         
-        self.assertEqual( len(c.new), 1) 
-        self.assertEqual( len(c.original), 1) 
+        self.assertEqual( len(c.new()), 1) 
+        self.assertEqual( len(c.original()), 1) 
         
         self.assertEqual(  w.text(), 'vierkante')
-        self.assertEqual( c.new[0], 'vierkante') 
-        self.assertEqual( c.original[0], 'vierkant') 
+        self.assertEqual( c.new(0), 'vierkante') 
+        self.assertEqual( c.original(0) , 'vierkant') 
         
     def test013_correction(self):
         """Sanity check - Correction - Token Annotation""" 
         w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.32']
         c = w.annotation(folia.Correction)
                 
-        self.assertEqual( len(c.new), 1) 
-        self.assertEqual( len(c.original), 1) 
+        self.assertEqual( len(c.new()), 1) 
+        self.assertEqual( len(c.original()), 1) 
         
         self.assertEqual( w.annotation(folia.LemmaAnnotation).cls , 'haak')
-        self.assertEqual( c.new[0].cls, 'haak') 
-        self.assertEqual( c.original[0].cls, 'haaak') 
+        self.assertEqual( c.new(0).cls, 'haak') 
+        self.assertEqual( c.original(0).cls, 'haaak') 
         
 
     def test014_correction(self):                                        
@@ -194,48 +195,18 @@ class Test2Sanity(unittest.TestCase):
         w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.14']
         c = w.annotation(folia.Correction)
         self.assertTrue( isinstance(c, folia.Correction) ) 
-        self.assertEqual( len(c.suggestions), 2 ) 
-        self.assertEqual( str(c.suggestions[0]), 'twijfelachtige' ) 
-        self.assertEqual( str(c.suggestions[1]), 'ongewisse' ) 
+        self.assertEqual( len(c.suggestions()), 2 ) 
+        self.assertEqual( str(c.suggestions(0).text()), 'twijfelachtige' ) 
+        self.assertEqual( str(c.suggestions(0).text()), 'ongewisse' ) 
         
     def test015_parenttest(self):                                        
         """Sanity check - Checking if all elements know who's their daddy""" 
-        
-    
-        
-        
         def check(parent, indent = ''):         
             for child in parent:
                 print indent + repr(child)
                 if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
                     self.assertEqual( child.parent, parent)                
                     check(child, indent + '  ')                        
-
-            if isinstance(parent, folia.Correction):   
-                if parent.suggestions:
-                    for child in parent.suggestions:
-                        print indent + repr(child)
-                        if isinstance(child, folia.AbstractElement) and  not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
-                            self.assertEqual( child.parent, parent)                
-                            check(child, indent + '  ')                                            
-                if parent.current:
-                    for child in parent.current:
-                        print indent + repr(child)
-                        if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
-                            self.assertEqual( child.parent, parent)                
-                            check(child, indent + '  ')                                            
-                if parent.new:
-                    for child in parent.new:
-                        print indent + repr(child)
-                        if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
-                            self.assertEqual( child.parent, parent)                
-                            check(child, indent + '  ')                                            
-                if parent.original:
-                    for child in parent.original:
-                        print indent + repr(child)
-                        if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
-                            self.assertEqual( child.parent, parent)                
-                            check(child, indent + '  ')                                            
 
         print repr(self.doc.data[0])
         check(self.doc.data[0],'  ')
@@ -350,8 +321,8 @@ class Test3Edit(unittest.TestCase):
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         w.correcttext(new='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
                     
-        self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' ) 
-        self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )     
+        self.assertEqual( w.annotation(folia.Correction).original(0).text() ,'stippelijn' ) 
+        self.assertEqual( w.annotation(folia.Correction).new(0).text() ,'stippellijn' )     
         self.assertEqual( w.text(), 'stippellijn')    
         
         
@@ -363,8 +334,8 @@ class Test3Edit(unittest.TestCase):
         newpos = folia.PosAnnotation(self.doc, cls='N(soort,ev,basis,zijd,stan)')
         w.correctannotation(oldpos,newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
                     
-        self.assertEqual( w.annotation(folia.Correction).original[0] ,oldpos ) 
-        self.assertEqual( w.annotation(folia.Correction).new[0] ,newpos )     
+        self.assertEqual( w.annotation(folia.Correction).original(0) ,oldpos ) 
+        self.assertEqual( w.annotation(folia.Correction).new(0),newpos )     
     
     def test008_addsuggestion(self):
         """Edit Check - Suggesting a text correction"""        
@@ -372,7 +343,7 @@ class Test3Edit(unittest.TestCase):
         w.correcttext(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
                     
         self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
-        self.assertEqual( w.annotation(folia.Correction).suggestions[0].text() , 'stippellijn' )
+        self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
         self.assertEqual( w.text(), 'stippelijn')    
     
     #def test008_addaltcorrection(self):            
@@ -547,17 +518,17 @@ class Test5Correction(unittest.TestCase):
             c = w.annotation(folia.Correction)
                     
             self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
-            self.assertEqual( w.annotation(folia.Correction).suggestions[0].text() , 'stippellijn' )
+            self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
             self.assertEqual( w.text(), 'stippelijn')  
             
             w.correcttext(new='stippellijn',set='corrections',cls='spelling',annotator='John Doe', annotatortype=folia.AnnotatorType.MANUAL,reuse=c.id)
             
             self.assertEqual( w.text(), 'stippellijn')    
             self.assertEqual( len(list(w.annotations(folia.Correction))), 1 )
-            self.assertEqual( w.annotation(folia.Correction).suggestions[0].text() , 'stippellijn' )
-            self.assertEqual( w.annotation(folia.Correction).suggestions[0].annotator , 'testscript' )
-            self.assertEqual( w.annotation(folia.Correction).suggestions[0].annotatortype , folia.AnnotatorType.AUTO)
-            self.assertEqual( w.annotation(folia.Correction).new[0] , 'stippellijn' )
+            self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
+            self.assertEqual( w.annotation(folia.Correction).suggestions(0).annotator , 'testscript' )
+            self.assertEqual( w.annotation(folia.Correction).suggestions(0).annotatortype , folia.AnnotatorType.AUTO)
+            self.assertEqual( w.annotation(folia.Correction).new(0).text() , 'stippellijn' )
             self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
             self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
             

@@ -459,7 +459,7 @@ class AbstractElement(object):
         
 
 
-    def replace(self, child, *arg, **kwargs):
+    def replace(self, child, *args, **kwargs):
         """Appends a child element like append(), but replaces any existing child element of the same type and set. If no such child element exists, this will act the same as append()
         
         Keyword arguments:
@@ -475,7 +475,14 @@ class AbstractElement(object):
             except:
                 set = None  
 
-        replace = self.findreplacables(child,set,**kwargs)
+        if inspect.isclass(child):
+            Class = child
+            replace = Class.findreplacables(self,set,**kwargs)
+        else:
+            Class = child.__class__
+            kwargs['instance'] = child
+            replace = Class.findreplacables(self,set,**kwargs)
+            del kwargs['instance']
         
 
         
@@ -483,7 +490,7 @@ class AbstractElement(object):
             #nothing to replace, simply call append
             if 'alternative' in kwargs:
                 del kwargs['alternative'] #has other meaning in append()
-            return self.append(child, *arg, **kwargs)
+            return self.append(child, *args, **kwargs)
         elif len(replace) > 1:
             raise Exception("Unable to replace. Multiple candidates found, unable to choose.")
         elif len(replace) == 1:
@@ -492,7 +499,7 @@ class AbstractElement(object):
                 alt = self.append(Alternative)
                 alt.append(replace)
                 del kwargs['alternative'] #has other meaning in append()
-            return self.append(child, *arg, **kwargs)
+            return self.append(child, *args, **kwargs)
                 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
@@ -572,13 +579,14 @@ class AbstractElement(object):
         if not node:
             node = self        
         for e in self.data:
-            ignore = False                            
-            for c in ignorelist:
-                if c == e.__class__ or issubclass(e.__class__,c):
-                    ignore = True
-                    break
-            if ignore: 
-                continue
+            if ignorelist:
+                ignore = False                            
+                for c in ignorelist:
+                    if c == e.__class__ or issubclass(e.__class__,c):
+                        ignore = True
+                        break
+                if ignore: 
+                    continue
         
             if isinstance(e, cls):                
                 if not set is None:
@@ -903,8 +911,8 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
                 return r
         return None          
         
-    def append(self, child):
-        super(AbstractStructureElement,self).append(child)
+    def append(self, child, *args, **kwargs):
+        super(AbstractStructureElement,self).append(child, *args, **kwargs)
         self._setmaxid(child)     
                 
 
@@ -935,8 +943,8 @@ class AbstractAnnotation(AbstractElement):
 class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID): 
     OCCURRENCESPERSET = 1 #Do not allow duplicates within the same set
 
-    def append(self, child):
-        super(AbstractTokenAnnotation,self).append(child)
+    def append(self, child, *args, **kwargs):
+        super(AbstractTokenAnnotation,self).append(child, *args, **kwargs)
         self._setmaxid(child)
 
 class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation): 
@@ -1000,13 +1008,29 @@ class TextContent(AbstractElement):
             
         super(TextContent,self).__init__(doc, *args, **kwargs)
     
+    def text(self, corrected = None):
+        if corrected is None or corrected == self.corrected:
+            return self.value
+        else:
+            raise NoSuchText
+        
     def __unicode__(self):
         return self.value
         
     def __str__(self):
         return self.value.encode('utf-8')
         
-    def append(self, child):
+    def __eq__(self, other):
+        if isinstance(other, TextContent):
+            return self.value == other.value
+        elif isinstance(other, unicode):
+            return self.value == other
+        elif isinstance(other, str):
+            return self.value == unicode(other,'utf-8')
+        else:
+            return False
+        
+    def append(self, child, *args, **kwargs):
         raise NotImplementedError #on purpose
         
     def postappend(self):
@@ -1033,12 +1057,16 @@ class TextContent(AbstractElement):
     def findreplacables(Class, parent, set, **kwargs):
         #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
         if not 'corrected' in kwargs:
+            if 'instance' in kwargs:
+                kwargs['corrected'] = instance.corrected
             if Class.MINTEXTCORRECTIONLEVEL == TextCorrectionLevel.UNCORRECTED:
                 kwargs['corrected'] = TextCorrectionLevel.UNCORRECTED
             else:
                 kwargs['corrected'] = TextCorrectionLevel.CORRECTED
         replace = super(TextContent, Class).findreplacables(parent, set, **kwargs)
-        return  [ x for x in replace if x.corrected == kwargs['corrected']]
+        replace = [ x for x in replace if x.corrected == kwargs['corrected']]
+        del kwargs['corrected'] #always delete what we processed
+        return replace
         
         
     @classmethod
@@ -1405,10 +1433,10 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
         return e    
 
 
-    def append(self, child):
+    def append(self, child, *args, **kwargs):
         if isinstance(child, Word) and WordReference in self.ACCEPTED_DATA:
             #Accept Word instances instead of WordReference, references will be automagically used upon serialisation
-            self.data.append(child)
+            self.data.append(child, *args, **kwargs)
             child.parent = self
             self._setmaxid(child)
         else:
@@ -1522,18 +1550,30 @@ class Correction(AbstractElement):
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
+            
+    def new(self,index = None):
+        if index is None:
+            return self.select(New,None,False)[0]
+        else:
+            return self.select(New,None,False)[0][index]
         
-    def new():
-        return self.select(New,None,False)
+    def original(self,index=None):
+        if index is None:
+            return self.select(Original,None,False, False)[0]
+        else:
+            return self.select(Original,None,False, False)[0][index]
         
-    def original():
-        return self.select(Original,None,False, False)
-        
-    def current():
-        return self.select(Current,None,False)        
+    def current(self,index=None):
+        if index is None:
+            return self.select(Current,None,False)[0]       
+        else:
+            return self.select(Current,None,False)[0][index]
     
-    def suggestions():
-        return self.select(Suggestion,None,False, False)    
+    def suggestions(self,index=None):
+        if index is None:
+            return self.select(Suggestion,None,False, False)    
+        else:
+            return self.select(Suggestion,None,False, False)[index]
               
             
     def __unicode__(self):
@@ -1555,7 +1595,6 @@ class Correction(AbstractElement):
         
 Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction)
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Correction)
             
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -1563,6 +1602,9 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
     XMLTAG = 'alt'
     PRINTABLE = False    
+
+
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Correction, Alternative)
 
 
 class AlternativeLayers(AbstractElement):
@@ -2004,6 +2046,9 @@ class Document(object):
         assert isinstance(text, Text)
         self.data.append(text)
 
+    def create(self, Class, *args, **kwargs):
+        """Create an element associated with this Document"""
+        return Class(self, *args, **kwargs)
 
     def xmldeclarations(self):
         l = []
