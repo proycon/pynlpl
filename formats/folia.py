@@ -1262,6 +1262,7 @@ class Word(AbstractStructureElement):
     def split(self, *newwords, **kwargs):
         self.sentence().splitword(self, *newwords, **kwargs)
 
+
     def correcttext(self, **kwargs):        
         if 'new' in kwargs:
             kwargs['original'] = self.text()              
@@ -1367,6 +1368,115 @@ class Word(AbstractStructureElement):
         return c 
         
     
+    def correct(self, **kwargs):
+        if 'reuse' in kwargs:
+            #reuse an existing correction instead of making a new one
+            if isinstance(kwargs['reuse'], Correction):
+                c = kwargs['reuse']
+            else: #assume it's an index
+                try:
+                    c = self.doc.index[kwargs['reuse']]
+                    assert isinstance(c, Correction)
+                except:
+                    raise ValueError("reuse= must point to an existing correction (id or instance)!")
+            
+            suggestionsonly = (not c.hasnew() and not c.hasoriginal() and c.hassuggestions())
+        else:
+            if not 'id' in kwargs and not 'generate_id_in' in kwargs:
+                kwargs['generate_id_in'] = self                        
+            kwargs2 = copy(kwargs)
+            for x in ['new','original','suggestion', 'suggestions','current']:
+                if x in kwargs2:
+                    del kwargs2[x]
+            c = Correction(self.doc, **kwargs2)                        
+
+        addnew = False
+
+        if 'current' in kwargs:
+            if 'original' in kwargs or 'new' in kwargs: raise Exception("When setting current=, original= and new= can not be set!") 
+            if not isinstance(kwargs['current'], list): kwargs['current'] = [kwargs['current']] #support both lists (for multiple elements at once), as well as single element
+            c.replace(Current(self.doc, *kwargs['current']))
+            del kwargs['current']
+        if 'new' in kwargs:
+            if not isinstance(kwargs['new'], list): kwargs['new'] = [kwargs['new']] #support both lists (for multiple elements at once), as well as single element                        
+            addnew = New(self.doc, *kwargs['new'])
+            c.replace(addnew)
+            for current in c.select(Current): #delete current if present
+                c.remove(current)            
+            del kwargs['new']
+        if 'original' in kwargs:
+            if not isinstance(kwargs['original'], list): kwargs['original'] = [kwargs['original']] #support both lists (for multiple elements at once), as well as single element
+            c.replace(Original(self.doc, *kwargs['original']))
+            for o in kwargs['original']: #delete original from current element
+                if o in self:
+                    self.remove(o)            
+            for current in c.select(Current):  #delete current if present
+                c.remove(current)
+            del kwargs['original']        
+        elif addnew:
+            #original not specified, find automagically:
+            original = []
+            for new in addnew:
+                kwargs2 = {}
+                if isinstance(new, TextContent):
+                    kwargs2['corrected'] = new.corrected
+                try:
+                    set = new.set
+                except:
+                    set = None                
+                original += new.__class__.findreplacables(self, set, **kwargs2)
+            if not original:
+                raise Exception("No original= specified and unable to automatically infer")
+            else:
+                c.replace(Original(self.doc, *original))
+                for current in c.select(Current):  #delete current if present
+                    c.remove(current)       
+            
+        if addnew:
+            for original in c.original():
+                if original in self:
+                    self.remove(original)
+            for new in addnew:
+                self.append(copy(new))
+            #add new element 
+            
+        if 'suggestion' in kwargs:
+            kwargs['suggestions'] = [kwargs['suggestions']]
+            del kwargs['suggestion']
+        if 'suggestions' in kwargs:
+            for suggestion in kwargs['suggestions']:
+                if isinstance(suggestion, Suggestion):
+                    c.append(suggestion)
+                else:
+                    c.append(Suggestion(self.doc, suggestion))                        
+            del kwargs['suggestions']
+            
+            
+        
+
+        if 'reuse' in kwargs:
+            if addnew and suggestionsonly:        
+                #What was previously only a suggestion, now becomes a real correction
+                #If annotator, annotatortypes
+                #are associated with the correction as a whole, move it to the suggestions
+                #correction-wide annotator, annotatortypes might be overwritten
+                for suggestion in c.suggestions:
+                    if c.annotator and not suggestion.annotator:
+                        suggestion.annotator = c.annotator
+                    if c.annotatortype and not suggestion.annotatortype:
+                        suggestion.annotatortype = c.annotatortype
+                                                                
+            if 'annotator' in kwargs:
+                c.annotator = kwargs['annotator']
+            if 'annotatortype' in kwargs:
+                c.annotatortype = kwargs['annotatortype']
+            if 'confidence' in kwargs:
+                c.confidence = float(kwargs['confidence'])                        
+            del kwargs['reuse']
+        else:
+            self.append(c)
+        return c 
+            
 
     @classmethod        
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -1504,12 +1614,16 @@ class Suggestion(AbstractCorrectionChild):
     XMLTAG = 'suggestion'
     OCCURRENCES = 0 #unlimited
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
+    
+    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.CORRECTED
 
 class New(AbstractCorrectionChild):
     REQUIRED_ATTRIBS = (),
     OPTIONAL_ATTRIBS = (),    
     OCCURRENCES = 1
     XMLTAG = 'new'
+    
+    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.CORRECTED
     
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
@@ -1561,24 +1675,59 @@ class Correction(AbstractElement):
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
-            
+    
+    
+    def hasnew(self):
+        return bool(self.select(New,None,False, False))
+        
+    def hasoriginal(self):
+        return bool(self.select(Original,None,False, False))
+        
+    def hascurrent(self):
+        return bool(self.select(Current,None,False, False))        
+        
+    def hassuggestions(self):
+        return bool(self.select(Suggestion,None,False, False))                
+    
+    
     def new(self,index = None):
         if index is None:
-            return self.select(New,None,False)[0]
+            try:
+                return self.select(New,None,False)[0]
+            except IndexError:
+                raise NoSuchAnnotation
         else:
-            return self.select(New,None,False)[0][index]
+            l = self.select(New,None,False)
+            if len(l) == 0:
+                raise NoSuchAnnotation
+            else:                
+                return l[0][index]
         
     def original(self,index=None):
         if index is None:
-            return self.select(Original,None,False, False)[0]
+            try:
+                return self.select(Original,None,False, False)[0]
+            except IndexError:
+                raise NoSuchAnnotation
         else:
-            return self.select(Original,None,False, False)[0][index]
+            l = self.select(Original,None,False, False)
+            if len(l) == 0:
+                raise NoSuchAnnotation
+            else:                
+                return l[0][index]
         
-    def current(self,index=None):
+    def current(self,index=None):        
         if index is None:
-            return self.select(Current,None,False)[0]       
+            try:
+                return self.select(Current,None,False)[0]       
+            except IndexError:
+                raise NoSuchAnnotation
         else:
-            return self.select(Current,None,False)[0][index]
+            l =  self.select(Current,None,False)
+            if len(l) == 0:
+                raise NoSuchAnnotation
+            else:                
+                return l[0][index]
     
     def suggestions(self,index=None):
         if index is None:

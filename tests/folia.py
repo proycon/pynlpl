@@ -298,25 +298,6 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( len(p.sentences()) , tmp + 1)
         self.assertEqual( p[-1] , s)
         
-    def test001c_addsentence(self):        
-        """Edit Check - Adding a sentence to last paragraph (oneliner using document.create(), instances generated on the fly)"""
-        
-        #grab last paragraph
-        p = self.doc.paragraphs(-1)
-                    
-        #how many sentences?
-        tmp = len(p)                    
-                    
-        s = p.append(folia.Sentence, self.doc.create(folia.Word,'Dit'),  self.doc.create(folia.Word,'is'),  self.doc.create(folia.Word,'een'),  self.doc.create(folia.Word,'nieuwe'), self.doc.create(folia.Word,'zin'), self.doc.create(folia.Word,'.',cls='PUNCTUATION') )        
-        
-        self.assertEqual( len(s.words()), 6 ) #number of words in sentence
-        self.assertEqual( s.words(0).text(), 'Dit' ) #text check
-        self.assertEqual( self.doc[s.words(0).id], s.words(0) ) #index check
-        
-        #addition to paragraph correct?
-        self.assertEqual( len(p.sentences()) , tmp + 1)
-        self.assertEqual( p[-1] , s)        
-        
     def test002_addannotation(self):        
         """Edit Check - Adding a token annotation (pos, lemma) (pre-generated instances)"""
          
@@ -385,8 +366,8 @@ class Test4Edit(unittest.TestCase):
     def test006_addcorrection(self):        
         """Edit Check - Correcting Text"""
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        w.correcttext(new='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
-                    
+        
+        w.correct(new='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)                     
         self.assertEqual( w.annotation(folia.Correction).original(0).text() ,'stippelijn' ) 
         self.assertEqual( w.annotation(folia.Correction).new(0).text() ,'stippellijn' )     
         self.assertEqual( w.text(), 'stippellijn')    
@@ -394,11 +375,10 @@ class Test4Edit(unittest.TestCase):
         
     def test007_addcorrection2(self):                
         """Edit Check - Correcting a Token Annotation element"""        
-        #TODO: THIS TEST FAILS, SHOULD BE FIXED, TEST MAY CHANGE
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         oldpos = w.annotation(folia.PosAnnotation)
         newpos = folia.PosAnnotation(self.doc, cls='N(soort,ev,basis,zijd,stan)')
-        w.correctannotation(oldpos,newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
+        w.correct(original=oldpos,new=newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
                     
         self.assertEqual( w.annotation(folia.Correction).original(0) ,oldpos ) 
         self.assertEqual( w.annotation(folia.Correction).new(0),newpos )     
