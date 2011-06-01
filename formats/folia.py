@@ -271,7 +271,7 @@ class AbstractElement(object):
                         continue                
                 if s.strip() == "":
                     #Resort to original uncorrected text
-                    return self.uncorrectedtext()
+                    return self.text(TextCorrectionLevel.UNCORRECTED)
                       
     def originaltext(self):
         """Alias for uncorrectedtext"""
@@ -843,27 +843,12 @@ class AllowGenerateID(object):
                  
                  
 class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
+    
+    TEXTDELIMITER = "\n\n" #bigger gap between structure elements
+    
     def __init__(self, doc, *args, **kwargs):            
         super(AbstractStructureElement,self).__init__(doc, *args, **kwargs)
 
-    def __unicode__(self):
-        try:
-            return self.correctedtext()
-        except:        
-            #descend into children
-            s = ""
-            for e in self:
-                try:               
-                    es = unicode(e)
-                    if es:                    
-                        s += es + "\n\n" #bigger gap between structure elements
-                except:
-                    continue
-            if s.strip():
-                return s.strip()
-            else:                
-                return self.uncorrectedtext()    
-    
     def resolveword(self, id): 
         for child in self:
             r =  child.resolveword(id)            
@@ -1897,25 +1882,7 @@ class Sentence(AbstractStructureElement):
 
     def corrections(self):
         """Are there corrections in this sentence?"""
-        return self.select(Correction)
-
-        
-    def __unicode__(self):
-        if self.corrections():        
-            if self.hastext(TextCorrectionLevel.CORRECTED):
-                return self.correctedtext()
-                
-        else:
-            #no text specified 
-            o = ""
-            for e in self.words():
-                o += unicode(e)
-                if e.space == ' ' or e.space is True:
-                    o += ' '
-                elif e.space:
-                    o += e.space                    
-            return o
-
+        return bool(self.select(Correction))
 
     def paragraph(self):
         #return the sentence this sentence is a part of (None otherwise)
@@ -2630,6 +2597,7 @@ class Text(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation)
     XMLTAG = 'text' 
+    TEXTDELIMITER = "\n\n"
         
     def paragraphs(self):            
         return self.select(Paragraph)
@@ -2640,24 +2608,6 @@ class Text(AbstractStructureElement):
     def words(self):
         return self.select(Word)        
 
-    def __unicode__(self):
-        try:
-            return self.correctedtext()
-        except:        
-            #descend into children
-            s = ""
-            for e in self:
-                try:               
-                    es = unicode(e)
-                    if es:                    
-                        s += es + "\n\n"
-                except:
-                    continue
-            if s.strip():
-                return s.strip()
-            else:                
-                return self.uncorrectedtext()
-        
 
 class Corpus:
     def __init__(self,corpusdir, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, ignoreerrors=False):
