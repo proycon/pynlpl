@@ -215,6 +215,7 @@ class AbstractElement(object):
     OCCURENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
 
     MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.UNCORRECTED #Specifies the minimum text correction level allowed (only if allowed at all in ACCEPTED_DATA), this will be the default for any textcontent set
+    TEXTDELIMITER = " " #Delimiter to use when dynamically gathering text from child elements
     
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document):
@@ -238,46 +239,44 @@ class AbstractElement(object):
             raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)        
         
 
-    def text(self):
-        """If there is a corrected text, it will be selected, otherwise uncorrected text, and if text exists and error will be raised. Note that text() only covers explicitly provided text! Use unicode() or str() otherwise"""        
-        if not TextContent in self.ACCEPTED_DATA:
-            raise NotImplementedError("No text allowed for " + self.__class__.__name__) #on purpose        
-        text = None
-        for child in self:
-            if isinstance(child, TextContent):
-                text = child
-        if text is None:
-            raise NoSuchText
+    def text(self, corrected=None):
+        """Get text associated with this element. If no desired correctionlevel is specified 
+           the 'best' level will be selected automatically:
+            - Will first grab the corrected textcontent explicitly associated with the element
+            - If not found, it will descend into the children and build text dynamically
+            - If that yields no text, it will resort to the original uncorrected text
+            - If none is found, a NoSuchText exception is raised.
+        """
+        if not (corrected is None):
+            if self.MINTEXTCORRECTIONLEVEL > corrected:
+                raise NotImplementedError("No such text allowed for " + self.__class__.__name__) #on purpose        
+            text = None
+            for child in self:
+                if isinstance(child, TextContent) and child.corrected == corrected:
+                    text = child
+            if text is None:
+                raise NoSuchText
+            else:
+                return text.value  
         else:
-            return text.value         
+            if self.hastext(TextCorrectionLevel.CORRECTED):
+                return self.correctedtext()
+            else:
+                #try to get text dynamically from children
+                s = ""
+                for e in self:
+                    try:                    
+                        s += unicode(e) + TEXTDELIMITER
+                    except:
+                        continue                
+                if s.strip() == "":
+                    #Resort to original uncorrected text
+                    return self.uncorrectedtext()
+                      
+    def originaltext(self):
+        """Alias for uncorrectedtext"""
+        return self.text(TextCorrectionLevel.UNCORRECTED)
     
-    def uncorrectedtext(self):
-        if not TextContent in self.ACCEPTED_DATA:
-            raise NotImplementedError("No text allowed for " + self.__class__.__name__) #on purpose        
-        elif self.MINTEXTCORRECTIONLEVEL > TextCorrectionLevel.UNCORRECTED:
-            raise NotImplementedError("No uncorrected text allowed for " + self.__class__.__name__) #on purpose        
-        
-        text = None
-        for child in self:
-            if isinstance(child, TextContent) and not child.corrected:
-                text = child
-        if text is None:
-            raise NoSuchText
-        else:
-            return text.value           
-        
-    def correctedtext(self):
-        if not TextContent in self.ACCEPTED_DATA:
-            raise NotImplementedError("No text allowed for " + self.__class__.__name__) #on purpose        
-        text = None
-        for child in self:
-            if isinstance(child, TextContent) and child.corrected:
-                text = child
-        if text is None:
-            raise NoSuchText
-        else:
-            return text.value   
-
     def __len__(self):
         return len(self.data)
         
@@ -298,26 +297,8 @@ class AbstractElement(object):
             raise
 
     def __unicode__(self):
-        #get the most actual text:
-        # - first see if there is a text element (with corrected attribute)
-        # - if not, descend into children to grab dynamically
-        # - if that yields no results, try to get the uncorrected text (this may raise an exception if it too fails)
-        try:
-            return self.correctedtext()
-        except:        
-            #descend into children
-            s = ""
-            for e in self:
-                try:                    
-                    s += unicode(e) + " " #space separated by default, override for other behaviour
-                except:
-                    continue
-            if s.strip():
-                return s.strip()
-            else:                
-                return self.uncorrectedtext()
-                
-                
+        return self.text()
+                                
     def __str__(self):        
         return unicode(self).encode('utf-8')
 
@@ -431,7 +412,7 @@ class AbstractElement(object):
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ + ". Type not allowed as child.")
 
-        child.postappend():
+        child.postappend()
         return child
             
     @classmethod
@@ -1913,11 +1894,19 @@ class Sentence(AbstractStructureElement):
             if r:
                 return r
         return None
+
+    def corrections(self):
+        """Are there corrections in this sentence?"""
+        return self.select(Correction)
+
         
     def __unicode__(self):
-        if self.textdata:
-            return self.text()
+        if self.corrections():        
+            if self.hastext(TextCorrectionLevel.CORRECTED):
+                return self.correctedtext()
+                
         else:
+            #no text specified 
             o = ""
             for e in self.words():
                 o += unicode(e)
