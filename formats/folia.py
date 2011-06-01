@@ -54,7 +54,8 @@ class DuplicateAnnotationError(Exception):
     pass
     
 class NoDefaultError(Exception):
-    pass    
+    pass
+    
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     object.doc = doc #The FoLiA root document
@@ -216,6 +217,8 @@ class AbstractElement(object):
 
     MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.UNCORRECTED #Specifies the minimum text correction level allowed (only if allowed at all in ACCEPTED_DATA), this will be the default for any textcontent set
     TEXTDELIMITER = " " #Delimiter to use when dynamically gathering text from child elements
+    PRINTABLE = True #Is this element printable (aka, can its text method be called?)
+    
     
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document):
@@ -249,7 +252,9 @@ class AbstractElement(object):
         """
         
         #TODO: Implement handling of INLINE corrected textcontent
-        
+        if not self.PRINTABLE:
+            raise NoSuchText
+            
         if not (corrected is None):
             if self.MINTEXTCORRECTIONLEVEL > corrected:
                 raise NotImplementedError("No such text allowed for " + self.__class__.__name__) #on purpose        
@@ -273,17 +278,17 @@ class AbstractElement(object):
                         if delimiter is None:
                             delimiter = self.TEXTDELIMITER #default delimiter set by parent
                         s += unicode(e) + delimiter
-                    except:
+                    except NoSuchText, NoText:
                         continue                
                         
                 if s.strip():
-                    return s
+                    return s.strip()
                 elif self.MINTEXTCORRECTIONLEVEL <= TextCorrectionLevel.UNCORRECTED:
                     #Resort to original uncorrected text (if available)
                     return self.text(TextCorrectionLevel.UNCORRECTED)
                 else:
                     #No text
-                    raise NoSuchText
+                    raise NoText
                       
     def originaltext(self):
         """Alias for uncorrectedtext"""
@@ -1156,7 +1161,7 @@ class Word(AbstractStructureElement):
 
     def overridetextdelimiter(self):
         """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override)"""
-        if word.space:
+        if self.space:
             return ' '
         else:
             return ''
@@ -1402,11 +1407,14 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
 
 class AbstractAnnotationLayer(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,)
+    PRINTABLE = False
+    
     def __init__(self, doc, *args, **kwargs):
         if 'set' in kwargs:
             self.set = kwargs['set']
             del kwargs['set']
         super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
+        
 
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
@@ -1543,12 +1551,14 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     ACCEPTED_DATA = (AbstractTokenAnnotation, Correction)
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
     XMLTAG = 'alt'
+    PRINTABLE = False    
+
 
 class AlternativeLayers(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     ACCEPTED_DATA = (AbstractAnnotationLayer,)    
     XMLTAG = 'altlayers'
-    
+    PRINTABLE = False    
 
 class WordReference(AbstractElement):
     """Only used when word reference can not be resolved, if they can, Word objects will be used"""
