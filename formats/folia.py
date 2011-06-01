@@ -260,7 +260,7 @@ class AbstractElement(object):
                 return text.value  
         else:
             if self.hastext(TextCorrectionLevel.CORRECTED):
-                return self.correctedtext()
+                return self.text(TextCorrectionLevel.CORRECTED)
             else:
                 #try to get text dynamically from children
                 s = ""
