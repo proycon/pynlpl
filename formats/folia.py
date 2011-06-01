@@ -216,13 +216,14 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
         
 class AbstractElement(object):
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = ()
-    ACCEPTED_DATA = ()
-    ANNOTATIONTYPE = None
-    XMLTAG = None
-    ALLOWTEXT = False
-    
+    REQUIRED_ATTRIBS = () #List of required attributes (Members from the Attrib class)
+    OPTIONAL_ATTRIBS = () #List of optional attributes (Members from the Attrib class)
+    ACCEPTED_DATA = () #List of accepted data, classes inherited from AbstractElement
+    ANNOTATIONTYPE = None #Annotation type (Member of AnnotationType class)
+    XMLTAG = None #XML-tag associated with this element
+    OCCURENCES = 0 #Number of times this element may occur in its parent (0=unlimited, default=0)
+    OCCURENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
+
     
     
     def __init__(self, doc, *args, **kwargs):
@@ -230,10 +231,7 @@ class AbstractElement(object):
             raise Exception("Expected first parameter to be instance of Document, got " + str(type(doc)))
         self.doc = doc
         self.parent = None
-        self.data = []
-        if self.ALLOWTEXT:
-            self.textdata = []
-        
+        self.data = []        
             
         kwargs = parsecommonarguments(self, doc, self.ANNOTATIONTYPE, self.REQUIRED_ATTRIBS, self.OPTIONAL_ATTRIBS,**kwargs)
         for child in args:
@@ -251,28 +249,41 @@ class AbstractElement(object):
         
 
     def text(self):
-        """If there is a corrected text, it will be selected, otherwise uncorrected text, and if text exists and error will be raised. Note that text() only covers explicitly provided text! Use unicode() or str() otherwise"""
-        if not self.ALLOWTEXT:
+        """If there is a corrected text, it will be selected, otherwise uncorrected text, and if text exists and error will be raised. Note that text() only covers explicitly provided text! Use unicode() or str() otherwise"""        
+        if not TextContent in self.ACCEPTED_DATA:
             raise NotImplementedError("No text allowed for " + self.__class__.__name__) #on purpose        
-        if len(self.textdata) == 0:
+        text = None
+        for child in self:
+            if isinstance(child, TextContent):
+                text = child
+        if text is None:
             raise NoSuchText
-        return self.textdata[-1].value #newest by default
+        else:
+            return text.value         
     
     def uncorrectedtext(self):
-        if not self.ALLOWTEXT or isinstance(self,Word):
-            raise NotImplementedError #on purpose            
-        for t in self.textdata:
-            if not t.corrected:
-                return t.value
-        raise NoSuchText
+        if not TextContent in self.ACCEPTED_DATA:
+            raise NotImplementedError("No text allowed for " + self.__class__.__name__) #on purpose        
+        text = None
+        for child in self:
+            if isinstance(child, TextContent) and not child.corrected:
+                text = child
+        if text is None:
+            raise NoSuchText
+        else:
+            return text.value           
         
     def correctedtext(self):
-        if not self.ALLOWTEXT:
-            raise NotImplementedError #on purpose            
-        for i in range(1,len(self.textdata) + 1):
-            if self.textdata[-i].corrected:
-                return self.textdata[-i].value
-        raise NoSuchText
+        if not TextContent in self.ACCEPTED_DATA:
+            raise NotImplementedError("No text allowed for " + self.__class__.__name__) #on purpose        
+        text = None
+        for child in self:
+            if isinstance(child, TextContent) and child.corrected:
+                text = child
+        if text is None:
+            raise NoSuchText
+        else:
+            return text.value   
 
     def __len__(self):
         return len(self.data)
@@ -332,6 +343,7 @@ class AbstractElement(object):
         
     def settext(self, text, corrected=False):
         """Set text: may take TextContent element, unicode, or string (utf-8). Only in the latter two cases, the corrected parameter will be consulted. Existing texts will be *REPLACED*"""
+        #TODO: make obsolete
         if not self.ALLOWTEXT:
             raise NotImplementedError #on purpose
         if isinstance(text, TextContent):
@@ -357,17 +369,114 @@ class AbstractElement(object):
         elif isinstance(text, str):
             assert corrected in [False,'inline',True]
             self.settext(TextContent(self.doc, value=unicode(text,'utf-8'), corrected=corrected))
-        
             
-    def append(self, child):
-        if child.__class__ in self.ACCEPTED_DATA or child.__class__.__base__ in self.ACCEPTED_DATA:
+    @classmethod
+    def addable(parent, set=None, raiseexceptions=True):
+        """Tests whether a new element of this class can be added to the parent. Returns a boolean or raises ValueError exceptions (unless set to ignore)!
+        
+         This will use OCCURENCES, but may be overidden for more customised behaviour"""
+        
+        if not Class in parent.ACCEPTED_DATA and not Class.__base__ in parent.ACCEPTED_DATA:
+            if raiseexceptions: 
+                raise ValueError("Unable to add object of type " + child.__class__.__name__ + " to " + __name__ + ". Type not allowed as child.")
+            else:
+                return False
+                
+        if Class.OCCURENCES > 0:
+            #check if the parent doesn't have too many already
+            count = len(list(parent.select(Class,None,False))) #non recursive
+            if count > Class.OCCURENCES:
+                if raiseexceptions:
+                    raise ValueError("Unable to add another object of type " + child.__class__.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum.")                
+                else:
+                    return False
+            
+            if set and Attrib.ID in REQUIRED_ATTRIBS:
+                count = len(list(parent.select(Class,set,False))) #non recursive
+                if count > Class.OCCURENCESPERSET:
+                    if raiseexceptions:
+                        raise ValueError("Unable to add another object of set " + set + " and  type " + child.__class__.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum for the set.")                
+                    else:
+                        return False
+                
+            
+            count = len(list(parent.select(Class,None,False))) #non recursive
+                    
+                    
+        return True
+        
+                
+    def append(self, child, *args, **kwargs):
+        """Append a child element. Returns the added element 
+        
+        If an *instance* is passed as first argument, it will be appended
+        If a *class* derived from AbstractElement is passed as first argument, an instance will first be created and then appended.
+                    
+        Keyword arguments:
+            alternative     - If set to True, the *replaced* element will be made into an alternative. Simply use append() if you want the added element
+            to be an alternative.   
+            
+        """
+        
+        
+        #obtain the set
+        if 'set' in kwargs:
+            set = kwargs['set']
+        elif: 
+            try:
+                set = child.set
+            except:
+                set = None                
+
+        #Check if a Class rather than an instance was passed
+        Class = None #do not set to child.__class__
+        if inspect.isclass(child):
+            Class = child
+            if Class.addable(self, set):
+                if not 'id' in kwargs and not 'generate_id_in' kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
+                    kwargs['generate_id_in'] = self
+                child = Class(self.doc, *args, **kwargs)
+        elif args:            
+            raise Exception("Too many arguments specified. Only possible when first argument is a class and not an instance")
+        
+        #Do the actual appending
+        if Class or child.__class__.addable(self, set): #(prevents calling addable again if already done above)
+            if 'alternative' in kwargs and kwargs['alternative']:
+                child = Alternative(self.doc, child, generate_id_in=self)
+            self.data.append(child)
+            child.parent = self    
+        elif isinstance(child,str) or isinstance(child,unicode) and TextContent in self.ACCEPTED_DATA:
+            #you can pass strings directly (just for convenience), will be made into textcontent automatically.
+            child = TextContent(self.doc, child) #MAYBE TODO: corrected attribute?
             self.data.append(child)
             child.parent = self
-        elif child and child.ALLOWTEXT:
-            self.settext(child)
         else:
-            raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ )
+            raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ + ". Type not allowed as child.")
+
+        return child
+
+
+    def replace(self, child, *arg, **kwargs):
+        """Appends a child element like append(), but replaces any existing child element of the same type and set. If no such child element exists, this will act the same as append()
+        
+        Keyword arguments:
+            alternative     - If set to True, the *replaced* element will be made into an alternative. Simply use append() if you want the added element
+            to be an alternative.        
+        """
+        
+        if inspect.isclass(child):
+            Class = child
+        else:        
+            Class = child.__class__
             
+        if kwargs['set']:
+            set = kwargs['set']
+        elif not child is Class and child.set:
+            set = child.set
+                        
+        self.annotations(Class,set)
+        
+        #TODO: Implement
             
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
@@ -1318,6 +1427,13 @@ class AbstractAnnotationLayer(AbstractElement):
             self.set = kwargs['set']
             del kwargs['set']
         super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
+
+class AbstractCorrectionChild(AbstractElement):
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ANNOTATIONTYPE = AnnotationType.SUGGESTION
+    ACCEPTED_DATA = (AbstractTokenAnnotation, Word)
+    ALLOWTEXT = True
+    
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
@@ -2461,6 +2577,8 @@ class Figure(AbstractStructureElement):
             self.url = None 
         super(Figure, self).__init__(doc, *args, **kwargs)
         
+
+
 
 class Division(AbstractStructureElement):    
     REQUIRED_ATTRIBS = (Attrib.ID,)
