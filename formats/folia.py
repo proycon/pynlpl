@@ -419,10 +419,10 @@ class AbstractElement(object):
         """
         
         
-        #obtain the set
+        #obtain the set (if available, necessary for checking addability)
         if 'set' in kwargs:
             set = kwargs['set']
-        elif: 
+        else: 
             try:
                 set = child.set
             except:
@@ -433,7 +433,7 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             if Class.addable(self, set):
-                if not 'id' in kwargs and not 'generate_id_in' kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
+                if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
                     kwargs['generate_id_in'] = self
                 child = Class(self.doc, *args, **kwargs)
         elif args:            
@@ -463,21 +463,33 @@ class AbstractElement(object):
             alternative     - If set to True, the *replaced* element will be made into an alternative. Simply use append() if you want the added element
             to be an alternative.        
         """
+
         
-        if inspect.isclass(child):
-            Class = child
-        else:        
-            Class = child.__class__
-            
-        if kwargs['set']:
+        #obtain the set (if available, necessary for checking addability)
+        if 'set' in kwargs:
             set = kwargs['set']
-        elif not child is Class and child.set:
-            set = child.set
+        else: 
+            try:
+                set = child.set
+            except:
+                set = None                
                         
-        self.annotations(Class,set)
-        
-        #TODO: Implement
-            
+        replace = self.select(Class,set)
+        if len(replace) == 0:
+            #nothing to replace, simply call append
+            if 'alternative' in kwargs:
+                del kwargs['alternative'] #has other meaning in append()
+            return self.append(child, *arg, **kwargs)
+        elif len(replace) > 1:
+            raise Exception("Unable to replace. Multiple candidates found, unable to choose.")
+        elif len(replace) == 1:
+            self.data.remove(replace)
+            if 'alternative' in kwargs and kwargs['alternative']:
+                alt = self.append(Alternative)
+                alt.append(replace)
+                del kwargs['alternative'] #has other meaning in append()
+            return self.append(child, *arg, **kwargs)
+                
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
         global NSFOLIA
