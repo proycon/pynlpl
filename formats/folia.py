@@ -16,6 +16,7 @@ from lxml import etree as ElementTree
 from lxml.builder import E, ElementMaker
 from sys import stderr
 from StringIO import StringIO
+from copy import copy
 from pynlpl.formats.imdi import RELAXNG_IMDI
 import inspect
 import glob
@@ -352,11 +353,23 @@ class AbstractElement(object):
         
          This will use OCCURRENCES, but may be overidden for more customised behaviour"""
         
-        if not Class in parent.ACCEPTED_DATA and not Class.__base__ in parent.ACCEPTED_DATA:
-            if raiseexceptions: 
-                raise ValueError("Unable to add object of type " + child.__class__.__name__ + " to " + __name__ + ". Type not allowed as child.")
-            else:
-                return False
+        if not Class in parent.ACCEPTED_DATA:
+            #Class is not in accepted data, but perhaps any of its ancestors is?
+            found = False
+            c = Class
+            try:
+                while c.__base__:
+                    if c.__base__ in parent.ACCEPTED_DATA:
+                        found = True
+                        break
+                    c = c.__base__
+            except:
+                pass 
+            if not found:            
+                if raiseexceptions: 
+                    raise ValueError("Unable to add object of type " + Class.__name__ + " to " + parent.__class__.__name__ + ". Type not allowed as child.")
+                else:
+                    return False
                 
         if Class.OCCURRENCES > 0:
             #check if the parent doesn't have too many already
@@ -440,21 +453,10 @@ class AbstractElement(object):
         return child
             
     @classmethod
-    def findreplacables(parent, **kwargs):
+    def findreplacables(Class, parent, set=None,**kwargs):
         """Find replacable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control"""
-        #obtain the set (if available, necessary for checking addability)
-        if 'set' in kwargs:
-            set = kwargs['set']
-        else: 
-            try:
-                set = child.set
-            except:
-                set = None                
-                   
-        if inspect.isclass(__class__):
-            return parent.select(__class__,set)       
-        else:
-            return parent.select(__class__,set)       
+        return parent.select(Class,set)       
+        
 
 
     def replace(self, child, *arg, **kwargs):
@@ -465,7 +467,15 @@ class AbstractElement(object):
             to be an alternative.        
         """
 
-        replace = self.findreplacables(child, **kwargs)
+        if 'set' in kwargs:
+            set = kwargs['set']
+        else: 
+            try:
+                set = child.set
+            except:
+                set = None  
+
+        replace = self.findreplacables(child,set,**kwargs)
         
 
         
@@ -1020,14 +1030,14 @@ class TextContent(AbstractElement):
         return len(self.value)
     
     @classmethod
-    def findreplacables(Class, parent, **kwargs):
+    def findreplacables(Class, parent, set, **kwargs):
         #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
         if not 'corrected' in kwargs:
             if Class.MINTEXTCORRECTIONLEVEL == TextCorrectionLevel.UNCORRECTED:
                 kwargs['corrected'] = TextCorrectionLevel.UNCORRECTED
             else:
                 kwargs['corrected'] = TextCorrectionLevel.CORRECTED
-        replace = super(TextContent, Class).findreplacables(parent, **kwargs)
+        replace = super(TextContent, Class).findreplacables(parent, set, **kwargs)
         return  [ x for x in replace if x.corrected == kwargs['corrected']]
         
         
@@ -1086,7 +1096,7 @@ class Word(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     XMLTAG = 'w'
     ANNOTATIONTYPE = AnnotationType.TOKEN
-    ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent)
+    #ACCEPTED_DATA DEFINED LATER (after Correction)
     
     MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.CORRECTED
     
@@ -1480,7 +1490,7 @@ class Original(AbstractCorrectionChild):
     
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
-        if not super(New,Class).addable(parent,set,raiseexceptions): return False        
+        if not super(Original,Class).addable(parent,set,raiseexceptions): return False        
         if any( ( isinstance(c, Current)  for c in parent ) ):
              if raiseexceptions:
                 raise Exception("Can't add Original item to Correction if there is a Current item")
@@ -1545,6 +1555,7 @@ class Correction(AbstractElement):
         
 Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction)
 
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Correction)
             
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     REQUIRED_ATTRIBS = (Attrib.ID,)

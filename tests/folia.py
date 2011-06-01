@@ -23,7 +23,6 @@ from StringIO import StringIO
 import lxml.etree
 import pynlpl.formats.folia as folia
 
-
 class Test1Read(unittest.TestCase):
                         
     def test1_readfromfile(self):        
