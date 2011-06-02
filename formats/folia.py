@@ -817,18 +817,18 @@ class AllowCorrections(object):
 
         if 'current' in kwargs:
             if 'original' in kwargs or 'new' in kwargs: raise Exception("When setting current=, original= and new= can not be set!") 
-            if not isinstance(kwargs['current'], list): kwargs['current'] = [kwargs['current']] #support both lists (for multiple elements at once), as well as single element
+            if not isinstance(kwargs['current'], list) and not isinstance(kwargs['current'], tuple): kwargs['current'] = [kwargs['current']] #support both lists (for multiple elements at once), as well as single element
             c.replace(Current(self.doc, *kwargs['current']))
             del kwargs['current']
         if 'new' in kwargs:
-            if not isinstance(kwargs['new'], list): kwargs['new'] = [kwargs['new']] #support both lists (for multiple elements at once), as well as single element                        
+            if not isinstance(kwargs['new'], list) and not isinstance(kwargs['new'], tuple): kwargs['new'] = [kwargs['new']] #support both lists (for multiple elements at once), as well as single element                        
             addnew = New(self.doc, *kwargs['new'])
             c.replace(addnew)
             for current in c.select(Current): #delete current if present
                 c.remove(current)            
             del kwargs['new']
         if 'original' in kwargs:
-            if not isinstance(kwargs['original'], list): kwargs['original'] = [kwargs['original']] #support both lists (for multiple elements at once), as well as single element
+            if not isinstance(kwargs['original'], list) and not isinstance(kwargs['original'], tuple): kwargs['original'] = [kwargs['original']] #support both lists (for multiple elements at once), as well as single element
             c.replace(Original(self.doc, *kwargs['original']))
             for o in kwargs['original']: #delete original from current element
                 if o in self:
@@ -1865,7 +1865,7 @@ class Sentence(AbstractStructureElement):
         
     def splitword(self, originalword, *newwords, **kwargs):
         if isinstance(originalword, str) or isinstance(originalword, unicode):
-            originalword = self.doc[originalword]   
+            originalword = self.doc[originalword]
         return self.correctwords([originalword], newwords, **kwargs)
             
             
