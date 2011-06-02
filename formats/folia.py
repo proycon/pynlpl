@@ -355,6 +355,7 @@ class AbstractElement(object):
         
          This will use OCCURRENCES, but may be overidden for more customised behaviour"""
         
+        
         if not Class in parent.ACCEPTED_DATA:
             #Class is not in accepted data, but perhaps any of its ancestors is?
             found = False
@@ -372,27 +373,26 @@ class AbstractElement(object):
                     raise ValueError("Unable to add object of type " + Class.__name__ + " to " + parent.__class__.__name__ + ". Type not allowed as child.")
                 else:
                     return False
+   
+
                 
         if Class.OCCURRENCES > 0:
             #check if the parent doesn't have too many already
-            count = len(list(parent.select(Class,None,False))) #non recursive
-            if count > Class.OCCURRENCES:
+            count = len(parent.select(Class,None,True,['Original','Suggestion','Alternative']))
+            if count >= Class.OCCURRENCES:
                 if raiseexceptions:
-                    raise ValueError("Unable to add another object of type " + child.__class__.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum.")                
+                    raise DuplicateAnnotationError("Unable to add another object of type " + child.__class__.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum.")                
                 else:
                     return False
             
-            if set and Attrib.ID in REQUIRED_ATTRIBS:
-                count = len(list(parent.select(Class,set,False))) #non recursive
-                if count > Class.OCCURRENCESPERSET:
-                    if raiseexceptions:
-                        raise ValueError("Unable to add another object of set " + set + " and  type " + child.__class__.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum for the set.")                
-                    else:
-                        return False
+        if Class.OCCURRENCESPERSET > 0 and set and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
+            count = len(parent.select(Class,set,True, ['Original','Suggestion','Alternative'])) 
+            if count >= Class.OCCURRENCESPERSET:
+                if raiseexceptions:
+                    raise DuplicateAnnotationError("Unable to add another object of set " + set + " and type " + Class.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum for the set.")                
+                else:
+                    return False
                 
-            
-            count = len(list(parent.select(Class,None,False))) #non recursive
-                    
                     
         return True
         

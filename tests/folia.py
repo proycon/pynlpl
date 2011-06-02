@@ -343,6 +343,7 @@ class Test4Edit(unittest.TestCase):
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
         
         #add a pos annotation without specifying a set (should take default set), but this will clash with existing tag!
+   
         self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.PosAnnotation(self.doc,  cls='N', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
         self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.LemmaAnnotation(self.doc, cls='naam', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO ) ) 
         
