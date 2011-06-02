@@ -904,12 +904,16 @@ class AllowTokenAnnotation(AllowCorrections):
     def annotations(self, annotationtype=None):
         """Generator yielding all annotations of a certain type. Raises a Raises a NoSuchAnnotation exception if none was found."""
         found = False 
-        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
+        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE        
         for e in self:
             try:
                 if annotationtype is None or e.ANNOTATIONTYPE == annotationtype:
                     found = True
                     yield e
+                if e.ANNOTATIONTYPE == AnnotationType.Correction:
+                    for e2 in e.new():
+                        yield e2
+                    
             except AttributeError:
                 continue
         if not found:
@@ -1554,7 +1558,7 @@ class Current(AbstractCorrectionChild):
     
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
-        if not super(New,Class).addable(parent,set,raiseexceptions): return False
+        if not super(Current,Class).addable(parent,set,raiseexceptions): return False
         if any( ( isinstance(c, New) or isinstance(c, Original) for c in parent ) ):
             if raiseexceptions:
                 raise Exception("Can't add Current element to Correction if there is a New or Original element")
