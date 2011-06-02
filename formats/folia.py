@@ -193,7 +193,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if object.id:
         if object.id in doc.index:
             if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Duplicate ID not permitted:" + object.id
-            raise Exception("Duplicate ID not permitted: " + object.id)
+            raise DuplicateAnnotationError("Duplicate ID not permitted: " + object.id)
         else:
             if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + object.id
             doc.index[object.id] = object

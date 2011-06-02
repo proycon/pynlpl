@@ -394,15 +394,18 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.text(), 'stippelijn')    
         
     def test009a_idclash(self):
-        """Edit Check - Adding a duplicate ID"""     
-        raise NotImplementedError
+        """Edit Check - Checking for exception on adding a duplicate ID"""     
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
+        
+        self.assertRaises( folia.DuplicateAnnotationError,  w.sentence().append, folia.Word, id='WR-P-E-J-0000000001.p.1.s.8.w.11', text='stippellijn')
+    
         
     def test009b_textcorrectionlevel(self):
-        """Edit Check - Adding TextContent of wrong level"""     
+        """Edit Check - Checking for exception on an adding TextContent of wrong level"""     
         raise NotImplementedError
 
     def test009c_duptextcontent(self):
-        """Edit Check - Adding duplicate textcontent"""     
+        """Edit Check - Checking for exception on an adding duplicate textcontent"""     
         raise NotImplementedError
         
         
