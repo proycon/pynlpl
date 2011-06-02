@@ -402,7 +402,10 @@ class Test4Edit(unittest.TestCase):
         
     def test009b_textcorrectionlevel(self):
         """Edit Check - Checking for exception on an adding TextContent of wrong level"""     
-        raise NotImplementedError
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
+        
+        self.assertRaises(  ValueError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.UNCORRECTED )
+        
 
     def test009c_duptextcontent(self):
         """Edit Check - Checking for exception on an adding duplicate textcontent"""     
