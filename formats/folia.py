@@ -587,6 +587,8 @@ class AbstractElement(object):
             if ignorelist:
                 ignore = False                            
                 for c in ignorelist:
+                    if not inspect.isclass(c):
+                        c = globals()[c]
                     if c == e.__class__ or issubclass(e.__class__,c):
                         ignore = True
                         break
@@ -901,7 +903,9 @@ class AllowCorrections(object):
 class AllowTokenAnnotation(AllowCorrections):
     """Elements that allow token annotation (including extended annotation) must inherit from this class"""
     
-    def annotations(self, annotationtype=None):
+    
+    
+    def annotationsold(self, annotationtype=None): #obsolete
         """Generator yielding all annotations of a certain type. Raises a Raises a NoSuchAnnotation exception if none was found."""
         found = False 
         if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE        
@@ -913,20 +917,29 @@ class AllowTokenAnnotation(AllowCorrections):
                 if e.ANNOTATIONTYPE == AnnotationType.Correction:
                     for e2 in e.new():
                         yield e2
+                    for e2 in e.current():
+                        yield e2
                     
             except AttributeError:
                 continue
         if not found:
             raise NoSuchAnnotation()
+            
+    def annotations(self,type,set=None):        
+        l = self.select(type,set,True,['Original','Suggestion','Alternative'])
+        if not l:
+            raise NoSuchAnnotation()
+        else:
+            return l
     
     def hasannotation(self,type,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many"""
-        l = self.select(type,set,False) #non-recursive
+        l = self.select(type,set,True,['Original','Suggestion','Alternative'])
         return len(l)
 
     def annotation(self, type, set=None):
         """Will return a SINGLE annotation (even if there are multiple). Raises a NoSuchAnnotation exception if none was found"""
-        l = self.select(type,set,False) #non-recursive
+        l = self.select(type,set,True,['Original','Suggestion','Alternative'])
         if len(l) >= 1:
             return l[0]
         else:
