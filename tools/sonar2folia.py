@@ -27,6 +27,7 @@ index = list(sonar.CorpusFiles(sonardir,'pos', "", lambda x: True, True))
 
 print "Processing..."
 for i, filename in enumerate(index):
+    category = os.path.basename(os.path.dirname(filename))
     progress = round((i+1) / float(len(index)) * 100,1)    
     print "#" + str(i+1) + " " + filename + ' ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' ' +  str(progress) + '%'
     try:
@@ -61,10 +62,20 @@ for i, filename in enumerate(index):
         os.mkdir(foliadir + os.path.dirname(filename))
     except:
         pass
+        
     try:        
         doc.save(foliadir + filename)
     except:
         print >> sys.stderr,"ERROR saving " + foliadir + filename
+    
+    try:
+        f = codecs.open(foliadir + category + '.txt','a','utf-8')
+        f.write('#' + os.path.basename(filename) + '\n')
+        f.write(unicode(doc))    
+        f.close()        
+    except:
+        print >> sys.stderr,"ERROR appending to " + foliadir + category + '.txt'
+
             
     sys.stdout.flush()
     sys.stderr.flush()
