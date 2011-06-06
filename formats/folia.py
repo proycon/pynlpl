@@ -227,7 +227,7 @@ class AbstractElement(object):
     
     
     def __init__(self, doc, *args, **kwargs):
-        if not isinstance(doc, Document):
+        if not isinstance(doc, Document) and not doc is None:
             raise Exception("Expected first parameter to be instance of Document, got " + str(type(doc)))
         self.doc = doc
         self.parent = None
@@ -359,6 +359,15 @@ class AbstractElement(object):
             corrected = self.MINTEXTCORRECTIONLEVEL
         self.replace(TextContent, value=text, corrected=corrected) 
 
+    def setdocument(self, doc):
+        """Associate a document with this element"""
+        assert isinstance(doc, Document)
+        
+        if not self.doc:
+            self.doc = doc
+        for e in self:
+            e.setdocument(doc)
+
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
         """Tests whether a new element of this class can be added to the parent. Returns a boolean or raises ValueError exceptions (unless set to ignore)!
@@ -408,8 +417,11 @@ class AbstractElement(object):
         
     
     def postappend(self):
-        """This method will be called after an element is added to another. It can do extra checks and if necessary raise exceptions to prevent addition. By default it does nothing."""
-        pass
+        """This method will be called after an element is added to another. It can do extra checks and if necessary raise exceptions to prevent addition. By default makes sure the right document is associated."""
+        
+        #If the element was not associated with a document yet, do so now (and for all unassociated children:
+        if not self.doc and self.parent.doc:
+            self.setdocument(self.parent.doc)
         
                 
     def append(self, child, *args, **kwargs):
@@ -1221,13 +1233,14 @@ class TextContent(AbstractElement):
     def append(self, child, *args, **kwargs):
         raise NotImplementedError #on purpose
         
+        
     def postappend(self):
         try:
             if not self.ref and self.parent.parent and self.parent.parent.hastext():
                 self.ref = self.parent.parent
         except:
             pass
-            
+                        
     
         if self.corrected is None:
             self.corrected = self.parent.MINTEXTCORRECTIONLEVEL                    
@@ -1240,7 +1253,9 @@ class TextContent(AbstractElement):
             for child in self.parent:
                 if not child is self and isinstance(child, TextContent) and child.corrected == self.corrected:            
                     raise DuplicateAnnotationError("Text element with same corrected status (except for inline) may not occur multiple times!")
-            
+        
+        super(TextContent, self).postappend()
+        
     
     def __iter__(self):
         return iter(self.value)

@@ -51,7 +51,7 @@ def parse_cgn_postag(rawtag):
     
     
     begin = rawtag.find('(')
-    if tag[-1] == ')' and begin > 0:
+    if rawtag[-1] == ')' and begin > 0:
         tag = folia.PosAnnotation(None, cls='rawtag',set='http://ilk.uvt.nl/folia/sets/cgn')
 
         
