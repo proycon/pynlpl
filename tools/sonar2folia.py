@@ -16,7 +16,8 @@ from multiprocessing import Pool, Process
 import datetime
 
 
-def process(i, filename):
+def process(data):
+    i, filename = data
     category = os.path.basename(os.path.dirname(filename))
     progress = round((i+1) / float(len(index)) * 100,1)    
     print "#" + str(i+1) + " " + filename + ' ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' ' +  str(progress) + '%'
