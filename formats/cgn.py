@@ -31,17 +31,18 @@ subsets = {
     'npagr': ['agr','evon','rest','evz','mv','agr3','evmo','rest3','evf'],
     'lwtype': ['bep','onbep'],
     'vwtype': ['pers','refl','recip','bez','vb','betr','excl','aanw','onbep'],
-    'pdtype':  ['adv-pron','det'], #TODO: pron, grad
+    'pdtype':  ['adv-pron','pron','det','grad'], #TODO: pron, grad
     'status': ['vol','red','nadr'],
     'persoon': ['1','2','2v','2b','3','3p','3m','3v','3o'],
     'positie': ['prenom','posnom', 'nom','vrij'],
     'buiging': ['zonder','met-e'],
-    'getal_n' : ['zonder-v','mv-n'],
+    'getal-n' : ['zonder-v','mv-n','zonder-n'],
     'graad' : ['basis','comp','sup','dim'],
     'wvorm': ['pv','inf','vd','od'],
     'pvtijd': ['tgw','verl','conj'],
     'pvagr':  ['ev','mv','met-t'],
     'numtype': ['hoofd','rang'],
+    'dial': ['dial'],
 }
 
 def parse_cgn_postag(rawtag):
@@ -68,7 +69,7 @@ def parse_cgn_postag(rawtag):
                         tag.append( folia.Feature, subset=subset,cls=rawfeature)
                         break
                 if not found:
-                    raise InvalidTagException("Don't know what to do with feature " + rawfeature)            
+                    raise InvalidTagException("Unknown feature value: " + rawfeature)            
         return tag
     else:
         raise InvalidTagException("Not a valid CGN tag")
