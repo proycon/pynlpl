@@ -825,6 +825,24 @@ class Description(AbstractElement):
         return self.value.encode('utf-8')  
     
     
+    
+    def xml(self, attribs = None,elements = None, skipchildren = False):   
+        global NSFOLIA
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
+        if not attribs:
+            attribs = {}  
+                    
+        return E.desc(self.value, **attribs)        
+        
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        kwargs = {}
+        kwargs['value'] = node.text
+        return Description(doc, **kwargs)    
+    
+    
 class AllowCorrections(object):
     def correct(self, **kwargs):
         if 'reuse' in kwargs:
@@ -2362,6 +2380,8 @@ class Document(object):
         
     def __str__(self):    
         return unicode(self).encode('utf-8')
+        
+        
 
 class Content(AbstractElement):     #used for raw content, subelement for Gap
     OCCURENCES = 1
@@ -2387,7 +2407,22 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
         
     def __str__(self):
         return self.value.encode('utf-8')  
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):   
+        global NSFOLIA
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
+        if not attribs:
+            attribs = {}  
+                    
+        return E.content(self.value, **attribs)        
         
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        kwargs = {}
+        kwargs['value'] = node.text
+        return Content(doc, **kwargs)            
     
 class Gap(AbstractElement):    
     ACCEPTED_DATA = (Content, Description)
