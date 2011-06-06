@@ -14,6 +14,7 @@ import pynlpl.formats.folia as folia
 import pynlpl.formats.sonar as sonar
 from multiprocessing import Pool, Process
 import datetime
+import codecs
 
 
 def process(data):
