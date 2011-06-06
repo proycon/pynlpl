@@ -35,7 +35,7 @@ subsets = {
     'status': ['vol','red','nadr'],
     'persoon': ['1','2','2v','2b','3','3p','3m','3v','3o'],
     'positie': ['prenom','postnom', 'nom','vrij'],
-    'buiging': ['zonder','met-e'],
+    'buiging': ['zonder','met-e','met-s'],
     'getal-n' : ['zonder-v','mv-n','zonder-n'],
     'graad' : ['basis','comp','sup','dim'],
     'wvorm': ['pv','inf','vd','od'],
