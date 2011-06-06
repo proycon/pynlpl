@@ -811,9 +811,10 @@ class Description(AbstractElement):
                 self.value = unicode(kwargs['value'],'utf-8')
             else:
                 raise Exception("value= parameter must be unicode or str instance")
+            del kwargs['value']
         else:
             raise Exception("Description expects value= parameter")
-        super(AbstractElement,self).__init__(doc, *args, **kwargs)
+        super(Description,self).__init__(doc, *args, **kwargs)
     
     def __nonzero__(self):
         return bool(self.value)

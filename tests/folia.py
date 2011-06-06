@@ -211,7 +211,7 @@ class Test2Sanity(unittest.TestCase):
         print repr(self.doc.data[0])
         check(self.doc.data[0],'  ')
 
-    def test016b_description(self):        
+    def test016a_description(self):        
         """Sanity Check - Description"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.1.w.6']
         self.assertEqual( w.description(), 'Dit woordje is een voorzetsel, het is maar dat je het weet...')
