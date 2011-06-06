@@ -30,11 +30,11 @@ subsets = {
     'vztype': ['init','versm','fin'],
     'npagr': ['agr','evon','rest','evz','mv','agr3','evmo','rest3','evf'],
     'lwtype': ['bep','onbep'],
-    'vwtype': ['pers','refl','recip','bez','vb','betr','excl','aanw','onbep'],
-    'pdtype':  ['adv-pron','pron','det','grad'], #TODO: pron, grad
+    'vwtype': ['pers','pr','refl','recip','bez','vb','betr','excl','aanw','onbep'], #pr == pers?
+    'pdtype':  ['adv-pron','pron','det','grad'], #pron == adv-pron?, grad == det?
     'status': ['vol','red','nadr'],
     'persoon': ['1','2','2v','2b','3','3p','3m','3v','3o'],
-    'positie': ['prenom','posnom', 'nom','vrij'],
+    'positie': ['prenom','postnom', 'nom','vrij'],
     'buiging': ['zonder','met-e'],
     'getal-n' : ['zonder-v','mv-n','zonder-n'],
     'graad' : ['basis','comp','sup','dim'],
@@ -60,7 +60,7 @@ def parse_cgn_postag(rawtag):
         tag.append( folia.Feature, subset='head',cls=head)
 
         rawfeatures = rawtag[begin+1:-1].split(',')
-        for rawfeature in rawfeatures:
+        for rawfeature in rawfeatures:            
             if rawfeature:
                 found = False
                 for subset, classes in subsets.items():
