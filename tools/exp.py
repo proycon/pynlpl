@@ -262,7 +262,8 @@ def wait(id, process):
     global MAILTO, HOST, DAILYMAILHOUR, POLLINTERVAL, RESINTERVAL
 
     begintime = datetime.datetime.now()
-
+    mailed = False
+    
     #Now wait till process is done
     while True:
             process.poll()
@@ -294,7 +295,6 @@ def wait(id, process):
 
     endtime = datetime.datetime.now()
     duration = endtime - begintime
-    mail = True
 
     #delete process file
     try:
@@ -337,8 +337,7 @@ def wait(id, process):
     print "Duration:   " + str(duration)
     print
     os.system('cat ' + printfile) #to stdout
-    if mail:
-        os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \""+title+"\" " + MAILTO)
+    os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \""+title+"\" " + MAILTO)
 
 
 
