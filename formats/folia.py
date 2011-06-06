@@ -56,7 +56,9 @@ class DuplicateAnnotationError(Exception):
     
 class NoDefaultError(Exception):
     pass
-    
+
+class NoDescription(Exception):
+    pass
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     object.doc = doc #The FoLiA root document
@@ -241,8 +243,13 @@ class AbstractElement(object):
                     
         for key in kwargs:
             raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)        
-        
 
+    def description(self):
+        for e in self:
+            if isinstance(e, Description):
+                return e.value
+        raise NoDescription
+        
     def text(self, corrected=None):
         """Get text associated with this element. If no desired correctionlevel is specified 
            the 'best' level will be selected automatically:
@@ -792,6 +799,32 @@ class AbstractElement(object):
         child.parent = None
         self.data.remove(child)
 
+class Description(AbstractElement):
+    XMLTAG = 'desc'
+    OCCURRENCES = 1
+    
+    def __init__(self,doc, *args, **kwargs):
+        if 'value' in kwargs:
+            if isinstance(kwargs['value'], unicode):
+                self.value = kwargs['value']
+            elif isinstance(kwargs['value'], str):
+                self.value = unicode(kwargs['value'],'utf-8')
+            else:
+                raise Exception("value= parameter must be unicode or str instance")
+        else:
+            raise Exception("Description expects value= parameter")
+        super(AbstractElement,self).__init__(doc, *args, **kwargs)
+    
+    def __nonzero__(self):
+        return bool(self.value)
+        
+    def __unicode__(self):
+        return self.value
+        
+    def __str__(self):
+        return self.value.encode('utf-8')  
+    
+    
 class AllowCorrections(object):
     def correct(self, **kwargs):
         if 'reuse' in kwargs:
@@ -1488,7 +1521,7 @@ class AbstractAnnotationLayer(AbstractElement):
 
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
-    ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent)
+    ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Description)
     
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
@@ -1582,7 +1615,7 @@ class Current(AbstractCorrectionChild):
 class Correction(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
-    ACCEPTED_DATA = (New,Original,Current, Suggestion)
+    ACCEPTED_DATA = (New,Original,Current, Suggestion, Description)
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
@@ -1664,7 +1697,7 @@ class Correction(AbstractElement):
             ignorelist.append(Suggestion)
             return super(Correction,self).select(cls,set,recursive, ignorelist, node)
         
-Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction)
+Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction, Description)
 
             
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
@@ -1675,12 +1708,12 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     PRINTABLE = False    
 
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Correction, Alternative)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Correction, Alternative, Description)
 
 
 class AlternativeLayers(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
-    ACCEPTED_DATA = (AbstractAnnotationLayer,)    
+    ACCEPTED_DATA = (AbstractAnnotationLayer)    
     XMLTAG = 'altlayers'
     PRINTABLE = False    
 
@@ -1728,32 +1761,32 @@ class SyntacticUnit(AbstractSpanAnnotation):
     ANNOTATIONTYPE = AnnotationType.SYNTAX
     XMLTAG = 'su'
     
-SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference)
+SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference, Description)
 
 class Chunk(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
-    ACCEPTED_DATA = (WordReference,)
+    ACCEPTED_DATA = (WordReference, Description)
     ANNOTATIONTYPE = AnnotationType.CHUNKING
     XMLTAG = 'chunk'
 
 class Entity(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
-    ACCEPTED_DATA = (WordReference,)
+    ACCEPTED_DATA = (WordReference, Description)
     ANNOTATIONTYPE = AnnotationType.ENTITY
     XMLTAG = 'entity'
     
 class SyntaxLayer(AbstractAnnotationLayer):
-    ACCEPTED_DATA = (SyntacticUnit,)
+    ACCEPTED_DATA = (SyntacticUnit,Description)
     XMLTAG = 'syntax'
 
 class ChunkingLayer(AbstractAnnotationLayer):
-    ACCEPTED_DATA = (Chunk,)
+    ACCEPTED_DATA = (Chunk,Description)
     XMLTAG = 'chunking'
 
 class EntitiesLayer(AbstractAnnotationLayer):
-    ACCEPTED_DATA = (Entity,)
+    ACCEPTED_DATA = (Entity,Description)
     XMLTAG = 'entities'
 
     
@@ -1761,21 +1794,21 @@ class PosAnnotation(AbstractTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.POS
-    ACCEPTED_DATA = (Feature,)
+    ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'pos'
 
 class LemmaAnnotation(AbstractTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.LEMMA
-    ACCEPTED_DATA = (Feature,)
+    ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'lemma'
     
 class PhonAnnotation(AbstractTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.PHON
-    ACCEPTED_DATA = (Feature,)
+    ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'phon'
 
 
@@ -1783,7 +1816,7 @@ class DomainAnnotation(AbstractExtendedTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.DOMAIN
-    ACCEPTED_DATA = (Feature,)
+    ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'domain'
 
 class SynsetFeature(Feature):
@@ -1797,7 +1830,7 @@ class SenseAnnotation(AbstractTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.SENSE
-    ACCEPTED_DATA = (Feature,SynsetFeature)
+    ACCEPTED_DATA = (Feature,SynsetFeature, Description)
     XMLTAG = 'sense'
     
 
@@ -1824,7 +1857,7 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent)
+    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description)
     XMLTAG = 's'
     
     def __init__(self,  doc, *args, **kwargs):
@@ -1927,12 +1960,12 @@ class Sentence(AbstractStructureElement):
 
 
 
-Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent)        
+Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description)        
 
 class Paragraph(AbstractStructureElement):    
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n"
     
@@ -1946,7 +1979,7 @@ class Paragraph(AbstractStructureElement):
 class Head(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Sentence,)
+    ACCEPTED_DATA = (Sentence,Description)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'          
@@ -2329,8 +2362,35 @@ class Document(object):
         
     def __str__(self):    
         return unicode(self).encode('utf-8')
+
+class Content(AbstractElement):     #used for raw content, subelement for Gap
+    OCCURENCES = 1
+    XMLTAG = 'content'
+    
+    def __init__(self,doc, *args, **kwargs):
+        if 'value' in kwargs:
+            if isinstance(kwargs['value'], unicode):
+                self.value = kwargs['value']
+            elif isinstance(kwargs['value'], str):
+                self.value = unicode(kwargs['value'],'utf-8')
+            else:
+                raise Exception("value= parameter must be unicode or str instance")
+        else:
+            raise Exception("Description expects value= parameter")
+        super(AbstractElement,self).__init__(doc, *args, **kwargs)
+    
+    def __nonzero__(self):
+        return bool(self.value)
+        
+    def __unicode__(self):
+        return self.value
+        
+    def __str__(self):
+        return self.value.encode('utf-8')  
+        
     
 class Gap(AbstractElement):    
+    ACCEPTED_DATA = (Content, Description)
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
     XMLTAG = 'gap'
     
@@ -2349,15 +2409,13 @@ class Gap(AbstractElement):
             self.description = kwargs['description']
             del kwargs['description']
         super(Gap,self).__init__(doc, *args, **kwargs)
-        
-    def __iter__(self):
-        pass
-        
-    def _len__(self):
-        return 0
 
-
-
+    def content(self):
+        for e in self:
+            if isinstance(e, Content):
+                return e.value
+        raise NoSuchAnnotation
+            
     
 class ListItem(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
@@ -2367,16 +2425,16 @@ class ListItem(AbstractStructureElement):
     
 class List(AbstractStructureElement):    
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
-    ACCEPTED_DATA = (ListItem,)
+    ACCEPTED_DATA = (ListItem,Description)
     XMLTAG = 'list'
     
 
-ListItem.ACCEPTED_DATA = (List, Sentence)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description)
 
 
 class Figure(AbstractStructureElement):    
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
-    ACCEPTED_DATA = (Sentence,)
+    ACCEPTED_DATA = (Sentence, Description)
     XMLTAG = 'figure'
     
     def __init__(self, doc, *args, **kwargs):
@@ -2422,12 +2480,12 @@ class Division(AbstractStructureElement):
         extraelements.append(E.optional( E.ref(name='head') ))
         return super(Division,cls).relaxng(includechildren, extraattribs , extraelements)
 
-Division.ACCEPTED_DATA = (Division, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation)
+Division.ACCEPTED_DATA = (Division, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description)
 
 class Text(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description)
     XMLTAG = 'text' 
     TEXTDELIMITER = "\n\n"
         

@@ -211,6 +211,17 @@ class Test2Sanity(unittest.TestCase):
         print repr(self.doc.data[0])
         check(self.doc.data[0],'  ')
 
+    def test016b_description(self):        
+        """Sanity Check - Description"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.1.w.6']
+        self.assertEqual( w.description(), 'Dit woordje is een voorzetsel, het is maar dat je het weet...')
+
+    def test016b_description(self):        
+        """Sanity Check - Error on non-existing description"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.1.w.7']
+        self.assertRaises( folia.NoDescription,  w.description)        
+        
+
     def test099_write(self):        
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
@@ -762,6 +773,7 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <lemma class="woord"/>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.6">
+              <desc>Dit woordje is een voorzetsel, het is maar dat je het weet...</desc>
               <t>voor</t>
               <pos class="VZ(init)"/>
               <lemma class="voor"/>

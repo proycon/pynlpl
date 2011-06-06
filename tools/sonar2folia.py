@@ -24,8 +24,8 @@ def process(data):
     print "#" + str(i+1) + " " + filename + ' ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' ' +  str(progress) + '%'
     try:
         doc = folia.Document(file=filename)
-    except:
-        print >> sys.stderr,"ERROR loading " + filename
+    except Exception as e:
+        print >> sys.stderr,"ERROR loading " + filename + ":" + str(e)
         return False
     filename = filename.replace(sonardir,'')
     if filename[0] == '/':
