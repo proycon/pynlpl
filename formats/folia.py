@@ -1784,6 +1784,7 @@ class WordReference(AbstractElement):
         self.annotatortype = None
         self.confidence = None
         self.n = None
+        self.data = []
     
     @classmethod
     def parsexml(Class, node, doc):
@@ -1796,7 +1797,7 @@ class WordReference(AbstractElement):
             return doc[id]
         except KeyError:
             if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] ...Unresolvable!"
-            return WordReference(id=id)    
+            return WordReference(doc, id=id)    
             
 class AlignReference(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -2116,6 +2117,9 @@ class Document(object):
         
     def __len__(self):
         return len(self.data)
+        
+    def __nonzero__(self):
+        return True #documents always evaluate to True!
     
     def __iter__(self):
         for text in self.data:

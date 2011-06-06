@@ -430,6 +430,20 @@ class Test4Edit(unittest.TestCase):
         
         self.assertRaises(  folia.DuplicateAnnotationError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.CORRECTED )
         
+    def test010_documentlesselement(self):
+        """Edit Check - Creating an initially document-less tokenannotation element and adding it to a word"""     
+        
+        #not associated with any document yet (first argument is None instead of Document instance)
+        pos = folia.PosAnnotation(None, set='fakecgn', cls='N')
+
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] 
+        w.append(pos)
+        
+        self.assertEqual( w.annotation(folia.PosAnnotation,'fakecgn'), pos)
+        self.assertEqual( pos.parent, w)
+        self.assertEqual( pos.doc, w.doc)
+        
+               
         
     
     #def test008_addaltcorrection(self):            
