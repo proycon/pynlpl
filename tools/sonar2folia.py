@@ -39,16 +39,17 @@ def process(data):
     try:
         pretokdoc = folia.Document(file=sonardir + '/' + filename)
     except:
-        print >> sys.stderr,"ERROR loading " + filename
-        return False  
-    for p2 in pretokdoc.paragraphs():
-        try:
-            p = doc[p2.id]        
-        except:
-            print >> sys.stderr,"ERROR: Paragraph " + p2.id + " not found. Tokenised and pre-tokenised versions out of sync?"
-            continue
-        if p2.text:
-            p.text = p2.text                     
+        print >> sys.stderr,"WARNING unable to load pretokdoc " + filename
+        pretokdoc = None
+    if pretokdoc:
+        for p2 in pretokdoc.paragraphs():
+            try:
+                p = doc[p2.id]        
+            except:
+                print >> sys.stderr,"ERROR: Paragraph " + p2.id + " not found. Tokenised and pre-tokenised versions out of sync?"
+                continue
+            if p2.text:
+                p.text = p2.text                     
     try:
         os.mkdir(foliadir + os.path.dirname(filename))
     except:
@@ -61,7 +62,7 @@ def process(data):
     
     try:
         f = codecs.open(foliadir + filename.replace('.xml','.tok.txt'),'w','utf-8')
-        f.write(doc)    
+        f.write(unicode(doc))    
         f.close()        
     except:
         print >> sys.stderr,"ERROR saving " + foliadir + filename.replace('.xml','.tok.txt')
