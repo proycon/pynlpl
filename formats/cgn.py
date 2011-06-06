@@ -25,7 +25,7 @@ subsets = {
     'getal': ['ev','mv'],
     'genus': ['zijd','onz','masc','fem'],
     'naamval': ['stan','gen','dat','nomin','obl','bijz'],
-    'spectype': ['afgebr','afk','deeleigen','symb','vreemd'],
+    'spectype': ['afgebr','afk','deeleigen','symb','vreemd','enof','meta'],
     'conjtype': ['neven','onder'],
     'vztype': ['init','versm','fin'],
     'npagr': ['agr','evon','rest','evz','mv','agr3','evmo','rest3','evf'],

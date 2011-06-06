@@ -35,7 +35,7 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N = (0,1,2,3,4)
 
 class AnnotationType:
-    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON = range(14)
+    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY = range(15)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -1892,7 +1892,13 @@ class SenseAnnotation(AbstractTokenAnnotation):
     ACCEPTED_DATA = (Feature,SynsetFeature, Description)
     XMLTAG = 'sense'
     
-
+class SubjectivityAnnotation(AbstractTokenAnnotation):
+    REQUIRED_ATTRIBS = (Attrib.CLASS,)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ANNOTATIONTYPE = AnnotationType.SUBJECTIVITY
+    ACCEPTED_DATA = (Feature, Description)
+    XMLTAG = 'subjectivity'
+    
 
 class Quote(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
