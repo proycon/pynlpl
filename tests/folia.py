@@ -414,7 +414,7 @@ class Test4Edit(unittest.TestCase):
         """Edit Check - Checking for exception on adding a duplicate ID"""     
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
         
-        self.assertRaises( folia.DuplicateAnnotationError,  w.sentence().append, folia.Word, id='WR-P-E-J-0000000001.p.1.s.8.w.11', text='stippellijn')
+        self.assertRaises( folia.DuplicateIDError,  w.sentence().append, folia.Word, id='WR-P-E-J-0000000001.p.1.s.8.w.11', text='stippellijn')
     
         
     def test009b_textcorrectionlevel(self):
