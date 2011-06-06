@@ -14,112 +14,65 @@
 #
 ###############################################################
 
+from pynlpl.formats import folia
 from pynlpl.common import Enum
 
 class InvalidTagException(Exception):
     pass
 
-class AbstractPosType(object):
-    def __init__(self, *args, **kwargs):
-        for value in args:
-            for prop in dir(self.__class__):
-                if isinstance(prop,Enum):
-                    if value in getattr(self.__class__, prop): #verify this uses the derived class
-                        setattr(self,prop,value)
-        for key, value in kwargs.items():
-            getattr(self,ntype) = value
+subsets = {
+    'ntype': ['soort'],
+    'getal': ['ev','mv'],
+    'genus': ['zijd','onz','masc','fem'],
+    'naamval': ['stan','gen','dat','nomin','obl','bijz'],
+    'spectype': ['afgebr','afk','deeleigen','symb','vreemd'],
+    'conjtype': ['neven','onder'],
+    'vztype': ['init','versm','fin'],
+    'npagr': ['agr','evon','rest','evz','mv','agr3','evmo','rest3','evf'],
+    'lwtype': ['bep','onbep'],
+    'vwtype': ['pers','refl','recip','bez','vb','betr','excl','aanw','onbep'],
+    'pdtype':  ['adv-pron','det'], #TODO: pron, grad
+    'status': ['vol','red','nadr'],
+    'persoon': ['1','2','2v','2b','3','3p','3m','3v','3o'],
+    'positie': ['prenom','posnom', 'nom','vrij'],
+    'buiging': ['zonder','met-e'],
+    'getal_n' : ['zonder-v','mv-n'],
+    'graad' : ['basis','comp','sup','dim'],
+    'wvorm': ['pv','inf','vd','od'],
+    'pvtijd': ['tgw','verl','conj'],
+    'pvagr':  ['ev','mv','met-t'],
+    'numtype': ['hoofd','rang'],
+}
 
-    def __getitem__(self, key):
-        if hasattr(self, key):
-            return getattr(self, key)
-        else:
-            raise KeyError
-
-    def __iter__(self, key):
-        for attr in dir(self):
-            if attr[0] != '_':
-                yield attr
-
-
-class N(AbstractPosType):
-    ntype = Enum('soort')
-    getal = Enum('ev','mv')
-    graad = Enum('basis','dim')
-    genus = Enum('zijd','onz')
-    naamval = Enum('stan','gen','dat')
-
-class ADJ(AbstractPosType):
-    positie = Enum('prenom','nom','posnom','vrij')
-    graad = Enum('basis','comp','sup','dim')
-    buiging = Enum('zonder','met-e','met-s')
-    getal_n = Enum('zonder-v','mv-n')
-    naamval = Enum('stan','bijz')
-
-class WW(AbstractPosType):
-    wvorm = Enum('pv','inf','vd','od')
-    pvtijd = Enum('tgw','verl','conj')
-    pvagr = Enum('ev','mv','met-t')
-    positie = Enum('prenom','nom','posnom','vrij')
-    buiging = Enum('zonder','met-e')
-    getal_n = Enum('zonder-v','mv-n')
-
-class TW(AbstractPosType):
-    numtype = Enum('hoofd','rang')
-    positie = Enum('prenom','posnom','vrij')
-    getal_n = Enum('zonder-v','mv-n')
-    graad = Enum('basis','dim')
-    naamval = Enum('stan','bijz')
-
-class VNW(AbstractPosType):
-    vwtype = Enum('pers','refl','recip','bez','vb','betr','excl','aanw','onbep')
-    pdtype = Enum('adv-pron','det') #TODO: pron, grad
-    naamval = Enum('stan','nomin','obl','gen','dat')
-    status = Enum('vol','red','nadr')
-    persoon = Enum('1','2','2v','2b','3','3p','3m','3v','3o')
-    getal = Enum('ev','mv')
-    genus = Enum('masc','fem','onz')
-    positie = Enum('prenom','nom','vrij')
-    buiging = Enum('zonder','met-e')
-    npagr = Enum('agr','evon','rest','evz','mv','agr3','evmo','rest3','evf')
-    getal_n = Enum('zonder-v','mv-n')
-    graad = Enum('basis','comp','sup','dim')
+def parse_cgn_postag(rawtag):
+    global subsets
+    """decodes PoS features like "N(soort,ev,basis,onz,stan)" into a PosAnnotation data structure 
+    based on CGN tag overview compiled by Matje van de Camp"""
     
-class LID(AbstractPosType):
-    lwtype = Enum('bep','onbep')
-    naamval = Enum('stan','gen','dat')
-    npagr = Enum('agr','evon','rest','evz','mv','agr3','evmo','rest3','evf')
-
-class VZ(AbstractPosType):
-    vztype = Enum('init','versm','fin')
     
-class VG(AbstractPosType):
-    conjtype = Enum('neven','onder')
-
-class BW(AbstractPosType):
-    #no feature):
-    pass
-
-class LET(object):
-    #no features
-    pass
-
-class SPEC(object):
-    spectype = Enum('afgebr','afk','deeleigen','symb','vreemd')
-
-
-def parse_cgn_postag(tag):
-    """decodes PoS features like "N(soort,ev,basis,onz,stan)" into a data sructure 
-    compiled by Matje van de Camp"""
-
-    begin = tag.find('(')
+    begin = rawtag.find('(')
     if tag[-1] == ')' and begin > 0:
-        head = tag[0:begin]
-        headcls = globals()[head]
+        tag = folia.PosAnnotation(None, cls='rawtag',set='http://ilk.uvt.nl/folia/sets/cgn')
 
-        rawfeatures = tag[begin+1:-1]
-        return headcls(rawfeatures)
+        
+        head = rawtag[0:begin]
+        tag.append( folia.Feature, subset='head',cls=head)
+
+        rawfeatures = rawtag[begin+1:-1].split(',')
+        for rawfeature in rawfeatures:
+            if rawfeature:
+                found = False
+                for subset, classes in subsets.items():
+                    if rawfeature in classes:
+                        found = True
+                        tag.append( folia.Feature, subset=subset,cls=rawfeature)
+                        break
+                if not found:
+                    raise InvalidTagException("Don't know what to do with feature " + rawfeature)            
+        return tag
     else:
         raise InvalidTagException("Not a valid CGN tag")
+
 
 
 
