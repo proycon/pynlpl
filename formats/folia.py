@@ -119,7 +119,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             raise ValueError("Annotator is not supported for " + object.__class__.__name__)
         object.annotator = kwargs['annotator']
         del kwargs['annotator']
-    elif annotationtype in doc.annotationdefaults and 'annotator' in doc.annotationdefaults[annotationtype]:
+    elif doc and annotationtype in doc.annotationdefaults and 'annotator' in doc.annotationdefaults[annotationtype]:
         object.annotator = doc.annotationdefaults[annotationtype]['annotator']
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotator is required for " + object.__class__.__name__)
@@ -137,7 +137,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         else:
             raise ValueError("annotatortype must be 'auto' or 'manual'")                
         del kwargs['annotatortype']
-    elif annotationtype in doc.annotationdefaults and 'annotatortype' in doc.annotationdefaults[annotationtype]:
+    elif doc and annotationtype in doc.annotationdefaults and 'annotatortype' in doc.annotationdefaults[annotationtype]:
         object.annotatortype = doc.annotationdefaults[annotationtype]['annotatortype']            
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotatortype is required for " + object.__class__.__name__)        
@@ -184,7 +184,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.settext(kwargs['text'], TextCorrectionLevel.UNCORRECTED)        
         del kwargs['uncorrectedtext']
         
-    if doc.debug >= 2:
+    if doc and doc.debug >= 2:
         print >>stderr, "   @id           = ", repr(object.id)
         print >>stderr, "   @set          = ", repr(object.set)
         print >>stderr, "   @class        = ", repr(object.cls)
@@ -195,7 +195,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         
                 
     #set index
-    if object.id:
+    if object.id and doc:
         if object.id in doc.index:
             if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Duplicate ID not permitted:" + object.id
             raise DuplicateIDError("Duplicate ID not permitted: " + object.id)
@@ -365,7 +365,13 @@ class AbstractElement(object):
         
         if not self.doc:
             self.doc = doc
-        for e in self:
+            if self.id:
+                if self.id in doc:
+                    raise DuplicateIDError(self.id)
+                else:    
+                    self.doc.index[id] = self
+        
+        for e in self: #recursive for all children
             e.setdocument(doc)
 
     @classmethod
@@ -522,10 +528,14 @@ class AbstractElement(object):
             raise Exception("Unable to replace. Multiple candidates found, unable to choose.")
         elif len(replace) == 1:
             self.data.remove(replace)
-            if 'alternative' in kwargs and kwargs['alternative']:
+            if 'alternative' in kwargs and kwargs['alternative']: 
+                #old version becomes alternative
                 alt = self.append(Alternative)
                 alt.append(replace)
                 del kwargs['alternative'] #has other meaning in append()
+            else: 
+                #remove old version competely
+                self.remove(replace)
             return self.append(child, *args, **kwargs)
                 
 
@@ -813,6 +823,9 @@ class AbstractElement(object):
     def remove(self, child):
         child.parent = None
         self.data.remove(child)
+        #delete from index
+        if child.id and self.doc and child.id in self.doc.index:
+            del self.doc.index[child.id]
 
 class Description(AbstractElement):
     XMLTAG = 'desc'
