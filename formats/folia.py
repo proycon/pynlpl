@@ -789,7 +789,7 @@ class AbstractElement(object):
         if dcoicorrection and dcoicorrectionoriginal and text:
             if not AnnotationType.CORRECTION in doc.annotationdefaults:
                 doc.declare(AnnotationType.CORRECTION, set='http://ilk.uvt.nl/folia/sets/dcoi-corrections.foliaset')
-            instance.correct(doc, generate_id_in=instance, cls=dcoicorrection, original=dcoicorrectionoriginal, new=text)
+            instance.correct(generate_id_in=instance, cls=dcoicorrection, original=dcoicorrectionoriginal, new=text)
         return instance        
             
     def resolveword(self, id):
