@@ -1496,7 +1496,15 @@ class Feature(AbstractElement):
     XMLATTRIB = None
     SUBSET = None
     
-    def __init__(self,**kwargs):
+    def __init__(self,doc, *args, **kwargs):
+        self.id = None
+        self.data = []
+        self.annotator = None
+        self.annotatortype = None
+        self.confidence = None
+        self.n = None
+        self.doc = doc
+        
         if self.SUBSET:
             self.subset = self.SUBSET
         elif 'subset' in kwargs: 
