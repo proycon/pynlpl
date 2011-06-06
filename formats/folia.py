@@ -2396,9 +2396,10 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
                 self.value = unicode(kwargs['value'],'utf-8')
             else:
                 raise Exception("value= parameter must be unicode or str instance")
+            del kwargs['value']
         else:
             raise Exception("Description expects value= parameter")
-        super(AbstractElement,self).__init__(doc, *args, **kwargs)
+        super(Content,self).__init__(doc, *args, **kwargs)
     
     def __nonzero__(self):
         return bool(self.value)
@@ -2415,7 +2416,7 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
 
         if not attribs:
             attribs = {}  
-                    
+                                
         return E.content(self.value, **attribs)        
         
     @classmethod

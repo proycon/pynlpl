@@ -220,8 +220,14 @@ class Test2Sanity(unittest.TestCase):
         """Sanity Check - Error on non-existing description"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.1.w.7']
         self.assertRaises( folia.NoDescription,  w.description)        
+    
+    def test017_description(self):            
+        """Sanity Check - Gap"""
+        gap = self.doc["WR-P-E-J-0000000001.gap.1"]
+        self.assertEqual( gap.content().strip(), 'bli bli bla, bla bla bli')
+        self.assertEqual( gap.cls, 'backmatter')
+        self.assertEqual( gap.description(), 'Backmatter')
         
-
     def test099_write(self):        
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
@@ -1556,7 +1562,15 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
           </s>
         </p>
       </div>
-  </text>
+      <gap xml:id="WR-P-E-J-0000000001.gap.1" class="backmatter" annotator="proycon">
+       <desc>Backmatter</desc>
+       <content>
+<![CDATA[
+bli bli bla, bla bla bli
+]]>
+       </content>
+      </gap>      
+  </text>  
 </FoLiA>"""
 
 
@@ -3364,6 +3378,11 @@ DCOIEXAMPLE=u"""<?xml version="1.0" encoding="iso-8859-15"?>
         </p>
       </div>
     </body>
-    <gap reason="backmatter" hand=""/>
+    <gap reason="backmatter" hand="proycon">
+       <desc>Backmatter</desc>
+       <content>
+bli bli bla, bla bla bli
+       </content>
+    </gap>
   </text>
 </DCOI>"""
