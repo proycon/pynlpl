@@ -88,5 +88,5 @@ if __name__ == '__main__':
 
     print "Processing..."
     p = Pool(threads)
-    p.map(f, enumerate(index) )
+    p.map(process, enumerate(index) )
 
