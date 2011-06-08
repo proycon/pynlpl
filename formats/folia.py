@@ -785,7 +785,9 @@ class AbstractElement(object):
                 key = 'class'
             elif Class is Gap and  key == 'hand':
                 key = 'annotator'    
-            
+            elif Class is Division and  key == 'type':
+                key = 'cls'
+                    
             kwargs[key] = value
                                 
         #D-Coi support:
