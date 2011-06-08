@@ -20,7 +20,7 @@ from socket import *
 import re
 
 class FrogClient:
-    def __init__(self,host="localhost",port=12345, tadpole_encoding="utf-8", parser=False,timeout=120.0):
+    def __init__(self,host="localhost",port=12345, tadpole_encoding="utf-8", parser=False, timeout=120.0):
         """Create a client connecting to a Frog or Tadpole server."""
         self.BUFSIZE = 4096
         self.socket = socket(AF_INET,SOCK_STREAM)
@@ -28,6 +28,7 @@ class FrogClient:
         self.socket.connect( (host,int(port)) )
         self.tadpole_encoding = tadpole_encoding
         self.parser = parser
+        
 
     def process(self,input_data, source_encoding="utf-8", return_unicode = True):
         """Receives input_data in the form of a str or unicode object, passes this to the server, with proper consideration for the encodings, and returns the Tadpole output as a list of tuples: (word,pos,lemma,morphology), each of these is a proper unicode object unless return_unicode is set to False, in which case raw strings in the tadpole encoding will be returned."""
@@ -66,15 +67,19 @@ class FrogClient:
                             if self.parser:
                                 tp_output.append( (None,None,None,None, None, None) )
                             else:
-                                tp_output.append( (None,None,None,None) )                                
-                        try:
-                            word,lemma,morph,pos,parse1,parse2 = line[1:]
-                        except:
-                            parse1 = parse2 = ""
-                            try:
-                                word,lemma,morph,pos = line[1:]
-                            except:
-                                raise Exception("Can't process line: ", repr(line))
+                                tp_output.append( (None,None,None,None) )  
+                        fields = line[1:]
+                        parse1=parse2=""
+                        if len(fields) == 7:
+                             word,lemma,morph,pos,posprob, parse1,parse2 = line[1:]
+                        elif len(fields) == 6:
+                            word,lemma,morph,pos, parse1,parse2 = line[1:]
+                        elif len(fields) == 5:
+                            word,lemma,morph,pos, posprob = line[1:]
+                        elif len(fields) == 4:
+                            word,lemma,morph,pos = line[1:]
+                        else:
+                            raise Exception("Can't process line: ", repr(line))
 
                         if self.parser:
                             tp_output.append( (word,lemma,morph,pos,parse1,parse2) )
