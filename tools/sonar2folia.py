@@ -1,7 +1,17 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+#---------------------------------------------------------------
+# PyNLPl - Conversion script for converting SoNaR/D-Coi from D-Coi XML to FoLiA XML
+#   by Maarten van Gompel, ILK, Tilburg University
+#   http://ilk.uvt.nl/~mvgompel
+#   proycon AT anaproy DOT nl
+#
+#   Licensed under GPLv3
+#
+#----------------------------------------------------------------
 
+# Usage: sonar2folia.py sonar-input-dir output-dir nr-of-threads
 
 import sys
 import os

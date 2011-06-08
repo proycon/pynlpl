@@ -478,13 +478,29 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( pos.doc, w.doc)
         
     def test011_subtokenannot(self):            
-        """Edit Check - Subtoken annotation (morphological analysis)"""        
-        raise NotImplementedError
+        """Edit Check - Adding Subtoken annotation (morphological analysis)"""        
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.5.w.3']
+        l = w.append( folia.MorphologyLayer )
+        l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='handschrift', offset=0) , folia.Feature(self.doc, subset='type',cls='stem'), folia.Feature(self.doc, subset='function',cls='lexical') ))
+        l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='en', offset=11),  folia.Feature(self.doc, subset='type',cls='suffix'),  folia.Feature(self.doc, subset='function',cls='plural')))
+        
+        self.assertEqual( len(l), 2) #two morphemes
+        self.assertTrue( isinstance(l[0], folia.Morpheme ) ) 
+        self.assertEqual( l[0].text(), 'handschrift' ) 
+        self.assertEqual( l[0].feat('type'), 'stem' ) 
+        self.assertEqual( l[0].feat('function'), 'lexical' ) 
+        self.assertEqual( l[1].text(), 'en' ) 
+        self.assertEqual( l[1].feat('type'), 'suffix' ) 
+        self.assertEqual( l[1].feat('function'), 'plural' )         
+    
 
     def test012_alignment(self):            
         """Edit Check - Alignment"""        
         raise NotImplementedError               
-        
+    
+    def test013_spanannot(self):            
+        """Edit Check - Adding Span Annotatation (syntax)"""
+        raise NotImplementedError
     
     #def test008_addaltcorrection(self):            
     #    """Edit Check - Adding alternative corrections"""        
