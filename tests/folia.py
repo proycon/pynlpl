@@ -230,8 +230,8 @@ class Test2Sanity(unittest.TestCase):
         
     def test018_subtokenannot(self):            
         """Sanity Check - Subtoken annotation (morphological analysis)"""        
-        w = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.5']
-        l = s.annotation(folia.MorphologyLayer)
+        w= self.doc['WR-P-E-J-0000000001.p.1.s.3.w.5']
+        l = w.annotation(folia.MorphologyLayer)
         self.assertEqual( len(l), 2) #two morphemes
         self.assertTrue( isinstance(l[0], folia.Morpheme ) ) 
         self.assertEqual( l[0].text(), 'handschrift' ) 
@@ -243,7 +243,7 @@ class Test2Sanity(unittest.TestCase):
 
     def test019_alignment(self):            
         """Sanity Check - Alignment"""        
-        raise NotImplemented
+        raise NotImplementedError
 
 
     def test020_spanannotation(self):
@@ -479,11 +479,11 @@ class Test4Edit(unittest.TestCase):
         
     def test011_subtokenannot(self):            
         """Edit Check - Subtoken annotation (morphological analysis)"""        
-        raise NotImplemented
+        raise NotImplementedError
 
     def test012_alignment(self):            
         """Edit Check - Alignment"""        
-        raise NotImplemented               
+        raise NotImplementedError               
         
     
     #def test008_addaltcorrection(self):            
