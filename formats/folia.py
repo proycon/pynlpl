@@ -839,8 +839,10 @@ class Description(AbstractElement):
                 self.value = kwargs['value']
             elif isinstance(kwargs['value'], str):
                 self.value = unicode(kwargs['value'],'utf-8')
+            elif kwargs['value'] is None:
+                self.value = u""
             else:
-                raise Exception("value= parameter must be unicode or str instance")
+                raise Exception("value= parameter must be unicode or str instance, got " + str(type(kwargs['value'])))
             del kwargs['value']
         else:
             raise Exception("Description expects value= parameter")
@@ -2490,6 +2492,8 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
                 self.value = kwargs['value']
             elif isinstance(kwargs['value'], str):
                 self.value = unicode(kwargs['value'],'utf-8')
+            elif kwargs['value'] is None:
+                self.value = u""
             else:
                 raise Exception("value= parameter must be unicode or str instance")
             del kwargs['value']
