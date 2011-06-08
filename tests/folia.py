@@ -221,12 +221,46 @@ class Test2Sanity(unittest.TestCase):
         w = self.doc['WR-P-E-J-0000000001.p.1.s.1.w.7']
         self.assertRaises( folia.NoDescription,  w.description)        
     
-    def test017_description(self):            
+    def test017_gap(self):            
         """Sanity Check - Gap"""
         gap = self.doc["WR-P-E-J-0000000001.gap.1"]
         self.assertEqual( gap.content().strip(), 'bli bli bla, bla bla bli')
         self.assertEqual( gap.cls, 'backmatter')
         self.assertEqual( gap.description(), 'Backmatter')
+        
+    def test018_subtokenannot(self):            
+        """Sanity Check - Subtoken annotation (morphological analysis)"""        
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.5']
+        l = s.annotation(folia.MorphologyLayer)
+        self.assertEqual( len(l), 2) #two morphemes
+        self.assertTrue( isinstance(l[0], folia.Morpheme ) ) 
+        self.assertEqual( l[0].text(), 'handschrift' ) 
+        self.assertEqual( l[0].feat('type'), 'stem' ) 
+        self.assertEqual( l[0].feat('function'), 'lexical' ) 
+        self.assertEqual( l[1].text(), 'en' ) 
+        self.assertEqual( l[1].feat('type'), 'suffix' ) 
+        self.assertEqual( l[1].feat('function'), 'plural' ) 
+
+    def test019_alignment(self):            
+        """Sanity Check - Alignment"""        
+        raise NotImplemented
+
+
+    def test020_spanannotation(self):
+        """Sanity Check - Span Annotation (Syntax)"""        
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
+        l = s.annotation(folia.SyntaxLayer)
+        
+        self.assertTrue( isinstance(l[0], folia.SyntacticUnit ) ) 
+        self.assertEqual( l[0].cls,  'sentence' ) 
+        self.assertEqual( l[0][0].cls,  'subject' ) 
+        self.assertEqual( l[0][0].text(),  'Stemma' ) 
+        self.assertEqual( l[0][1].cls,  'verb' ) 
+        self.assertEqual( l[0][2].cls,  'predicate' ) 
+        self.assertEqual( l[0][2][0].cls,  'np' ) 
+        self.assertEqual( l[0][2][1].cls,  'pp' ) 
+        self.assertEqual( l[0][2][1].text(),  'voor stamboom' ) 
+        self.assertEqual( l[0][2].text(),  'een ander woord voor stamboom' ) 
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
@@ -443,7 +477,13 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( pos.parent, w)
         self.assertEqual( pos.doc, w.doc)
         
-               
+    def test011_subtokenannot(self):            
+        """Edit Check - Subtoken annotation (morphological analysis)"""        
+        raise NotImplemented
+
+    def test012_alignment(self):            
+        """Edit Check - Alignment"""        
+        raise NotImplemented               
         
     
     #def test008_addaltcorrection(self):            
@@ -999,6 +1039,18 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <t>handschriften</t>
               <pos class="N(soort,mv,basis)"/>
               <lemma class="handschrift"/>
+              <morphology>
+                <morpheme class="handschrift">
+                    <feat subset="type" class="stem" />
+                    <feat subset="function" class="lexical" />
+                    <t offset="0">handschrift</t>
+                </morpheme>
+                <morpheme>
+                    <feat subset="type" class="suffix" />
+                    <feat subset="function" class="plural" />
+                    <t offset="11">en</t>
+                </morpheme>
+              </morphology>              
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.3.w.6">
               <t>genummerd</t>

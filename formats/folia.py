@@ -35,7 +35,7 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N = (0,1,2,3,4)
 
 class AnnotationType:
-    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY = range(15)
+    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY = range(17)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -913,7 +913,7 @@ class AllowCorrections(object):
             if not isinstance(kwargs['original'], list) and not isinstance(kwargs['original'], tuple): kwargs['original'] = [kwargs['original']] #support both lists (for multiple elements at once), as well as single element
             c.replace(Original(self.doc, *kwargs['original']))
             for o in kwargs['original']: #delete original from current element
-                if o in self:
+                if o in self and isinstance(o, AbstractElement):
                     self.remove(o)            
             for current in c.select(Current):  #delete current if present
                 c.remove(current)
@@ -1535,6 +1535,9 @@ class Feature(AbstractElement):
         return E.define( E.Element(E.attribute(name='subset'), E.attribute(name='class'), E.empty(),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
 
 
+class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID): 
+    OCCURRENCESPERSET = 0 #Allow duplicates within the same set
+    
     
 class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID): 
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
@@ -1567,6 +1570,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
             
 
 class AbstractAnnotationLayer(AbstractElement):
+    """Annotation layers for Span Annotation are derived from this abstract base class"""
     OPTIONAL_ATTRIBS = (Attrib.CLASS,)
     PRINTABLE = False
     
@@ -1576,7 +1580,18 @@ class AbstractAnnotationLayer(AbstractElement):
             del kwargs['set']
         super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
         
-
+class AbstractSubtokenAnnotationLayer(AbstractElement):
+    """Annotation layers for Subtoken Annotation are derived from this abstract base class"""        
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,)
+    PRINTABLE = False
+    
+    def __init__(self, doc, *args, **kwargs):
+        if 'set' in kwargs:
+            self.set = kwargs['set']
+            del kwargs['set']
+        super(AbstractSubtokenAnnotationLayer,self).__init__(doc, *args, **kwargs)
+                
+        
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Description)
@@ -1766,7 +1781,7 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     PRINTABLE = False    
 
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Correction, Alternative, Description)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Correction, Alternative, Description, AbstractSubtokenAnnotationLayer)
 
 
 class AlternativeLayers(AbstractElement):
@@ -1774,6 +1789,7 @@ class AlternativeLayers(AbstractElement):
     ACCEPTED_DATA = (AbstractAnnotationLayer)    
     XMLTAG = 'altlayers'
     PRINTABLE = False    
+    
 
 class WordReference(AbstractElement):
     """Only used when word reference can not be resolved, if they can, Word objects will be used"""
@@ -1806,13 +1822,18 @@ class WordReference(AbstractElement):
         except KeyError:
             if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] ...Unresolvable!"
             return WordReference(doc, id=id)    
+
+
+
             
 class AlignReference(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     XMLTAG = 'aref'    
     pass #TODO: IMPLEMENT
         
-
+    
+    
+    
         
 class SyntacticUnit(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
@@ -1836,6 +1857,21 @@ class Entity(AbstractSpanAnnotation):
     ANNOTATIONTYPE = AnnotationType.ENTITY
     XMLTAG = 'entity'
     
+class Morpheme(AbstractSubtokenAnnotation):
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ACCEPTED_DATA = (Feature,TextContent)
+    ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
+    XMLTAG = 'morpheme'
+
+class Subentity(AbstractSubtokenAnnotation):
+    REQUIRED_ATTRIBS = (Attrib.CLASS)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ACCEPTED_DATA = (Feature,TextContent)
+    ANNOTATIONTYPE = AnnotationType.SUBENTITY
+    XMLTAG = 'subentity'
+        
+    
 class SyntaxLayer(AbstractAnnotationLayer):
     ACCEPTED_DATA = (SyntacticUnit,Description)
     XMLTAG = 'syntax'
@@ -1848,6 +1884,15 @@ class EntitiesLayer(AbstractAnnotationLayer):
     ACCEPTED_DATA = (Entity,Description)
     XMLTAG = 'entities'
 
+class MorphologyLayer(AbstractSubtokenAnnotationLayer):
+    ACCEPTED_DATA = (Morpheme,)
+    XMLTAG = 'morphology'    
+
+class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
+    ACCEPTED_DATA = (Subentity,)
+    XMLTAG = 'subentities'
+        
+    
     
 class PosAnnotation(AbstractTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
