@@ -1344,6 +1344,16 @@ class TextContent(AbstractElement):
             attribs['{' + NSFOLIA + '}corrected'] = 'yes'
             
         return E.t(self.value, **attribs)
+
+class Linebreak(AbstractStructureElement):
+    REQUIRED_ATTRIBS = ()
+    ACCEPTED_DATA = ()
+    XMLTAG = 'br'
+    
+class Whitespace(AbstractStructureElement):
+    REQUIRED_ATTRIBS = ()
+    ACCEPTED_DATA = ()
+    XMLTAG = 'whitespace'    
         
 class Word(AbstractStructureElement, AllowCorrections):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -1971,7 +1981,7 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description)
+    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace)
     XMLTAG = 's'
     
     def __init__(self,  doc, *args, **kwargs):
@@ -2079,7 +2089,7 @@ Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description)
 class Paragraph(AbstractStructureElement):    
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n"
     
@@ -2617,7 +2627,7 @@ class Division(AbstractStructureElement):
         extraelements.append(E.optional( E.ref(name='head') ))
         return super(Division,cls).relaxng(includechildren, extraattribs , extraelements)
 
-Division.ACCEPTED_DATA = (Division, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description)
+Division.ACCEPTED_DATA = (Division, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
 
 class Text(AbstractStructureElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
