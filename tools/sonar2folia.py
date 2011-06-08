@@ -87,9 +87,9 @@ if __name__ == '__main__':
         pass
             
     print "Building index..."
-    index = list(sonar.CorpusFiles(sonardir,'pos', "", lambda x: True, True))
+    index = enumerate(list(sonar.CorpusFiles(sonardir,'pos', "", lambda x: True, True)))
 
     print "Processing..."
     p = Pool(threads)
-    p.map(process, enumerate(index) )
+    p.map(process, index )
 
