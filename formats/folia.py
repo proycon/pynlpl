@@ -488,7 +488,7 @@ class AbstractElement(object):
     @classmethod
     def findreplacables(Class, parent, set=None,**kwargs):
         """Find replacable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control"""
-        return parent.select(Class,set)       
+        return parent.select(Class,set,False)       
         
 
 
@@ -1286,7 +1286,7 @@ class TextContent(AbstractElement):
         if not 'corrected' in kwargs:
             if 'instance' in kwargs:
                 kwargs['corrected'] = instance.corrected
-            if Class.MINTEXTCORRECTIONLEVEL == TextCorrectionLevel.UNCORRECTED:
+            elif Class.MINTEXTCORRECTIONLEVEL == TextCorrectionLevel.UNCORRECTED:
                 kwargs['corrected'] = TextCorrectionLevel.UNCORRECTED
             else:
                 kwargs['corrected'] = TextCorrectionLevel.CORRECTED
