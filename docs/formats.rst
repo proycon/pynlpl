@@ -48,4 +48,11 @@ TiMBL
     :members:
     :undoc-members:
 
+FoLiA
+::::::::::::::::::::::::::::::
+.. automodule:: formats.folia
+    :members:
+    :undoc-members:
+
+
 

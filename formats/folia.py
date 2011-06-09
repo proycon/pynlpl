@@ -248,14 +248,20 @@ class AbstractElement(object):
             raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)        
 
     def description(self):
+        """Obtain the description associated with the element, will raise NoDescription if there is none"""
         for e in self:
             if isinstance(e, Description):
                 return e.value
         raise NoDescription
         
     def text(self, corrected=None):
-        """Get text associated with this element. If no desired correctionlevel is specified 
-           the 'best' level will be selected automatically:
+        """Get the text associated with this element, will always be a unicode instance. 
+        
+         Text has a certain 'correctionlevel' associated, specifying whether the text is corrected or not.
+         A correction level can be specified if you want to fetch only text prior- or post- correction.
+        
+         If no desired correctionlevel is specified 
+           the 'best' level will be selected automatically in the following fashion:
             - Will first grab the corrected textcontent explicitly associated with the element
             - If not found, it will descend into the children and build text dynamically
             - If that yields no text, it will resort to the original uncorrected text
@@ -302,26 +308,28 @@ class AbstractElement(object):
                     raise NoSuchText
                       
     def originaltext(self):
-        """Alias for uncorrectedtext"""
+        """Alias for retrieving the original uncorrect text"""
         return self.text(TextCorrectionLevel.UNCORRECTED)
         
     def overridetextdelimiter(self):
-        """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override)"""
+        """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
         return None #do not override
         
     
     def __len__(self):
+        """Returns the number of child elements under the current element"""
         return len(self.data)
         
     def __nonzero__(self):
         return True #any instance evaluates to True in boolean tests!! (important to distinguish from uninstantianted None values!)
         
     def __iter__(self):
-        """Iterate over children"""
+        """Iterate over all children of this element"""
         return iter(self.data)
 
-    def __contains__(self, child):
-        return child in self.data
+    def __contains__(self, element):
+        """Tests if the specified element is part of the children of the element"""
+        return element in self.data
             
     def __getitem__(self, key):
         try:
@@ -330,6 +338,7 @@ class AbstractElement(object):
             raise
 
     def __unicode__(self):
+        """Alias for text()"""
         return self.text()
                                 
     def __str__(self):        
@@ -346,7 +355,7 @@ class AbstractElement(object):
                             
         
     def hastext(self,corrected=None):
-        """Does this element have text?"""
+        """Does this element have text? May specify a correctionlevel to test for texts of a particular correctionlevel (see text() for more information)"""
         if corrected is None:
             #regardless of correctionlevel:
             return (len(self.select(TextContent,None,False)) > 0)
@@ -355,6 +364,7 @@ class AbstractElement(object):
     
             
     def settext(self, text, corrected=None):
+        """Set the text for this element. You may specificy an explicit correctionlevel if desired. (see text() for more information)"""
         if corrected is None:
             corrected = self.MINTEXTCORRECTIONLEVEL
         self.replace(TextContent, value=text, corrected=corrected) 
@@ -378,7 +388,10 @@ class AbstractElement(object):
     def addable(Class, parent, set=None, raiseexceptions=True):
         """Tests whether a new element of this class can be added to the parent. Returns a boolean or raises ValueError exceptions (unless set to ignore)!
         
-         This will use OCCURRENCES, but may be overidden for more customised behaviour"""
+         This will use OCCURRENCES, but may be overidden for more customised behaviour.
+         
+         This method is mostly for internal use.
+         """
         
         
         if not Class in parent.ACCEPTED_DATA:
@@ -423,7 +436,10 @@ class AbstractElement(object):
         
     
     def postappend(self):
-        """This method will be called after an element is added to another. It can do extra checks and if necessary raise exceptions to prevent addition. By default makes sure the right document is associated."""
+        """This method will be called after an element is added to another. It can do extra checks and if necessary raise exceptions to prevent addition. By default makes sure the right document is associated.
+        
+        This method is mostly for internal use.
+        """
         
         #If the element was not associated with a document yet, do so now (and for all unassociated children:
         if not self.doc and self.parent.doc:
@@ -439,6 +455,20 @@ class AbstractElement(object):
         Keyword arguments:
             alternative     - If set to True, the element will be made into an alternative. 
             corrected       - Used only when passing strings to be made into TextContent elements.
+            
+        Generic example, passing a pre-generated instance::
+        
+            word.append( folia.LemmaAnnotation(doc,  cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL ) )
+            
+        Generic example, passing a class to be generated:
+            
+            word.append( folia.LemmaAnnotation, cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL )
+        
+        Generic example, setting text of a specific correctionlevel:
+        
+            word.append( "house", corrected=folia.TextCorrectionLevel.CORRECTED )
+            
+            
         """
         
         
@@ -487,7 +517,7 @@ class AbstractElement(object):
             
     @classmethod
     def findreplacables(Class, parent, set=None,**kwargs):
-        """Find replacable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control"""
+        """Find replacable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control. Mostly for internal use."""
         return parent.select(Class,set,False)       
         
 
@@ -498,6 +528,8 @@ class AbstractElement(object):
         Keyword arguments:
             alternative     - If set to True, the *replaced* element will be made into an alternative. Simply use append() if you want the added element
             to be an alternative.        
+            
+        See append() for more information.
         """
 
         if 'set' in kwargs:
@@ -540,6 +572,7 @@ class AbstractElement(object):
                 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
+        """Return an XML Element for this element and all its children."""
         global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
         
@@ -608,10 +641,24 @@ class AbstractElement(object):
         return e
 
     def xmlstring(self):
+        """Return a string with XML presentation for this element and all its children."""
         return ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=True, encoding='utf-8')        
         
         
-    def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
+    def select(self, Class, set=None, recursive=True,  ignorelist=[], node=None):
+        """Select child elements of the specified class. 
+        A further restriction can be made based
+        
+        Args:
+            Class: The class to select; any python class subclassed off AbstractElement
+            set: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
+            recursive: Select recursively? Descending into child elements? Boolean defaulting to True.
+            ignorelist: A list of Classes (subclassed off AbstractElement) not to recurse into
+            node: Reserved for internal usage, used in recursion.
+            
+        Returns:
+            A list of elements (instances)
+        """
         l = []
         if not node:
             node = self        
@@ -627,7 +674,7 @@ class AbstractElement(object):
                 if ignore: 
                     continue
         
-            if isinstance(e, cls):                
+            if isinstance(e, Class):                
                 if not set is None:
                     try:
                         if e.set != set:
@@ -636,7 +683,7 @@ class AbstractElement(object):
                         continue
                 l.append(e)
             if recursive:
-                for e2 in e.select(cls, set, recursive, ignorelist, e):
+                for e2 in e.select(Class, set, recursive, ignorelist, e):
                     if not set is None:
                         try:
                             if e2.set != set:
@@ -647,11 +694,12 @@ class AbstractElement(object):
         return l
         
 
-    def xselect(self, cls, recursive=True, node=None):
+    def xselect(self, Class, recursive=True, node=None):
+        """Same as select, but this is a generator instead of returning a list"""
         if not node:
             node = self
         for e in self:
-            if isinstance(e, cls):
+            if isinstance(e, Class):
                 if not set is None:
                     try:
                         if e.set != set:
@@ -660,7 +708,7 @@ class AbstractElement(object):
                         continue 
                 yield e
             elif recursive:
-                for e2 in e.select(cls, recursive, e):
+                for e2 in e.select(Class, recursive, e):
                     if not set is None:
                         try:
                             if e2.set != set:
@@ -731,6 +779,16 @@ class AbstractElement(object):
     
     @classmethod
     def parsexml(Class, node, doc):
+        """Internal class method used for turning an XML element into an instance of the Class.
+        
+        Args:
+            node - XML Element
+            doc - Document
+            
+        Returns:
+            An instance of the current Class.
+        """
+        
         assert issubclass(Class, AbstractElement)
         global NSFOLIA, NSDCOI
         nslen = len(NSFOLIA) + 2
@@ -823,6 +881,7 @@ class AbstractElement(object):
         return None
         
     def remove(self, child):
+        """Removes the child element"""
         child.parent = None
         self.data.remove(child)
         #delete from index
@@ -830,10 +889,18 @@ class AbstractElement(object):
             del self.doc.index[child.id]
 
 class Description(AbstractElement):
+    """Description is an element that can be used to associate a description with almost any
+    other FoLiA element"""
     XMLTAG = 'desc'
     OCCURRENCES = 1
     
     def __init__(self,doc, *args, **kwargs):
+        """Required keyword arguments:
+        
+                value:  The text content for the description (str or unicode)  
+        
+        """
+        
         if 'value' in kwargs:
             if isinstance(kwargs['value'], unicode):
                 self.value = kwargs['value']
@@ -1009,16 +1076,28 @@ class AllowTokenAnnotation(AllowCorrections):
         if not found:
             raise NoSuchAnnotation()
             
-    def annotations(self,type,set=None):        
-        l = self.select(type,set,True,['Original','Suggestion','Alternative'])
+    def annotations(self,Class,set=None):        
+        """Obtain annotations.
+        
+        Arguments:
+            Class - The Class you want to retrieve (e.g. PosAnnotation)
+            set   - The set you want to retrieve (defaults to None, which selects irregardless of set)
+            
+        Returns:
+            A list of elements
+            
+        Raises:
+            NoSuchAnnotation if the specified annotation does not exist.
+        """
+        l = self.select(Class,set,True,['Original','Suggestion','Alternative'])
         if not l:
             raise NoSuchAnnotation()
         else:
             return l
     
-    def hasannotation(self,type,set=None):
-        """Returns an integer indicating whether such as annotation exists, and if so, how many"""
-        l = self.select(type,set,True,['Original','Suggestion','Alternative'])
+    def hasannotation(self,Class,set=None):
+        """Returns an integer indicating whether such as annotation exists, and if so, how many. See annotations()"""
+        l = self.select(Class,set,True,['Original','Suggestion','Alternative'])
         return len(l)
 
     def annotation(self, type, set=None):
@@ -1030,7 +1109,15 @@ class AllowTokenAnnotation(AllowCorrections):
             raise NoSuchAnnotation()            
 
     def alternatives(self, annotationtype=None, set=None):
-        """Return a list of alternatives, either all or only of a specific type, and possibly restrained also by set"""
+        """Obtain a list of alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
+        
+        Arguments:
+            annotationtype - The kind of annotation to retrieve: member of the AnnotationType class. Or None to select alternatives regardless of the annotations they contain.
+            set   - The set you want to retrieve (defaults to None, which selects irregardless of set)
+            
+        Returns:
+            List of Alternative elements
+        """
         l = []
         if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
         for e in self.select(Alternative):
@@ -1132,19 +1219,35 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         return e
                 
 
-    def words(self, index = None):        
+    def words(self, index = None):
+        """Returns a list of Word elements found (recursively) under this element.
+        
+        Arguments:
+            index: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
+        """
         if index is None:         
             return self.select(Word,None,True,[AbstractSpanAnnotation])
         else:
             return sum(self.select(Word,None,True,[AbstractSpanAnnotation]),[])[index]
                    
     def paragraphs(self, index = None):
+        """Returns a list of Paragraph elements found (recursively) under this element.
+
+        Arguments:
+            index: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all        
+        """
+
         if index is None:
             return sum([ t.select(Paragraph) for t in self.data ],[])
         else:
             return sum([ t.select(Paragraph) for t in self.data ],[])[index]
     
     def sentences(self, index = None):
+        """Returns a list of Sentence elements found (recursively) under this element
+        
+        Arguments:
+            index: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
+        """
         if index is None:
             return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])
         else:
@@ -1168,9 +1271,27 @@ class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation):
     pass
 
 class TextContent(AbstractElement):
+    """Text content element (t), holds text to be associated with whatever element the text content element is a child of.
+    
+    Text content elements have an associated correction level, indicating whether the text they hold is in a pre-corrected or post-corrected state. There can be only once of each level. Text content elements
+    on structure elements like Paragraph and Sentence are by definition untokenised. Only on Word level and deeper they are by definition tokenised.
+    
+    Text content elements can specify offset that refer to text at a higher parent level. Use the following keyword arguments:
+        ref: The instance to point to, this points to the element holding the text content element, not the text content element itself.
+        offset: The offset where this text is found, offsets start at 0
+        length: The length of the text found, only needs to be specified if different from the current length.
+        newoffset: The new offset, after correction, where this text is found, offsets start at 0.         
+    """
     XMLTAG = 't'
     
     def __init__(self, doc, *args, **kwargs):
+        """Required keyword arguments:
+            
+            value: Set to a unicode or str containing the text
+            corrected: Correction level, can be set to TextCorrectionLevel.UNCORRECTED or TextCorrectionLevel.CORRECTED
+        """
+        
+        
         if not 'value' in kwargs:
             if args and (isinstance(args[0], unicode) or isinstance(args[0], str)):
                 kwargs['value'] = args[0]
@@ -1248,10 +1369,12 @@ class TextContent(AbstractElement):
             return False
         
     def append(self, child, *args, **kwargs):
+        """This method is not implemented on purpose"""
         raise NotImplementedError #on purpose
         
         
     def postappend(self):
+        """(Method for internal usage, see AbstractElement)"""
         try:
             if not self.ref and self.parent.parent and self.parent.parent.hastext():
                 self.ref = self.parent.parent
@@ -1275,13 +1398,16 @@ class TextContent(AbstractElement):
         
     
     def __iter__(self):
+        """Iterate over the text string (character by character)"""
         return iter(self.value)
     
-    def __len__(self):    
+    def __len__(self): 
+        """Get the length of the text"""
         return len(self.value)
     
     @classmethod
     def findreplacables(Class, parent, set, **kwargs):
+        """(Method for internal usage, see AbstractElement)"""
         #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
         if not 'corrected' in kwargs:
             if 'instance' in kwargs:
@@ -1298,6 +1424,7 @@ class TextContent(AbstractElement):
         
     @classmethod
     def parsexml(Class, node, doc):
+        """(Method for internal usage, see AbstractElement)"""
         global NSFOLIA
         nslen = len(NSFOLIA) + 2
         args = []
@@ -1346,16 +1473,20 @@ class TextContent(AbstractElement):
         return E.t(self.value, **attribs)
 
 class Linebreak(AbstractStructureElement):
+    """Line break element, signals a line break"""
     REQUIRED_ATTRIBS = ()
     ACCEPTED_DATA = ()
     XMLTAG = 'br'
     
 class Whitespace(AbstractStructureElement):
+    """Whitespace element, signals a vertical whitespace"""
     REQUIRED_ATTRIBS = ()
     ACCEPTED_DATA = ()
     XMLTAG = 'whitespace'    
         
 class Word(AbstractStructureElement, AllowCorrections):
+    """Word (aka token) element. Holds a token and all its related token annotations"""
+    
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     XMLTAG = 'w'
@@ -1365,6 +1496,10 @@ class Word(AbstractStructureElement, AllowCorrections):
     MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.CORRECTED
     
     def __init__(self, doc, *args, **kwargs):
+        """Keyword arguments:
+        
+        space: Boolean indicating whether this token is followed by a space (defaults to True)
+        """
         self.space = True
                       
         if 'space' in kwargs:            
@@ -1374,7 +1509,7 @@ class Word(AbstractStructureElement, AllowCorrections):
                         
 
     def sentence(self):
-        #return the sentence this word is a part of, otherwise return None
+        """Obtain the sentence this word is a part of, otherwise return None"""
         e = self;
         while e.parent: 
             if isinstance(e, Sentence):
@@ -1384,7 +1519,7 @@ class Word(AbstractStructureElement, AllowCorrections):
         
         
     def paragraph(self):
-        #return the paragraph this sentence is a part of (None otherwise)
+        """Obtain the paragraph this word is a part of, otherwise return None"""
         e = self;
         while e.parent: 
             if isinstance(e, Paragraph):
@@ -1393,7 +1528,7 @@ class Word(AbstractStructureElement, AllowCorrections):
         return None        
         
     def division(self):
-        #return the division this sentence is a part of (None otherwise)
+        """Obtain the deepest division this word is a part of, otherwise return None"""
         e = self;
         while e.parent: 
             if isinstance(e, Division):
@@ -1404,10 +1539,9 @@ class Word(AbstractStructureElement, AllowCorrections):
         
 
     def incorrection(self):
-        #Is this word part of a correction? If so, return correction, otherwise return None
+        """Is this word part of a correction? If it is, it returns the Correction element (evaluating to True), otherwise it returns None"""
         e = self
-        
-        
+                
         while not e.parent is None:            
                 if isinstance(e, Correction):
                     return e
@@ -1420,20 +1554,23 @@ class Word(AbstractStructureElement, AllowCorrections):
         
 
     def pos(self,set=None):
-        """Return the PoS annotation (will return only one if there are multiple!)"""
-        return self.annotation(PosAnnotation,set)
+        """Shortcut: returns the FoLiA class of the PoS annotation (will return only one if there are multiple!)"""
+        return self.annotation(PosAnnotation,set).cls
             
     def lemma(self, set=None):
-        return self.annotation(LemmaAnnotation,set)
+        """Shortcut: returns the FoLiA class of the lemma annotation (will return only one if there are multiple!)"""        
+        return self.annotation(LemmaAnnotation,set).cls
 
     def sense(self,set=None):
-        return self.annotation(SenseAnnotation,set)
+        """Shortcut: returns the FoLiA class of the sense annotation (will return only one if there are multiple!)"""        
+        return self.annotation(SenseAnnotation,set).cls
         
     def domain(self,set=None):
-        return self.annotation(DomainAnnotation,set)        
+        """Shortcut: returns the FoLiA class of the domain annotation (will return only one if there are multiple!)"""        
+        return self.annotation(DomainAnnotation,set).cls     
 
     def overridetextdelimiter(self):
-        """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override)"""
+        """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
         if self.space:
             return ' '
         else:
@@ -1506,11 +1643,20 @@ class Word(AbstractStructureElement, AllowCorrections):
 
 
 class Feature(AbstractElement):
+    """Feature elements can be used to associate subsets and subclasses with almost any
+    annotation element"""
+    
     XMLTAG = 'feat'
     XMLATTRIB = None
     SUBSET = None
     
     def __init__(self,doc, *args, **kwargs):
+        """Required keyword arguments:
+        
+            subset: the subset
+            cls: the class
+        """
+        
         self.id = None
         self.data = []
         self.annotator = None
@@ -2000,7 +2146,7 @@ class Sentence(AbstractStructureElement):
         return bool(self.select(Correction))
 
     def paragraph(self):
-        """return the paragraph this sentence is a part of (None otherwise)"""
+        """Obtain the paragraph this sentence is a part of (None otherwise)"""
         e = self;
         while e.parent: 
             if isinstance(e, Paragraph):
@@ -2009,7 +2155,7 @@ class Sentence(AbstractStructureElement):
         return None
  
     def division(self):
-        """return the division this sentence is a part of (None otherwise)"""
+        """Obtain the division this sentence is a part of (None otherwise)"""
         e = self;
         while e.parent: 
             if isinstance(e, Division):
@@ -2119,10 +2265,40 @@ class Query(object):
         
 
 class Document(object):
+    """This is the FoLiA Document, all elements have to be associated with a FoLiA document. Besides holding elements, the document hold metadata including declaration, and an index of all IDs."""
     
     IDSEPARATOR = '.'
     
     def __init__(self, *args, **kwargs):
+        """Start/load a FoLiA document:
+        
+        There are four ways of loading a FoLiA document::
+        
+        
+        1) Create a new document by specifying an ID
+        
+            doc = folia.Document(id='test')
+        
+        2) Load a document from FoLiA or D-Coi XML file:
+        
+            doc = folia.Document(file='/path/to/doc.xml')
+
+        3) Load a document from an XML string:
+        
+            doc = folia.Document(string='<FoLiA>....</FoLiA>')
+        
+        4) Load a document by passing a parse xml tree (lxml.etree)
+    
+            doc = folia.Document(tree=xmltree)
+    
+        Optional keyword arguments:
+        
+            debug:  Boolean to enable/disable debug
+        """
+        
+        
+        
+        
         self.data = [] #will hold all texts (usually only one)
         
         self.annotationdefaults = {}
@@ -2165,14 +2341,21 @@ class Document(object):
                             
             
     def load(self, filename):
+        """Load FoLiA or D-Coi XML file"""
         self.tree = ElementTree.parse(filename)
         self.parsexml(self.tree.getroot())
             
     def xpath(self, query):
+        """Run Xpath expression and parse the resulting elements"""
         for result in self.tree.xpath(query,namespaces={'f': 'http://ilk.uvt.nl/folia','folia': 'http://ilk.uvt.nl/folia' }):
             yield self.parsexml(result)
         
     def save(self, filename=None):
+        """Save the document to FoLiA XML.
+        
+        Arguments:
+            filename: The filename to save to. If not set (None), saves to the same file as loaded from.
+        """
         if not filename:
             filename = self.filename
         if not filename:
@@ -2199,6 +2382,7 @@ class Document(object):
             yield text   
         
     def __getitem__(self, key):
+        """Obtain an element by ID from the document index"""
         try:
             if isinstance(key, int):
                 return self.data[key]
@@ -2208,6 +2392,7 @@ class Document(object):
             raise
             
     def append(self,text):
+        """Add a text"""
         assert isinstance(text, Text)
         self.data.append(text)
         return text
@@ -2369,28 +2554,43 @@ class Document(object):
             
         
     def title(self, value=None):
+        """No arguments: Get the document's title from metadata
+           Argument: Set the document's title in metadata
+        """ 
         if not (value is None): self._title = value
         return self._title
         
     def date(self, value=None):
+        """No arguments: Get the document's date from metadata
+           Argument: Set the document's date in metadata
+        """         
         if not (value is None): self._date = value
         return self._date        
        
     def publisher(self, value=None):
+        """No arguments: Get the document's publisher from metadata
+           Argument: Set the document's publisher in metadata
+        """                 
         if not (value is None): self._publisher = value
         return self._publisher
 
     def license(self, value=None):
+        """No arguments: Get the document's license from metadata
+           Argument: Set the document's license in metadata
+        """                         
         if not (value is None): self._license = value
         return self._license                       
         
     def language(self, value=None):
+        """No arguments: Get the document's language (ISO-639-3) from metadata
+           Argument: Set the document's language (ISO-639-3) in metadata
+        """                                 
         if not (value is None): self._language = value
         return self._language        
            
 
     def parsexml(self, node):
-        """Main XML parser, will invoke class-specific XML parsers"""
+        """Main XML parser, will invoke class-specific XML parsers. For internal use."""
         global XML2CLASS, NSFOLIA, NSDCOI
         nslen = len(NSFOLIA) + 2
         nslendcoi = len(NSDCOI) + 2
@@ -2449,12 +2649,18 @@ class Document(object):
         
         
     def paragraphs(self, index = None):
+        """Return a list of all paragraphs found in the document.
+        
+        If an index is specified, return the n'th paragraph only (starting at 0)"""
         if index is None:
             return sum([ t.select(Paragraph) for t in self.data ],[])
         else:
             return sum([ t.select(Paragraph) for t in self.data ],[])[index]
     
     def sentences(self, index = None):
+        """Return a list of all sentence found in the document.
+        
+        If an index is specified, return the n'th sentence only (starting at 0)"""
         if index is None:
             return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])
         else:
@@ -2462,6 +2668,9 @@ class Document(object):
 
         
     def words(self, index = None):
+        """Return a list of all words found in the document.
+        
+        If an index is specified, return the n'th word only (starting at 0)"""        
         if index is None:            
             return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])
         else:
@@ -2469,15 +2678,14 @@ class Document(object):
             
 
     def text(self):
-        s = ""
-        for t in self.data:
-            if s: s += "\n\n\n"
-            s = t.text()            
-                    
+        """Returns the text of the entire document (returns a unicode instance)"""
+        return unicode(self)
+       
     def xmlstring(self):
         return ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
 
     def __unicode__(self):
+        """Returns the text of the entire document"""
         s = u""
         for c in self.data:
             if s: s += "\n\n"
@@ -2488,6 +2696,7 @@ class Document(object):
         return s
         
     def __str__(self):    
+        """Returns the text of the entire document (UTF-8 encoded)"""
         return unicode(self).encode('utf-8')
         
         
@@ -2630,6 +2839,8 @@ class Division(AbstractStructureElement):
 Division.ACCEPTED_DATA = (Division, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
 
 class Text(AbstractStructureElement):
+    """A full text. This is a high-level element not to be confused with TextContent. This element may contain divisions, paragraphs, sentences, etc.."""
+    
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description)
@@ -2647,6 +2858,8 @@ class Text(AbstractStructureElement):
 
 
 class Corpus:
+    """A corpus of various FoLiA document"""
+    
     def __init__(self,corpusdir, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, ignoreerrors=False):
         self.corpusdir = corpusdir
         self.extension = extension
