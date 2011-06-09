@@ -83,7 +83,7 @@ def process(data):
     sys.stderr.flush()
     return True
     
-def outputexists(filepath, sonardir, foliadir):
+def outputexists(filename, sonardir, foliadir):
     filename = filename.replace(sonardir,'')
     if filename[0] == '/':
         filename = filename[1:]
