@@ -1960,8 +1960,8 @@ class SubjectivityAnnotation(AbstractTokenAnnotation):
     
 
 class Quote(AbstractStructureElement):
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = ()    
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID,)    
     XMLTAG = 'quote'
 
     #ACCEPTED DATA defined later below
