@@ -83,7 +83,17 @@ def process(data):
     sys.stderr.flush()
     return True
     
-
+def outputexists(filepath, sonardir, foliadir):
+    filename = filename.replace(sonardir,'')
+    if filename[0] == '/':
+        filename = filename[1:]
+    if filename[-4:] == '.pos':
+        filename = filename[:-4]
+    if filename[-4:] == '.tok':
+        filename = filename[:-4]    
+    if filename[-4:] == '.ilk':
+        filename = filename[:-4]     
+    return os.path.exists(foliadir + filename)
 
 
 if __name__ == '__main__':    
@@ -97,7 +107,7 @@ if __name__ == '__main__':
         pass
             
     print "Building index..."
-    index = list(enumerate(sonar.CorpusFiles(sonardir,'pos', "", lambda x: True, True)))
+    index = list(enumerate([ x for x in sonar.CorpusFiles(sonardir,'pos', "", lambda x: True, True) if not outputexists(x, sonardir, foliadir) ]))
 
     print "Processing..."
     p = Pool(threads)
