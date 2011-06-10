@@ -54,7 +54,7 @@ def parse_cgn_postag(rawtag):
     
     begin = rawtag.find('(')
     if rawtag[-1] == ')' and begin > 0:
-        tag = folia.PosAnnotation(None, cls='rawtag',set='http://ilk.uvt.nl/folia/sets/cgn')
+        tag = folia.PosAnnotation(None, cls=rawtag,set='http://ilk.uvt.nl/folia/sets/cgn')
 
         
         head = rawtag[0:begin]
