@@ -16,7 +16,7 @@ from pynlpl.formats import cgn
 def process(target):
     if os.path.isdir(target):
         for f in glob.glob(target + '/*'):
-            process(target)
+            process(f)
     elif os.path.isfile(target) and target[-4] == '.xml':            
         doc = folia.Document(file=target)
         changed = False
