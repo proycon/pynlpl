@@ -500,7 +500,34 @@ class Test4Edit(unittest.TestCase):
     
     def test013_spanannot(self):            
         """Edit Check - Adding Span Annotatation (syntax)"""
-        raise NotImplementedError
+        
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.4']
+        #sentence: 'De hoofdletter A wordt gebruikt voor het originele handschrift .'
+        layer = s.append(folia.SyntaxLayer)
+        layer.append(folia.SyntacticUnit, 
+            folia.SyntacticUnit(self.doc,cls='s',contents=[
+                folia.SyntacticUnit(self.doc,cls='np', contents=[
+                    folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.1'] ,cls='det'),
+                    folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.2'], cls='n'),
+                    folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.3'], cls='n'),
+                ]),
+                folia.SyntacticUnit(self.doc,cls='vp',contents=[     
+                    folia.SyntacticUnit(self.doc,cls='vp',contents=[ 
+                        folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.4'], cls='v'),
+                        folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.5'], cls='participle'),
+                    ]),
+                    folia.SyntacticUnit(self.doc, cls='pp',contents=[
+                        folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.6'], cls='prep'),
+                        folia.SyntacticUnit(self.doc, cls='np',contents=[
+                            folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.7'], cls='det'),
+                            folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.8'], cls='adj'),
+                            folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.9'], cls='n'),
+                        ])
+                    ])
+                ])
+            ])
+        )
+        
     
     #def test008_addaltcorrection(self):            
     #    """Edit Check - Adding alternative corrections"""        

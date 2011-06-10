@@ -242,7 +242,7 @@ class AbstractElement(object):
                     self.append(child)
             else:
                 self.append(kwargs['contents'])
-            del kwargs['contents']
+            del kwargs['contents']        
                     
         for key in kwargs:
             raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)        
@@ -1194,7 +1194,17 @@ class AllowGenerateID(object):
         i = 0
         while True:
             i += 1
-            id = self.id + '.' + xmltag + '.' + str(self._getmaxid(xmltag) + i)
+            if self.id:
+                id = self.id
+            else:
+                #this element has no ID, fall back to closest parent ID:
+                e = self
+                while e.parent:                    
+                    if e.id:
+                        id = e.id
+                        break
+                    e = e.parent                
+            id = id + '.' + xmltag + '.' + str(self._getmaxid(xmltag) + i)
             if not id in self.doc.index:
                 return id    
                  
@@ -1729,7 +1739,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
             return super(AbstractSpanAnnotation,self).append(child)    
             
 
-class AbstractAnnotationLayer(AbstractElement):
+class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
     OPTIONAL_ATTRIBS = (Attrib.CLASS,)
     PRINTABLE = False
