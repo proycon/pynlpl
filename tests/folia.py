@@ -529,7 +529,22 @@ class Test4Edit(unittest.TestCase):
                 ])
             ])
         )
+
+    def test014_replace(self):            
+        """Edit Check - Replacing an annotation"""
+        word = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.14']
+        word.replace(folia.PosAnnotation(self.doc, cls='BOGUS') )
         
+        self.assertEqual( len(list(word.annotations(folia.PosAnnotation))), 1)   
+        self.assertEqual( word.annotation(folia.PosAnnotation).cls, 'BOGUS')   
+    
+    
+    def test015_remove(self):            
+        """Edit Check - Removing an annotation"""
+        word = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.14']
+        word.remove( word.annotation(folia.PosAnnotation) )
+        
+        self.assertRaises( folia.NoSuchAnnotation, word.annotations, folia.PosAnnotation )
     
     #def test008_addaltcorrection(self):            
     #    """Edit Check - Adding alternative corrections"""        
