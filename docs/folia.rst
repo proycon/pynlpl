@@ -211,12 +211,12 @@ In the above example we first instantiate a PosAnnotatation and a LemmaAnnotatio
 
 The common attributes are set using equally named keyword arguments:
 
- * id 
- * cls 
- * set 
- * annotator 
- * annotatortype
- * confidence
+ * ``id=`` 
+ * ``cls=``
+ * ``set=`` 
+ * ``annotator=`` 
+ * ``annotatortype=``
+ * ``confidence=``
  
 Not all attributes are allowed for all elements, and certain attributes are required for certain elements. ValueError exceptions will be raised when these constraints are not met.
  
