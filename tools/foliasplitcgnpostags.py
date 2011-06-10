@@ -35,5 +35,4 @@ def process(target):
 
 target = sys.argv[1]
 process(target)
-doc.save()
    
