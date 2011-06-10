@@ -45,9 +45,13 @@ subsets = {
     'numtype': ['hoofd','rang'],
     'dial': ['dial'],
 }
+constraints = {
+    'getal':'N',
+    'pvagr':'WW',
+}
 
 def parse_cgn_postag(rawtag):
-    global subsets
+    global subsets, constraints
     """decodes PoS features like "N(soort,ev,basis,onz,stan)" into a PosAnnotation data structure 
     based on CGN tag overview compiled by Matje van de Camp"""
     
@@ -66,6 +70,9 @@ def parse_cgn_postag(rawtag):
                 found = False
                 for subset, classes in subsets.items():
                     if rawfeature in classes:
+                        if subset in constraints:
+                            if constraints[subset] != head:
+                                continue #constraint not met!
                         found = True
                         tag.append( folia.Feature, subset=subset,cls=rawfeature)
                         break
