@@ -561,14 +561,14 @@ class AbstractElement(object):
         elif len(replace) == 1:            
             if 'alternative' in kwargs and kwargs['alternative']: 
                 #old version becomes alternative
-                if replace in self.data:
-                    self.data.remove(replace)
+                if replace[0] in self.data:
+                    self.data.remove(replace[0])
                 alt = self.append(Alternative)
-                alt.append(replace)
+                alt.append(replace[0])
                 del kwargs['alternative'] #has other meaning in append()
             else: 
                 #remove old version competely
-                self.remove(replace)
+                self.remove(replace[0])
             return self.append(child, *args, **kwargs)
                 
 
@@ -889,6 +889,8 @@ class AbstractElement(object):
         
     def remove(self, child):
         """Removes the child element"""
+        if not isinstance(child, AbstractElement):
+            raise ValueError("Expected AbstractElement, got " + str(type(child)))
         child.parent = None
         self.data.remove(child)
         #delete from index
