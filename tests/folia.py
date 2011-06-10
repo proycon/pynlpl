@@ -129,15 +129,16 @@ class Test2Sanity(unittest.TestCase):
         #grab first word
         w = self.doc.words(0)
         
-        self.assertEqual( w.pos(), w.annotation(folia.PosAnnotation) ) #w.pos() is just a shortcut 
+        
         self.assertEqual( w.annotation(folia.PosAnnotation), w.select(folia.PosAnnotation)[0] ) #w.annotation() selects the single first annotation of that type, select is the generic method to retrieve pretty much everything
-        self.assertTrue( isinstance(w.pos(), folia.PosAnnotation) )
+        self.assertTrue( isinstance(w.annotation(folia.PosAnnotation), folia.PosAnnotation) )
         self.assertTrue( issubclass(folia.PosAnnotation, folia.AbstractTokenAnnotation) )
                 
-        self.assertEqual( w.pos().cls, 'N(soort,ev,basis,onz,stan)' ) #cls is used everywhere instead of class, since class is a reserved keyword in python
-        self.assertEqual( w.pos().set, 'cgn-combinedtags' ) 
-        self.assertEqual( w.pos().annotator, 'tadpole' ) 
-        self.assertEqual( w.pos().annotatortype, folia.AnnotatorType.AUTO )
+        self.assertEqual( w.annotation(folia.PosAnnotation).cls, 'N(soort,ev,basis,onz,stan)' ) #cls is used everywhere instead of class, since class is a reserved keyword in python
+        self.assertEqual( w.pos(),'N(soort,ev,basis,onz,stan)' ) #w.pos() is just a direct shortcut for getting the class
+        self.assertEqual( w.annotation(folia.PosAnnotation).set, 'cgn-combinedtags' ) 
+        self.assertEqual( w.annotation(folia.PosAnnotation).annotator, 'tadpole' ) 
+        self.assertEqual( w.annotation(folia.PosAnnotation).annotatortype, folia.AnnotatorType.AUTO )
 
     
     def test010_lemma(self):                                        
@@ -145,14 +146,15 @@ class Test2Sanity(unittest.TestCase):
         #grab first word
         w = self.doc.words(0)
         
-        self.assertEqual( w.lemma(), w.annotation(folia.LemmaAnnotation) ) #w.lemma() is just a shortcut 
+        self.assertEqual( w.annotation(folia.LemmaAnnotation), w.annotation(folia.LemmaAnnotation) ) #w.lemma() is just a shortcut 
         self.assertEqual( w.annotation(folia.LemmaAnnotation), w.select(folia.LemmaAnnotation)[0] ) #w.annotation() selects the single first annotation of that type, select is the generic method to retrieve pretty much everything
-        self.assertTrue( isinstance(w.lemma(), folia.LemmaAnnotation))
+        self.assertTrue( isinstance(w.annotation(folia.LemmaAnnotation), folia.LemmaAnnotation))
                 
-        self.assertEqual( w.lemma().cls, 'stemma' )
-        self.assertEqual( w.lemma().set, 'lemmas-nl' ) 
-        self.assertEqual( w.lemma().annotator, 'tadpole' ) 
-        self.assertEqual( w.lemma().annotatortype, folia.AnnotatorType.AUTO )
+        self.assertEqual( w.annotation(folia.LemmaAnnotation).cls, 'stemma' )
+        self.assertEqual( w.lemma(),'stemma' ) #w.lemma() is just a direct shortcut for getting the class
+        self.assertEqual( w.annotation(folia.LemmaAnnotation).set, 'lemmas-nl' ) 
+        self.assertEqual( w.annotation(folia.LemmaAnnotation).annotator, 'tadpole' ) 
+        self.assertEqual( w.annotation(folia.LemmaAnnotation).annotatortype, folia.AnnotatorType.AUTO )
 
     def test011_tokenannot_notexist(self):                                        
         """Sanity check - Token Annotation - Non-existing element""" 
