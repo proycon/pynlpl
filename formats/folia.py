@@ -1247,10 +1247,11 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         Arguments:
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
-        if index is None:         
-            return self.select(Word,None,True,[AbstractSpanAnnotation])
+        if index is None:
+            return self.select(Word,None,True,['Original','Suggestion','Alternative'])
         else:
-            return sum(self.select(Word,None,True,[AbstractSpanAnnotation]),[])[index]
+            return self.select(Word,None,True,['Original','Suggestion','Alternative'])[index]            
+            
                    
     def paragraphs(self, index = None):
         """Returns a list of Paragraph elements found (recursively) under this element.
@@ -1258,11 +1259,10 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         Arguments:
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all        
         """
-
         if index is None:
-            return sum([ t.select(Paragraph) for t in self.data ],[])
+            return self.select(Paragraph,None,True,['Original','Suggestion','Alternative'])
         else:
-            return sum([ t.select(Paragraph) for t in self.data ],[])[index]
+            return self.select(Paragraph,None,True,['Original','Suggestion','Alternative'])[index]
     
     def sentences(self, index = None):
         """Returns a list of Sentence elements found (recursively) under this element
@@ -1271,9 +1271,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])
+            return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative'])
         else:
-            return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])[index]
+            return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative'])[index]
 
 class AbstractAnnotation(AbstractElement):
     def feat(self,subset):
