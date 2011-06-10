@@ -222,10 +222,48 @@ Not all attributes are allowed for all elements, and certain attributes are requ
  
 Instead of setting ``id``. you can also set the keyword argument ``generate_id_in`` and pass it another element, an ID will be automatically generated, based on the ID of the element passed. When you use the first method of appending, instatation with ``generate_id_in`` will take place automatically behind the screens when applicable and when ``id`` is not explicitly set.
 
+Any extra non-keyword arguments should be FoLiA elements and will be appended as the contents of the element, i.e. the children or subelements. Instead of using non-keyword arguments (*args), you can also use the keyword argument ``contents'' and pass a list. This is a shortcut made merely for convenience, as Python obliges all non-keyword arguments to come before the keyword-arguments, which if often aesthetically unpleasing for our purposes. Example of this use case will be shown in the next section.
+
+
 Adding span annotation
 ---------------------------
 
-(Yet to be written)
+Adding span annotation is easy with the FoLiA library, not withstanding the fact that there's more to it than adding token annotation.
+
+As you know, span annotation uses an stand-off annotation embedded in annotation layers. These layers are in turn embedded at the sentence level. In the following example we first create a sentence and then add a syntax parse:
+
+    
+    sentence = text.append(folia.Sentence)
+    sentence.append(folia.Word, 'The',id='example.s.1.w.1')
+    sentence.append(folia.Word, 'boy',id='example.s.1.w.2')
+    sentence.append(folia.Word, 'pets',id='example.s.1.w.3')
+    sentence.append(folia.Word, 'the',id='example.s.1.w.4')
+    sentence.append(folia.Word, 'cat',id='example.s.1.w.5')
+    sentence.append(folia.Word, '.', id='example.s.1.w.6')
+    
+    #Adding Syntax Layer
+    layer = sentence.append(folia.SyntaxLayer)
+    
+    #Adding Syntactic Units
+    layer.append( 
+        SyntacticUnit(self.doc, cls='s', contents=[
+            SyntacticUnit(self.doc, cls='np', contents=[
+                SyntacticUnit(self.doc, self.doc['example.s.1.w.1'], cls='det'),
+                SyntacticUnit(self.doc, self.doc['example.s.1.w.2'], cls='n'),
+            ]),
+            SyntacticUnit(self.doc, cls='vp', contents=[
+                SyntacticUnit(self.doc, self.doc['example.s.1.w.3'], cls='v')
+                    SyntacticUnit(self.doc, cls='np', contents=[
+                        SyntacticUnit(self.doc, self.doc['example.s.1.w.4'], cls='det'),
+                        SyntacticUnit(self.doc, self.doc['example.s.1.w.5'], cls='n'),            
+                    ]),
+                ]),
+            SyntacticUnit(self.doc, self.doc['example.s.1.w.6'], cls='fin')        
+        ])
+    )
+    
+To make references to the words, we here simply pass the word instances and use the document's index to obtain them.  Note also that passing a list using the keyword argument ``contents`` is wholly equivalent to passing the non-keyword arguments seperately.
+
 
 Adding subtoken annotation
 --------------------------------
