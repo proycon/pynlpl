@@ -16,6 +16,7 @@
 
 from pynlpl.formats import folia
 from pynlpl.common import Enum
+import sys
 
 class InvalidTagException(Exception):
     pass
