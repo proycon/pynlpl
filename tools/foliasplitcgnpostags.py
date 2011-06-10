@@ -14,10 +14,13 @@ from pynlpl.formats import folia
 from pynlpl.formats import cgn
 
 def process(target):
+    print "Processing " + target
     if os.path.isdir(target):
+        print "Descending into directory " + target
         for f in glob.glob(target + '/*'):
             process(f)
-    elif os.path.isfile(target) and target[-4] == '.xml':            
+    elif os.path.isfile(target) and target[-4:] == '.xml':            
+        print "Loading " + target
         doc = folia.Document(file=target)
         changed = False
         for word in doc.words():
@@ -31,6 +34,7 @@ def process(target):
             except cgn.InvalidTagException:
                 continue
         if changed:
+	    print "Saving..."
             doc.save()
 
 target = sys.argv[1]
