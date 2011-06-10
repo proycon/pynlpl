@@ -5,12 +5,13 @@ import glob
 import sys
 import os
 
-from pynlpl.formats import folia
-from pynlpl.formats import cgn
 
 if __name__ == "__main__":
     sys.path.append(sys.path[0] + '/../..')
     os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
+
+from pynlpl.formats import folia
+from pynlpl.formats import cgn
 
 def process(target):
     if os.path.isdir(target):
