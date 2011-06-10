@@ -262,13 +262,18 @@ As you know, span annotation uses an stand-off annotation embedded in annotation
         ])
     )
     
-To make references to the words, we here simply pass the word instances and use the document's index to obtain them.  Note also that passing a list using the keyword argument ``contents`` is wholly equivalent to passing the non-keyword arguments seperately.
+To make references to the words, we simply pass the word instances and use the document's index to obtain them.  Note also that passing a list using the keyword argument ``contents`` is wholly equivalent to passing the non-keyword arguments separately.
 
 
 Adding subtoken annotation
 --------------------------------
 
 (Yet to be written)
+
+
+Corrections
+----------------
+
 
 
 
