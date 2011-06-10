@@ -558,10 +558,11 @@ class AbstractElement(object):
             return self.append(child, *args, **kwargs)
         elif len(replace) > 1:
             raise Exception("Unable to replace. Multiple candidates found, unable to choose.")
-        elif len(replace) == 1:
-            self.data.remove(replace)
+        elif len(replace) == 1:            
             if 'alternative' in kwargs and kwargs['alternative']: 
                 #old version becomes alternative
+                if replace in self.data:
+                    self.data.remove(replace)
                 alt = self.append(Alternative)
                 alt.append(replace)
                 del kwargs['alternative'] #has other meaning in append()
@@ -647,13 +648,14 @@ class AbstractElement(object):
         
     def select(self, Class, set=None, recursive=True,  ignorelist=[], node=None):
         """Select child elements of the specified class. 
-        A further restriction can be made based
+        
+        A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into. 
         
         Arguments:
             * ``Class``: The class to select; any python class subclassed off `'AbstractElement``
             * ``set``: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
             * ``recursive``: Select recursively? Descending into child elements? Boolean defaulting to True.
-            * ``ignorelist``: A list of Classes (subclassed off ``AbstractElement``) not to recurse into.
+            * ``ignorelist``: A list of Classes (subclassed off ``AbstractElement``) not to recurse into. It is common not to want to recurse into the following elements: ``folia.Alternative``, ``folia.Suggestion``, and ``folia.Original``. As elements contained in these are never *authorative*.
             * ``node``: Reserved for internal usage, used in recursion.
             
         Returns:
