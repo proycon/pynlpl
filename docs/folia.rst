@@ -1,8 +1,8 @@
 
-FoLiA library - A short tutorial
-***************************************
+FoLiA library 
+*************
 
-This short tutorial will introduce the FoLiA python library, part of PyNLPl. The FoLiA library provides an Application Programming Interface for the reading, creation and manipulation of FoLiA XML documents.
+This tutorial will introduce the FoLiA python library, part of PyNLPl. The FoLiA library provides an Application Programming Interface for the reading, creation and manipulation of FoLiA XML documents.
 
 Prior to reading this document, it is highly recommended to first read to FoLiA documentation itself and familiarise yourself with the format and underlying paradigm.
 
