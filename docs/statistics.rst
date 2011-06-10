@@ -1,7 +1,7 @@
 Statistics and Information Theory
 ==================================
 
-.. automodule:: statistics
+.. automodule:: pynlpl.statistics
     :members:
     :undoc-members:
 

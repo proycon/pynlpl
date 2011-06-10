@@ -33,7 +33,7 @@ You may want to simply print all (plain) text contained in the document, which i
 
     print doc
     
-Alternatively, you can obtain a string representation of all text:
+Alternatively, you can obtain a string representation of all text::
 
     text_u = unicode(doc) #unicode instance
     text = str(doc) #UTF-8 encoded
@@ -55,30 +55,30 @@ Obtaining list of elements
 
 Usually you do not know in advance the ID of the element you want, or you want multiple elements. There are some methods of iterating over certain elements using the FoLiA library.
 
-For example, you can iterate over all words:
+For example, you can iterate over all words::
 
     for word in doc.words():
         print word
         
-That however gives you one big iteration of words without boundaries. You may more likely seek word within sentences. So we first iterate over all sentences, then over the words therein:
+That however gives you one big iteration of words without boundaries. You may more likely seek word within sentences. So we first iterate over all sentences, then over the words therein::
 
 
     for sentence in doc.sentences():
         for word in sentence.words():
             print word
             
-Or including paragraphs, assuming the document has them:
+Or including paragraphs, assuming the document has them::
 
     for paragraph in doc.paragraphs():
         for sentence in paragraph.sentences():
             for word in sentence.words():
                 print word
         
-You can also use this method to obtain a specific word, by passing an index parameter:
+You can also use this method to obtain a specific word, by passing an index parameter::
 
         word = sentence.words(3) #retrieves the fourth word
                     
-If you want to iterate over all of the child elements of a certain element, regardless of what class they are, you can simply do so as follows:
+If you want to iterate over all of the child elements of a certain element, regardless of what class they are, you can simply do so as follows::
 
     for element in doc:
         if isinstance(element, folia.Sentence):
@@ -104,7 +104,7 @@ Common attributes
 -----------------------
 
 
-As you know, the FoLiA paradigm introduces 'sets', 'classes', `annotator' with `annotator types' and `confidence' values. These attributes are easily accessible on any element that has them:
+As you know, the FoLiA paradigm introduces *sets*, *classes*, *annotator* with *annotator types* and *confidence* values. These attributes are easily accessible on any element that has them:
     
     * ``element.id``        (string)
     * ``element.set``       (string)
@@ -192,7 +192,7 @@ Adding annotations, or any elements for that matter, is done using the append me
 
 Note that in the above examples, the ``append()`` method takes a class as first argument, and subsequently takes keyword arguments that will be passed to the classes' constructor.
 
-A second way of using ``append()`` is by simply passing a child element and constructing it prior to appending. The following is equivalent to the above example:
+A second way of using ``append()`` is by simply passing a child element and constructing it prior to appending. The following is equivalent to the above example::
 
     #First we grab the fourth word, 'test', from the sentence
     word = sentence.words(3)
@@ -222,7 +222,7 @@ Not all attributes are allowed for all elements, and certain attributes are requ
  
 Instead of setting ``id``. you can also set the keyword argument ``generate_id_in`` and pass it another element, an ID will be automatically generated, based on the ID of the element passed. When you use the first method of appending, instatation with ``generate_id_in`` will take place automatically behind the screens when applicable and when ``id`` is not explicitly set.
 
-Any extra non-keyword arguments should be FoLiA elements and will be appended as the contents of the element, i.e. the children or subelements. Instead of using non-keyword arguments (*args), you can also use the keyword argument ``contents'' and pass a list. This is a shortcut made merely for convenience, as Python obliges all non-keyword arguments to come before the keyword-arguments, which if often aesthetically unpleasing for our purposes. Example of this use case will be shown in the next section.
+Any extra non-keyword arguments should be FoLiA elements and will be appended as the contents of the element, i.e. the children or subelements. Instead of using non-keyword arguments, you can also use the keyword argument ``content`` and pass a list. This is a shortcut made merely for convenience, as Python obliges all non-keyword arguments to come before the keyword-arguments, which if often aesthetically unpleasing for our purposes. Example of this use case will be shown in the next section.
 
 
 Adding span annotation
@@ -230,7 +230,7 @@ Adding span annotation
 
 Adding span annotation is easy with the FoLiA library, not withstanding the fact that there's more to it than adding token annotation.
 
-As you know, span annotation uses an stand-off annotation embedded in annotation layers. These layers are in turn embedded at the sentence level. In the following example we first create a sentence and then add a syntax parse:
+As you know, span annotation uses an stand-off annotation embedded in annotation layers. These layers are in turn embedded at the sentence level. In the following example we first create a sentence and then add a syntax parse::
 
     
     sentence = text.append(folia.Sentence)
@@ -273,5 +273,10 @@ Adding subtoken annotation
 
 
 
+API Reference
+==============================
 
-
+.. automodule:: pynlpl.formats.folia
+     :members:
+     :undoc-members:
+ 

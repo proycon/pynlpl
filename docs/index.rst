@@ -6,6 +6,9 @@
 Welcome to PyNLPl's documentation!
 ==================================
 
+This is the documentation for the Python Natural Language Processing Library (PyNLPl, pronounced as "pineapple"). The library offers a wide variety of modules for various NLP tasks.
+
+
 Contents:
 
 .. toctree::

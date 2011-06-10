@@ -1,7 +1,7 @@
 Data Types
 ==================================
 
-.. automodule:: datatypes
+.. automodule:: pynlpl.datatypes
     :members:
     :undoc-members:
 

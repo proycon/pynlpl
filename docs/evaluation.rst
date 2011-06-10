@@ -1,7 +1,7 @@
 Evaluation & Experiments
 ==================================
 
-.. automodule:: evaluation
+.. automodule:: pynlpl.evaluation
     :members:
     :undoc-members:
 

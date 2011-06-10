@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyNLPl'
-copyright = u'2010, Maarten van Gompel'
+copyright = u'2011, Maarten van Gompel'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -164,7 +164,7 @@ htmlhelp_basename = 'PyNLPldoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 # The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
+latex_paper_size = 'a4'
 
 # The font size ('10pt', '11pt' or '12pt').
 #latex_font_size = '10pt'

@@ -4,15 +4,14 @@ Formats
 Corpus Gesproken Nederlands
 ::::::::::::::::::::::::::::::
 
-.. automodule:: formats.cgn
+.. automodule:: pynlpl.formats.cgn
     :members:
     :undoc-members:
-
 
 GIZA++
 ::::::::::::::::::::::::::::::
 
-.. automodule:: formats.giza
+.. automodule:: pynlpl.formats.giza
     :members:
     :undoc-members:
 
@@ -20,7 +19,7 @@ GIZA++
 Moses
 ::::::::::::::::::::::::::::::
 
-.. automodule:: formats.moses
+.. automodule:: pynlpl.formats.moses
     :members:
     :undoc-members:
 
@@ -28,15 +27,20 @@ Moses
 SoNaR
 ::::::::::::::::::::::::::::::
 
-.. automodule:: formats.sonar
+.. automodule:: pynlpl.formats.sonar
     :members:
     :undoc-members:
 
 
+FoLiA
+::::::::::::::::::::::::::::::
+
+See folia_ : folia.html
+
 Taggerdata
 ::::::::::::::::::::::::::::::
 
-.. automodule:: formats.taggerdata
+.. automodule:: pynlpl.formats.taggerdata
     :members:
     :undoc-members:
 
@@ -44,7 +48,7 @@ Taggerdata
 TiMBL
 ::::::::::::::::::::::::::::::
 
-.. automodule:: formats.timbl
+.. automodule:: pynlpl.formats.timbl
     :members:
     :undoc-members:
 

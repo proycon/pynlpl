@@ -1,19 +1,19 @@
 Language Models
 ==================================
 
-.. automodule:: lm.lm
+.. automodule:: pynlpl.lm.lm
     :members:
     :undoc-members:
 
-.. automodule:: lm.srilm
+.. automodule:: pynlpl.lm.srilm
     :members:
     :undoc-members:
 
-.. automodule:: lm.server
+.. automodule:: pynlpl.lm.server
     :members:
     :undoc-members:
 
-.. automodule:: lm.client
+.. automodule:: pynlpl.lm.client
     :members:
     :undoc-members:
 
