@@ -4,6 +4,7 @@ FoLiA library - A short tutorial
 
 This short tutorial will introduce the FoLiA python library, part of PyNLPl. The FoLiA library provides an Application Programming Interface for the reading, creation and manipulation of FoLiA XML documents.
 
+Prior to reading this document, it is highly recommended to first read to FoLiA documentation itself and familiarise yourself with the format and underlying paradigm.
 
 
 Reading FoLiA
@@ -144,7 +145,7 @@ Subtoken Annotation
 
 (to be written still)
 
-Saerching in a FoLiA document
+Searching in a FoLiA document
 ================================
 
 (Yet to be written)
@@ -191,7 +192,7 @@ Adding annotations, or any elements for that matter, is done using the append me
 
 Note that in the above examples, the ``append()`` method takes a class as first argument, and subsequently takes keyword arguments that will be passed to the classes' constructor.
 
-A second way of using ``append()`` is by simply passing a child element and constructing it itself. The following is equivalent to the above example:
+A second way of using ``append()`` is by simply passing a child element and constructing it prior to appending. The following is equivalent to the above example:
 
     #First we grab the fourth word, 'test', from the sentence
     word = sentence.words(3)
@@ -208,7 +209,6 @@ In the above example we first instantiate a PosAnnotatation and a LemmaAnnotatio
 
     Class(document, *children, **kwargs)
 
-  
 The common attributes are set using equally named keyword arguments:
 
  * id 
@@ -218,7 +218,20 @@ The common attributes are set using equally named keyword arguments:
  * annotatortype
  * confidence
  
-Instead of setting ``id``. you can also set the keyword argument ``generate_id_in`` and pass it another element, an ID will be automatically generated, based on the ID of the element passed. When you use the first method of appending, instatation with ``generate_id_in`` will take place automatically behind the screens when applicable.
+Not all attributes are allowed for all elements, and certain attributes are required for certain elements. ValueError exceptions will be raised when these constraints are not met.
+ 
+Instead of setting ``id``. you can also set the keyword argument ``generate_id_in`` and pass it another element, an ID will be automatically generated, based on the ID of the element passed. When you use the first method of appending, instatation with ``generate_id_in`` will take place automatically behind the screens when applicable and when ``id`` is not explicitly set.
+
+Adding span annotation
+---------------------------
+
+(Yet to be written)
+
+Adding subtoken annotation
+--------------------------------
+
+(Yet to be written)
+
 
 
 
