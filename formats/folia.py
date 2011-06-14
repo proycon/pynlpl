@@ -1592,7 +1592,7 @@ class TextContent(AbstractElement):
             attribs['{' + NSFOLIA + '}ref'] = self.ref.id
         if self.corrected == TextCorrectionLevel.INLINE:
             attribs['{' + NSFOLIA + '}corrected'] = 'inline'
-        elif self.corrected == TextCorrectionLevel.CORRECTED and self.parent.MINTEXTCORRECTIONLEVEL < TextCorrectionLevel.CORRECTED:
+        elif self.corrected == TextCorrectionLevel.CORRECTED and self.parent and self.parent.MINTEXTCORRECTIONLEVEL < TextCorrectionLevel.CORRECTED:
             attribs['{' + NSFOLIA + '}corrected'] = 'yes'
             
         return E.t(self.value, **attribs)
