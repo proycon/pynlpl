@@ -625,6 +625,10 @@ class Test5Correction(unittest.TestCase):
             w.split( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
             
             s = self.doc.index[self.doc.id + '.s.1']            
+            import pdb; pdb.set_trace()
+            self.assertEqual( s.words(-3).text(), 'on' )
+            self.assertEqual( s.words(-2).text(), 'line' )
+            self.assertEqual( s.text(), 'De site staat on line .' )
             self.assertEqual( len(s.words()), 6 )
             
         
@@ -648,8 +652,9 @@ class Test5Correction(unittest.TestCase):
             s = self.doc.index[self.doc.id + '.s.1'] 
             w.split( folia.Word(self.doc, generate_id_in=s, text="on"), folia.Word(self.doc, generate_id_in=s, text="line"), suggest=True )
             
-            assert False           
             self.assertEqual( len(s.words()), 5 )
+            self.assertEqual( s.words(-2).text(), 'online' )
+            self.assertEqual( s.text(), 'De site staat online .' )
             
             
         def test002_mergecorrection(self):         

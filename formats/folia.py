@@ -267,7 +267,6 @@ class AbstractElement(object):
             * If that yields no text, it will resort to the original uncorrected text
             * If none is found, a NoSuchText exception is raised.
         """
-        
         #TODO: Implement handling of INLINE corrected textcontent
         if not self.PRINTABLE:
             raise NoSuchText
@@ -289,12 +288,15 @@ class AbstractElement(object):
             else:
                 #try to get text dynamically from children
                 s = ""
+                #print "NEW S"
                 for e in self:
                     try:                  
                         delimiter = e.overridetextdelimiter()
                         if delimiter is None:
-                            delimiter = self.TEXTDELIMITER #default delimiter set by parent
-                        s += unicode(e) + delimiter
+                            delimiter = self.TEXTDELIMITER #default delimiter set by parent                        
+                        a =  unicode(e) + delimiter
+                        #print "ADDING: ", a, " ( delimiter "+str(type(self))+ ": ", delimiter,')'
+                        s += a
                     except NoSuchText:
                         continue                
                         
@@ -447,10 +449,13 @@ class AbstractElement(object):
         
                 
     def append(self, child, *args, **kwargs):
-        """Append a child element. Returns the added element 
-        
+        """Append a child element. Returns the added element     
+
+        Arguments:   
+            * ``child``            - Instance or class
+            
         If an *instance* is passed as first argument, it will be appended
-        If a *class* derived from AbstractElement is passed as first argument, an instance will first be created and then appended.
+        If a *class* derived from AbstractElement is passed as first argument, an instance will first be created and then appended.            
                     
         Keyword arguments:
             * ``alternative=``     - If set to True, the element will be made into an alternative. 
@@ -514,6 +519,78 @@ class AbstractElement(object):
                 
         child.postappend()
         return child
+        
+    def insert(self, index, child, *args, **kwargs):
+        """Insert a child element at specified index. Returns the added element 
+        
+        If an *instance* is passed as first argument, it will be appended
+        If a *class* derived from AbstractElement is passed as first argument, an instance will first be created and then appended.
+                    
+        Arguments:   
+            * index                 
+            * ``child``            - Instance or class
+                    
+        Keyword arguments:
+            * ``alternative=``     - If set to True, the element will be made into an alternative. 
+            * ``corrected=``       - Used only when passing strings to be made into TextContent elements.
+            
+        Generic example, passing a pre-generated instance::
+        
+            word.insert( 3, folia.LemmaAnnotation(doc,  cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL ) )
+            
+        Generic example, passing a class to be generated::
+            
+            word.insert( 3, folia.LemmaAnnotation, cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL )
+        
+        Generic example, setting text of a specific correctionlevel::
+        
+            word.insert( 3, "house", corrected=folia.TextCorrectionLevel.CORRECTED )
+            
+            
+        """
+
+        #obtain the set (if available, necessary for checking addability)
+        if 'set' in kwargs:
+            set = kwargs['set']
+        else: 
+            try:
+                set = child.set
+            except:
+                set = None                
+
+        #Check if a Class rather than an instance was passed
+        Class = None #do not set to child.__class__
+        if inspect.isclass(child):
+            Class = child
+            if Class.addable(self, set):
+                if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
+                    kwargs['generate_id_in'] = self
+                if Class is TextContent:
+                    if not 'corrected' in kwargs:
+                        kwargs['corrected'] = self.MINTEXTCORRECTIONLEVEL                    
+                child = Class(self.doc, *args, **kwargs)
+        elif args:            
+            raise Exception("Too many arguments specified. Only possible when first argument is a class and not an instance")
+        
+        #Do the actual appending        
+        if not Class and (isinstance(child,str) or isinstance(child,unicode)) and TextContent in self.ACCEPTED_DATA:
+            #you can pass strings directly (just for convenience), will be made into textcontent automatically.
+            if 'corrected' in kwargs:
+                child = TextContent(self.doc, child, corrected=kwargs['corrected'] ) #MAYBE TODO: corrected attribute?
+            else: 
+                child = TextContent(self.doc, child, corrected=self.MINTEXTCORRECTIONLEVEL )
+            self.data.insert(index, child)
+            child.parent = self
+        elif Class or (isinstance(child, AbstractElement) and child.__class__.addable(self, set)): #(prevents calling addable again if already done above)
+            if 'alternative' in kwargs and kwargs['alternative']:
+                child = Alternative(self.doc, child, generate_id_in=self)
+            self.data.insert(index, child)
+            child.parent = self                
+        else:
+            raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ + ". Type not allowed as child.")
+                
+        child.postappend()
+        return child        
             
     @classmethod
     def findreplacables(Class, parent, set=None,**kwargs):
@@ -978,11 +1055,16 @@ class AllowCorrections(object):
             c = Correction(self.doc, **kwargs2)                        
 
         addnew = False
+        insertindex = -1 #append
 
         if 'current' in kwargs:
             if 'original' in kwargs or 'new' in kwargs: raise Exception("When setting current=, original= and new= can not be set!") 
             if not isinstance(kwargs['current'], list) and not isinstance(kwargs['current'], tuple): kwargs['current'] = [kwargs['current']] #support both lists (for multiple elements at once), as well as single element
             c.replace(Current(self.doc, *kwargs['current']))
+            for o in kwargs['current']: #delete current from current element
+                if o in self and isinstance(o, AbstractElement):
+                    if insertindex == -1: insertindex = self.data.index(o)
+                    self.remove(o) 
             del kwargs['current']
         if 'new' in kwargs:
             if not isinstance(kwargs['new'], list) and not isinstance(kwargs['new'], tuple): kwargs['new'] = [kwargs['new']] #support both lists (for multiple elements at once), as well as single element                        
@@ -996,6 +1078,7 @@ class AllowCorrections(object):
             c.replace(Original(self.doc, *kwargs['original']))
             for o in kwargs['original']: #delete original from current element
                 if o in self and isinstance(o, AbstractElement):
+                    if insertindex == -1: insertindex = self.data.index(o)
                     self.remove(o)            
             for current in c.select(Current):  #delete current if present
                 c.remove(current)
@@ -1058,7 +1141,10 @@ class AllowCorrections(object):
                 c.confidence = float(kwargs['confidence'])                        
             del kwargs['reuse']
         else:
-            self.append(c)
+            if insertindex == -1:
+                self.append(c)
+            else:
+                self.insert(insertindex, c)
         return c 
     
 
@@ -1533,6 +1619,7 @@ class Word(AbstractStructureElement, AllowCorrections):
     #ACCEPTED_DATA DEFINED LATER (after Correction)
     
     MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.CORRECTED
+    TEXTDELIMITER = " "
     
     def __init__(self, doc, *args, **kwargs):
         """Keyword arguments:
@@ -1804,7 +1891,7 @@ class AbstractSubtokenAnnotationLayer(AbstractElement):
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Description)
-    
+    TEXTDELIMITER = ""
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
@@ -1901,7 +1988,7 @@ class Correction(AbstractElement):
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
-    
+    TEXTDELIMITER = ""
     
     def hasnew(self):
         return bool(self.select(New,None,False, False))
@@ -2180,6 +2267,7 @@ class Sentence(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace)
     XMLTAG = 's'
+    TEXTDELIMITER = ' '
     
     def __init__(self,  doc, *args, **kwargs):
         """
