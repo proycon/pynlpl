@@ -1044,7 +1044,7 @@ class AllowCorrections(object):
                 #If annotator, annotatortypes
                 #are associated with the correction as a whole, move it to the suggestions
                 #correction-wide annotator, annotatortypes might be overwritten
-                for suggestion in c.suggestions:
+                for suggestion in c.suggestions():
                     if c.annotator and not suggestion.annotator:
                         suggestion.annotator = c.annotator
                     if c.annotatortype and not suggestion.annotatortype:
@@ -2246,7 +2246,7 @@ class Sentence(AbstractStructureElement):
                 raise Exception("New word is not a Word instance: " + str(type(w)))                    
         if 'suggest' in kwargs and kwargs['suggest']:
             del kwargs['suggest']
-            return self.correct(suggestion=newwords,current=originalwords, **kwargs)
+            return self.correct(suggestions=newwords,current=originalwords, **kwargs)
         else:
             return self.correct(original=originalwords, new=newwords, **kwargs)
 

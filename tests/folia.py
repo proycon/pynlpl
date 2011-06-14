@@ -648,7 +648,7 @@ class Test5Correction(unittest.TestCase):
             s = self.doc.index[self.doc.id + '.s.1'] 
             w.split( folia.Word(self.doc, generate_id_in=s, text="on"), folia.Word(self.doc, generate_id_in=s, text="line"), suggest=True )
             
-                       
+            assert False           
             self.assertEqual( len(s.words()), 5 )
             
             
