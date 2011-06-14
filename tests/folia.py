@@ -625,7 +625,6 @@ class Test5Correction(unittest.TestCase):
             w.split( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
             
             s = self.doc.index[self.doc.id + '.s.1']            
-            import pdb; pdb.set_trace()
             self.assertEqual( s.words(-3).text(), 'on' )
             self.assertEqual( s.words(-2).text(), 'line' )
             self.assertEqual( s.text(), 'De site staat on line .' )
