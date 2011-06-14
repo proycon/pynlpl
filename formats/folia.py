@@ -1045,6 +1045,16 @@ class AllowCorrections(object):
                     raise ValueError("reuse= must point to an existing correction (id or instance)!")
             
             suggestionsonly = (not c.hasnew() and not c.hasoriginal() and c.hassuggestions())
+            
+            if 'new' in kwargs and c.hascurrent():
+                #can't add new if there's current, so first set original to current, and then delete current
+                
+                if 'current' in kwargs:
+                    raise Exception("Can't set both new= and current= !") 
+                if not 'original' in kwargs:
+                    kwargs['original'] = c.current()
+                
+                c.remove(c.current())                
         else:
             if not 'id' in kwargs and not 'generate_id_in' in kwargs:
                 kwargs['generate_id_in'] = self                        

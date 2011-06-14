@@ -677,6 +677,7 @@ class Test5Correction(unittest.TestCase):
            
             self.assertEqual( len(s.words()), 5 )
             
+
             
         def test003_deletecorrection(self):         
             """Correction - Deletion"""
