@@ -2350,7 +2350,7 @@ class Sentence(AbstractStructureElement):
 
     def mergewords(self, newword, *originalwords, **kwargs):
         """TODO: Write documentation"""
-        return self.correctwords(originalwords, newword, **kwargs)
+        return self.correctwords(originalwords, [newword], **kwargs)
             
     def deleteword(self, word, **kwargs):
         """TODO: Write documentation"""
