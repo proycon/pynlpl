@@ -2648,12 +2648,10 @@ class Document(object):
     def xmlmetadata(self):
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         if self.metadatatype == MetaDataType.NATIVE:
-            e = []
-            if self.title(): e.append(E.meta(self.title(),id='title') )
-            if self.date(): e.append(E.meta(self.date(),id='date') )
-            if self.language(): e.append(E.meta(self.language(),id='language') )
-            if self.license(): e.append(E.meta(self.license(),id='license') )    
-            if self.publisher(): e.append(E.meta(self.publisher(),id='publisher') )
+            e = []            
+            if not self.metadatafile:
+                for key, value in self.metadata.items():
+                    e.append(E.meta(value,id=key) )
             return e
         elif self.metadatatype == MetaDataType.IMDI:
             if self.metadatafile:
@@ -2745,36 +2743,86 @@ class Document(object):
         """No arguments: Get the document's title from metadata
            Argument: Set the document's title in metadata
         """ 
-        if not (value is None): self._title = value
-        return self._title
+        if not (value is None):
+            if (self.metadatatype == MetaDataType.NATIVE):
+                 self.metadata['title'] = value                
+            else:
+                self._title = value  
+        if (self.metadatatype == MetaDataType.NATIVE):      
+            if 'title' in self.metadata:
+                return self.metadata['title']
+            else:
+                return None
+        else:
+            return self._title
         
     def date(self, value=None):
         """No arguments: Get the document's date from metadata
            Argument: Set the document's date in metadata
         """         
-        if not (value is None): self._date = value
-        return self._date        
+        if not (value is None):
+            if (self.metadatatype == MetaDataType.NATIVE):
+                 self.metadata['date'] = value                
+            else:
+                self._date = value  
+        if (self.metadatatype == MetaDataType.NATIVE):      
+            if 'date' in self.metadata:
+                return self.metadata['date']
+            else:
+                return None
+        else:
+            return self._date       
        
     def publisher(self, value=None):
         """No arguments: Get the document's publisher from metadata
            Argument: Set the document's publisher in metadata
         """                 
-        if not (value is None): self._publisher = value
-        return self._publisher
-
+        if not (value is None):
+            if (self.metadatatype == MetaDataType.NATIVE):
+                 self.metadata['publisher'] = value                
+            else:
+                self._publisher = value  
+        if (self.metadatatype == MetaDataType.NATIVE):      
+            if 'publisher' in self.metadata:
+                return self.metadata['publisher']
+            else:
+                return None
+        else:
+            return self._publisher
+            
     def license(self, value=None):
         """No arguments: Get the document's license from metadata
            Argument: Set the document's license in metadata
         """                         
-        if not (value is None): self._license = value
-        return self._license                       
+        if not (value is None):
+            if (self.metadatatype == MetaDataType.NATIVE):
+                 self.metadata['license'] = value                
+            else:
+                self._license = value  
+        if (self.metadatatype == MetaDataType.NATIVE):      
+            if 'license' in self.metadata:
+                return self.metadata['license']
+            else:
+                return None
+        else:
+            return self._license
         
     def language(self, value=None):
         """No arguments: Get the document's language (ISO-639-3) from metadata
            Argument: Set the document's language (ISO-639-3) in metadata
         """                                 
-        if not (value is None): self._language = value
-        return self._language        
+        if not (value is None):
+            if (self.metadatatype == MetaDataType.NATIVE):
+                 self.metadata['language'] = value                
+            else:
+                self._language = value  
+        if (self.metadatatype == MetaDataType.NATIVE):      
+            if 'language' in self.metadata:
+                return self.metadata['language']
+            else:
+                return None
+        else:
+            return self._language     
            
 
     def parsexml(self, node):
@@ -2796,12 +2844,31 @@ class Document(object):
             for subnode in node:
                 if subnode.tag == '{' + NSFOLIA + '}metadata':
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Metadata"
+                    if 'type' in subnode.attrib and subnode.attrib['type'] == 'imdi':
+                        self.metadatatype = MetaDataType.IMDI
+                    elif 'type' in subnode.attrib and  subnode.attrib['type'] == 'cmdi':                        
+                        self.metadatatype = MetaDataType.IMDI 
+                    elif 'type' in subnode.attrib and subnode.attrib['type'] == 'native':                        
+                        self.metadatatype = MetaDataType.NATIVE
+                    else:
+                        #no type specified, default to native
+                        self.metadatatype = MetaDataType.NATIVE                        
+                    
+                    
+                    self.metadata = {}
+                    self.metadatafile = None
+                    
+                    if 'src' in subnode.attrib:
+                        self.metadatafile =  subnode.attrib['src']
+                                                                                                                                                 
                     for subsubnode in subnode:
                         if subsubnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
                             self.metadatatype = MetaDataType.IMDI
                             self.setimdi(subsubnode)
                         if subsubnode.tag == '{' + NSFOLIA + '}annotations':
                             self.parsexmldeclarations(subsubnode)
+                        if subsubnode.tag == '{' + NSFOLIA + '}meta':
+                            self.metadata[subsubnodetag.attrib['id']] = subsubnodetag.value.strip()
                 elif subnode.tag == '{' + NSFOLIA + '}text' and self.loadall:
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
                     self.data.append( self.parsexml(subnode) )
