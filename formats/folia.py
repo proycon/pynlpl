@@ -1124,6 +1124,8 @@ class AllowCorrections(object):
             for suggestion in kwargs['suggestions']:
                 if isinstance(suggestion, Suggestion):
                     c.append(suggestion)
+                elif isinstance(suggestion, list) or isinstance(suggestion, tuple):
+                    c.append(Suggestion(self.doc, *suggestion))                   
                 else:
                     c.append(Suggestion(self.doc, suggestion))                        
             del kwargs['suggestions']
@@ -2344,7 +2346,7 @@ class Sentence(AbstractStructureElement):
                 raise Exception("New word is not a Word instance: " + str(type(w)))                    
         if 'suggest' in kwargs and kwargs['suggest']:
             del kwargs['suggest']
-            return self.correct(suggestions=newwords,current=originalwords, **kwargs)
+            return self.correct(suggestion=newwords,current=originalwords, **kwargs)
         else:
             return self.correct(original=originalwords, new=newwords, **kwargs)
 
