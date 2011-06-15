@@ -12,6 +12,7 @@ if __name__ == "__main__":
 
 from pynlpl.formats import folia
 from pynlpl.formats import cgn
+import lxml.etree
 
 def process(target):
     print "Processing " + target
