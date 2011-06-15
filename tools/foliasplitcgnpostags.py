@@ -21,7 +21,11 @@ def process(target):
             process(f)
     elif os.path.isfile(target) and target[-4:] == '.xml':            
         print "Loading " + target
-        doc = folia.Document(file=target)
+        try:
+            doc = folia.Document(file=target)
+        except lxml.etree.XMLSyntaxError:
+            print >>sys.stderr, "UNABLE TO LOAD " + target + " (XML SYNTAX ERROR!)"
+            return None
         changed = False
         for word in doc.words():
             try:
@@ -32,9 +36,10 @@ def process(target):
                 word.replace( cgn.parse_cgn_postag(pos.cls) )
                 changed = True
             except cgn.InvalidTagException:
+                print >>sys.stderr, "WARNING: INVALID TAG" + pos.cls
                 continue
         if changed:
-	    print "Saving..."
+            print "Saving..."
             doc.save()
 
 target = sys.argv[1]
