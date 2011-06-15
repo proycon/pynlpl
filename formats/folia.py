@@ -2868,7 +2868,8 @@ class Document(object):
                         if subsubnode.tag == '{' + NSFOLIA + '}annotations':
                             self.parsexmldeclarations(subsubnode)
                         if subsubnode.tag == '{' + NSFOLIA + '}meta':
-                            self.metadata[subsubnode.attrib['id']] = subsubnode.text.strip()
+                            if subsubnode.text:
+                                self.metadata[subsubnode.attrib['id']] = subsubnode.text
                 elif subnode.tag == '{' + NSFOLIA + '}text' and self.loadall:
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
                     self.data.append( self.parsexml(subnode) )
