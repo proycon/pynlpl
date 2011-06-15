@@ -37,7 +37,7 @@ def process(target):
                 word.replace( cgn.parse_cgn_postag(pos.cls) )
                 changed = True
             except cgn.InvalidTagException:
-                print >>sys.stderr, "WARNING: INVALID TAG" + pos.cls
+                print >>sys.stderr, "WARNING: INVALID TAG " + pos.cls
                 continue
         if changed:
             print "Saving..."
