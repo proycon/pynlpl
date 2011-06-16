@@ -38,5 +38,5 @@ for doc in CorpusX(sonardir,'tok',"", lambda f: not os.path.exists(f + '.pos') )
                     if lemma:
                         doc[word_id].attrib[ns('dcoi') + 'lemma'] = lemma
     if processed_doc:
-        doc.save(doc.filename+'.pos', 'iso-8859-15') #write .tok.pos files
+        doc.save(doc.filename+'.pos', 'utf-8') #write .tok.pos files
 
