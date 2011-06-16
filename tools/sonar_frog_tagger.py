@@ -9,7 +9,7 @@ import os.path
 sonardir = sys.argv[1]
 
 #Starting temporary Frog server
-os.system("Frog --skip=tmp -S 7551 &")
+os.system("frog --skip=tmp -S 7551 &")
 
 
 time.sleep(3)
