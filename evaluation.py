@@ -366,7 +366,9 @@ class ExperimentPool:
 
 
 
-class WPSParamSearch:
+class WPSParamSearch(object):
+    """ParamSearch with support for Wrapped Progressive Sampling"""
+    
     def __init__(self, experimentclass, inputdata, size, parameterscope, poolsize=1, sizefunc=None, prunefunc=None, delete=True): #parameterscope: {'parameter':[values]}
         self.ExperimentClass = experimentclass
         self.inputdata = inputdata
@@ -374,10 +376,13 @@ class WPSParamSearch:
         self.maxsize = size
         self.delete = delete #delete intermediate experiments
 
-        if sizefunc != None:
-            self.sizefunc = sizefunc
+        if self.maxsize == -1:
+            self.sizefunc = lambda x,y: self.maxsize
         else:
-            self.sizefunc = lambda i, maxsize: round((maxsize/100.0)*i*i)
+            if sizefunc != None:
+                self.sizefunc = sizefunc
+            else:
+                self.sizefunc = lambda i, maxsize: round((maxsize/100.0)*i*i)
 
         #prunefunc should return a number between 0 and 1, indicating how much is pruned. (for example: 0.75 prunes three/fourth of all combinations, retaining only 25%)
         if prunefunc != None:    
@@ -401,40 +406,48 @@ class WPSParamSearch:
             solution = s
         return solution[0]
 
+
+    def test(self):
+        #sample size elements from inputdata
+        size = int(self.sizefunc(i, self.maxsize))
+        if size > self.maxsize:
+            return []
+    
+        if self.maxsize != -1:
+            data = self.ExperimentClass.sample(self.inputdata, size)
+        else:
+            data = self.inputdata        
+
+        #run on ALL available parameter combinations and retrieve score
+        newparametercombinations = []
+        if self.poolsize <= 1:
+            #Don't use experiment pool, sequential execution
+            for parameters,score in self.parametercombinations:
+                experiment = self.ExperimentClass(data, **dict(parameters))
+                experiment.run()
+                newparametercombinations.append( (parameters, experiment.score()) )
+                if self.delete:
+                    experiment.delete()
+        else:
+            #Use experiment pool, parallel execution
+            pool = ExperimentPool(self.poolsize)
+            for parameters,score in self.parametercombinations:
+                pool.append( self.ExperimentClass(data, **dict(parameters)) )
+            for experiment in pool.run(False):
+                newparametercombinations.append( (experiment.parameters, experiment.score()) )
+                if self.delete:
+                    experiment.delete()        
+        
+        return newparametercombinations
+
+
     def __iter__(self):
         i = 0
         while True:
             i += 1
 
-            #sample size elements from inputdata
-            size = int(self.sizefunc(i, self.maxsize))
-            if size > self.maxsize:
-                break
-
-            #print "SAMPLING SIZE:",size
-            data = self.ExperimentClass.sample(self.inputdata, size)
-
-            #run on ALL available parameter combinations and retrieve score
-            newparametercombinations = []
-            if self.poolsize <= 1:
-                #Don't use experiment pool, sequential execution
-                for parameters,score in self.parametercombinations:
-                    experiment = self.ExperimentClass(data, **dict(parameters))
-                    experiment.run()
-                    newparametercombinations.append( (parameters, experiment.score()) )
-                    if self.delete:
-                        experiment.delete()
-            else:
-                #Use experiment pool, parallel execution
-                pool = ExperimentPool(self.poolsize)
-                for parameters,score in self.parametercombinations:
-                    pool.append( self.ExperimentClass(data, **dict(parameters)) )
-                for experiment in pool.run(False):
-                    newparametercombinations.append( (experiment.parameters, experiment.score()) )
-                    if self.delete:
-                        experiment.delete()
-
-
+            newparametercombinations = self.test()
+            
             #prune the combinations, keeping only the best
             prune = int(round(self.prunefunc(i) * len(newparametercombinations)))
             self.parametercombinations = sorted(newparametercombinations, key=lambda v: v[1])[prune:]
@@ -443,6 +456,17 @@ class WPSParamSearch:
             if len(self.parametercombinations) <= 1:
                 break
 
+class ParamSearch(WPSParamSearch):
+    """A simpler version of ParamSearch without Wrapped Progressive Sampling"""
+    def __init__(self, experimentclass, inputdata, parameterscope, poolsize=1, delete=True): #parameterscope: {'parameter':[values]}
+        prunefunc = lambda x: 0
+        super(ParamSearch, self).__init__(experimentclass, inputdata, -1, parameterscope, poolsize, None,pruncefunc, delete)
+    
+    def __iter__(self):
+         for parametercombination, score in sorted(self.test(), key=lambda v: v[1]):
+             yield parametercombination, score
+                    
+        
 def filesampler(files, testsetsize = 0.1, devsetsize = 0):
         """Extract a training set, test set and optimally a development set from one file, or multiple *interdependent* files (such as a parallel corpus). It is assumed each line contains one instance (such as a word or sentence for example)."""
 
