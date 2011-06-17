@@ -269,12 +269,22 @@ class AbstractExperiment(object):
             raise Exception("Not implemented yet, make sure to overload the run() method!")
 
     def startcommand(self, command, cwd, stdout, stderr, *arguments, **parameters):
+        def tounicode(s):
+            if isinstance(s,unicode):
+                return s
+            elif isinstance(s,str):
+                return unicode(s,'utf-8')
+            elif isinstance(s,int) or isinstance(s,float):
+                return str(s)                        
+            else:
+                return unicode(s)
+        
         argdelimiter=' '
         printcommand = True
 
         cmd = command
         if arguments:
-            cmd += ' ' + " ".join([ str(x) for x in arguments])
+            cmd += ' ' + " ".join([ tounicode(x) for x in arguments])
         if parameters:
             for key, value in parameters.items():
                 if key == 'argdelimiter':
@@ -288,7 +298,7 @@ class AbstractExperiment(object):
                 else:
                     cmd += ' ' + key + str(value)
         if printcommand:
-            print "STARTING COMMAND: " + cmd
+            print "STARTING COMMAND: " + cmd.encode('utf-8')
 
         self.begintime = datetime.datetime.now()
         if not cwd:
