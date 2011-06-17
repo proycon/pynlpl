@@ -1442,6 +1442,8 @@ class TextContent(AbstractElement):
         elif isinstance(kwargs['value'], str):
             self.value = unicode(kwargs['value'],'utf-8')        
             del kwargs['value']
+        elif not kwargs['value']:
+            kwargs['value'] = u""
         else:
             raise Exception("Invalid value: " + repr(kwargs['value']))
 
@@ -1584,8 +1586,12 @@ class TextContent(AbstractElement):
             kwargs['length'] = int(node.attrib['length'])
         elif 'ref' in node.attrib:
             kwargs['ref'] = node.attrib['ref']
-
-        kwargs['value'] = node.text
+        
+        if node.text:
+            kwargs['value'] = node.text
+        else:
+            kwargs['value'] = ""
+            
         return TextContent(doc, **kwargs)
     
     
