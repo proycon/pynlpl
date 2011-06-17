@@ -460,7 +460,7 @@ class ParamSearch(WPSParamSearch):
     """A simpler version of ParamSearch without Wrapped Progressive Sampling"""
     def __init__(self, experimentclass, inputdata, parameterscope, poolsize=1, delete=True): #parameterscope: {'parameter':[values]}
         prunefunc = lambda x: 0
-        super(ParamSearch, self).__init__(experimentclass, inputdata, -1, parameterscope, poolsize, None,pruncefunc, delete)
+        super(ParamSearch, self).__init__(experimentclass, inputdata, -1, parameterscope, poolsize, None,prunefunc, delete)
     
     def __iter__(self):
          for parametercombination, score in sorted(self.test(), key=lambda v: v[1]):
