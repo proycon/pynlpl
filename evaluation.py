@@ -407,16 +407,17 @@ class WPSParamSearch(object):
         return solution[0]
 
 
-    def test(self):
+    def test(self,i=None):
         #sample size elements from inputdata
-        size = int(self.sizefunc(i, self.maxsize))
-        if size > self.maxsize:
-            return []
-    
-        if self.maxsize != -1:
+        if i is None or self.maxsize == -1:
+            data = self.inputdata      
+        else:            
+            size = int(self.sizefunc(i, self.maxsize))
+            if size > self.maxsize:
+                return []
+        
             data = self.ExperimentClass.sample(self.inputdata, size)
-        else:
-            data = self.inputdata        
+        
 
         #run on ALL available parameter combinations and retrieve score
         newparametercombinations = []
@@ -446,7 +447,7 @@ class WPSParamSearch(object):
         while True:
             i += 1
 
-            newparametercombinations = self.test()
+            newparametercombinations = self.test(i)
             
             #prune the combinations, keeping only the best
             prune = int(round(self.prunefunc(i) * len(newparametercombinations)))
