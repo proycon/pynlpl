@@ -21,7 +21,7 @@ os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
 from StringIO import StringIO
 import lxml.etree
-import pynlpl.formats.folia as folia
+from pynlpl.formats import folia
 
 class Test1Read(unittest.TestCase):
                         
@@ -736,7 +736,6 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( w.annotation(folia.Correction).new(0).text() , 'stippellijn' )
             self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
             self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
-            
             
             
             
@@ -3517,3 +3516,7 @@ bli bli bla, bla bla bli
     </gap>
   </text>
 </DCOI>"""
+
+
+if __name__ == '__main__':
+    unittest.main()
