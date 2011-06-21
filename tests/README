@@ -1,1 +1,15 @@
 Unit tests for various modules
+Om iets serieus te doen het je 'testoob' nodig:
+http://testoob.sourceforge.net/
+Dat geeft een 'egg' file: testoob-1.15-py2.6.egg
+
+Om die te installeren heb je 'easy_install' nodig:
+sudo apt-get install python-setuptools
+
+daarna:
+sudo easy_install testoob-1.15-py2.6.egg
+
+En dan:
+testoob -v folia.py > /dev/null
+
+ofzo
