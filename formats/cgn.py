@@ -25,11 +25,11 @@ class InvalidFeatureException(Exception):
     pass
 
 subsets = {
-    'ntype': ['soort'],
+    'ntype': ['soort','eigen'],
     'getal': ['ev','mv'],
     'genus': ['zijd','onz','masc','fem'],
     'naamval': ['stan','gen','dat','nomin','obl','bijz'],
-    'spectype': ['afgebr','afk','deeleigen','symb','vreemd','enof','meta'],
+    'spectype': ['afgebr','afk','deeleigen','symb','vreemd','enof','meta','achter','comment','onverst'],
     'conjtype': ['neven','onder'],
     'vztype': ['init','versm','fin'],
     'npagr': ['agr','evon','rest','evz','mv','agr3','evmo','rest3','evf'],
@@ -49,8 +49,8 @@ subsets = {
     'dial': ['dial'],
 }
 constraints = {
-    'getal':'N',
-    'pvagr':'WW',
+    'getal':['N','VNW'],
+    'pvagr':['WW'],
 }
 
 def parse_cgn_postag(rawtag, raisefeatureexceptions = False):
@@ -74,7 +74,7 @@ def parse_cgn_postag(rawtag, raisefeatureexceptions = False):
                 for subset, classes in subsets.items():
                     if rawfeature in classes:
                         if subset in constraints:
-                            if constraints[subset] != head:
+                            if not head in constraints[subset]:
                                 continue #constraint not met!
                         found = True
                         tag.append( folia.Feature, subset=subset,cls=rawfeature)
