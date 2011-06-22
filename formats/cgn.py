@@ -26,8 +26,8 @@ class InvalidFeatureException(Exception):
 
 subsets = {
     'ntype': ['soort','eigen'],
-    'getal': ['ev','mv'],
-    'genus': ['zijd','onz','masc','fem'],
+    'getal': ['ev','mv','getal',],
+    'genus': ['zijd','onz','masc','fem','genus'],
     'naamval': ['stan','gen','dat','nomin','obl','bijz'],
     'spectype': ['afgebr','afk','deeleigen','symb','vreemd','enof','meta','achter','comment','onverst'],
     'conjtype': ['neven','onder'],
@@ -37,7 +37,7 @@ subsets = {
     'vwtype': ['pers','pr','refl','recip','bez','vb','betr','excl','aanw','onbep'], #pr == pers?
     'pdtype':  ['adv-pron','pron','det','grad'], #pron == adv-pron?, grad == det?
     'status': ['vol','red','nadr'],
-    'persoon': ['1','2','2v','2b','3','3p','3m','3v','3o'],
+    'persoon': ['1','2','2v','2b','3','3p','3m','3v','3o','persoon'],
     'positie': ['prenom','postnom', 'nom','vrij'],
     'buiging': ['zonder','met-e','met-s'],
     'getal-n' : ['zonder-v','mv-n','zonder-n'],
