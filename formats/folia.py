@@ -3090,7 +3090,7 @@ class Division(AbstractStructureElement):
         extraelements.append(E.optional( E.ref(name='head') ))
         return super(Division,cls).relaxng(includechildren, extraattribs , extraelements)
 
-Division.ACCEPTED_DATA = (Division, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
+Division.ACCEPTED_DATA = (Division, Gap, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
 
 class Text(AbstractStructureElement):
     """A full text. This is a high-level element not to be confused with TextContent. This element may contain divisions, paragraphs, sentences, etc.."""
