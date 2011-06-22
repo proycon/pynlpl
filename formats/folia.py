@@ -2481,7 +2481,7 @@ class Document(object):
         self.annotations = [] #Ordered list of incorporated annotations ['token','pos', etc..]
         self.index = {} #all IDs go here
         
-        self.metadata = [] #will point to XML Element holding IMDI or CMDI metadata
+        self.metadata = {} #will point to XML Element holding IMDI or CMDI metadata
         self.metadatatype = MetaDataType.NATIVE
         self.metadatafile = None #reference to external metadata file
     
@@ -2543,7 +2543,7 @@ class Document(object):
     def setcmdi(self,filename):
         self.metadatatype = MetaDataType.CMDI
         self.metadatafile = filename
-        self.metadata = []
+        self.metadata = {}
         #TODO: Parse CMDI
         
         
