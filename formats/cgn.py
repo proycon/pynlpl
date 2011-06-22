@@ -80,7 +80,7 @@ def parse_cgn_postag(rawtag, raisefeatureexceptions = False):
                         tag.append( folia.Feature, subset=subset,cls=rawfeature)
                         break
                 if not found:
-                    print >>sys.stderr, "Unknown feature value: " + rawfeature + " in " + rawtag
+                    print >>sys.stderr, "\t\tUnknown feature value: " + rawfeature + " in " + rawtag
                     if raisefeatureexceptions:
                         raise InvalidFeatureException("Unknown feature value: " + rawfeature + " in " + rawtag)
                     else:    
