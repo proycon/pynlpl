@@ -20,6 +20,9 @@ import sys
 
 class InvalidTagException(Exception):
     pass
+    
+class InvalidFeatureException(Exception):
+    pass
 
 subsets = {
     'ntype': ['soort'],
@@ -50,7 +53,7 @@ constraints = {
     'pvagr':'WW',
 }
 
-def parse_cgn_postag(rawtag):
+def parse_cgn_postag(rawtag, raisefeatureexceptions = False):
     global subsets, constraints
     """decodes PoS features like "N(soort,ev,basis,onz,stan)" into a PosAnnotation data structure 
     based on CGN tag overview compiled by Matje van de Camp"""
@@ -78,7 +81,10 @@ def parse_cgn_postag(rawtag):
                         break
                 if not found:
                     print >>sys.stderr, "Unknown feature value: " + rawfeature + " in " + rawtag
-                    continue
+                    if raisefeatureexceptions:
+                        raise InvalidFeatureException("Unknown feature value: " + rawfeature + " in " + rawtag)
+                    else:    
+                        continue
         return tag
     else:
         raise InvalidTagException("Not a valid CGN tag")
