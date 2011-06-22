@@ -1894,7 +1894,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
             del kwargs['set']
         super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
         
-class AbstractSubtokenAnnotationLayer(AbstractElement):
+class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
     """Annotation layers for Subtoken Annotation are derived from this abstract base class"""        
     OPTIONAL_ATTRIBS = (Attrib.CLASS,)
     PRINTABLE = False
