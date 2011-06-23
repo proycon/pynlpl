@@ -14,6 +14,8 @@
 #
 ###############################################################
 
+import datetime
+from sys import stderr
 
 ## From http://code.activestate.com/recipes/413486/ (r7)
 def Enum(*names):
@@ -52,3 +54,36 @@ def Enum(*names):
    EnumType = EnumClass()
    return EnumType
 
+
+
+def log(msg, **kwargs):        
+    if 'debug' in kwargs:
+        if 'currentdebug' in kwargs:
+            if kwargs['currentdebug'] < kwargs['debug']:
+                return False
+        else:
+            return False #no currentdebug passed, assuming no debug mode and thus skipping message
+
+    s = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "] "
+    if 'system' in kwargs:
+        s += "[" + system + "] "
+    
+
+    if 'indent' in kwargs:
+        s += ("\t" * int(kwargs['indent']))
+        
+    if isinstance(msg, unicode):
+        s += msg.encode('utf-8')
+    else:
+        s += msg
+            
+    if 'streams' in kwargs:
+        streams = kwargs['streams']
+    elif 'stream' in kwargs:
+        streams = [kwargs['stream']]
+    else:
+        streams = [stderr]        
+    
+    for stream in streams:
+        stream.write(s)
+    return s
