@@ -264,7 +264,7 @@ def start(id, cmdline):
 
     #write history file
     f = open(HISTORYFILE,'a')
-    f.write(now.strftime("%Y%m%d %a %H:%M:%S") + ' ' + ' ' + USER + '@' + HOST + ' ' + id + ' $ ' + cmdline + '\n')
+    f.write(now.strftime("%Y%m%d %a %H:%M:%S") + ' ' + ' ' + USER + '@' + HOST + ' ' + id + ' ' + os.getcwd() + '$ ' + cmdline + '\n')
     f.close()
     
 
