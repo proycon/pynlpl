@@ -435,8 +435,7 @@ else:
         logfile =  EXPLOGDIR + '/' + id + '.log'
         reslogfile =  EXPLOGDIR + '/' + id + '.res'        
         if os.path.exists(logfile):
-            days = round(duration / float(3600*24))
-            os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Requested process report for " + id + " on " + HOST + " (" + str(days) + "d)\"" + MAILTO)        
+            os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Requested process report for " + id + " on " + HOST + "\" " + MAILTO)        
         else:
             print "No such experiment running on " + host
     elif command == 'ps' or command == 'ls':
