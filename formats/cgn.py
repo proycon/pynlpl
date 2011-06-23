@@ -34,8 +34,8 @@ subsets = {
     'vztype': ['init','versm','fin'],
     'npagr': ['agr','evon','rest','evz','mv','agr3','evmo','rest3','evf'],
     'lwtype': ['bep','onbep'],
-    'vwtype': ['pers','pr','refl','recip','bez','vb','betr','excl','aanw','onbep'], #pr == pers?
-    'pdtype':  ['adv-pron','pron','det','grad'], #pron == adv-pron?, grad == det?
+    'vwtype': ['pers','pr','refl','recip','bez','vb','vrag','betr','excl','aanw','onbep'], 
+    'pdtype':  ['adv-pron','pron','det','grad'],
     'status': ['vol','red','nadr'],
     'persoon': ['1','2','2v','2b','3','3p','3m','3v','3o','persoon'],
     'positie': ['prenom','postnom', 'nom','vrij'],

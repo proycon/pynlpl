@@ -431,10 +431,10 @@ else:
             print >>sys.stderr, "No such experiment on the current host"
     elif command in ['mailstat','mail','mailstatus']:
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
+        errlogfile =  EXPLOGDIR + '/' + id + '.err'
+        logfile =  EXPLOGDIR + '/' + id + '.log'
+        reslogfile =  EXPLOGDIR + '/' + id + '.res'        
         if os.path.exists(logfile):
-            errlogfile =  EXPLOGDIR + '/' + id + '.err'
-            logfile =  EXPLOGDIR + '/' + id + '.log'
-            reslogfile =  EXPLOGDIR + '/' + id + '.res'
             days = round(duration / float(3600*24))
             os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Requested process report for " + id + " on " + HOST + " (" + str(days) + "d)\"" + MAILTO)        
         else:
