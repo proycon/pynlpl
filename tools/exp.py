@@ -249,7 +249,7 @@ def start(id, cmdline):
 
 
 
-    process = subprocess.Popen(cmdline, shell=True,stdout=log,stderr=errlog)
+    process = subprocess.Popen(cmdline, shell=False,stdout=log,stderr=errlog)
 
     errlog.write("#PID:     " + str(process.pid) + '\n')
 
