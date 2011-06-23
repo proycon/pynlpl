@@ -75,7 +75,8 @@ def log(msg, **kwargs):
     if isinstance(msg, unicode):
         s += msg.encode('utf-8')
     else:
-        s += msg
+        s += unicode(msg,'utf-8', errors='ignore').encode('utf-8')
+            
             
     if 'streams' in kwargs:
         streams = kwargs['streams']
