@@ -379,7 +379,7 @@ else:
         if ret != 0:
            print >>sys.stderr,"Command not found: ", cmd
         else:
-           args = cmd + args
+           args = [cmd] + args
            pid = start(id, *args)
            if pid:
               wait(id, pid)
