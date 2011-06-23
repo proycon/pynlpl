@@ -253,8 +253,8 @@ def start(id, cmdline):
 
     errlog.write("#PID:     " + str(process.pid) + '\n')
 
-    os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' 0:00:00 " >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
-    os.system("ps uh " + str(process.pid) + ' >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
+    os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' 0:00:00 " >> ' + expconf.EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
+    os.system("ps uh " + str(process.pid) + ' >> ' + expconf.EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
 
     #write process file
     f = open(expconf.PROCDIR + '/' + HOST + '/' + dir + '/' + base_id ,'w')
@@ -297,11 +297,12 @@ def wait(id, process):
                 os.system("ps uh " + str(process.pid) + ' >> ' + expconf.EXPLOGDIR + '/' + id + '.res')
                 lastrestime = now
             if (now - lastmailtime).seconds >= expconf.MAILINTERVAL:                
+                headfile = expconf.EXPLOGDIR + '/' + id + '.head'
                 errlogfile = expconf.EXPLOGDIR + '/' + id + '.err'
                 logfile = expconf.EXPLOGDIR + '/' + id + '.log'
                 reslogfile = expconf.EXPLOGDIR + '/' + id + '.res'
                 lastmailtime = now                
-                os.system('tail -n 25 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Daily process report for " + id + " on " + HOST + " (" +str(duration.days) + "d)\" " + expconf.MAILTO)
+                os.system('tail -n 25 ' + headfile + ' ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Daily process report for " + id + " on " + HOST + " (" +str(duration.days) + "d)\" " + expconf.MAILTO)
         
 
     del process
@@ -318,6 +319,7 @@ def wait(id, process):
         pass
 
     #mail = (duration > 60) #we won't mail if we finish in less than a minute
+    headfile = expconf.EXPLOGDIR + '/' + id + '.head'
     logfile = expconf.EXPLOGDIR + '/' + id + '.log'
     errlogfile = expconf.EXPLOGDIR + '/' + id + '.err'    
     reslogfile = expconf.EXPLOGDIR + '/' + id + '.res'
@@ -351,7 +353,7 @@ def wait(id, process):
     print "Duration:   " + str(duration)
     print
     os.system('cat ' + printfile) #to stdout
-    os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \""+title+"\" " + expconf.MAILTO)
+    os.system('tail -n 100 ' + headfile + ' ' +  errlogfile + " " + logfile + " " + reslogfile + " | mail -s \""+title+"\" " + expconf.MAILTO)
 
 
 
