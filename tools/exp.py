@@ -293,7 +293,7 @@ def wait(id, process):
             duration = now - begintime
             if (now - lastrestime).seconds >= expconf.RESINTERVAL: 
                 #write resource
-                os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + str(duration) + ' " >> ' + expconf.EXPLOGDIR + '/' + id + '.res')
+                os.system('echo "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + str(duration) + ' " >> ' + expconf.EXPLOGDIR + '/' + id + '.res')
                 os.system("ps uh " + str(process.pid) + ' >> ' + expconf.EXPLOGDIR + '/' + id + '.res')
                 lastrestime = now
             if (now - lastmailtime).seconds >= expconf.MAILINTERVAL:                
@@ -302,7 +302,7 @@ def wait(id, process):
                 logfile = expconf.EXPLOGDIR + '/' + id + '.log'
                 reslogfile = expconf.EXPLOGDIR + '/' + id + '.res'
                 lastmailtime = now                
-                os.system('tail -n 25 ' + headfile + ' ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Daily process report for " + id + " on " + HOST + " (" +str(duration.days) + "d)\" " + expconf.MAILTO)
+                os.system('tail -n 25 ' + headfile + ' ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Periodic process report for " + id + " on " + HOST + " (" +str(duration.days) + "d)\" " + expconf.MAILTO)
         
 
     del process
@@ -487,7 +487,7 @@ else:
                 if os.path.isdir(hostdir) and hostdir[0] != '.':
                     host = os.path.basename(hostdir)
                     ps(host)
-    elif command == 'history':
+    elif command == 'history' or command == 'hist' or command == 'h':
         filters = []
         if len(sys.argv) >= 3:
             filters = sys.argv[2:]
