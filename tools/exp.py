@@ -223,9 +223,9 @@ def start(id, cmdline):
     log.write("#HOST:     " + HOST + '\n')
     log.write("#START:    " + starttime + '\n')
     head = open(expconf.EXPLOGDIR + '/' + dir + '/'+ base_id + '.head','w')
-    head.write(HOST + "$ exp start " + id + ' ' + os.getcwd() + ' ' + cmdline + '\n')   
+    head.write(HOST + "$ exp start " + id + ' ' + os.getcwd() + ' ' + " ".join(cmdline) + '\n')   
     head.write("*ID*       " + id + '\n')
-    head.write("*COMMAND*  " + cmdline + '\n')
+    head.write("*COMMAND*  " + " ".join(cmdline) + '\n')
     head.write("*CWD*      " + os.getcwd() + '\n')
     head.write("*USER*     " + USER + '\n')
     head.write("*HOST*     " + HOST + '\n')
@@ -233,14 +233,14 @@ def start(id, cmdline):
     head.close() 
     errlog = open(expconf.EXPLOGDIR + '/' + dir + '/'+ base_id + '.err','w')
     errlog.write("#ID:  " + id + '\n')
-    errlog.write("#COMMAND:  " + cmdline + '\n')
+    errlog.write("#COMMAND:  " + " ".join(cmdline) + '\n')
     errlog.write("#CWD:  " + os.getcwd() + '\n')
     errlog.write("#USER:     " + USER + '\n')
     errlog.write("#HOST:     " + HOST + '\n')
     errlog.write("#START:    " + starttime + '\n')
     reslog = open(expconf.EXPLOGDIR + '/' + dir + '/'+ base_id + '.res','w')
     reslog.write("#ID:  " + id + '\n')
-    reslog.write("#COMMAND:  " + cmdline + '\n')
+    reslog.write("#COMMAND:  " + " ".join(cmdline) + '\n')
     reslog.write("#CWD:  " + os.getcwd() + '\n')
     reslog.write("#USER:     " + USER + '\n')
     reslog.write("#HOST:     " + HOST + '\n')
@@ -368,18 +368,19 @@ else:
         if os.path.isdir(sys.argv[3]):
             cwd = sys.argv[3]
             cmd = sys.argv[4]
-            args = " ".join(sys.argv[5:])
+            args = sys.argv[5:]
             os.chdir(cwd)
         else:
             cwd = None
             cmd = sys.argv[3]
-            args = " ".join(sys.argv[5:])
+            args = sys.argv[5:]
     
         ret = os.system('which ' + cmd)
         if ret != 0:
            print >>sys.stderr,"Command not found: ", cmd
         else:
-           pid = start(id, cmd + " " + args)
+           args = cmd + args
+           pid = start(id, *args)
            if pid:
               wait(id, pid)
     elif command in ['stop', 'kill']:
