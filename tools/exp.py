@@ -217,7 +217,7 @@ def start(id, cmdline):
     starttime =  now.strftime("%Y-%m-%d %a %H:%M:%S")
     log = open(expconf.EXPLOGDIR + '/' + dir + '/'+ base_id + '.log','w')
     log.write("#ID:  " + id + '\n')
-    log.write("#COMMAND:  " + cmdline + '\n')
+    log.write("#COMMAND:  " + " ".join(cmdline) + '\n')
     log.write("#CWD:  " + os.getcwd() + '\n')
     log.write("#USER:     " + USER + '\n')
     log.write("#HOST:     " + HOST + '\n')
