@@ -519,16 +519,23 @@ else:
                     fields = line.split(' ',7)
                     date,weekday, time,empty, userhost, id,prompt, cmdline = fields
                     
+                    if len(prompt) > 1:
+                        workdir = prompt[:-1]
+                        prompt = prompt[-1]
+                    else:
+                        workdir = '/path/unknown'
+                                            
+                    
                     if os.path.exists(expconf.PROCDIR + '/' + userhost.split('@')[1] + '/' + id):
                         if userhost.split('@')[1] == HOST:
                             userhost = green(userhost)                        
                         else:
                             userhost = magenta(userhost)
-                        prompt =  bold(yellow('RUNNING $'))                                                    
+                        prompt =  bold(yellow('RUNNING')) + ' ' + workdir + bold(yellow('$'))                                                    
                     elif userhost.split('@')[1] == HOST:
                         userhost = green(userhost)                        
                         if os.path.exists(expconf.EXPLOGDIR + id + '.failed'):
-                            prompt =  bold(red('FAILED $'))                                             
+                            prompt =  bold(red('FAILED')) + ' ' + workdir + bold(red('$'))                                             
                         elif os.path.exists(expconf.EXPLOGDIR + id + '.log') and os.path.exists(expconf.EXPLOGDIR + id + '.err'):
                             #catch very common errors from err output (backward compatibility with old exp tools):                            
                             ferr = open(expconf.EXPLOGDIR + id + '.err','r')
@@ -539,14 +546,14 @@ else:
                                 failed = (lastline[:10] != "#DURATION:")
                             ferr.close()                            
                             if failed:
-                                prompt =  bold(red('FAILED $'))                                                                       
+                                prompt =  bold(red('FAILED')) + ' ' + workdir + bold(red('$'))                                                                       
                             else:
-                                prompt = bold(green('SUCCESS $'))                            
+                                prompt = bold(green('SUCCESS')) + ' ' + workdir + bold(green('$'))                            
                         else:
-                            prompt = bold(red('MISSING $'))
+                            prompt = bold(red('MISSING')) + ' ' + workdir + bold(red('$'))
                     else:
                         userhost = magenta(userhost)
-                        prompt = bold(magenta(prompt))    
+                        prompt = workdir + bold(magenta(prompt))    
                     
                     out = yellow(date[0:4] + '-' + date[4:6] + '-' + date[6:8] + ' ' + weekday + ' ' + time) + ' ' + userhost +' ' +bold(id) + ' ' + prompt +' ' +cmdline
                     if cmdline == prevcmdline:
