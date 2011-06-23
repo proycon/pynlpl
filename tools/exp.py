@@ -375,7 +375,7 @@ else:
             cmd = sys.argv[3]
             args = sys.argv[5:]
     
-        ret = os.system('which ' + cmd)
+        ret = os.system('which ' + cmd + ' >/dev/null 2> /dev/null')
         if ret != 0:
            print >>sys.stderr,"Command not found: ", cmd
         else:
