@@ -13,25 +13,19 @@ import os
 import glob
 import time
 
-#Configuration is specific to ILK servers (TODO: make external configuration file)
-MAILTO='proycon@anaproy.nl'
+import expconf
+
 HOST = os.uname()[1]
 USER = os.getenv("USER")
-HOMEDIR = os.getenv("HOME")
-PROCDIR = HOMEDIR + '/.expproc'
-EXPLOGDIR = '/exp/' + USER + '/explogs/'
-DAILYMAILHOUR = 6
-POLLINTERVAL = 30 #poll every 30 seconds
-RESINTERVAL = 600 #every 10 minutes (update resource logs)
 
-if not os.path.isdir(PROCDIR):
-    os.mkdir(PROCDIR)
-if not os.path.isdir(EXPLOGDIR):
-    os.mkdir(EXPLOGDIR)
+if not os.path.isdir(expconf.PROCDIR):
+    os.mkdir(expconf.PROCDIR)
+if not os.path.isdir(expconf.EXPLOGDIR):
+    os.mkdir(expconf.EXPLOGDIR)
 
 def usage():
-    print "Syntax: exp start    EXPERIMENT-ID COMMAND"
-    print "          - Start an experiment"
+    print "Syntax: exp start    EXPERIMENT-ID [CWD] COMMAND"
+    print "          - Start an experiment (in a specific working directory)"
     print "        exp stop     EXPERIMENT-ID"
     print "          - Stop an experiment (gently)"
     print "        exp kill     EXPERIMENT-ID"
@@ -46,6 +40,8 @@ def usage():
     print "          - View error output of experiment"
     print "        exp reslog   EXPERIMENT-ID"
     print "          - View resource usage log of experiment (periodic ps output)"
+    print "        exp versionlog   EXPERIMENT-ID"
+    print "          - View version log of experiment"    
     print "        exp audit    EXPERIMENT-ID"
     print "          - Follow all output of a running experiment live"
     print "        exp auditlog EXPERIMENT-ID"
@@ -141,9 +137,9 @@ def ps(host, dir = ""):
     pids = None
     out = ""
     if dir:
-        pattern = PROCDIR + '/' + host + '/' + dir + '/*'
+        pattern = expconf.PROCDIR + '/' + host + '/' + dir + '/*'
     else:
-        pattern = PROCDIR + '/' + host + '/*'
+        pattern = expconf.PROCDIR + '/' + host + '/*'
     for filename in glob.glob(pattern):
         if os.path.isdir(filename):
             if dir:
@@ -184,49 +180,66 @@ def ps(host, dir = ""):
     return found
 
 def start(id, cmdline):
-    global PROCDIR, USER, HOST, EXPLOGDIR
+    global USER, HOST
     try:
-        os.mkdir(PROCDIR + '/' + HOST)
+        os.mkdir(expconf.PROCDIR + '/' + HOST)
     except:
         pass
 
-    HISTORYFILE = PROCDIR + '/' + datetime.datetime.now().strftime("%Y%m") + '.history'
+    HISTORYFILE = expconf.PROCDIR + '/' + datetime.datetime.now().strftime("%Y%m") + '.history'
 
     dir = os.path.dirname(id)
     base_id = os.path.basename(id)
-
-
-    
-    
-    
     
     try:
-        os.makedirs(PROCDIR + '/' + HOST + '/' + dir)
+        os.makedirs(expconf.PROCDIR + '/' + HOST + '/' + dir)
     except OSError:
         pass
     try:
-        os.makedirs(EXPLOGDIR + '/' + dir)
+        os.makedirs(expconf.EXPLOGDIR + '/' + dir)
     except OSError:
         pass
         
-    if os.path.exists(EXPLOGDIR + '/' + id + '.failed'):
-        os.unlink(EXPLOGDIR + '/' + id + '.failed')
+    if os.path.exists(expconf.EXPLOGDIR + '/' + id + '.failed'):
+        os.unlink(expconf.EXPLOGDIR + '/' + id + '.failed')
+        
+
+    versionlog = expconf.EXPLOGDIR + '/' + dir + '/'+ base_id + '.versions'
+    f = open(versionlog,'w')
+    f.write("VERSION LOG\n-----------\n")
+    f.close()
+    
+    for command in expconf.VERSION_AUDIT:
+        os.system("echo -e \"\n$ " + command + "\"\n >> " + versionlog)
+        os.system(command + ' >> ' + versionlog + ' 2>&1')                
         
     now = datetime.datetime.now()
     starttime =  now.strftime("%Y-%m-%d %a %H:%M:%S")
-    log = open(EXPLOGDIR + '/' + dir + '/'+ base_id + '.log','w')
+    log = open(expconf.EXPLOGDIR + '/' + dir + '/'+ base_id + '.log','w')
+    log.write("#ID:  " + id + '\n')
     log.write("#COMMAND:  " + cmdline + '\n')
     log.write("#CWD:  " + os.getcwd() + '\n')
     log.write("#USER:     " + USER + '\n')
     log.write("#HOST:     " + HOST + '\n')
     log.write("#START:    " + starttime + '\n')
-    errlog = open(EXPLOGDIR + '/' + dir + '/'+ base_id + '.err','w')
+    head = open(expconf.EXPLOGDIR + '/' + dir + '/'+ base_id + '.head','w')
+    head.write(HOST + "$ exp start " + id + ' ' + os.getcwd() + ' ' + cmdline + '\n')   
+    head.write("*ID*       " + id + '\n')
+    head.write("*COMMAND*  " + cmdline + '\n')
+    head.write("*CWD*      " + os.getcwd() + '\n')
+    head.write("*USER*     " + USER + '\n')
+    head.write("*HOST*     " + HOST + '\n')
+    head.write("*START*    " + starttime + '\n')   
+    head.close() 
+    errlog = open(expconf.EXPLOGDIR + '/' + dir + '/'+ base_id + '.err','w')
+    errlog.write("#ID:  " + id + '\n')
     errlog.write("#COMMAND:  " + cmdline + '\n')
     errlog.write("#CWD:  " + os.getcwd() + '\n')
     errlog.write("#USER:     " + USER + '\n')
     errlog.write("#HOST:     " + HOST + '\n')
     errlog.write("#START:    " + starttime + '\n')
-    reslog = open(EXPLOGDIR + '/' + dir + '/'+ base_id + '.res','w')
+    reslog = open(expconf.EXPLOGDIR + '/' + dir + '/'+ base_id + '.res','w')
+    reslog.write("#ID:  " + id + '\n')
     reslog.write("#COMMAND:  " + cmdline + '\n')
     reslog.write("#CWD:  " + os.getcwd() + '\n')
     reslog.write("#USER:     " + USER + '\n')
@@ -244,7 +257,7 @@ def start(id, cmdline):
     os.system("ps uh " + str(process.pid) + ' >> ' + EXPLOGDIR + '/' + dir + '/' + base_id + '.res')
 
     #write process file
-    f = open(PROCDIR + '/' + HOST + '/' + dir + '/' + base_id ,'w')
+    f = open(expconf.PROCDIR + '/' + HOST + '/' + dir + '/' + base_id ,'w')
     f.write(str(process.pid)+"\n")
     f.write(cmdline+"\n")
     f.close()
@@ -259,10 +272,11 @@ def start(id, cmdline):
 
 
 def wait(id, process):
-    global MAILTO, HOST, DAILYMAILHOUR, POLLINTERVAL, RESINTERVAL
+    global HOST, USER
 
     begintime = datetime.datetime.now()
-    mailed = False
+    lastrestime = begintime
+    lastmailtime = begintime
     
     #Now wait till process is done
     while True:
@@ -274,21 +288,21 @@ def wait(id, process):
                 errorcode = process.returncode
                 errors = True                
                 break
-            time.sleep(POLLINTERVAL)
+            time.sleep(expconf.POLLINTERVAL)
             now = datetime.datetime.now()
             duration = now - begintime
-            if duration.seconds % RESINTERVAL == 0: #every ten minutes
+            if (now - lastrestime).seconds >= expconf.RESINTERVAL: 
                 #write resource
-                os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + str(duration) + ' " >> ' + EXPLOGDIR + '/' + id + '.res')
-                os.system("ps uh " + str(process.pid) + ' >> ' + EXPLOGDIR + '/' + id + '.res')
-            if now.hour == DAILYMAILHOUR and not mailed:                
-                mailed = True
-                errlogfile =  EXPLOGDIR + '/' + id + '.err'
-                logfile =  EXPLOGDIR + '/' + id + '.log'
-                reslogfile =  EXPLOGDIR + '/' + id + '.res'
-                os.system('tail -n 25 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Daily process report for " + id + " on " + HOST + " (" +str(duration.days) + "d)\"" + MAILTO)
-            elif now.hour < DAILYMAILHOUR:
-                mailed = False                        
+                os.system('echo -en "' + now.strftime("%Y-%m-%d %H:%M:%S %a ") + ' ' + str(duration) + ' " >> ' + expconf.EXPLOGDIR + '/' + id + '.res')
+                os.system("ps uh " + str(process.pid) + ' >> ' + expconf.EXPLOGDIR + '/' + id + '.res')
+                lastrestime = now
+            if (now - lastmailtime).seconds >= expconf.MAILINTERVAL:                
+                errlogfile = expconf.EXPLOGDIR + '/' + id + '.err'
+                logfile = expconf.EXPLOGDIR + '/' + id + '.log'
+                reslogfile = expconf.EXPLOGDIR + '/' + id + '.res'
+                lastmailtime = now                
+                os.system('tail -n 25 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Daily process report for " + id + " on " + HOST + " (" +str(duration.days) + "d)\" " + expconf.MAILTO)
+        
 
     del process
 
@@ -298,15 +312,15 @@ def wait(id, process):
 
     #delete process file
     try:
-        os.unlink(PROCDIR + '/' + HOST + '/' + id )
+        os.unlink(expconf.PROCDIR + '/' + HOST + '/' + id )
     except:
         print >> sys.stderr,"ERROR REMOVING PROCESS FILE!"
         pass
 
     #mail = (duration > 60) #we won't mail if we finish in less than a minute
-    logfile = EXPLOGDIR + '/' + id + '.log'
-    errlogfile = EXPLOGDIR + '/' + id + '.err'    
-    reslogfile = EXPLOGDIR + '/' + id + '.res'
+    logfile = expconf.EXPLOGDIR + '/' + id + '.log'
+    errlogfile = expconf.EXPLOGDIR + '/' + id + '.err'    
+    reslogfile = expconf.EXPLOGDIR + '/' + id + '.res'
     f = open(logfile,'a')
     f.write("#END:      " + endtime.strftime("%a %Y-%m-%d %H:%M:%S") + '\n')
     f.write("#DURATION: " + str(duration) + '\n')
@@ -323,7 +337,7 @@ def wait(id, process):
         printfile = errlogfile
         title = "Experiment " + id + " on " + HOST + " finished with errors (in " + str(duration).split('.')[0] + ')'
         
-        f = open(EXPLOGDIR + '/' + id + '.failed','w')
+        f = open(expconf.EXPLOGDIR + '/' + id + '.failed','w')
         f.write(str(errorcode))
         f.close()
     else:
@@ -337,7 +351,7 @@ def wait(id, process):
     print "Duration:   " + str(duration)
     print
     os.system('cat ' + printfile) #to stdout
-    os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \""+title+"\" " + MAILTO)
+    os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \""+title+"\" " + expconf.MAILTO)
 
 
 
@@ -347,18 +361,29 @@ else:
     command = sys.argv[1]
     if command == 'start':
         id = sys.argv[2] if len(sys.argv) >= 4 else usage()
-	if id[0:2] == "./": usage()
-        ret = os.system('which ' + sys.argv[3])
-        if ret != 0:
-           print >>sys.stderr,"Command not found: ", sys.argv[3]
+        if id[0:2] == "./": usage()
+    
+        if os.path.isdir(sys.argv[3]):
+            cwd = sys.argv[3]
+            cmd = sys.argv[4]
+            args = " ".join(sys.argv[5:])
+            os.chdir(cwd)
         else:
-           pid = start(id, " ".join(sys.argv[3:]))
+            cwd = None
+            cmd = sys.argv[3]
+            args = " ".join(sys.argv[5:])
+    
+        ret = os.system('which ' + cmd)
+        if ret != 0:
+           print >>sys.stderr,"Command not found: ", cmd
+        else:
+           pid = start(id, cmd + " " + args)
            if pid:
               wait(id, pid)
     elif command in ['stop', 'kill']:
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
         #find the process
-        procfilename = PROCDIR + '/' + HOST + '/' + id
+        procfilename = expconf.PROCDIR + '/' + HOST + '/' + id
         if os.path.exists(procfilename):            
             f = open(procfilename,'r')
             pid = int(f.readline())
@@ -379,7 +404,7 @@ else:
             print >>sys.stderr, "No such experiment on the current host"
     elif command in ['stdout','log','out']:
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
-        logfile =  EXPLOGDIR + id + '.log'
+        logfile =  expconf.EXPLOGDIR + id + '.log'
         if os.path.exists(logfile):
             os.system("cat " + logfile)
         else:
@@ -387,68 +412,75 @@ else:
 
     elif command in ['stderr', 'err', 'errlog','errors']:
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
-        logfile =  EXPLOGDIR + id + '.err'
+        logfile =  expconf.EXPLOGDIR + id + '.err'
         if os.path.exists(logfile):
             os.system("cat " + logfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"
+    elif command in ['versions', 'versionlog', 'vlog']:
+        id = sys.argv[2] if len(sys.argv) >= 3 else usage()
+        logfile =  expconf.EXPLOGDIR + id + '.versions'
+        if os.path.exists(logfile):
+            os.system("cat " + logfile)
+        else:
+            print >>sys.stderr, "No such experiment on the current host"            
     elif command in ['res', 'reslog','resources']:
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
-        logfile =  EXPLOGDIR + id + '.res'
+        logfile =  expconf.EXPLOGDIR + id + '.res'
         if os.path.exists(logfile):
             os.system("cat " + logfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"            
     elif command == 'auditlog':
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
-        logfile =  EXPLOGDIR + id + '.log'
+        logfile =  expconf.EXPLOGDIR + id + '.log'
         if os.path.exists(logfile):
             os.system("tail -f " + logfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"        
     elif command == 'auditerr':
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
-        errfile =  EXPLOGDIR + id + '.err'
+        errfile =  expconf.EXPLOGDIR + id + '.err'
         if os.path.exists(errfile):
             os.system("tail -f " + errfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"
     elif command == 'auditres':
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
-        resfile =  EXPLOGDIR + id + '.res'
+        resfile =  expconf.EXPLOGDIR + id + '.res'
         if os.path.exists(resfile):
             os.system("tail -f " + resfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"            
     elif command == 'audit':
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
-        logfile =  EXPLOGDIR + id + '.log'
-        errfile =  EXPLOGDIR + id + '.err'
-        resfile =  EXPLOGDIR + id + '.res'
+        logfile =  expconf.EXPLOGDIR + id + '.log'
+        errfile =  expconf.EXPLOGDIR + id + '.err'
+        resfile =  expconf.EXPLOGDIR + id + '.res'
         if os.path.exists(logfile):
             os.system("tail -f " + resfile + ' ' + logfile + ' ' + errfile)
         else:
             print >>sys.stderr, "No such experiment on the current host"
     elif command in ['mailstat','mail','mailstatus']:
         id = sys.argv[2] if len(sys.argv) >= 3 else usage()
-        errlogfile =  EXPLOGDIR + '/' + id + '.err'
-        logfile =  EXPLOGDIR + '/' + id + '.log'
-        reslogfile =  EXPLOGDIR + '/' + id + '.res'        
+        errlogfile =  expconf.EXPLOGDIR + '/' + id + '.err'
+        logfile =  expconf.EXPLOGDIR + '/' + id + '.log'
+        reslogfile =  expconf.EXPLOGDIR + '/' + id + '.res'        
         if os.path.exists(logfile):
-            os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Requested process report for " + id + " on " + HOST + "\" " + MAILTO)        
+            os.system('tail -n 100 ' + errlogfile + " " + logfile + " " + reslogfile + " | mail -s \"Requested process report for " + id + " on " + HOST + "\" " + expconf.MAILTO)        
         else:
             print "No such experiment running on " + host
     elif command == 'ps' or command == 'ls':
         if len(sys.argv) >= 3:
             host = sys.argv[2]
-            if os.path.isdir(PROCDIR+'/'+host):
+            if os.path.isdir(expconf.PROCDIR+'/'+host):
                 found = ps(host)
                 if not found:
                     print "No experiments running on " + host
             else:
                 print "No experiments running on " + host
         else:
-            for hostdir in glob.glob(PROCDIR+'/*'):
+            for hostdir in glob.glob(expconf.PROCDIR+'/*'):
                 if os.path.isdir(hostdir) and hostdir[0] != '.':
                     host = os.path.basename(hostdir)
                     ps(host)
@@ -458,7 +490,7 @@ else:
             filters = sys.argv[2:]
                     
             
-        for historyfile in sorted(glob.glob(PROCDIR+'/*.history')): 
+        for historyfile in sorted(glob.glob(expconf.PROCDIR+'/*.history')): 
             match = True
             for filter in filters:
                 if len(filter) == 6 and filter.isdigit():
@@ -485,7 +517,7 @@ else:
                     fields = line.split(' ',7)
                     date,weekday, time,empty, userhost, id,prompt, cmdline = fields
                     
-                    if os.path.exists(PROCDIR + '/' + userhost.split('@')[1] + '/' + id):
+                    if os.path.exists(expconf.PROCDIR + '/' + userhost.split('@')[1] + '/' + id):
                         if userhost.split('@')[1] == HOST:
                             userhost = green(userhost)                        
                         else:
@@ -493,15 +525,15 @@ else:
                         prompt =  bold(yellow('RUNNING $'))                                                    
                     elif userhost.split('@')[1] == HOST:
                         userhost = green(userhost)                        
-                        if os.path.exists(EXPLOGDIR + id + '.failed'):
+                        if os.path.exists(expconf.EXPLOGDIR + id + '.failed'):
                             prompt =  bold(red('FAILED $'))                                             
-                        elif os.path.exists(EXPLOGDIR + id + '.log') and os.path.exists(EXPLOGDIR + id + '.err'):
+                        elif os.path.exists(expconf.EXPLOGDIR + id + '.log') and os.path.exists(expconf.EXPLOGDIR + id + '.err'):
                             #catch very common errors from err output (backward compatibility with old exp tools):                            
-                            ferr = open(EXPLOGDIR + id + '.err','r')
+                            ferr = open(expconf.EXPLOGDIR + id + '.err','r')
                             firstline = ferr.read(15)
-                            failed = (firstline[0:9] != "#COMMAND:")                                            
+                            failed = (firstline[0:9] != "#COMMAND:") and (firstline[0:4] != "#ID:")                                           
                             if not failed:
-                                lastline = tail(EXPLOGDIR + id + '.err', ferr)
+                                lastline = tail(expconf.EXPLOGDIR + id + '.err', ferr)
                                 failed = (lastline[:10] != "#DURATION:")
                             ferr.close()                            
                             if failed:
