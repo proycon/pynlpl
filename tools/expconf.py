@@ -1,6 +1,9 @@
 import os
 #Configuration is specific to ILK servers
 
+HOST = os.uname()[1]
+USER = os.getenv("USER")
+
 MAILTO='proycon@anaproy.nl'
 HOMEDIR = os.getenv("HOME")
 PROCDIR = HOMEDIR + '/.expproc'
