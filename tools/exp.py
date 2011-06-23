@@ -380,7 +380,7 @@ else:
            print >>sys.stderr,"Command not found: ", cmd
         else:
            args = [cmd] + args
-           pid = start(id, *args)
+           pid = start(id, args)
            if pid:
               wait(id, pid)
     elif command in ['stop', 'kill']:
