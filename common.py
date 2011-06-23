@@ -77,6 +77,8 @@ def log(msg, **kwargs):
     else:
         s += unicode(msg,'utf-8', errors='ignore').encode('utf-8')
             
+    if s[-1] != '\n':
+        s += '\n'
             
     if 'streams' in kwargs:
         streams = kwargs['streams']
