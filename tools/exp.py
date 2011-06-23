@@ -210,7 +210,7 @@ def start(id, cmdline):
     f.close()
     
     for command in expconf.VERSION_AUDIT:
-        os.system("echo -e \"\n$ " + command + "\"\n >> " + versionlog)
+        os.system("echo \"$ " + command + "\" >> " + versionlog)
         os.system(command + ' >> ' + versionlog + ' 2>&1')                
         
     now = datetime.datetime.now()
@@ -259,12 +259,12 @@ def start(id, cmdline):
     #write process file
     f = open(expconf.PROCDIR + '/' + HOST + '/' + dir + '/' + base_id ,'w')
     f.write(str(process.pid)+"\n")
-    f.write(cmdline+"\n")
+    f.write(" ".join(cmdline)+"\n")
     f.close()
 
     #write history file
     f = open(HISTORYFILE,'a')
-    f.write(now.strftime("%Y%m%d %a %H:%M:%S") + ' ' + ' ' + USER + '@' + HOST + ' ' + id + ' ' + os.getcwd() + '$ ' + cmdline + '\n')
+    f.write(now.strftime("%Y%m%d %a %H:%M:%S") + ' ' + ' ' + USER + '@' + HOST + ' ' + id + ' ' + os.getcwd() + '$ ' + " ".join(cmdline) + '\n')
     f.close()
     
 
