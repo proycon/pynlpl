@@ -841,14 +841,25 @@ class AbstractElement(object):
             
             
             elements = [] #(including attributes)
-            
+            done = {}
             if includechildren:
                 for c in cls.ACCEPTED_DATA:
-                    try:
-                        if c.XMLTAG:
-                            elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )
-                    except AttributeError:
-                        continue
+                    if c.__name__[:8] == 'Abstract':
+                        for c2 in globals().values():
+                            if inspect.isclass(c2) and issubclass(c2, c):
+                                try:
+                                    if c2.XMLTAG and not (c2.XMLTAG in done):
+                                        elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
+                                        done[c2.XMLTAG] = True
+                                except AttributeError:
+                                    continue
+                    else:
+                        try:
+                            if c.XMLTAG and not (c.XMLTAG in done):
+                                elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )                                    
+                                done[c.XMLTAG] = True
+                        except AttributeError:
+                            continue                            
                         
             if extraelements:
                     for e in extraelements:
@@ -859,7 +870,11 @@ class AbstractElement(object):
                     attribs.append( E.interleave(*elements) )
                 else:
                     attribs.append( *elements )
-            return E.define( E.element(*attribs, **{name: cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
+                    
+            if not attribs:
+                attribs.append( E.empty() )
+                
+            return E.define( E.element(*attribs, **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
     
     @classmethod
     def parsexml(Class, node, doc):
@@ -1614,6 +1629,12 @@ class TextContent(AbstractElement):
             attribs['{' + NSFOLIA + '}corrected'] = 'yes'
             
         return E.t(self.value, **attribs)
+        
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+            global NSFOLIA
+            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+            return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
 class Linebreak(AbstractStructureElement):
     """Line break element, signals a line break"""
@@ -1774,24 +1795,6 @@ class Word(AbstractStructureElement, AllowCorrections):
     def split(self, *newwords, **kwargs):
         self.sentence().splitword(self, *newwords, **kwargs)
 
-        
-    @classmethod        
-    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
-        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        if not extraelements:
-            extraelements = []
-        done = {}
-        for c in globals().values():
-                if 'relaxng' in dir(c):
-                    if c.relaxng and c.XMLTAG and not c.XMLTAG in done:
-                        if issubclass(c, AbstractTokenAnnotation) or c is Correction:
-                            extraelements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )
-                            done[c.XMLTAG] = True
-        
-        return super(Word,cls).relaxng(includechildren, extraattribs , extraelements)
-
-
 
 
 class Feature(AbstractElement):
@@ -1844,7 +1847,7 @@ class Feature(AbstractElement):
         global NSFOLIA
         #TODO: add XMLATTRIB
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        return E.define( E.Element(E.attribute(name='subset'), E.attribute(name='class'), E.empty(),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
+        return E.define( E.Element(E.attribute(name='subset'), E.attribute(name='class'),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
 
 
 class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID): 
@@ -2095,12 +2098,12 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     PRINTABLE = False    
 
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Correction, Alternative, Description, AbstractSubtokenAnnotationLayer)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractSubtokenAnnotationLayer)
 
 
 class AlternativeLayers(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
-    ACCEPTED_DATA = (AbstractAnnotationLayer)    
+    ACCEPTED_DATA = (AbstractAnnotationLayer,)    
     XMLTAG = 'altlayers'
     PRINTABLE = False    
     
@@ -2137,7 +2140,11 @@ class WordReference(AbstractElement):
             if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] ...Unresolvable!"
             return WordReference(doc, id=id)    
 
-
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+            global NSFOLIA
+            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+            return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
             
 class AlignReference(AbstractElement):
@@ -2179,7 +2186,7 @@ class Morpheme(AbstractSubtokenAnnotation):
     XMLTAG = 'morpheme'
 
 class Subentity(AbstractSubtokenAnnotation):
-    REQUIRED_ATTRIBS = (Attrib.CLASS)
+    REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ACCEPTED_DATA = (Feature,TextContent)
     ANNOTATIONTYPE = AnnotationType.SUBENTITY
@@ -3081,15 +3088,6 @@ class Division(AbstractStructureElement):
                 return e
         raise NoSuchAnnotation()
               
-    @classmethod        
-    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
-        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        if not extraelements:
-            extraelements = []
-        extraelements.append(E.optional( E.ref(name='head') ))
-        return super(Division,cls).relaxng(includechildren, extraattribs , extraelements)
-
 Division.ACCEPTED_DATA = (Division, Gap, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
 
 class Text(AbstractStructureElement):
@@ -3166,11 +3164,6 @@ def relaxng(filename=None):
                 name='FoLiA',
                 ns = NSFOLIA
             ) ),            
-            E.define(E.element(
-              E.text(),
-              name="t",
-              ns=NSFOLIA) #,ns=NSFOLIA)
-            ,name="t"),
             )  
              
     done = {}
