@@ -805,7 +805,17 @@ class AbstractElement(object):
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
             global NSFOLIA
-            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
+            
+            
+            preamble = []
+            try:
+                if cls.__doc__:
+                    E2 = ElementMaker(namespace="http://relaxng.org/ns/annotation/0.9", nsmap={'a':'http://relaxng.org/ns/annotation/0.9'} )                    
+                    preamble.append(E2.documentation(cls.__doc__))
+            except AttributeError:
+                pass
+            
 
             attribs = []
             if Attrib.ID in cls.REQUIRED_ATTRIBS:
@@ -849,14 +859,20 @@ class AbstractElement(object):
                             if inspect.isclass(c2) and issubclass(c2, c):
                                 try:
                                     if c2.XMLTAG and not (c2.XMLTAG in done):
-                                        elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
+                                        if c2.OCCURRENCES == 1:
+                                            elements.append( E.optional( E.ref(name=c2.XMLTAG) ) )
+                                        else:
+                                            elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
                                         done[c2.XMLTAG] = True
                                 except AttributeError:
                                     continue
                     else:
                         try:
                             if c.XMLTAG and not (c.XMLTAG in done):
-                                elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )                                    
+                                if c.OCCURRENCES == 1:
+                                    elements.append( E.optional( E.ref(name=c.XMLTAG) ) )                                    
+                                else:
+                                    elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )                                    
                                 done[c.XMLTAG] = True
                         except AttributeError:
                             continue                            
@@ -874,7 +890,7 @@ class AbstractElement(object):
             if not attribs:
                 attribs.append( E.empty() )
                 
-            return E.define( E.element(*attribs, **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
+            return E.define( E.element(*(preamble + attribs), **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
     
     @classmethod
     def parsexml(Class, node, doc):
@@ -1649,7 +1665,7 @@ class Whitespace(AbstractStructureElement):
     XMLTAG = 'whitespace'    
         
 class Word(AbstractStructureElement, AllowCorrections):
-    """Word (aka token) element. Holds a token and all its related token annotations."""
+    """Word (aka token) element. Holds a word/token and all its related token annotations."""
     
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
@@ -1843,11 +1859,10 @@ class Feature(AbstractElement):
         return E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
     
     @classmethod
-    def relaxns(cls, includechildren=True, extraattribs = None, extraelements=None):
+    def relaxng(cls, includechildren=True, extraattribs = None, extraelements=None):
         global NSFOLIA
-        #TODO: add XMLATTRIB
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        return E.define( E.Element(E.attribute(name='subset'), E.attribute(name='class'),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
+        return E.define( E.element(E.attribute(name='subset'), E.attribute(name='class'),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
 
 
 class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID): 
@@ -2091,6 +2106,7 @@ Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction
 
             
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
+    """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
     REQUIRED_ATTRIBS = (Attrib.ID,)
     ACCEPTED_DATA = (AbstractTokenAnnotation, Correction)
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
@@ -2102,6 +2118,7 @@ Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Descrip
 
 
 class AlternativeLayers(AbstractElement):
+    """Element grouping alternative subtoken annotation(s). Multiple altlayers elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
     REQUIRED_ATTRIBS = (Attrib.ID,)
     ACCEPTED_DATA = (AbstractAnnotationLayer,)    
     XMLTAG = 'altlayers'
@@ -2109,7 +2126,7 @@ class AlternativeLayers(AbstractElement):
     
 
 class WordReference(AbstractElement):
-    """Only used when word reference can not be resolved, if they can, Word objects will be used"""
+    """Word reference. Use to refer to words from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word objects will be used"""
     REQUIRED_ATTRIBS = (Attrib.ID,)
     XMLTAG = 'wref'
     ANNOTATIONTYPE = AnnotationType.TOKEN
@@ -2157,6 +2174,7 @@ class AlignReference(AbstractElement):
     
         
 class SyntacticUnit(AbstractSpanAnnotation):
+    """Syntactic Unit, span annotation element to be used in SyntaxLayer"""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.SYNTAX
@@ -2165,6 +2183,7 @@ class SyntacticUnit(AbstractSpanAnnotation):
 SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference, Description)
 
 class Chunk(AbstractSpanAnnotation):
+    """Chunk element, span annotation element to be used in ChunkingLayer"""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ACCEPTED_DATA = (WordReference, Description)
@@ -2172,6 +2191,7 @@ class Chunk(AbstractSpanAnnotation):
     XMLTAG = 'chunk'
 
 class Entity(AbstractSpanAnnotation):
+    """Entity element, for named entities, span annotation element to be used in EntitiesLayer"""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ACCEPTED_DATA = (WordReference, Description)
@@ -2179,6 +2199,7 @@ class Entity(AbstractSpanAnnotation):
     XMLTAG = 'entity'
     
 class Morpheme(AbstractSubtokenAnnotation):
+    """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ACCEPTED_DATA = (Feature,TextContent)
@@ -2186,6 +2207,7 @@ class Morpheme(AbstractSubtokenAnnotation):
     XMLTAG = 'morpheme'
 
 class Subentity(AbstractSubtokenAnnotation):
+    """Subentity element, for named entities within a single token, subtoken annotation element to be used in SubentitiesLayer"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ACCEPTED_DATA = (Feature,TextContent)
@@ -2194,28 +2216,34 @@ class Subentity(AbstractSubtokenAnnotation):
         
     
 class SyntaxLayer(AbstractAnnotationLayer):
+    """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
     ACCEPTED_DATA = (SyntacticUnit,Description)
     XMLTAG = 'syntax'
 
 class ChunkingLayer(AbstractAnnotationLayer):
-    ACCEPTED_DATA = (Chunk,Description)
+    """Chunking Layer: Annotation layer for Chunk span annotation elements"""
+    ACCEPTED_DATA = (Chunk,Description)    
     XMLTAG = 'chunking'
 
 class EntitiesLayer(AbstractAnnotationLayer):
+    """Entities Layer: Annotation layer for Entity span annotation elements. For named entities."""
     ACCEPTED_DATA = (Entity,Description)
     XMLTAG = 'entities'
 
 class MorphologyLayer(AbstractSubtokenAnnotationLayer):
+    """Morphology Layer: Annotation layer for Morpheme subtoken annotation elements. For morphological analysis."""
     ACCEPTED_DATA = (Morpheme,)
     XMLTAG = 'morphology'    
 
 class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
+    """Subentities Layer: Annotation layer for Subentity subtoken annotation elements. For named entities within a single token."""
     ACCEPTED_DATA = (Subentity,)
     XMLTAG = 'subentities'
         
     
     
 class PosAnnotation(AbstractTokenAnnotation):
+    """Part-of-Speech annotation:  a token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.POS
@@ -2223,6 +2251,7 @@ class PosAnnotation(AbstractTokenAnnotation):
     XMLTAG = 'pos'
 
 class LemmaAnnotation(AbstractTokenAnnotation):
+    """Lemma annotation:  a token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.LEMMA
@@ -2230,6 +2259,7 @@ class LemmaAnnotation(AbstractTokenAnnotation):
     XMLTAG = 'lemma'
     
 class PhonAnnotation(AbstractTokenAnnotation):
+    """Phonetic annotation:  a token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.PHON
@@ -2238,6 +2268,7 @@ class PhonAnnotation(AbstractTokenAnnotation):
 
 
 class DomainAnnotation(AbstractExtendedTokenAnnotation):
+    """Domain annotation:  an extended token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.DOMAIN
@@ -2245,6 +2276,7 @@ class DomainAnnotation(AbstractExtendedTokenAnnotation):
     XMLTAG = 'domain'
 
 class SynsetFeature(Feature):
+    """Synset feature, to be used within Sense"""
     XMLATTRIB = 'synset' #allow feature as attribute
     XMLTAG = 'synset'
     ANNOTATIONTYPE = AnnotationType.SENSE
@@ -2252,6 +2284,7 @@ class SynsetFeature(Feature):
     
 
 class SenseAnnotation(AbstractTokenAnnotation):
+    """Sense annotation: a token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.SENSE
@@ -2259,6 +2292,7 @@ class SenseAnnotation(AbstractTokenAnnotation):
     XMLTAG = 'sense'
     
 class SubjectivityAnnotation(AbstractTokenAnnotation):
+    """Subjectivity annotation: a token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ANNOTATIONTYPE = AnnotationType.SUBJECTIVITY
@@ -2267,6 +2301,7 @@ class SubjectivityAnnotation(AbstractTokenAnnotation):
     
 
 class Quote(AbstractStructureElement):
+    """Quote: a structure element. For quotes/citations. May hold words or sentences."""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID,)    
     XMLTAG = 'quote'
@@ -2286,7 +2321,7 @@ class Quote(AbstractStructureElement):
         
         
 class Sentence(AbstractStructureElement):
-    """Sentence element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
+    """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
     
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
@@ -2419,7 +2454,7 @@ class Sentence(AbstractStructureElement):
 Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description)        
 
 class Paragraph(AbstractStructureElement):    
-    """Paragraph element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
+    """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
@@ -2429,7 +2464,7 @@ class Paragraph(AbstractStructureElement):
             
                 
 class Head(AbstractStructureElement):
-    """Head element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
+    """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
     
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
@@ -3015,18 +3050,12 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
         return Content(doc, **kwargs)            
     
 class Gap(AbstractElement):
+    """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
     ACCEPTED_DATA = (Content, Description)
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
     XMLTAG = 'gap'
     
     def __init__(self, doc, *args, **kwargs):
-        if 'head' in kwargs:
-            if not isinstance(kwargs['head'], Head):
-                raise ValueError("Head must be of type Head")        
-            self.head = kwargs['head']
-            del kwargs['head']
-        else:
-            self.head = None
         if 'content' in kwargs:        
             self.content = kwargs['content']
             del kwargs['content']
@@ -3043,14 +3072,14 @@ class Gap(AbstractElement):
             
     
 class ListItem(AbstractStructureElement):
-    """Single element in a List"""
+    """Single element in a List. Structure element. Contained within List element."""
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
     #ACCEPTED_DATA = (List, Sentence) #Defined below
     XMLTAG = 'listitem'
     
     
 class List(AbstractStructureElement):    
-    """Element for enumeration/itemisation"""
+    """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
     ACCEPTED_DATA = (ListItem,Description)
     XMLTAG = 'list'
@@ -3060,9 +3089,11 @@ ListItem.ACCEPTED_DATA = (List, Sentence, Description)
 
 
 class Figure(AbstractStructureElement):    
+    """Element for the representation of a graphical figure. Structure element."""
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
     ACCEPTED_DATA = (Sentence, Description)
     XMLTAG = 'figure'
+    #TODO: relaxNG
     
     def __init__(self, doc, *args, **kwargs):
         if 'url' in kwargs:
@@ -3074,13 +3105,12 @@ class Figure(AbstractStructureElement):
         
 
 
-
 class Division(AbstractStructureElement):    
+    """Structure element representing some kind of division. Divisions may be nested at will, and may include almost all kinds of other structure elements."""
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.N)
     XMLTAG = 'div'
     ANNOTATIONTYPE = AnnotationType.DIVISION
-
             
     def head(self):
         for e in self.data:
@@ -3091,7 +3121,7 @@ class Division(AbstractStructureElement):
 Division.ACCEPTED_DATA = (Division, Gap, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
 
 class Text(AbstractStructureElement):
-    """A full text. This is a high-level element not to be confused with TextContent. This element may contain divisions, paragraphs, sentences, etc.."""
+    """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
     
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
@@ -3177,7 +3207,7 @@ def relaxng(filename=None):
     #    grammar.append(e)
     if filename:
         f = open(filename,'w')
-        f.write( ElementTree.tostring(relaxng(),pretty_print=True))
+        f.write( ElementTree.tostring(relaxng(),pretty_print=True).replace("</define>","</define>\n\n") )
         f.close()
 
     return grammar
