@@ -3006,7 +3006,7 @@ class Document(object):
         
 
 class Content(AbstractElement):     #used for raw content, subelement for Gap
-    OCCURENCES = 1
+    OCCURRENCES = 1
     XMLTAG = 'content'
     
     def __init__(self,doc, *args, **kwargs):
@@ -3071,6 +3071,12 @@ class Gap(AbstractElement):
         raise NoSuchAnnotation
             
     
+class Label(AbstractStructureElement):    
+    """Element used for labels. Mostly in within list item. Contains words."""
+    OPTIONAL_ATTRIBS = (Attrib.ID)
+    ACCEPTED_DATA = (Word, Description)
+    XMLTAG = 'label'
+
 class ListItem(AbstractStructureElement):
     """Single element in a List. Structure element. Contained within List element."""
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
@@ -3085,13 +3091,19 @@ class List(AbstractStructureElement):
     XMLTAG = 'list'
     
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label)
 
+class Caption(AbstractStructureElement):    
+    """Element used for captions for figures or tables, contains sentences"""
+    OPTIONAL_ATTRIBS = (Attrib.ID)
+    ACCEPTED_DATA = (Sentence, Description)
+    OCCURRENCES = 1
+    XMLTAG = 'caption'
 
 class Figure(AbstractStructureElement):    
     """Element for the representation of a graphical figure. Structure element."""
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
-    ACCEPTED_DATA = (Sentence, Description)
+    ACCEPTED_DATA = (Sentence, Description, Caption)
     XMLTAG = 'figure'
     #TODO: relaxNG
     
