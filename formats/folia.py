@@ -3070,6 +3070,15 @@ class Gap(AbstractElement):
         raise NoSuchAnnotation
             
     
+
+class Caption(AbstractStructureElement):    
+    """Element used for captions for figures or tables, contains sentences"""
+    OPTIONAL_ATTRIBS = (Attrib.ID)
+    ACCEPTED_DATA = (Sentence, Description)
+    OCCURRENCES = 1
+    XMLTAG = 'caption'
+
+    
 class Label(AbstractStructureElement):    
     """Element used for labels. Mostly in within list item. Contains words."""
     OPTIONAL_ATTRIBS = (Attrib.ID)
@@ -3091,13 +3100,6 @@ class List(AbstractStructureElement):
     
 
 ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label)
-
-class Caption(AbstractStructureElement):    
-    """Element used for captions for figures or tables, contains sentences"""
-    OPTIONAL_ATTRIBS = (Attrib.ID)
-    ACCEPTED_DATA = (Sentence, Description)
-    OCCURRENCES = 1
-    XMLTAG = 'caption'
 
 class Figure(AbstractStructureElement):    
     """Element for the representation of a graphical figure. Structure element."""
