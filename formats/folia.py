@@ -940,7 +940,6 @@ class AbstractElement(object):
             elif key[:nslendcoi] == '{' + NSDCOI + '}':                
                 key = key[nslendcoi:]
                 
-
             #D-Coi support:
             if Class is Word and key == 'pos':
                 dcoipos = value
@@ -2017,7 +2016,7 @@ class Current(AbstractCorrectionChild):
                 return False
         return True    
             
-class Correction(AbstractElement):
+class Correction(AbstractExtendedTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
     ACCEPTED_DATA = (New,Original,Current, Suggestion, Description)
@@ -3087,7 +3086,7 @@ class ListItem(AbstractStructureElement):
 class List(AbstractStructureElement):    
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
-    ACCEPTED_DATA = (ListItem,Description)
+    ACCEPTED_DATA = (ListItem,Description, Caption)
     XMLTAG = 'list'
     
 
