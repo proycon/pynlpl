@@ -32,7 +32,7 @@ class AnnotatorType:
     
 
 class Attrib:
-    ID, CLASS, ANNOTATOR, CONFIDENCE, N = (0,1,2,3,4)
+    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME = range(6)
 
 class AnnotationType:
     TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY = range(17)
@@ -86,8 +86,11 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             raise ValueError("Set is not supported")
         object.set = kwargs['set']
         del kwargs['set']
-    elif annotationtype in doc.annotationdefaults and 'set' in doc.annotationdefaults[annotationtype]:
-        object.set = doc.annotationdefaults[annotationtype]['set']
+        
+        if not (annotationtype in doc.annotationdefaults) or not (object.set in doc.annotationdefaults[annotationtype]):
+            raise ValueError("Set '" + object.set + "' is used but has no declaration!")            
+    elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
+        object.set = doc.annotationdefaults[annotationtype].keys()[0]
     elif Attrib.CLASS in required:
         raise ValueError("Set is required for " + object.__class__.__name__)
     else:
@@ -119,8 +122,8 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             raise ValueError("Annotator is not supported for " + object.__class__.__name__)
         object.annotator = kwargs['annotator']
         del kwargs['annotator']
-    elif doc and annotationtype in doc.annotationdefaults and 'annotator' in doc.annotationdefaults[annotationtype]:
-        object.annotator = doc.annotationdefaults[annotationtype]['annotator']
+    elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults and 'annotator' in doc.annotationdefaults[annotationtype][object.set]:
+        object.annotator = doc.annotationdefaults[annotationtype][object.set]['annotator']
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotator is required for " + object.__class__.__name__)
     else:
@@ -137,8 +140,8 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         else:
             raise ValueError("annotatortype must be 'auto' or 'manual'")                
         del kwargs['annotatortype']
-    elif doc and annotationtype in doc.annotationdefaults and 'annotatortype' in doc.annotationdefaults[annotationtype]:
-        object.annotatortype = doc.annotationdefaults[annotationtype]['annotatortype']            
+    elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults and 'annotator' in doc.annotationdefaults[annotationtype][object.set]:
+        object.annotatortype = doc.annotationdefaults[annotationtype][object.set]['annotatortype']
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotatortype is required for " + object.__class__.__name__)        
     else:
@@ -171,7 +174,16 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         raise ValueError("N is required")
     else:
         object.n = None    
-    
+
+    if 'datetime' in kwargs:
+        if not Attrib.DATETIME in supported:
+            raise ValueError("Datetime is not supported")
+            object.datetime = kwargs['datetime'] #TODO parse datetime string
+        del kwargs['datetime']                
+    elif Attrib.DATETIME in required:
+        raise ValueError("Datetime is required")
+    else:
+        object.datetime = None        
     
     
     if 'text' in kwargs:
@@ -192,6 +204,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         print >>stderr, "   @annotatortype= ", repr(object.annotatortype)
         print >>stderr, "   @confidence   = ", repr(object.confidence)
         print >>stderr, "   @n            = ", repr(object.n)
+        print >>stderr, "   @datetime     = ", repr(object.datetime)
         
                 
     #set index
@@ -693,6 +706,12 @@ class AbstractElement(object):
         except AttributeError:
             pass
             
+        try:
+            if self.datetime:
+                attribs['{' + NSFOLIA + '}datetime'] = str(self.datetime) #TODO: format string
+        except AttributeError:
+            pass            
+            
         e  = E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
         
             
@@ -841,6 +860,11 @@ class AbstractElement(object):
                attribs.append( E.attribute( name='n') )
             elif Attrib.N in cls.OPTIONAL_ATTRIBS:
                attribs.append( E.optional( E.attribute( name='n') ) )
+            if Attrib.DATETIME in cls.REQUIRED_ATTRIBS:
+               attribs.append( E.attribute( name='datetime') )
+            elif Attrib.DATETIME in cls.OPTIONAL_ATTRIBS:
+               attribs.append( E.optional( E.attribute( name='datetime') ) )
+
             
             #if cls.ALLOWTEXT:
             #    attribs.append( E.optional( E.ref(name='t') ) ) #yes, not actually an attrib, I know, but should go here
@@ -1833,6 +1857,7 @@ class Feature(AbstractElement):
         self.annotatortype = None
         self.confidence = None
         self.n = None
+        self.datetime = None
         self.doc = doc
         
         if self.SUBSET:
@@ -2141,6 +2166,7 @@ class WordReference(AbstractElement):
         self.annotatortype = None
         self.confidence = None
         self.n = None
+        self.datetime = None
         self.data = []
     
     @classmethod
@@ -2640,7 +2666,7 @@ class Document(object):
         l = []
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         
-        for annotationtype in self.annotations:
+        for annotationtype, set in self.annotations:
             label = None
             #Find the 'label' for the declarations dynamically (aka: AnnotationType --> String)
             for key, value in vars(AnnotationType).items():
@@ -2648,8 +2674,12 @@ class Document(object):
                     label = key
                     break
             #gather attribs
+            
             attribs = {}
-            for key, value in self.annotationdefaults[annotationtype].items():                
+            if set:
+                attribs['{' + NSFOLIA + '}set'] = set
+
+            for key, value in self.annotationdefaults[annotationtype][set].items():                
                 if key == 'annotatortype':
                     if value == AnnotatorType.MANUAL:
                         attribs['{' + NSFOLIA + '}' + key] = 'manual'
@@ -2723,19 +2753,22 @@ class Document(object):
                 else:
                     raise Exception("Unknown declaration: " + subnode.tag)
                     
-                self.annotations.append(type)
+                if subnode.attrib['set']:
+                    set = subnode.attrib['set']
+                else:
+                    set = None
+                self.annotations.append( (type, set) )
                 
                 defaults = {}
-                if 'set' in subnode.attrib:
-                    defaults['set'] = subnode.attrib['set']
                 if 'annotator' in subnode.attrib:
                     defaults['annotator'] = subnode.attrib['annotator']
                 if 'annotatortype' in subnode.attrib:
                     if subnode.attrib['annotatortype'] == 'auto':
                         defaults['annotatortype'] = AnnotatorType.AUTO
                     else:
-                        defaults['annotatortype'] = AnnotatorType.MANUAL                        
-                self.annotationdefaults[type] = defaults
+                        defaults['annotatortype'] = AnnotatorType.MANUAL                                                
+                self.annotationdefaults[type][set] = defaults
+                
                 if self.debug >= 1: 
                     print >>stderr, "[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults)
 
@@ -2755,31 +2788,31 @@ class Document(object):
         n = node.xpath('//imdi:Languages/imdi:Language/imdi:ID', namespaces=ns)
         if n and n[0].text: self._language = n[0].text            
         
-    def declare(self, annotationtype, **kwargs):
-        if not annotationtype in self.annotations:
-            self.annotations.append(annotationtype)
-        self.annotationdefaults[annotationtype] = kwargs
+    def declare(self, annotationtype, set, **kwargs):
+        if not (annotationtype, set) in self.annotations:
+            self.annotations.append( (annotationtype,set) )
+        self.annotationdefaults[annotationtype][set] = kwargs
     
-    def declared(self, annotationtype):
-        return annotationtype in self.annotations
+    def declared(self, annotationtype, set):
+        return ( (annotationtype,set) in self.annotations)
         
         
     def defaultset(self, annotationtype):
         try:
-            return self.annotationdefaults[annotationtype]['set']
-        except KeyError:
+            return self.annotationdefaults[annotationtype].keys()[0]
+        except IndexError:
             raise NoDefaultError
         
     
-    def defaultannotator(self, annotationtype):
+    def defaultannotator(self, set, annotationtype):
         try:
-            return self.annotationdefaults[annotationtype]['annotator']        
+            return self.annotationdefaults[annotationtype][set]['annotator']        
         except KeyError:
             raise NoDefaultError
             
-    def defaultannotatortype(self, annotationtype):
+    def defaultannotatortype(self, set, annotationtype):
         try:
-            return self.annotationdefaults[annotationtype]['annotatortype']        
+            return self.annotationdefaults[annotationtype][set]['annotatortype']        
         except KeyError:
             raise NoDefaultError
             
@@ -3073,7 +3106,7 @@ class Gap(AbstractElement):
 
 class Caption(AbstractStructureElement):    
     """Element used for captions for figures or tables, contains sentences"""
-    OPTIONAL_ATTRIBS = (Attrib.ID)
+    OPTIONAL_ATTRIBS = (Attrib.ID,)
     ACCEPTED_DATA = (Sentence, Description)
     OCCURRENCES = 1
     XMLTAG = 'caption'
@@ -3081,7 +3114,7 @@ class Caption(AbstractStructureElement):
     
 class Label(AbstractStructureElement):    
     """Element used for labels. Mostly in within list item. Contains words."""
-    OPTIONAL_ATTRIBS = (Attrib.ID)
+    OPTIONAL_ATTRIBS = (Attrib.ID,)
     ACCEPTED_DATA = (Word, Description)
     XMLTAG = 'label'
 
@@ -3176,6 +3209,65 @@ class Corpus:
                                 raise
 
 
+
+class SetType:
+    CLOSED, OPEN, MIXED = range(3)
+
+class AbstractDefinition(object):
+    pass
+        
+    
+    
+class ClassDefinition(AbstractDefinition):
+    def __init__(self,id, label, constraints=[]):
+        self.id = id
+        self.label = label
+        self.constraints = constraints
+    
+
+class SetDefinition(AbstractDefinition):
+    def __init__(self, id, classes = [], subsets = []):
+        self.id = id
+        self.classes = classes
+        self.subsets = subsets
+        self.constraintindex = {}
+                
+        
+
+class SubsetDefinition(AbstractDefinition):
+    def __init__(self, id, classes = [], subsets = []):
+        self.id = id
+        self.classes = classes
+        self.constraints = constraints
+        
+class ConstraintDefinition(object):
+    def __init__(self, id,  restrictions = {}, exceptions = {}):
+        self.id = id
+        self.restrictions = restrictions
+        self.exceptions = exceptions
+        
+def loadsetdefinition(filename):
+    global NSFOLIA
+    tree = ElementTree.parse(filename)
+    root = self.tree.getroot()
+
+    if root.tag != '{' + NSFOLIA + '}set':
+        raise Exception("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
+    
+    set = Set(root.attribs['{http://www.w3.org/XML/1998/namespace}id'])
+    classes = []
+    subsets = []
+    
+    #for node in root:
+        
+    set.classes = classes
+    set.subsets = subsets
+        
+        
+    
+    return set      
+        
+        
 
 def relaxng_declarations():
     global NSFOLIA
