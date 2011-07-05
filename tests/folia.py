@@ -357,6 +357,9 @@ class Test4Edit(unittest.TestCase):
         #grab a word (naam)
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
         
+        self.doc.declare(folia.PosAnnotation, 'adhocpos')
+        self.doc.declare(folia.LemmaAnnotation, 'adhoclemma')
+        
         #add a pos annotation (in a different set than the one already present, to prevent conflict)
         w.append( folia.PosAnnotation(self.doc, set='adhocpos', cls='NOUN', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
         w.append( folia.LemmaAnnotation(self.doc, set='adhoclemma', cls='NAAM', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO ) ) 
@@ -375,6 +378,9 @@ class Test4Edit(unittest.TestCase):
         
         #grab a word (naam)
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
+        
+        self.doc.declare(folia.PosAnnotation, 'adhocpos')
+        self.doc.declare(folia.LemmaAnnotation, 'adhoclemma')
         
         #add a pos annotation (in a different set than the one already present, to prevent conflict)
         w.append( folia.PosAnnotation, set='adhocpos', cls='NOUN', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
