@@ -122,7 +122,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             raise ValueError("Annotator is not supported for " + object.__class__.__name__)
         object.annotator = kwargs['annotator']
         del kwargs['annotator']
-    elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults and 'annotator' in doc.annotationdefaults[annotationtype][object.set]:
+    elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults[annotationtype] and 'annotator' in doc.annotationdefaults[annotationtype][object.set]:
         object.annotator = doc.annotationdefaults[annotationtype][object.set]['annotator']
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotator is required for " + object.__class__.__name__)
@@ -140,7 +140,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         else:
             raise ValueError("annotatortype must be 'auto' or 'manual'")                
         del kwargs['annotatortype']
-    elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults and 'annotator' in doc.annotationdefaults[annotationtype][object.set]:
+    elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults[annotationtype] and 'annotatortype' in doc.annotationdefaults[annotationtype][object.set]:
         object.annotatortype = doc.annotationdefaults[annotationtype][object.set]['annotatortype']
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotatortype is required for " + object.__class__.__name__)        
@@ -2810,13 +2810,13 @@ class Document(object):
             raise NoDefaultError
         
     
-    def defaultannotator(self, set, annotationtype):
+    def defaultannotator(self, annotationtype, set=None):
         try:
             return self.annotationdefaults[annotationtype][set]['annotator']        
         except KeyError:
             raise NoDefaultError
             
-    def defaultannotatortype(self, set, annotationtype):
+    def defaultannotatortype(self, annotationtype,set=None):
         try:
             return self.annotationdefaults[annotationtype][set]['annotatortype']        
         except KeyError:
