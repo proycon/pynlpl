@@ -87,7 +87,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.set = kwargs['set']
         del kwargs['set']
         
-        if not (annotationtype in doc.annotationdefaults) or not (object.set in doc.annotationdefaults[annotationtype]):
+        if doc and (not (annotationtype in doc.annotationdefaults) or not (object.set in doc.annotationdefaults[annotationtype])):
             raise ValueError("Set '" + object.set + "' is used but has no declaration!")            
     elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
         object.set = doc.annotationdefaults[annotationtype].keys()[0]
@@ -2753,7 +2753,7 @@ class Document(object):
                 else:
                     raise Exception("Unknown declaration: " + subnode.tag)
                     
-                if subnode.attrib['set']:
+                if 'set' in subnode.attrib and subnode.attrib['set']:
                     set = subnode.attrib['set']
                 else:
                     set = None
@@ -2767,6 +2767,8 @@ class Document(object):
                         defaults['annotatortype'] = AnnotatorType.AUTO
                     else:
                         defaults['annotatortype'] = AnnotatorType.MANUAL                                                
+                if not type in self.annotationdefaults:
+                    self.annotationdefaults[type] = {}
                 self.annotationdefaults[type][set] = defaults
                 
                 if self.debug >= 1: 
@@ -2791,6 +2793,8 @@ class Document(object):
     def declare(self, annotationtype, set, **kwargs):
         if not (annotationtype, set) in self.annotations:
             self.annotations.append( (annotationtype,set) )
+        if not annotationtype in self.annotationdefaults:
+            self.annotationdefaults[annotationtype] = {}
         self.annotationdefaults[annotationtype][set] = kwargs
     
     def declared(self, annotationtype, set):
@@ -3209,6 +3213,28 @@ class Corpus:
                                 raise
 
 
+class CorpusFiles(Corpus):
+    def __iter__(self):
+        if not self.restrict_to_collection:
+            for f in glob.glob(self.corpusdir+"/*." + self.extension):
+                if self.conditionf(f):
+                    try:
+                        yield f
+                    except:
+                        print >>sys.stderr, "Error, unable to parse " + f
+                        if not self.ignoreerrors:
+                            raise
+        for d in glob.glob(self.corpusdir+"/*"):
+            if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
+                for f in glob.glob(d+ "/*." + self.extension):
+                    if self.conditionf(f):
+                        try:
+                            yield f
+                        except:
+                            print >>sys.stderr, "Error, unable to parse " + f
+                            if not self.ignoreerrors:
+                                raise
+    
 
 class SetType:
     CLOSED, OPEN, MIXED = range(3)
@@ -3317,6 +3343,14 @@ def relaxng(filename=None):
 
     return grammar
 
+class Indexer(object):
+    def __init__(self, files):
+        for file in files:
+            if os.path.isdir(file):
+                pass
+            else:
+                pass
+                
 
 
 

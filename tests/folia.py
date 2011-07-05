@@ -576,10 +576,10 @@ class Test4Create(unittest.TestCase):
         def test001_create(self):
             """Creating a FoLiA Document from scratch"""
             self.doc = folia.Document(id='example')
-            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')
+            self.doc.declare(folia.AnnotationType.TOKEN, 'adhocset',annotator='proycon')
         
             self.assertEqual(self.doc.defaultset(folia.AnnotationType.TOKEN), 'adhocset')
-            self.assertEqual(self.doc.defaultannotator(folia.AnnotationType.TOKEN), 'proycon')
+            self.assertEqual(self.doc.defaultannotator(folia.AnnotationType.TOKEN, 'adhocset'), 'proycon')
     
             text = folia.Text(self.doc, id=self.doc.id + '.text.1')
             self.doc.append( text )
