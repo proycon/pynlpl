@@ -1835,6 +1835,53 @@ class Word(AbstractStructureElement, AllowCorrections):
         self.sentence().splitword(self, *newwords, **kwargs)
 
 
+    def next(self):
+        """Returns the next word in the sentence, or None if no next word was found. This method does not cross sentence boundaries."""
+        words = self.sentence().words()
+        i = words.index(self) + 1
+        if i < len(words):
+            return words[i]
+        else:
+            return None
+        
+
+    def previous(self):
+        """Returns the previous word in the sentence, or None if no next word was found. This method does not cross sentence boundaries."""
+        words = self.sentence().words()
+        i = words.index(self) - 1
+        if i >= 0:    
+            return words[i]
+        else:
+            return None
+            
+    def leftcontext(self, size, placeholder=None):
+        """Returns the left context for a word. This method crosses sentence/paragraph boundaries"""
+        if size == 0: return [] #for efficiency                
+        words = self.doc.words()
+        i = words.index(self)
+        begin = i - size
+        if begin < 0: 
+            return [placeholder] * (begin * -1) + words[0:i]
+        else:
+            return words[begin:i]
+        
+    def rightcontext(self, size, placeholder=None):
+        """Returns the right context for a word. This method crosses sentence/paragraph boundaries"""
+        if size == 0: return [] #for efficiency                
+        words = self.doc.words()
+        i = words.index(self)
+        begin = i+1
+        end = begin + size
+        rightcontext = words[begin:end]
+        if len(rightcontext) < size:
+            rightcontext += (size - len(rightcontext)) * [placeholder]
+        return rightcontext
+        
+        
+    def context(self, size, placeholder=None):
+        """Returns this word in context, {size} words to the left, the current word, and {size} words to the right"""
+        return self.leftcontext(size, placeholder) + [self] + self.rightcontext(size, placeholder)
+    
 
 class Feature(AbstractElement):
     """Feature elements can be used to associate subsets and subclasses with almost any
@@ -2631,7 +2678,17 @@ class Document(object):
             yield self.parsexml(result)
             
             
-    def findwords(self, *args):
+    def findwords(self, *args, **kwargs):
+        
+        if 'leftcontext' in kwargs:
+            leftcontext = kwargs['leftcontext']
+        else:
+            leftcontext = 0
+        if 'rightcontext' in kwargs:
+            rightcontext =  kwargs['rightcontext']            
+        else:
+            rightcontext = 0
+                
         matchcursor = 0
         matched = []
         
@@ -2689,12 +2746,12 @@ class Document(object):
                 if matches:
                     buffer.append(word) #add the word
                     if len(buffer) == len(pattern.sequence):
-                        yield buffer
+                        yield buffer[0].leftcontext(leftcontext) + buffer + buffer[-1].rightcontext(rightcontext)
                         buffers.remove(buffer)
                 else:
                     buffers.remove(buffer) #remove buffer
-
         
+            
     def save(self, filename=None):
         """Save the document to FoLiA XML.
         

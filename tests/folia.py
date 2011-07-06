@@ -265,6 +265,38 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( l[0][2][1].text(),  'voor stamboom' ) 
         self.assertEqual( l[0][2].text(),  'een ander woord voor stamboom' ) 
         
+    def test021_previousword(self):        
+        """Sanity Check - Obtaining previous word"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        prevw = w.previous()
+        self.assertTrue( isinstance(prevw, folia.Word) )    
+        self.assertEqual( prevw.text(),  "zo'n" )         
+
+    def test022_nextword(self):        
+        """Sanity Check - Obtaining next word"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        nextw = w.next()
+        self.assertTrue( isinstance(nextw, folia.Word) )    
+        self.assertEqual( nextw.text(),  "," )       
+        
+    def test023_leftcontext(self):        
+        """Sanity Check - Obtaining left context"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        context = w.leftcontext(3)
+        self.assertEqual( [ x.text() for x in context ], ['wetenschap','wordt',"zo'n"] )    
+    
+    def test024_rightcontext(self):        
+        """Sanity Check - Obtaining right context"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        context = w.rightcontext(3)
+        self.assertEqual( [ x.text() for x in context ], [',','onder','de'] )    
+        
+    def test025_fullcontext(self):        
+        """Sanity Check - Obtaining full context"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        context = w.context(3)
+        self.assertEqual( [ x.text() for x in context ], ['wetenschap','wordt',"zo'n",'stamboom',',','onder','de'] )            
+        
     def test099_write(self):        
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
@@ -794,7 +826,7 @@ class Test6Query(unittest.TestCase):
         matches = list(self.doc.findwords( folia.Pattern('bli','bla','blu')))
         self.assertEqual( len(matches), 0)
         
-    def test005_findwords_overlap(self):     
+    def test006_findwords_overlap(self):     
         """Querying -- Find words with overlap"""
         doc = folia.Document(id='test')
         text = folia.Text(doc, id='test.text')
@@ -815,6 +847,21 @@ class Test6Query(unittest.TestCase):
         
         matches = list(doc.findwords( folia.Pattern('a','a')))
         self.assertEqual( len(matches), 4)       
+
+    def test007_findwords_context(self):     
+        """Querying -- Find words with context"""
+        matches = list(self.doc.findwords( folia.Pattern('van','het','alfabet'), leftcontext=3, rightcontext=3 ))
+        self.assertEqual( len(matches), 1 )
+        self.assertEqual( len(matches[0]), 9 )
+        self.assertEqual( matches[0][0].text(), 'de' )
+        self.assertEqual( matches[0][1].text(), 'laatste' )
+        self.assertEqual( matches[0][2].text(), 'letters' )
+        self.assertEqual( matches[0][3].text(), 'van' )
+        self.assertEqual( matches[0][4].text(), 'het' )
+        self.assertEqual( matches[0][5].text(), 'alfabet' )
+        self.assertEqual( matches[0][6].text(), 'en' )
+        self.assertEqual( matches[0][7].text(), 'worden' )
+        self.assertEqual( matches[0][8].text(), 'tussen' )
                       
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
