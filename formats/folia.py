@@ -2652,7 +2652,11 @@ class Document(object):
             if pattern.regexp:
                 pattern.compiled_sequence = [ re.compile(x) for x in pattern.sequence ]
         
+        buffers = []
+        
         for word in self.words():
+            buffers.append( [] ) #Add a new empty buffer for every word
+            match = [None] * len(buffers)
             for pattern in args:
                 #find value to match against
                 if not pattern.matchannotation:
@@ -2668,37 +2672,28 @@ class Document(object):
                 if not pattern.casesensitive:
                     value = value.lower()
 
-                #print "DEBUG: TESTING: ", matchcursor, pattern.sequence[matchcursor], value
-                #attempt to match                
-                if not pattern.regexp and (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
-                    match = True
-                elif pattern.regexp and pattern.compiled_sequence[matchcursor].match(value):
-                    match = True
-                else:
-                    match = False
-                    rematch = (matchcursor > 0)
-                    if rematch:
-                        if not pattern.regexp and (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
-                            match = True
-                        elif pattern.regexp and pattern.compiled_sequence[matchcursor].match(value):
-                            match = True
-            
-                if not match:
-                    break
-            
-            if match:
-                matched.append(word)
-                matchcursor += 1
                 
-                #match complete?
-                if matchcursor == len(pattern.sequence):
-                    yield matched
-                    matchcursor = 0
-                    matched = []
-            else:
-                matchcursor = 0
-                matched = []
+                for i, buffer in enumerate(buffers):
+                    if match[i] is False:
+                        continue
+                    matchcursor = len(buffer)
+                    if not pattern.regexp and (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
+                        match[i] = True
+                    elif pattern.regexp and pattern.compiled_sequence[matchcursor].match(value):
+                        match[i] = True
+                    else:
+                        match[i] = False
+                
                     
+            for buffer, matches in zip(buffers, match):
+                if matches:
+                    buffer.append(word) #add the word
+                    if len(buffer) == len(pattern.sequence):
+                        yield buffer
+                        buffers.remove(buffer)
+                else:
+                    buffers.remove(buffer) #remove buffer
+
         
     def save(self, filename=None):
         """Save the document to FoLiA XML.
