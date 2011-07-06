@@ -790,7 +790,7 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][3].text(), 'wordt' )      
         
     def test005_findwords_none(self):     
-        """Querying -- Find words using a conjunction of multiple patterns """
+        """Querying -- Find words that don't exist"""
         matches = list(self.doc.findwords( folia.Pattern('bli','bla','blu')))
         self.assertEqual( len(matches), 0)
         
