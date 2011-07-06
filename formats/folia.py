@@ -2697,6 +2697,8 @@ class Document(object):
                     yield matched
                     matchcursor = 0
                     matched = []
+            else:
+                matchcursor = 0
                     
         
     def save(self, filename=None):
