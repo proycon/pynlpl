@@ -2506,7 +2506,24 @@ class Query(object):
         
     def __iter__(self):
         raise NotImplementedError
-        
+
+class Pattern(object):
+    def __init__(self, *args, **kwargs):
+        self.sequence = args
+        if 'matchannotation' in kwargs:
+            self.matchannotation = kwargs['matchannotation']
+        else:
+            self.matchannotation = None
+        if 'matchannotationset' in kwargs:
+            self.matchannotationset = kwargs['matchannotationset']
+        else:
+            self.matchannotationset = None
+        if 'regexp' in kwargs:
+            self.regexp = bool(kwargs['regexp'])
+        else:
+            self.regexp = False    
+
+
 
 class Document(object):
     """This is the FoLiA Document, all elements have to be associated with a FoLiA document. Besides holding elements, the document hold metadata including declaration, and an index of all IDs."""
@@ -2592,6 +2609,73 @@ class Document(object):
         """Run Xpath expression and parse the resulting elements"""
         for result in self.tree.xpath(query,namespaces={'f': 'http://ilk.uvt.nl/folia','folia': 'http://ilk.uvt.nl/folia' }):
             yield self.parsexml(result)
+            
+            
+    def findwords(self, *args):
+        matchcursor = 0
+        matched = []
+        
+        #shortcut for when no Pattern is passed, make one on the fly
+        if len(args) == 1 and not isinstance(args[0], Pattern):
+            if not isinstance(args[0], list) and not  isinstance(args[0], tuple):
+                args[0] = [args[0]] 
+            args[0] = Pattern(*args[0])
+        
+        prevsize = -1
+        #sanity check
+        for pattern in args:
+            if not isinstance(pattern, Pattern):
+                raise TypeError("You must pass instances of Sequence to findwords")
+            if prevsize > -1 and len(pattern) != prevsize:
+                raise Exception("If multiple patterns are provided, they must all have the same length")
+            prevsize = len(pattern)
+            if pattern.regexp:
+                pattern.compiled_sequence = [ re.compile(x) for x in pattern.sequence ]
+        
+        #for i, pattern in enumerate(args):
+        #    matchcursor[i] = 0            
+        for word in self.words():
+            for pattern in args:
+                #find value to match against
+                if not pattern.matchannotation:
+                    value = word.text()
+                else:
+                    if pattern.matchannotationset:
+                        items = word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative] )                            
+                    else:
+                        items = word.select(pattern.matchannotation, None, True, [Original, Suggestion, Alternative] )        
+                    if len(items) == 1:
+                        value = items[0].cls
+                        
+
+                
+                #attempt to match                
+                if not pattern.regexp and (value == sequence[matchcursor] or sequence[matchcursor] is True or (isinstance(sequence[matchcursor], tuple) and value in sequence[matchcursor])):
+                    match = True
+                elif pattern.regexp and pattern.compiled_sequence[matchcursor].match(value):
+                    match = True
+                else:
+                    match = False
+                    rematch = (matchcursor > 0)
+                    if rematch:
+                        if not pattern.regexp and (value == sequence[matchcursor] or sequence[matchcursor] is True or (isinstance(sequence[matchcursor], tuple) and value in sequence[matchcursor])):
+                            match = True
+                        elif pattern.regexp and pattern.compiled_sequence[matchcursor].match(value):
+                            match = True
+            
+                if not match:
+                    break
+            
+            if match:
+                matched.append(word)
+                matchcursor += 1
+                
+                #match complete?
+                if matchcursor == len(sequence):
+                    yield matched
+                    matchcursor = 0
+                    matched = []
+                    
         
     def save(self, filename=None):
         """Save the document to FoLiA XML.
@@ -3345,15 +3429,17 @@ def relaxng(filename=None):
 
     return grammar
 
-class Indexer(object):
-    def __init__(self, files):
-        for file in files:
-            if os.path.isdir(file):
-                pass
-            else:
-                pass
-                
-
+#class WordIndexer(object):
+#    def __init__(self, doc, *args, **kwargs)
+#        self.doc = doc
+#        
+#    def __iter__(self):
+#        
+#                
+#    def savecsv(self, filename):
+#        
+#        
+#    def savesql(self, filename):
 
 
 def validate(filename):
