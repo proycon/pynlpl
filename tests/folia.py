@@ -794,7 +794,32 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][0].text(), 'de' )
         self.assertEqual( matches[0][1].text(), 'historische' )
         self.assertEqual( matches[0][2].text(), 'wetenschap' )        
-        self.assertEqual( matches[0][3].text(), 'wordt' )                
+        self.assertEqual( matches[0][3].text(), 'wordt' )      
+        
+    def test005_findwords_none(self):     
+        """Querying -- Find words using a conjunction of multiple patterns """
+        matches = list(self.doc.findwords( folia.Pattern('bli','bla','blu')))
+        self.assertEqual( len(matches), 0)
+        
+    def test005_findwords_overlap(self):     
+        """Querying -- Find words with overlap"""
+        doc = folia.Document(id='test')
+        text = folia.Text(doc, id='test.text')
+        
+        text.append(
+            folia.Sentence(doc,id=doc.id + '.s.1', contents=[
+                folia.Word(doc,id=doc.id + '.s.1.w.1', text="a"),
+                folia.Word(doc,id=doc.id + '.s.1.w.2', text="a"),
+                folia.Word(doc,id=doc.id + '.s.1.w.3', text="a"),
+                folia.Word(doc,id=doc.id + '.s.1.w.4', text="a"),
+            ]
+            )
+        )
+        doc.append(text)                        
+        
+        matches = list(doc.findwords( folia.Pattern('a','a')))
+        self.assertEqual( len(matches), 3)       
+                      
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="folia.xsl"?>
