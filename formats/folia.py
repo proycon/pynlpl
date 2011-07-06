@@ -2652,8 +2652,6 @@ class Document(object):
             if pattern.regexp:
                 pattern.compiled_sequence = [ re.compile(x) for x in pattern.sequence ]
         
-        #for i, pattern in enumerate(args):
-        #    matchcursor[i] = 0            
         for word in self.words():
             for pattern in args:
                 #find value to match against
@@ -2699,6 +2697,7 @@ class Document(object):
                     matched = []
             else:
                 matchcursor = 0
+                matched = []
                     
         
     def save(self, filename=None):
