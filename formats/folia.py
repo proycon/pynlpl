@@ -2617,7 +2617,8 @@ class Pattern(object):
         return wildcards
             
         
-
+    def __repr__(self):
+        return repr(self.sequence)
 
         
     def resolve(self,size, distribution):
@@ -2640,7 +2641,7 @@ class Pattern(object):
                 wildcardnr += 1
             else:
                 newsequence.append(x)
-        yield Pattern(newsequence, matchannotation=self.matchannotation, matchannotationset=self.matchannotationset, casesensitive=self.casesensitive )
+        yield Pattern(*newsequence, matchannotation=self.matchannotation, matchannotationset=self.matchannotationset, casesensitive=self.casesensitive )
     
 
         
@@ -2791,12 +2792,12 @@ class Document(object):
             #one or more items have a * wildcard, which may span multiple tokens. Resolve this to a wider range of simpler patterns
             
             #we're not commited to a particular size, expand to various ones
-            for size in range(prevsize, maxgapsize+1):
-                for distribution in  pynlpl.math.sum_to_n(size, len(variablewildcards)): #distributions (amount) of 'True' wildcards
+            for size in range(len(variablewildcards), maxgapsize+1):
+                for distribution in  pynlpl.math.sum_to_n(size, len(variablewildcards)): #gap distributions, (amount) of 'True' wildcards
                     patterns = []
                     for pattern in args:
                         if pattern.variablesize():
-                            patterns += pattern.resolve(size,distribution)
+                            patterns += list(pattern.resolve(size,distribution))
                         else:
                             patterns.append( pattern )
                     for match in self.findwords(*patterns, leftcontext=leftcontext,rightcontext=rightcontext):

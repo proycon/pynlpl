@@ -888,7 +888,7 @@ class Test6Query(unittest.TestCase):
         """Querying -- Find words with variable wildcard"""
         matches = list(self.doc.findwords( folia.Pattern('de','laatste','*','alfabet') ))
         self.assertEqual( len(matches), 1 )
-        self.assertEqual( len(matches[0]), 4 )
+        self.assertEqual( len(matches[0]), 6 )
         self.assertEqual( matches[0][0].text(), 'de' )
         self.assertEqual( matches[0][1].text(), 'laatste' )
         self.assertEqual( matches[0][2].text(), 'letters' )
