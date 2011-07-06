@@ -2509,7 +2509,10 @@ class Query(object):
 
 class Pattern(object):
     def __init__(self, *args, **kwargs):
+        if not all( ( (isinstance(x, str) or isinstance(x, unicode) or isinstance(x, list) or isinstance(x, tuple)) for x in args )):
+            raise TypeError
         self.sequence = args
+        
         if 'matchannotation' in kwargs:
             self.matchannotation = kwargs['matchannotation']
         else:
@@ -2525,7 +2528,10 @@ class Pattern(object):
         if 'casesensitive' in kwargs:
             self.casesensitive = bool(self.casesensitive)
         else:
-            self.casesensitive = True
+            self.casesensitive = False
+        if not self.casesensitive:
+            if all( ( isinstance(x, str) or isinstance(x, unicode) for x in self.sequence) ):
+                self.sequence = [ x.lower() for x in self.sequence ]
 
     def __nonzero__(self):
         return True
@@ -2664,7 +2670,7 @@ class Document(object):
                 if not pattern.casesensitive:
                     value = value.lower()
 
-                
+                #print "DEBUG: TESTING: ", matchcursor, pattern.sequence[matchcursor], value
                 #attempt to match                
                 if not pattern.regexp and (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
                     match = True
@@ -2687,7 +2693,7 @@ class Document(object):
                 matchcursor += 1
                 
                 #match complete?
-                if matchcursor == len(sequence):
+                if matchcursor == len(pattern.sequence):
                     yield matched
                     matchcursor = 0
                     matched = []

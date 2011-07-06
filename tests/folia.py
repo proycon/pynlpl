@@ -750,7 +750,7 @@ class Test6Query(unittest.TestCase):
     
     def test001_findwords_simple(self):     
         """Querying -- Find words (simple)"""
-        matches = list(self.doc.findwords( folia.Pattern(['van','het','alfabet']) ))
+        matches = list(self.doc.findwords( folia.Pattern('van','het','alfabet') ))
         self.assertEqual( len(matches), 1 )
         self.assertEqual( len(matches[0]), 3 )
         self.assertEqual( matches[0][0].text(), 'van' )
