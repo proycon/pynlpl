@@ -2521,10 +2521,24 @@ class Pattern(object):
         if 'regexp' in kwargs:
             self.regexp = bool(kwargs['regexp'])
         else:
-            self.regexp = False    
+            self.regexp = False  
+        if 'casesensitive' in kwargs:
+            self.casesensitive = bool(self.casesensitive)
+        else:
+            self.casesensitive = True
 
+    def __nonzero__(self):
+        return True
+        
+    def __len__(self):
+        return len(self.sequence)
+        
+    def __getitem__(self, index):
+        return self.sequence[index]        
 
-
+    def __getslice__(self, begin,end):
+        return self.sequence[begin:end]        
+        
 class Document(object):
     """This is the FoLiA Document, all elements have to be associated with a FoLiA document. Besides holding elements, the document hold metadata including declaration, and an index of all IDs."""
     
@@ -2652,7 +2666,7 @@ class Document(object):
 
                 
                 #attempt to match                
-                if not pattern.regexp and (value == sequence[matchcursor] or sequence[matchcursor] is True or (isinstance(sequence[matchcursor], tuple) and value in sequence[matchcursor])):
+                if not pattern.regexp and (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
                     match = True
                 elif pattern.regexp and pattern.compiled_sequence[matchcursor].match(value):
                     match = True
@@ -2660,7 +2674,7 @@ class Document(object):
                     match = False
                     rematch = (matchcursor > 0)
                     if rematch:
-                        if not pattern.regexp and (value == sequence[matchcursor] or sequence[matchcursor] is True or (isinstance(sequence[matchcursor], tuple) and value in sequence[matchcursor])):
+                        if not pattern.regexp and (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
                             match = True
                         elif pattern.regexp and pattern.compiled_sequence[matchcursor].match(value):
                             match = True

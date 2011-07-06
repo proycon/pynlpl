@@ -748,7 +748,15 @@ class Test6Query(unittest.TestCase):
         global FOLIAEXAMPLE
         self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
     
-            
+    def test001_findwords_simple(self):     
+        """Querying -- Find words (simple)"""
+        matches = list(self.doc.findwords( folia.Pattern(['van','het','alfabet']) ))
+        self.assertEqual( len(matches), 1 )
+        self.assertEqual( len(matches[0]), 3 )
+        self.assertEqual( matches[0][0].text(), 'van' )
+        self.assertEqual( matches[0][1].text(), 'het' )
+        self.assertEqual( matches[0][2].text(), 'alfabet' )
+        
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="folia.xsl"?>
