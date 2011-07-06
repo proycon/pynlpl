@@ -675,7 +675,7 @@ class AbstractElement(object):
             
         #Some attributes only need to be added if they are not the same as what's already set in the declaration    
         try:
-            if self.set and (not self.ANNOTATIONTYPE in self.doc.annotationdefaults or not 'set' in self.doc.annotationdefaults[self.ANNOTATIONTYPE] or self.set != self.doc.annotationdefaults[self.ANNOTATIONTYPE]['set']):
+            if self.set and (not self.ANNOTATIONTYPE in self.doc.annotationdefaults or not self.set in self.doc.annotationdefaults[self.ANNOTATIONTYPE]):
                 attribs['{' + NSFOLIA + '}set'] = self.set        
         except AttributeError:
             pass
@@ -2646,7 +2646,9 @@ class Document(object):
                         items = word.select(pattern.matchannotation, None, True, [Original, Suggestion, Alternative] )        
                     if len(items) == 1:
                         value = items[0].cls
-                        
+                
+                if not pattern.casesensitive:
+                    value = value.lower()
 
                 
                 #attempt to match                

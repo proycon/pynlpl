@@ -743,7 +743,11 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
             self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
             
-            
+class Test6Query(unittest.TestCase):
+    def setUp(self):
+        global FOLIAEXAMPLE
+        self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
+    
             
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
