@@ -762,19 +762,12 @@ class Test6Query(unittest.TestCase):
     def test002_findwords_wildcard(self):     
         """Querying -- Find words (with wildcard)"""
         matches = list(self.doc.findwords( folia.Pattern('van','het',True) ))
-        self.assertEqual( len(matches), 3 )
+        self.assertEqual( len(matches), 1 )
         self.assertEqual( len(matches[0]), 3 )
+
         self.assertEqual( matches[0][0].text(), 'van' )
         self.assertEqual( matches[0][1].text(), 'het' )
-        self.assertEqual( matches[0][2].text(), 'originele' )
-        
-        self.assertEqual( matches[1][0].text(), 'van' )
-        self.assertEqual( matches[1][1].text(), 'het' )
-        self.assertEqual( matches[1][2].text(), 'stemma' )
-
-        self.assertEqual( matches[2][0].text(), 'van' )
-        self.assertEqual( matches[2][1].text(), 'het' )
-        self.assertEqual( matches[2][2].text(), 'alfabet' )
+        self.assertEqual( matches[0][2].text(), 'alfabet' )
         
     def test003_findwords_simple(self):     
         """Querying -- Find words by annotation"""
@@ -812,13 +805,16 @@ class Test6Query(unittest.TestCase):
                 folia.Word(doc,id=doc.id + '.s.1.w.2', text="a"),
                 folia.Word(doc,id=doc.id + '.s.1.w.3', text="a"),
                 folia.Word(doc,id=doc.id + '.s.1.w.4', text="a"),
+                folia.Word(doc,id=doc.id + '.s.1.w.5', text="b"),
+                folia.Word(doc,id=doc.id + '.s.1.w.6', text="a"),
+                folia.Word(doc,id=doc.id + '.s.1.w.7', text="a"),
             ]
             )
         )
         doc.append(text)                        
         
         matches = list(doc.findwords( folia.Pattern('a','a')))
-        self.assertEqual( len(matches), 3)       
+        self.assertEqual( len(matches), 4)       
                       
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
