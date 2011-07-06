@@ -2580,16 +2580,22 @@ class Pattern(object):
         
         if 'matchannotation' in kwargs:
             self.matchannotation = kwargs['matchannotation']
+            del kwargs['matchannotation']
         else:
             self.matchannotation = None
         if 'matchannotationset' in kwargs:
             self.matchannotationset = kwargs['matchannotationset']
+            del kwargs['matchannotationset']
         else:
             self.matchannotationset = None
         if 'casesensitive' in kwargs:
             self.casesensitive = bool(kwargs['casesensitive'])
+            del kwargs['casesensitive']
         else:
             self.casesensitive = False
+        for key in kwargs.keys():
+            raise Exception("Unknown keyword parameter: " + key)            
+            
         if not self.casesensitive:
             if all( ( isinstance(x, str) or isinstance(x, unicode) for x in self.sequence) ):
                 self.sequence = [ x.lower() for x in self.sequence ]
@@ -2732,21 +2738,23 @@ class Document(object):
             
             
     def findwords(self, *args, **kwargs):
-
-
-        
         if 'leftcontext' in kwargs:
             leftcontext = kwargs['leftcontext']
+            del kwargs['leftcontext']
         else:
             leftcontext = 0
         if 'rightcontext' in kwargs:
             rightcontext =  kwargs['rightcontext']            
+            del kwargs['rightcontext']
         else:
             rightcontext = 0
         if 'maxgapsize' in kwargs:
             maxgapsize = kwargs['maxgapsize']
+            del kwargs['maxgapsize']
         else:
             maxgapsize = 10
+        for key in kwargs.keys():
+            raise Exception("Unknown keyword parameter: " + key)
                 
         matchcursor = 0
         matched = []
@@ -2818,10 +2826,16 @@ class Document(object):
                         if pattern.matchannotationset:
                             items = word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative] )                            
                         else:
-                            items = word.select(pattern.matchannotation, None, True, [Original, Suggestion, Alternative] )        
+                            try:
+                                set = self.defaultset(pattern.matchannotation.ANNOTATIONTYPE)                            
+                                items = word.select(pattern.matchannotation, set, True, [Original, Suggestion, Alternative] )        
+                            except KeyError:
+                                continue
                         if len(items) == 1:
                             value = items[0].cls
-                    
+                        else:
+                            continue
+                            
                     if not pattern.casesensitive:
                         value = value.lower()
 
@@ -3044,6 +3058,7 @@ class Document(object):
         if n and n[0].text: self._language = n[0].text            
         
     def declare(self, annotationtype, set, **kwargs):
+        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         if not (annotationtype, set) in self.annotations:
             self.annotations.append( (annotationtype,set) )
         if not annotationtype in self.annotationdefaults:
@@ -3053,10 +3068,12 @@ class Document(object):
         self.annotationdefaults[annotationtype][set] = kwargs
     
     def declared(self, annotationtype, set):
+        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         return ( (annotationtype,set) in self.annotations)
         
         
     def defaultset(self, annotationtype):
+        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         try:
             return self.annotationdefaults[annotationtype].keys()[0]
         except IndexError:
@@ -3064,6 +3081,7 @@ class Document(object):
         
     
     def defaultannotator(self, annotationtype, set=None):
+        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         try:
             return self.annotationdefaults[annotationtype][set]['annotator']        
         except KeyError:
