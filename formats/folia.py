@@ -2509,7 +2509,7 @@ class Query(object):
 
 class Pattern(object):
     def __init__(self, *args, **kwargs):
-        if not all( ( (isinstance(x, str) or isinstance(x, unicode) or isinstance(x, list) or isinstance(x, tuple)) for x in args )):
+        if not all( ( (x is True or isinstance(x, str) or isinstance(x, unicode) or isinstance(x, list) or isinstance(x, tuple)) for x in args )):
             raise TypeError
         self.sequence = args
         

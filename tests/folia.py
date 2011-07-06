@@ -756,7 +756,44 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][0].text(), 'van' )
         self.assertEqual( matches[0][1].text(), 'het' )
         self.assertEqual( matches[0][2].text(), 'alfabet' )
+
+    
+    def test002_findwords_wildcard(self):     
+        """Querying -- Find words (with wildcard)"""
+        matches = list(self.doc.findwords( folia.Pattern('van','het',True) ))
+        self.assertEqual( len(matches), 3 )
+        self.assertEqual( len(matches[0]), 3 )
+        self.assertEqual( matches[0][0].text(), 'van' )
+        self.assertEqual( matches[0][1].text(), 'het' )
+        self.assertEqual( matches[0][2].text(), 'originele' )
         
+        self.assertEqual( matches[1][0].text(), 'van' )
+        self.assertEqual( matches[1][1].text(), 'het' )
+        self.assertEqual( matches[1][2].text(), 'stemma' )
+
+        self.assertEqual( matches[2][0].text(), 'van' )
+        self.assertEqual( matches[2][1].text(), 'het' )
+        self.assertEqual( matches[2][2].text(), 'alfabet' )
+        
+    def test003_findwords_simple(self):     
+        """Querying -- Find words by annotation"""
+        matches = list(self.doc.findwords( folia.Pattern('de','historisch','wetenschap','worden', matchannotation=folia.LemmaAnnotation) ))
+        self.assertEqual( len(matches), 1 )
+        self.assertEqual( len(matches[0]), 4 )
+        self.assertEqual( matches[0][0].text(), 'de' )
+        self.assertEqual( matches[0][1].text(), 'historische' )
+        self.assertEqual( matches[0][2].text(), 'wetenschap' )        
+        self.assertEqual( matches[0][3].text(), 'wordt' ) 
+        
+    def test004_findwords_multi(self):     
+        """Querying -- Find words using a conjunction of multiple patterns """
+        matches = list(self.doc.findwords( folia.Pattern('de','historische',True, 'wordt'), folia.Pattern('de','historisch','wetenschap','worden', matchannotation=folia.LemmaAnnotation) ))
+        self.assertEqual( len(matches), 1 )
+        self.assertEqual( len(matches[0]), 4 )
+        self.assertEqual( matches[0][0].text(), 'de' )
+        self.assertEqual( matches[0][1].text(), 'historische' )
+        self.assertEqual( matches[0][2].text(), 'wetenschap' )        
+        self.assertEqual( matches[0][3].text(), 'wordt' )                
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="folia.xsl"?>
