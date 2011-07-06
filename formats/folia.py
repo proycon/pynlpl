@@ -21,6 +21,7 @@ from pynlpl.formats.imdi import RELAXNG_IMDI
 import inspect
 import glob
 import os
+import re
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -2545,18 +2546,34 @@ class Head(AbstractStructureElement):
     TEXTDELIMITER = ' '
     XMLTAG = 'head'          
         
-class Query(object):
-    """An XPath query on FoLiA"""
-    def __init__(self, node, expression):
-        self.node = node
-        self.expression = expression
-        
-    def __iter__(self):
-        raise NotImplementedError
+#class Query(object):
+#    """An XPath query on a FoLiA document"""
+#    def __init__(self, files, expression):
+#        if not isinstance(files, list) and not isinstance(files, tuple):
+#            self.files = [files]
+#        else:
+#            self.files = files
+#        expression = expression.replace("active()", "(not(ancestor::original) and not(ancestor::suggestion) and not(ancestor::alternative))")
+#        self.expression = expression
+#        
+#    def __iter__(self):
+#        for filename in files:
+#            doc = Document(partial=filename)
+#            
+#    
+#        raise NotImplementedError
 
+class RegExp(object):
+    def __init__(self, regexp):
+        self.regexp = re.compile(regexp)
+        
+    def __eq__(self, value):
+        return self.regexp.match(value)
+        
+        
 class Pattern(object):
     def __init__(self, *args, **kwargs):
-        if not all( ( (x is True or isinstance(x, str) or isinstance(x, unicode) or isinstance(x, list) or isinstance(x, tuple)) for x in args )):
+        if not all( ( (x is True or isinstance(x,RegExp) or isinstance(x, str) or isinstance(x, unicode) or isinstance(x, list) or isinstance(x, tuple)) for x in args )):
             raise TypeError
         self.sequence = args
         
@@ -2568,10 +2585,6 @@ class Pattern(object):
             self.matchannotationset = kwargs['matchannotationset']
         else:
             self.matchannotationset = None
-        if 'regexp' in kwargs:
-            self.regexp = bool(kwargs['regexp'])
-        else:
-            self.regexp = False  
         if 'casesensitive' in kwargs:
             self.casesensitive = bool(self.casesensitive)
         else:
@@ -2590,7 +2603,45 @@ class Pattern(object):
         return self.sequence[index]        
 
     def __getslice__(self, begin,end):
-        return self.sequence[begin:end]        
+        return self.sequence[begin:end]   
+        
+    def variablesize(self):
+        return ('*' in self.sequence)
+        
+    def variablewildcards(self):
+        wildcards = []
+        for i,x in enumerate(self.sequence):
+            if x == '*':
+                wildcards.append(i)
+        return wildcards
+            
+        
+
+
+        
+    def resolve(self,size, distribution):
+        """Resolve a variable sized pattern to all patterns of a certain fixed size"""
+        if not self.variablesize():
+            raise Exception("Can only resize patterns with * wildcards")
+                
+        nrofwildcards = 0
+        for i,x in enumerate(self.sequence):
+            if x == '*':
+                nrofwildcards += 1
+            
+        assert (len(distribution) == nrofwildcards)
+        
+        wildcardnr = 0        
+        newsequence = []
+        for i,x in enumerate(self.sequence):
+            if x == '*':
+                newsequence += [True] * distribution[wildcardnr]
+                wildcardnr += 1
+            else:
+                newsequence.append(x)
+        yield Pattern(newsequence, matchannotation=self.annotation, matchannotationset=self.matchannotationset, casesensitive=self.casesensitive )
+    
+
         
 class Document(object):
     """This is the FoLiA Document, all elements have to be associated with a FoLiA document. Besides holding elements, the document hold metadata including declaration, and an index of all IDs."""
@@ -2679,6 +2730,8 @@ class Document(object):
             
             
     def findwords(self, *args, **kwargs):
+
+
         
         if 'leftcontext' in kwargs:
             leftcontext = kwargs['leftcontext']
@@ -2688,6 +2741,10 @@ class Document(object):
             rightcontext =  kwargs['rightcontext']            
         else:
             rightcontext = 0
+        if 'maxgapsize' in kwargs:
+            maxgapsize = kwargs['maxgapsize']
+        else:
+            maxgapsize = 10
                 
         matchcursor = 0
         matched = []
@@ -2697,60 +2754,95 @@ class Document(object):
             if not isinstance(args[0], list) and not  isinstance(args[0], tuple):
                 args[0] = [args[0]] 
             args[0] = Pattern(*args[0])
+                
         
+        
+        unsetwildcards = False
+        variablewildcards = None
         prevsize = -1
+        minsize = 99999
         #sanity check
-        for pattern in args:
+        for i, pattern in enumerate(args):
             if not isinstance(pattern, Pattern):
                 raise TypeError("You must pass instances of Sequence to findwords")
-            if prevsize > -1 and len(pattern) != prevsize:
-                raise Exception("If multiple patterns are provided, they must all have the same length")
+            if prevsize > -1 and len(pattern) != prevsize:                
+                raise Exception("If multiple patterns are provided, they must all have the same length!")
+            if pattern.variablesize():   
+                if not variablewildcards and i > 0:
+                    unsetwildcards = True
+                else:
+                    if variablewildcards and pattern.variablewildcards() != variablewildcards:
+                        raise Exception("If multiple patterns are provided with variable wildcards, then these wildcards must all be in the same positions!")                        
+                    variablewildcards = pattern.variablewildcards()
+            elif variablewildcards:
+                unsetwildcards = True
             prevsize = len(pattern)
-            if pattern.regexp:
-                pattern.compiled_sequence = [ re.compile(x) for x in pattern.sequence ]
-        
-        buffers = []
-        
-        for word in self.words():
-            buffers.append( [] ) #Add a new empty buffer for every word
-            match = [None] * len(buffers)
+                            
+        if unsetwildcards:
+            #one pattern determines a fixed length whilst others are variable, rewrite all to fixed length
+            #converting multi-span * wildcards into single-span 'True' wildcards
             for pattern in args:
-                #find value to match against
-                if not pattern.matchannotation:
-                    value = word.text()
-                else:
-                    if pattern.matchannotationset:
-                        items = word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative] )                            
+                if pattern.variablesize():
+                    pattern.sequence = [ True if x == '*' else x for x in pattern.sequence ]
+            variablesize = False
+            
+        if variablewildcards:
+            #one or more items have a * wildcard, which may span multiple tokens. Resolve this to a wider range of simpler patterns
+            
+            #we're not commited to a particular size, expand to various ones
+            for size in range(prevsize, maxsize+1):
+                distribution = pynlpl.math.sum_to_n(size, len(variablewildcards))
+                patterns = []
+                for pattern in args:
+                    if pattern.variablesize():
+                        patterns += pattern.resolve(size)
                     else:
-                        items = word.select(pattern.matchannotation, None, True, [Original, Suggestion, Alternative] )        
-                    if len(items) == 1:
-                        value = items[0].cls
-                
-                if not pattern.casesensitive:
-                    value = value.lower()
-
-                
-                for i, buffer in enumerate(buffers):
-                    if match[i] is False:
-                        continue
-                    matchcursor = len(buffer)
-                    if not pattern.regexp and (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
-                        match[i] = True
-                    elif pattern.regexp and pattern.compiled_sequence[matchcursor].match(value):
-                        match[i] = True
+                        patterns.append( pattern )
+                for match in findwords(*patterns, leftcontext=leftcontext,rightcontext=rightcontext):
+                    yield match
+                                            
+        else:                
+            patterns = args
+            buffers = []
+            
+            for word in self.words():
+                buffers.append( [] ) #Add a new empty buffer for every word
+                match = [None] * len(buffers)
+                for pattern in patterns:
+                    #find value to match against
+                    if not pattern.matchannotation:
+                        value = word.text()
                     else:
-                        match[i] = False
-                
+                        if pattern.matchannotationset:
+                            items = word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative] )                            
+                        else:
+                            items = word.select(pattern.matchannotation, None, True, [Original, Suggestion, Alternative] )        
+                        if len(items) == 1:
+                            value = items[0].cls
                     
-            for buffer, matches in zip(buffers, match):
-                if matches:
-                    buffer.append(word) #add the word
-                    if len(buffer) == len(pattern.sequence):
-                        yield buffer[0].leftcontext(leftcontext) + buffer + buffer[-1].rightcontext(rightcontext)
-                        buffers.remove(buffer)
-                else:
-                    buffers.remove(buffer) #remove buffer
-        
+                    if not pattern.casesensitive:
+                        value = value.lower()
+
+                    
+                    for i, buffer in enumerate(buffers):
+                        if match[i] is False:
+                            continue
+                        matchcursor = len(buffer)
+                        if (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
+                            match[i] = True
+                        else:
+                            match[i] = False
+                    
+                        
+                for buffer, matches in zip(buffers, match):
+                    if matches:
+                        buffer.append(word) #add the word
+                        if len(buffer) == len(pattern.sequence):
+                            yield buffer[0].leftcontext(leftcontext) + buffer + buffer[-1].rightcontext(rightcontext)
+                            buffers.remove(buffer)
+                    else:
+                        buffers.remove(buffer) #remove buffer
+            
             
     def save(self, filename=None):
         """Save the document to FoLiA XML.

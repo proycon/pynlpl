@@ -801,7 +801,7 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][1].text(), 'het' )
         self.assertEqual( matches[0][2].text(), 'alfabet' )
         
-    def test003_findwords_simple(self):     
+    def test003_findwords_annotation(self):     
         """Querying -- Find words by annotation"""
         matches = list(self.doc.findwords( folia.Pattern('de','historisch','wetenschap','worden', matchannotation=folia.LemmaAnnotation) ))
         self.assertEqual( len(matches), 1 )
@@ -863,6 +863,26 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][7].text(), 'worden' )
         self.assertEqual( matches[0][8].text(), 'tussen' )
                       
+    def test008_findwords_disjunction(self):     
+        """Querying -- Find words with disjunctions"""
+        matches = list(self.doc.findwords( folia.Pattern('de',('historische','hedendaagse'),'wetenschap','wordt', matchannotation=folia.LemmaAnnotation) ))
+        self.assertEqual( len(matches), 1 )
+        self.assertEqual( len(matches[0]), 4 )
+        self.assertEqual( matches[0][0].text(), 'de' )
+        self.assertEqual( matches[0][1].text(), 'historische' )
+        self.assertEqual( matches[0][2].text(), 'wetenschap' )        
+        self.assertEqual( matches[0][3].text(), 'wordt' ) 
+
+    def test009_findwords_regexp(self):     
+        """Querying -- Find words with regular expressions"""
+        matches = list(self.doc.findwords( folia.Pattern('de',folia.RegExp('hist.*'),folia.RegExp('.*schap'),folia.RegExp('w[oae]rdt'), matchannotation=folia.LemmaAnnotation) ))
+        self.assertEqual( len(matches), 1 )
+        self.assertEqual( len(matches[0]), 4 )
+        self.assertEqual( matches[0][0].text(), 'de' )
+        self.assertEqual( matches[0][1].text(), 'historische' )
+        self.assertEqual( matches[0][2].text(), 'wetenschap' )        
+        self.assertEqual( matches[0][3].text(), 'wordt' ) 
+
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="folia.xsl"?>
