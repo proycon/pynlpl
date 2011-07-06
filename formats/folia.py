@@ -18,6 +18,7 @@ from sys import stderr
 from StringIO import StringIO
 from copy import copy
 from pynlpl.formats.imdi import RELAXNG_IMDI
+import pynlpl.math
 import inspect
 import glob
 import os
