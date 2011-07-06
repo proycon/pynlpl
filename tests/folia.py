@@ -53,6 +53,7 @@ class Test1Read(unittest.TestCase):
         global DCOIEXAMPLE
         doc = folia.Document(tree=lxml.etree.parse(StringIO(DCOIEXAMPLE.encode('iso-8859-15'))))
         self.assertTrue(isinstance(doc,folia.Document))
+        self.assertEqual(len(doc.words()),1465)
                         
 class Test2Sanity(unittest.TestCase):
     
