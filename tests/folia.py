@@ -464,7 +464,8 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).original(0).text() ,'stippelijn' ) 
         self.assertEqual( w.annotation(folia.Correction).new(0).text() ,'stippellijn' )     
         self.assertEqual( w.text(), 'stippellijn')    
-        
+        self.doc.save('/tmp/foliacorr006.xml')
+
         
     def test007_addcorrection2(self):                
         """Edit Check - Correcting a Token Annotation element"""        
@@ -475,6 +476,7 @@ class Test4Edit(unittest.TestCase):
                     
         self.assertEqual( w.annotation(folia.Correction).original(0) ,oldpos ) 
         self.assertEqual( w.annotation(folia.Correction).new(0),newpos )     
+        self.doc.save('/tmp/foliacorr007.xml')
     
     def test008_addsuggestion(self):
         """Edit Check - Suggesting a text correction"""        
@@ -484,6 +486,7 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
         self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
         self.assertEqual( w.text(), 'stippelijn')    
+        self.doc.save('/tmp/foliacorr008.xml')
         
     def test009a_idclash(self):
         """Edit Check - Checking for exception on adding a duplicate ID"""     
@@ -668,7 +671,7 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( s.words(-2).text(), 'line' )
             self.assertEqual( s.text(), 'De site staat on line .' )
             self.assertEqual( len(s.words()), 6 )
-            
+            self.doc.save('/tmp/foliasplit1.xml')
         
         def test001_splitcorrection2(self):  
             """Correction - Split suggestion"""
@@ -693,7 +696,8 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( len(s.words()), 5 )
             self.assertEqual( s.words(-2).text(), 'online' )
             self.assertEqual( s.text(), 'De site staat online .' )
-            
+            self.doc.save('/tmp/foliasplit2.xml')
+
             
         def test002_mergecorrection(self):         
             """Correction - Merge corrections"""
@@ -712,10 +716,10 @@ class Test5Correction(unittest.TestCase):
             s = self.doc.index[self.doc.id + '.s.1']
             
                                
-            s.mergewords( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.5'], self.doc.index[self.doc.id + '.s.1.w.6'] )
+            s.mergewords( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.4'], self.doc.index[self.doc.id + '.s.1.w.5'] )
            
             self.assertEqual( len(s.words()), 5 )
-            
+            self.doc.save('/tmp/foliamerge.xml')            
 
             
         def test003_deletecorrection(self):         
@@ -735,6 +739,7 @@ class Test5Correction(unittest.TestCase):
             s = self.doc.index[self.doc.id + '.s.1']
             s.deleteword(self.doc.index[self.doc.id + '.s.1.w.4'])
             self.assertEqual( len(s.words()), 5 )
+            self.doc.save('/tmp/foliadelete.xml')            
 
         def test004_insertcorrection(self):         
             """Correction - Insert"""
@@ -751,6 +756,7 @@ class Test5Correction(unittest.TestCase):
             s = self.doc.index[self.doc.id + '.s.1']
             s.insertword( folia.Word(self.doc, id=self.doc.id+'.s.1.w.3b',text='groot'),  self.doc.index[self.doc.id + '.s.1.w.3'])
             self.assertEqual( len(s.words()), 6 )
+            self.doc.save('/tmp/foliainsert.xml')
 
         def test005_reusecorrection(self):     
             """Correction - Re-using a correction with only suggestions"""
@@ -759,6 +765,7 @@ class Test5Correction(unittest.TestCase):
             
             w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
             w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
+            self.doc.save('/tmp/foliareuse1.xml')
             c = w.annotation(folia.Correction)
                     
             self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
@@ -766,6 +773,7 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( w.text(), 'stippelijn')  
             
             w.correct(new='stippellijn',set='corrections',cls='spelling',annotator='John Doe', annotatortype=folia.AnnotatorType.MANUAL,reuse=c.id)
+            self.doc.save('/tmp/foliareuse2.xml')
             
             self.assertEqual( w.text(), 'stippellijn')    
             self.assertEqual( len(list(w.annotations(folia.Correction))), 1 )
@@ -886,7 +894,7 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][3].text(), 'wordt' ) 
         
 
-    def test010_findwords_variablewildcard(self):     
+    def test010a_findwords_variablewildcard(self):     
         """Querying - Find words with variable wildcard"""
         matches = list(self.doc.findwords( folia.Pattern('de','laatste','*','alfabet') ))
         self.assertEqual( len(matches), 1 )
@@ -897,6 +905,29 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][3].text(), 'van' )
         self.assertEqual( matches[0][4].text(), 'het' )
         self.assertEqual( matches[0][5].text(), 'alfabet' )   \
+
+    def test010b_findwords_varwildoverlap(self):     
+        """Querying - Find words with variable wildcard and overlap"""
+        doc = folia.Document(id='test')
+        text = folia.Text(doc, id='test.text')
+        
+        text.append(
+            folia.Sentence(doc,id=doc.id + '.s.1', contents=[
+                folia.Word(doc,id=doc.id + '.s.1.w.1', text="a"),
+                folia.Word(doc,id=doc.id + '.s.1.w.2', text="b"),
+                folia.Word(doc,id=doc.id + '.s.1.w.3', text="c"),
+                folia.Word(doc,id=doc.id + '.s.1.w.4', text="d"),
+                folia.Word(doc,id=doc.id + '.s.1.w.5', text="a"),
+                folia.Word(doc,id=doc.id + '.s.1.w.6', text="b"),
+                folia.Word(doc,id=doc.id + '.s.1.w.7', text="c"),
+            ]
+            )
+        )
+        doc.append(text)                        
+        
+        matches = list(doc.findwords( folia.Pattern('a','*', 'c')))
+        self.assertEqual( len(matches), 3)       
+
         
     def test011_findwords_annotation_na(self):     
         """Querying - Find words by non existing annotation"""
