@@ -2647,7 +2647,8 @@ class Pattern(object):
                 wildcardnr += 1
             else:
                 newsequence.append(x)
-        yield Pattern(*newsequence, matchannotation=self.matchannotation, matchannotationset=self.matchannotationset, casesensitive=self.casesensitive )
+        d = { 'matchannotation':self.matchannotation, 'matchannotationset':self.matchannotationset, 'casesensitive':self.casesensitive }
+        yield Pattern(*newsequence, **d )
     
 
         
