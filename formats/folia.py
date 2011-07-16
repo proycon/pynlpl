@@ -3059,13 +3059,12 @@ class Document(object):
         if n and n[0].text: self._language = n[0].text            
         
     def declare(self, annotationtype, set, **kwargs):
-        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if inspect.isclass(annotationtype):
+            annotationtype = annotationtype.ANNOTATIONTYPE 
         if not (annotationtype, set) in self.annotations:
             self.annotations.append( (annotationtype,set) )
         if not annotationtype in self.annotationdefaults:
             self.annotationdefaults[annotationtype] = {}
-        if inspect.isclass(annotationtype):
-            annotationtype = annotationtype.ANNOTATIONTYPE
         self.annotationdefaults[annotationtype][set] = kwargs
     
     def declared(self, annotationtype, set):
