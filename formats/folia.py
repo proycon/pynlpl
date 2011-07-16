@@ -2809,7 +2809,7 @@ class Document(object):
                             patterns += list(pattern.resolve(size,distribution))
                         else:
                             patterns.append( pattern )
-                    for match in self.findwords(*patterns, leftcontext=leftcontext,rightcontext=rightcontext):
+                    for match in self.findwords(*patterns, **{'leftcontext':leftcontext,'rightcontext':rightcontext}):
                         yield match
                                             
         else:                
