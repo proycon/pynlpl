@@ -2254,13 +2254,13 @@ class SyntacticUnit(AbstractSpanAnnotation):
     ANNOTATIONTYPE = AnnotationType.SYNTAX
     XMLTAG = 'su'
     
-SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference, Description)
+SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference, Description, Feature)
 
 class Chunk(AbstractSpanAnnotation):
     """Chunk element, span annotation element to be used in ChunkingLayer"""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
-    ACCEPTED_DATA = (WordReference, Description)
+    ACCEPTED_DATA = (WordReference, Description, Feature)
     ANNOTATIONTYPE = AnnotationType.CHUNKING
     XMLTAG = 'chunk'
 
@@ -2268,7 +2268,7 @@ class Entity(AbstractSpanAnnotation):
     """Entity element, for named entities, span annotation element to be used in EntitiesLayer"""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
-    ACCEPTED_DATA = (WordReference, Description)
+    ACCEPTED_DATA = (WordReference, Description, Feature)
     ANNOTATIONTYPE = AnnotationType.ENTITY
     XMLTAG = 'entity'
     
