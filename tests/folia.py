@@ -302,8 +302,10 @@ class Test2Sanity(unittest.TestCase):
         w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.1']
         pos = w.annotation(folia.PosAnnotation)
         self.assertTrue( isinstance(pos, folia.PosAnnotation) )
-        features = pos.select(folia.Feature)
-        self.assertEqual( len(features),  1)
+        self.assertEqual(pos.cls,'WW(vd,prenom,zonder)')
+        self.assertEqual( len(pos),  1)        
+        features = pos.select(folia.Feature)                
+        self.assertEqual( len(features),  1)        
         self.assertTrue( isinstance(features[0], folia.Feature))
         self.assertEqual( features[0].subset, 'head')
         self.assertEqual( features[0].cls, 'WW')
