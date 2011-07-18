@@ -315,7 +315,7 @@ class AbstractElement(object):
                     except NoSuchText:
                         continue                
                         
-                if not s.strip():
+                if s.strip():
                     return s.strip()
                 elif self.MINTEXTCORRECTIONLEVEL <= TextCorrectionLevel.UNCORRECTED:
                     #Resort to original uncorrected text (if available)
