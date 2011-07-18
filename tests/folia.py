@@ -296,6 +296,17 @@ class Test2Sanity(unittest.TestCase):
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
         context = w.context(3)
         self.assertEqual( [ x.text() for x in context ], ['wetenschap','wordt',"zo'n",'stamboom',',','onder','de'] )            
+    
+    def test026_feature(self):
+        """Sanity Check - Features"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.1']
+        pos = w.annotation(folia.PosAnnotation)
+        self.assertTrue( isinstance(pos, folia.PosAnnotation) )
+        features = pos.select(folia.Feature)
+        self.assertEqual( len(features),  1)
+        self.assertTrue( isinstance(features[0], folia.Feature))
+        self.assertEqual( features[0].subset, 'head')
+        self.assertEqual( features[0].cls, 'WW')
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
@@ -1554,7 +1565,9 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
           <s xml:id="WR-P-E-J-0000000001.p.1.s.6">
             <w xml:id="WR-P-E-J-0000000001.p.1.s.6.w.1">
               <t>Verdwenen</t>
-              <pos class="WW(vd,prenom,zonder)"/>
+              <pos class="WW(vd,prenom,zonder)">
+                <feat subset="head" class="WW" />
+              </pos>
               <lemma class="verdwijnen"/>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.6.w.2">
