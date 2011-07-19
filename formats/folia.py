@@ -331,13 +331,16 @@ class AbstractElement(object):
     def overridetextdelimiter(self):
         """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
         return None #do not override
+
+    def __ne__(self, other):
+        return not (self == other)
             
     def __eq__(self, other):
         if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - " + repr(self) + " vs " + repr(other)
         
         #Check if we are of the same time
         if type(self) != type(other):
-            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Type mismatch: " + type(self) + " vs " + type(other)
+            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Type mismatch: " + str(type(self)) + " vs " + str(type(other))
             return False
             
         #Check FoLiA attributes
@@ -1954,6 +1957,7 @@ class Feature(AbstractElement):
         """
         
         self.id = None
+        self.set = None
         self.data = []
         self.annotator = None
         self.annotatortype = None
@@ -3368,8 +3372,10 @@ class Document(object):
                 continue
         return s
 
+    def __ne__(self, other):
+        return not (self == other)
+
     def __eq__(self, other):
-        import pdb; pdb.set_trace()
         if len(self.data) != len(other.data):
             if self.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] Equality check - Documents have unequal amount of children"
             return False
