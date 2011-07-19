@@ -33,7 +33,7 @@ class Test1Read(unittest.TestCase):
         f.write(FOLIAEXAMPLE)    
         f.close()
         
-        doc = folia.Document(file='/tmp/foliatest.xml',debug=1)
+        doc = folia.Document(file='/tmp/foliatest.xml')
         self.assertTrue(isinstance(doc,folia.Document))
         
         #sanity check: reading from file must yield the exact same data as reading from string
