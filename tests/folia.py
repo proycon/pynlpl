@@ -966,7 +966,7 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][2].text(), 'letters' )
         self.assertEqual( matches[0][3].text(), 'van' )
         self.assertEqual( matches[0][4].text(), 'het' )
-        self.assertEqual( matches[0][5].text(), 'alfabet' )   \
+        self.assertEqual( matches[0][5].text(), 'alfabet' )   
 
     def test010b_findwords_varwildoverlap(self):     
         """Querying - Find words with variable wildcard and overlap"""
