@@ -782,9 +782,9 @@ class AbstractElement(object):
                 e.append(e2)
         return e
 
-    def xmlstring(self):
+    def xmlstring(self, pretty_print=False):
         """Return a string with XML presentation for this element and all its children."""
-        s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=True, encoding='utf-8')        
+        s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')        
         s = s.replace('ns0:','') #ugly patch to get rid of namespace prefix
         s = s.replace(':ns0','')
         return s
