@@ -773,11 +773,12 @@ class Test5Correction(unittest.TestCase):
             s = self.doc.index[self.doc.id + '.s.1']
             
                                
-            s.mergewords( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.4'], self.doc.index[self.doc.id + '.s.1.w.5'] )
+            s.mergewords( folia.Word(self.doc, 'online', id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.4'], self.doc.index[self.doc.id + '.s.1.w.5'] )
            
             self.assertEqual( len(s.words()), 5 )
+            self.assertEqual( s.text(), 'De site staat online .')
             
-            self.assertEqual( s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4-5"/></new><original><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w></original></correction><w xml:id="example.s.1.w.6"><t>.</t></w></s>')         
+            self.assertEqual( s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4-5"><t>online</t></w></new><original><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w></original></correction><w xml:id="example.s.1.w.6"><t>.</t></w></s>')         
 
             
         def test003_deletecorrection(self):         
@@ -817,6 +818,7 @@ class Test5Correction(unittest.TestCase):
             s.insertword( folia.Word(self.doc, id=self.doc.id+'.s.1.w.3b',text='groot'),  self.doc.index[self.doc.id + '.s.1.w.3'])
             self.assertEqual( len(s.words()), 6 )
             
+            self.assertEqual( s.text(), 'Ik zie een groot huis .')
 
         def test005_reusecorrection(self):     
             """Correction - Re-using a correction with only suggestions"""
