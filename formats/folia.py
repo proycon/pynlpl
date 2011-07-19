@@ -1968,7 +1968,10 @@ class Feature(AbstractElement):
         self.confidence = None
         self.n = None
         self.datetime = None
+        if not isinstance(doc, Document):
+            raise Exception("First argument of Feature constructor must be a Document instance")
         self.doc = doc
+        
         
         if self.SUBSET:
             self.subset = self.SUBSET
