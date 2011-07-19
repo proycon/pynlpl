@@ -306,7 +306,6 @@ class Test2Sanity(unittest.TestCase):
         """Sanity Check - Features"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.1']
         pos = w.annotation(folia.PosAnnotation)
-        import pdb; pdb.set_trace()
         self.assertTrue( isinstance(pos, folia.PosAnnotation) )
         self.assertEqual(pos.cls,'WW(vd,prenom,zonder)')
         self.assertEqual( len(pos),  1)        
