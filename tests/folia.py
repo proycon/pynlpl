@@ -33,9 +33,14 @@ class Test1Read(unittest.TestCase):
         f.write(FOLIAEXAMPLE)    
         f.close()
         
-        doc = folia.Document(file='/tmp/foliatest.xml')
+        doc = folia.Document(file='/tmp/foliatest.xml',debug=1)
         self.assertTrue(isinstance(doc,folia.Document))
         
+        #sanity check: reading from file must yield the exact same data as reading from string
+        doc2 = folia.Document(string=FOLIAEXAMPLE)
+        self.assertEqual( doc, doc2)
+        
+                
     def test2_readfromstring(self):        
         """Reading from string"""        
         global FOLIAEXAMPLE
@@ -58,8 +63,8 @@ class Test1Read(unittest.TestCase):
 class Test2Sanity(unittest.TestCase):
     
     def setUp(self):
-        self.doc = folia.Document(file='/tmp/foliatest.xml')
-
+        self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
+        
     def test000_count_paragraphs(self):                                    
         """Sanity check - One text """        
         self.assertEqual( len(self.doc), 1) 
@@ -301,6 +306,7 @@ class Test2Sanity(unittest.TestCase):
         """Sanity Check - Features"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.1']
         pos = w.annotation(folia.PosAnnotation)
+        import pdb; pdb.set_trace()
         self.assertTrue( isinstance(pos, folia.PosAnnotation) )
         self.assertEqual(pos.cls,'WW(vd,prenom,zonder)')
         self.assertEqual( len(pos),  1)        

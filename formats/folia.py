@@ -331,7 +331,47 @@ class AbstractElement(object):
     def overridetextdelimiter(self):
         """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
         return None #do not override
+            
+    def __eq__(self, other):
+        if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - " + repr(self) + " vs " + repr(other)
         
+        #Check if we are of the same time
+        if type(self) != type(other):
+            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Type mismatch: " + type(self) + " vs " + type(other)
+            return False
+            
+        #Check FoLiA attributes
+        if self.id != other.id:
+            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - ID mismatch: " + str(self.id) + " vs " + str(other.id)
+            return False            
+        if self.set != other.set:
+            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Set mismatch: " + str(self.set) + " vs " + str(other.set)
+            return False
+        if self.cls != other.cls:
+            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Class mismatch: " + repr(self.cls) + " vs " + repr(other.cls)
+            return False            
+        if self.annotator != other.annotator:
+            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Annotator mismatch: " + repr(self.annotator) + " vs " + repr(other.annotator)
+            return False            
+        if self.annotatortype != other.annotatortype:
+            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Annotator mismatch: " + repr(self.annotatortype) + " vs " + repr(other.annotatortype)
+            return False                                     
+                
+        #Check if we have same amount of children:
+        mychildren = list(self)
+        yourchildren = list(other)
+        if len(mychildren) != len(yourchildren):
+            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Unequal amount of children"
+            return False
+                    
+        #Now check equality of children        
+        for mychild, yourchild in zip(mychildren, yourchildren):
+            if mychild != yourchild:
+                if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Child mismatch: " + repr(mychild) + " vs " + repr(yourchild)
+                return False
+
+        #looks like we made it! \o/
+        return True
     
     def __len__(self):
         """Returns the number of child elements under the current element"""
@@ -821,6 +861,16 @@ class AbstractElement(object):
                         except:
                             continue
                     yield e2
+
+    def items(self, founditems=[]):
+        """Returns a depth-first flat list of *all* items below this element (not limited to AbstractElement)"""        
+        l = []
+        for e in self.data:
+            if not e in founditems: #prevent going in recursive loops
+                l.append(e)
+                if isinstance(e, AbstractElement):
+                    l += e.items(l)                    
+        return l
         
     
     @classmethod
@@ -1428,6 +1478,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative'])
         else:
             return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative'])[index]
+            
+    def __eq__(self, other):
+        return super(AbstractStructureElement, self).__eq__(other)
 
 class AbstractAnnotation(AbstractElement):
     def feat(self,subset):
@@ -2731,6 +2784,13 @@ class Document(object):
         """Load a FoLiA or D-Coi XML file"""
         self.tree = ElementTree.parse(filename)
         self.parsexml(self.tree.getroot())
+
+    def items(self):
+        """Returns a depth-first flat list of all items in the document"""
+        l = []
+        for e in self.data:
+            l += e.items()
+        return l
             
     def xpath(self, query):
         """Run Xpath expression and parse the resulting elements"""
@@ -3307,6 +3367,17 @@ class Document(object):
             except:
                 continue
         return s
+
+    def __eq__(self, other):
+        import pdb; pdb.set_trace()
+        if len(self.data) != len(other.data):
+            if self.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] Equality check - Documents have unequal amount of children"
+            return False
+        for e,e2 in zip(self.data,other.data):
+            if e != e2:            
+                return False
+        return True
+        
         
     def __str__(self):    
         """Returns the text of the entire document (UTF-8 encoded)"""
@@ -3450,9 +3521,7 @@ class Text(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description)
     XMLTAG = 'text' 
-    TEXTDELIMITER = "\n\n"
- 
-
+    TEXTDELIMITER = "\n\n"        
 
 class Corpus:
     """A corpus of various FoLiA document"""
