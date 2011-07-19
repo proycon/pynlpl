@@ -370,7 +370,7 @@ class AbstractElement(object):
         #Now check equality of children        
         for mychild, yourchild in zip(mychildren, yourchildren):
             if mychild != yourchild:
-                if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Child mismatch: " + repr(mychild) + " vs " + repr(yourchild)
+                if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Child mismatch: " + repr(mychild) + " vs " + repr(yourchild) + " (in " + repr(self) + ", id: " + str(self.id) + ")"
                 return False
 
         #looks like we made it! \o/

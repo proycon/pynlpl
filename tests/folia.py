@@ -321,12 +321,20 @@ class Test2Sanity(unittest.TestCase):
 
     def test100a_sanity(self):                       
         """Sanity Check - A - Checking output file against input (should be equal)"""
-        self.doc.save('/tmp/foliatest100.xml')
-        self.assertEqual(  folia.Document(file='/tmp/foliatest100.xml',debug=1), self.doc )
+        global FOLIAEXAMPLE
+        f = codecs.open('/tmp/foliatest.xml','w','utf-8')
+        f.write(FOLIAEXAMPLE)    
+        f.close()                
+        self.doc.save('/tmp/foliatest100.xml')        
+        self.assertEqual(  folia.Document(file='/tmp/foliatest100.xml',debug=False), self.doc )
     
     def test100b_sanity(self):                       
         """Sanity Check - B - Checking output file against input using diff (should be equal)"""
-        #use diff to compare the two:
+        global FOLIAEXAMPLE
+        f = codecs.open('/tmp/foliatest.xml','w','utf-8')
+        f.write(FOLIAEXAMPLE)    
+        f.close()                  
+        #use xmldiff to compare the two:
         self.doc.save('/tmp/foliatest100.xml')
         retcode = os.system('xmldiff /tmp/foliatest.xml /tmp/foliatest100.xml')
         self.assertEqual( retcode, 0)
@@ -961,8 +969,7 @@ class Test6Query(unittest.TestCase):
 
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="folia.xsl"?>
-<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dcoi="http://lands.let.ru.nl/projects/d-coi/ns/1.0" xml:id="WR-P-E-J-0000000001">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="WR-P-E-J-0000000001">
   <metadata>
     <annotations>
       <token-annotation annotator="ilktok" annotatortype="auto" />
@@ -1116,9 +1123,9 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <pos class="N(soort,ev,basis,onz,stan)"/>
               <lemma class="woord"/>
             </w>
-            <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.6">
-              <desc>Dit woordje is een voorzetsel, het is maar dat je het weet...</desc>
+            <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.6">              
               <t>voor</t>
+              <desc>Dit woordje is een voorzetsel, het is maar dat je het weet...</desc>
               <pos class="VZ(init)"/>
               <lemma class="voor"/>
             </w>
@@ -1325,14 +1332,14 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <lemma class="handschrift"/>
               <morphology>
                 <morpheme class="handschrift">
+                    <t offset="0">handschrift</t>
                     <feat subset="type" class="stem" />
                     <feat subset="function" class="lexical" />
-                    <t offset="0">handschrift</t>
                 </morpheme>
                 <morpheme>
-                    <feat subset="type" class="suffix" />
-                    <feat subset="function" class="plural" />
                     <t offset="11">en</t>
+                    <feat subset="type" class="suffix" />
+                    <feat subset="function" class="plural" />                    
                 </morpheme>
               </morphology>              
             </w>
