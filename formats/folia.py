@@ -1181,7 +1181,8 @@ class AllowCorrections(object):
         if 'insertindex' in kwargs:
             insertindex = int(kwargs['insertindex'])
             del kwargs['insertindex']
-        insertindex = -1 #append
+        else:
+            insertindex = -1 #append
 
         if 'current' in kwargs:
             if 'original' in kwargs or 'new' in kwargs: raise Exception("When setting current=, original= and new= can not be set!") 
@@ -2569,7 +2570,7 @@ class Sentence(AbstractStructureElement):
             if not isinstance(newword, Word):
                 raise Exception("New word no instance of Word!")
             
-            kwargs['insertindex'] = self.data.index(prevword)
+            kwargs['insertindex'] = self.data.index(prevword) + 1
         else:
             kwargs['insertindex'] = 0
         return self.correctwords([], [newword], **kwargs)
