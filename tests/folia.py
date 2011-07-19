@@ -392,6 +392,8 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( len(p.sentences()) , tmp + 1)
         self.assertEqual( p[-1] , s)
         
+        self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1" annotator="testscript"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2" annotator="testscript"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3" annotator="testscript"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4" annotator="testscript"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5" annotator="testscript"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" annotator="testscript"><t>.</t></w></s>')
+        
     def test001b_addsentence(self):        
         """Edit Check - Adding a sentence to last paragraph (shortcut)"""
         
@@ -417,6 +419,8 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( len(p.sentences()) , tmp + 1)
         self.assertEqual( p[-1] , s)
         
+        self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" class="PUNCTUATION"><t>.</t></w></s>')
+        
     def test002_addannotation(self):        
         """Edit Check - Adding a token annotation (pos, lemma) (pre-generated instances)"""
          
@@ -438,6 +442,8 @@ class Test4Edit(unittest.TestCase):
         l = w.annotation(folia.LemmaAnnotation, 'adhoclemma')
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )
+        
+        self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="naam"/><pos class="NOUN" annotatortype="auto" annotator="testscript"/><lemma class="NAAM" annotatortype="auto" annotator="testscript"/></w>')
         
     def test002b_addannotation(self):   
         """Edit Check - Adding a token annotation (pos, lemma) (instances generated on the fly)"""
@@ -461,6 +467,8 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )       
     
+        self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="naam"/><pos class="NOUN" annotatortype="auto" annotator="testscript"/><lemma class="NAAM" annotatortype="auto" annotator="testscript"/></w>')
+
 
     def test004_addinvalidannotation(self):        
         """Edit Check - Adding a token default-set annotation that clashes with the existing one"""        
@@ -489,6 +497,9 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( len(alt2),1 )        
         self.assertTrue( isinstance(alt[0].annotation(folia.PosAnnotation, set), folia.PosAnnotation) )
 
+        self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="naam"/><alt xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11.alt.1"><pos class="V"/></alt></w>')
+
+
     def test006_addcorrection(self):        
         """Edit Check - Correcting Text"""
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
@@ -499,6 +510,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.text(), 'stippellijn')    
         self.doc.save('/tmp/foliacorr006.xml')
 
+        self.assertEqual( w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original><t>stippelijn</t></original></correction></w>')
         
     def test007_addcorrection2(self):                
         """Edit Check - Correcting a Token Annotation element"""        
@@ -509,7 +521,8 @@ class Test4Edit(unittest.TestCase):
                     
         self.assertEqual( w.annotation(folia.Correction).original(0) ,oldpos ) 
         self.assertEqual( w.annotation(folia.Correction).new(0),newpos )     
-        self.doc.save('/tmp/foliacorr007.xml')
+        
+        self.assertEqual( w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><pos class="N(soort,ev,basis,zijd,stan)"/></new><original><pos class="FOUTN(soort,ev,basis,zijd,stan)"/></original></correction><lemma class="stippelijn"/></w>')
     
     def test008_addsuggestion(self):
         """Edit Check - Suggesting a text correction"""        
@@ -520,6 +533,8 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
         self.assertEqual( w.text(), 'stippelijn')    
         self.doc.save('/tmp/foliacorr008.xml')
+        
+        self.assertEqual( w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><suggestion><t>stippellijn</t></suggestion></correction></w>')
         
     def test009a_idclash(self):
         """Edit Check - Checking for exception on adding a duplicate ID"""     
@@ -554,6 +569,8 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( pos.parent, w)
         self.assertEqual( pos.doc, w.doc)
         
+        self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>')
+        
     def test011_subtokenannot(self):            
         """Edit Check - Adding Subtoken annotation (morphological analysis)"""        
         w = self.doc['WR-P-E-J-0000000001.p.1.s.5.w.3']
@@ -570,6 +587,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( l[1].feat('type'), 'suffix' ) 
         self.assertEqual( l[1].feat('function'), 'plural' )         
     
+        self.assertEqual( w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme><t offset="0">handschrift</t><feat subset="type" class="stem"/><feat subset="function" class="lexical"/></morpheme><morpheme><t offset="11">en</t><feat subset="type" class="suffix"/><feat subset="function" class="plural"/></morpheme></morphology></w>')
 
     def test012_alignment(self):            
         """Edit Check - Alignment"""        
@@ -604,6 +622,8 @@ class Test4Edit(unittest.TestCase):
                 ])
             ])
         )
+        
+        self.assertEqual( layer.xmlstring(),'<syntax xmlns="http://ilk.uvt.nl/folia"><su xml:id="WR-P-E-J-0000000001.p.1.s.4.su.1"><su class="s"><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.1" t="De"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.2" t="hoofdletter"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.3" t="A"/></su></su><su class="vp"><su class="vp"><su class="v"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.4" t="wordt"/></su><su class="participle"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.5" t="gebruikt"/></su></su><su class="pp"><su class="prep"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.6" t="voor"/></su><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.7" t="het"/></su><su class="adj"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.8" t="originele"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.9" t="handschrift"/></su></su></su></su></su></su></syntax>')
 
     def test014_replace(self):            
         """Edit Check - Replacing an annotation"""
@@ -613,6 +633,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( len(list(word.annotations(folia.PosAnnotation))), 1)   
         self.assertEqual( word.annotation(folia.PosAnnotation).cls, 'BOGUS')   
     
+        self.assertEqual( word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/><pos class="BOGUS"/></w>')
     
     def test015_remove(self):            
         """Edit Check - Removing an annotation"""
@@ -621,6 +642,7 @@ class Test4Edit(unittest.TestCase):
         
         self.assertRaises( folia.NoSuchAnnotation, word.annotations, folia.PosAnnotation )
     
+        self.assertEqual( word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/></w>')
     #def test008_addaltcorrection(self):            
     #    """Edit Check - Adding alternative corrections"""        
     #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
@@ -704,7 +726,8 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( s.words(-2).text(), 'line' )
             self.assertEqual( s.text(), 'De site staat on line .' )
             self.assertEqual( len(s.words()), 6 )
-            self.doc.save('/tmp/foliasplit1.xml')
+            self.assertEqual( s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4a"><t>on</t></w><w xml:id="example.s.1.w.4b"><t>line</t></w></new><original><w xml:id="example.s.1.w.4"><t>online</t></w></original></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>')
+            
         
         def test001_splitcorrection2(self):  
             """Correction - Split suggestion"""
@@ -729,7 +752,8 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( len(s.words()), 5 )
             self.assertEqual( s.words(-2).text(), 'online' )
             self.assertEqual( s.text(), 'De site staat online .' )
-            self.doc.save('/tmp/foliasplit2.xml')
+
+            self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><current><w xml:id="example.s.1.w.4"><t>online</t></w></current><suggestion><w xml:id="example.s.1.w.6"><t>on</t></w><w xml:id="example.s.1.w.7"><t>line</t></w></suggestion></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>')
 
             
         def test002_mergecorrection(self):         
@@ -752,7 +776,8 @@ class Test5Correction(unittest.TestCase):
             s.mergewords( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.4'], self.doc.index[self.doc.id + '.s.1.w.5'] )
            
             self.assertEqual( len(s.words()), 5 )
-            self.doc.save('/tmp/foliamerge.xml')            
+            
+            self.assertEqual( s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4-5"/></new><original><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w></original></correction><w xml:id="example.s.1.w.6"><t>.</t></w></s>')         
 
             
         def test003_deletecorrection(self):         
@@ -772,7 +797,9 @@ class Test5Correction(unittest.TestCase):
             s = self.doc.index[self.doc.id + '.s.1']
             s.deleteword(self.doc.index[self.doc.id + '.s.1.w.4'])
             self.assertEqual( len(s.words()), 5 )
-            self.doc.save('/tmp/foliadelete.xml')            
+            self.assertEqual( s.text(), 'Ik zie een huis .')
+            
+            self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new/><original><w xml:id="example.s.1.w.4"><t>groot</t></w></original></correction><w xml:id="example.s.1.w.5"><t>huis</t></w><w xml:id="example.s.1.w.6"><t>.</t></w></s>')        
 
         def test004_insertcorrection(self):         
             """Correction - Insert"""
@@ -789,7 +816,7 @@ class Test5Correction(unittest.TestCase):
             s = self.doc.index[self.doc.id + '.s.1']
             s.insertword( folia.Word(self.doc, id=self.doc.id+'.s.1.w.3b',text='groot'),  self.doc.index[self.doc.id + '.s.1.w.3'])
             self.assertEqual( len(s.words()), 6 )
-            self.doc.save('/tmp/foliainsert.xml')
+            
 
         def test005_reusecorrection(self):     
             """Correction - Re-using a correction with only suggestions"""
@@ -798,7 +825,6 @@ class Test5Correction(unittest.TestCase):
             
             w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
             w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
-            self.doc.save('/tmp/foliareuse1.xml')
             c = w.annotation(folia.Correction)
                     
             self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
@@ -806,7 +832,6 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( w.text(), 'stippelijn')  
             
             w.correct(new='stippellijn',set='corrections',cls='spelling',annotator='John Doe', annotatortype=folia.AnnotatorType.MANUAL,reuse=c.id)
-            self.doc.save('/tmp/foliareuse2.xml')
             
             self.assertEqual( w.text(), 'stippellijn')    
             self.assertEqual( len(list(w.annotations(folia.Correction))), 1 )
@@ -816,6 +841,8 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( w.annotation(folia.Correction).new(0).text() , 'stippellijn' )
             self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
             self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
+            
+            self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" annotatortype="auto"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original><t>stippelijn</t></original></correction></w>')
             
 class Test6Query(unittest.TestCase):
     def setUp(self):
