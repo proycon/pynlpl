@@ -969,8 +969,8 @@ class Test6Query(unittest.TestCase):
 
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
-<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="WR-P-E-J-0000000001">
-  <metadata>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="WR-P-E-J-0000000001">
+  <metadata type="imdi">
     <annotations>
       <token-annotation annotator="ilktok" annotatortype="auto" />
       <pos-annotation set="cgn-combinedtags" annotator="tadpole" annotatortype="auto" />
@@ -978,7 +978,7 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
       <correction-annotation set="corrections" annotator="proycon" annotatortype="manual" />
       <errordetection-annotation set="corrections" annotator="proycon" annotatortype="manual" />
     </annotations>
-    <imdi:METATRANSCRIPT xmlns="http://lands.let.ru.nl/projects/d-coi/ns/1.0" xmlns:d-coi="http://lands.let.ru.nl/projects/d-coi/ns/1.0" Date="2009-01-27" Type="SESSION" Version="1">
+    <imdi:METATRANSCRIPT xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" Date="2009-01-27" Type="SESSION" Version="1">
     <imdi:Session>
       <imdi:Name>WR-P-E-J-0000000001</imdi:Name>
       <imdi:Title>Stemma</imdi:Title>
