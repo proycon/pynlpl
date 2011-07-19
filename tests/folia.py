@@ -318,13 +318,20 @@ class Test2Sanity(unittest.TestCase):
     def test099_write(self):        
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
-    
-    def test100_sanity(self):                       
-        """Sanity Check - Checking output file against input (should be equal)"""
-        #use diff to compare the two:
-        retcode = os.system('diff -w -c /tmp/foliatest.xml /tmp/foliasavetest.xml')
-        self.assertEqual( retcode, 0)
 
+    def test100a_sanity(self):                       
+        """Sanity Check - A - Checking output file against input (should be equal)"""
+        self.doc.save('/tmp/foliatest100.xml')
+        self.assertEqual(  folia.Document(file='/tmp/foliatest100.xml',debug=1), self.doc )
+    
+    def test100b_sanity(self):                       
+        """Sanity Check - B - Checking output file against input using diff (should be equal)"""
+        #use diff to compare the two:
+        self.doc.save('/tmp/foliatest100.xml')
+        retcode = os.system('xmldiff /tmp/foliatest.xml /tmp/foliatest100.xml')
+        self.assertEqual( retcode, 0)
+    
+                
 
         
 class Test4Edit(unittest.TestCase):

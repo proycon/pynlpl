@@ -729,11 +729,12 @@ class AbstractElement(object):
             if self.cls:
                 attribs['{' + NSFOLIA + '}class'] = self.cls
         except AttributeError:
-            pass            
-        try:            
-            if self.annotator and (not self.ANNOTATIONTYPE in self.doc.annotationdefaults or not 'annotator' in self.doc.annotationdefaults[self.ANNOTATIONTYPE] or self.annotator != self.doc.annotationdefaults[self.ANNOTATIONTYPE]['annotator']):
+            pass        
+                        
+        try:
+            if self.annotator and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'annotator' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.annotator != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['annotator'])):
                 attribs['{' + NSFOLIA + '}annotator'] = self.annotator
-            if self.annotatortype and (not self.ANNOTATIONTYPE in self.doc.annotationdefaults or not 'annotatortype' in self.doc.annotationdefaults[self.ANNOTATIONTYPE] or self.annotatortype != self.doc.annotationdefaults[self.ANNOTATIONTYPE]['annotatortype']):
+            if self.annotatortype and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ('annotatortype' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.annotatortype != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['annotatortype'])):
                 if self.annotatortype == AnnotatorType.AUTO:
                     attribs['{' + NSFOLIA + '}annotatortype'] = 'auto'
                 elif self.annotatortype == AnnotatorType.MANUAL:
