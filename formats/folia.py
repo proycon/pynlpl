@@ -959,9 +959,9 @@ class AbstractElement(object):
             elif Attrib.N in cls.OPTIONAL_ATTRIBS:
                attribs.append( E.optional( E.attribute( name='n') ) )
             if Attrib.DATETIME in cls.REQUIRED_ATTRIBS:
-               attribs.append( E.attribute(E.data(type='datetime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='datetime') )
+               attribs.append( E.attribute(E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='datetime') )
             elif Attrib.DATETIME in cls.OPTIONAL_ATTRIBS:
-               attribs.append( E.optional( E.attribute( E.data(type='datetime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),  name='datetime') ) )
+               attribs.append( E.optional( E.attribute( E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),  name='datetime') ) )
 
             
             #if cls.ALLOWTEXT:
