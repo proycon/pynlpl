@@ -182,7 +182,13 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'datetime' in kwargs:
         if not Attrib.DATETIME in supported:
             raise ValueError("Datetime is not supported")
-        object.datetime = parse_datetime(kwargs['datetime'])            
+        if isinstance(kwargs['datetime'], datetime):
+            object.datetime = kwargs['datetime']
+        else:
+            try:
+                object.datetime = parse_datetime(kwargs['datetime'])            
+            except:
+                raise ValueError("Unable to parse datetime: " + str(repr(kwargs['datetime'])))
         del kwargs['datetime']                
     elif Attrib.DATETIME in required:
         raise ValueError("Datetime is required")

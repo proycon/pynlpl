@@ -442,7 +442,7 @@ class Test4Edit(unittest.TestCase):
         
         #add a pos annotation (in a different set than the one already present, to prevent conflict)
         w.append( folia.PosAnnotation(self.doc, set='adhocpos', cls='NOUN', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
-        w.append( folia.LemmaAnnotation(self.doc, set='adhoclemma', cls='NAAM', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO ) ) 
+        w.append( folia.LemmaAnnotation(self.doc, set='adhoclemma', cls='NAAM', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO, datetime=datetime(1982, 12, 15, 19, 0, 1) ) ) 
         
         #retrieve and check
         p = w.annotation(folia.PosAnnotation, 'adhocpos')
@@ -453,7 +453,7 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )
         
-        self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma class="NAAM" set="adhoclemma" annotatortype="auto" annotator="testscript"/></w>')
+        self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma set="adhoclemma" class="NAAM" datetime="1982-12-15T19:00:01" annotatortype="auto" annotator="testscript"/></w>')                
         
     def test002b_addannotation(self):   
         """Edit Check - Adding a token annotation (pos, lemma) (instances generated on the fly)"""
@@ -653,6 +653,16 @@ class Test4Edit(unittest.TestCase):
         self.assertRaises( folia.NoSuchAnnotation, word.annotations, folia.PosAnnotation )
     
         self.assertEqual( word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/></w>')
+
+    def test016_datetime(self):
+        """Edit Check - Time stamp"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.16']
+        pos = w.annotation(folia.PosAnnotation)
+        pos.datetime = datetime(1982, 12, 15, 19, 0, 1) #(the datetime of my joyful birth)
+        
+        self.assertEqual( pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="WW(pv,tgw,met-t)" datetime="1982-12-15T19:00:01"/>')        
+                
+        
     #def test008_addaltcorrection(self):            
     #    """Edit Check - Adding alternative corrections"""        
     #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
