@@ -20,6 +20,7 @@ sys.path.append(sys.path[0] + '/../../')
 os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
 from StringIO import StringIO
+from datetime import datetime
 import lxml.etree
 from pynlpl.formats import folia
 
@@ -314,6 +315,15 @@ class Test2Sanity(unittest.TestCase):
         self.assertTrue( isinstance(features[0], folia.Feature))
         self.assertEqual( features[0].subset, 'head')
         self.assertEqual( features[0].cls, 'WW')
+        
+    def test027_datetime(self):  
+        """Sanity Check - Time stamp"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.15']
+        
+        pos = w.annotation(folia.PosAnnotation)
+        self.assertEqual( pos.datetime, datetime(2011, 7, 20, 19, 0, 1) ) 
+        
+        self.assertEqual( pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/>')        
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
@@ -1935,7 +1945,7 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.15">
               <t>verwantschap</t>
-              <pos class="N(soort,ev,basis,zijd,stan)"/>
+              <pos class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01" />
               <lemma class="verwantschap"/>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.16">

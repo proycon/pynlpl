@@ -18,6 +18,8 @@ from sys import stderr
 from StringIO import StringIO
 from copy import copy
 from pynlpl.formats.imdi import RELAXNG_IMDI
+from datetime import datetime
+from dateutil.parser import parse as parse_datetime
 import pynlpl.math
 import inspect
 import glob
@@ -180,7 +182,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'datetime' in kwargs:
         if not Attrib.DATETIME in supported:
             raise ValueError("Datetime is not supported")
-            object.datetime = kwargs['datetime'] #TODO parse datetime string
+        object.datetime = parse_datetime(kwargs['datetime'])            
         del kwargs['datetime']                
     elif Attrib.DATETIME in required:
         raise ValueError("Datetime is required")
@@ -755,7 +757,7 @@ class AbstractElement(object):
             
         try:
             if self.datetime:
-                attribs['{' + NSFOLIA + '}datetime'] = str(self.datetime) #TODO: format string
+                attribs['{' + NSFOLIA + '}datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S") #TODO: format string                
         except AttributeError:
             pass            
             
@@ -921,9 +923,9 @@ class AbstractElement(object):
             elif Attrib.N in cls.OPTIONAL_ATTRIBS:
                attribs.append( E.optional( E.attribute( name='n') ) )
             if Attrib.DATETIME in cls.REQUIRED_ATTRIBS:
-               attribs.append( E.attribute( name='datetime') )
+               attribs.append( E.attribute(E.data(type='datetime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='datetime') )
             elif Attrib.DATETIME in cls.OPTIONAL_ATTRIBS:
-               attribs.append( E.optional( E.attribute( name='datetime') ) )
+               attribs.append( E.optional( E.attribute( E.data(type='datetime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),  name='datetime') ) )
 
             
             #if cls.ALLOWTEXT:
@@ -2067,12 +2069,12 @@ class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
                 
         
 class AbstractCorrectionChild(AbstractElement):
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Description)
     TEXTDELIMITER = ""
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
     XMLTAG = 'errordetection'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
@@ -2100,7 +2102,7 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
             
                         
 class Suggestion(AbstractCorrectionChild):
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.SUGGESTION
     XMLTAG = 'suggestion'
     OCCURRENCES = 0 #unlimited
@@ -2161,7 +2163,7 @@ class Current(AbstractCorrectionChild):
             
 class Correction(AbstractExtendedTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (New,Original,Current, Suggestion, Description)
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
@@ -2319,7 +2321,7 @@ class AlignReference(AbstractElement):
 class SyntacticUnit(AbstractSpanAnnotation):
     """Syntactic Unit, span annotation element to be used in SyntaxLayer"""
     REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.SYNTAX
     XMLTAG = 'su'
     
@@ -2328,7 +2330,7 @@ SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference, Description, Feature
 class Chunk(AbstractSpanAnnotation):
     """Chunk element, span annotation element to be used in ChunkingLayer"""
     REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (WordReference, Description, Feature)
     ANNOTATIONTYPE = AnnotationType.CHUNKING
     XMLTAG = 'chunk'
@@ -2336,7 +2338,7 @@ class Chunk(AbstractSpanAnnotation):
 class Entity(AbstractSpanAnnotation):
     """Entity element, for named entities, span annotation element to be used in EntitiesLayer"""
     REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (WordReference, Description, Feature)
     ANNOTATIONTYPE = AnnotationType.ENTITY
     XMLTAG = 'entity'
@@ -2344,7 +2346,7 @@ class Entity(AbstractSpanAnnotation):
 class Morpheme(AbstractSubtokenAnnotation):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
     REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (Feature,TextContent)
     ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
     XMLTAG = 'morpheme'
@@ -2352,7 +2354,7 @@ class Morpheme(AbstractSubtokenAnnotation):
 class Subentity(AbstractSubtokenAnnotation):
     """Subentity element, for named entities within a single token, subtoken annotation element to be used in SubentitiesLayer"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (Feature,TextContent)
     ANNOTATIONTYPE = AnnotationType.SUBENTITY
     XMLTAG = 'subentity'
@@ -2388,7 +2390,7 @@ class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
 class PosAnnotation(AbstractTokenAnnotation):
     """Part-of-Speech annotation:  a token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.POS
     ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'pos'
@@ -2396,7 +2398,7 @@ class PosAnnotation(AbstractTokenAnnotation):
 class LemmaAnnotation(AbstractTokenAnnotation):
     """Lemma annotation:  a token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.LEMMA
     ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'lemma'
@@ -2404,7 +2406,7 @@ class LemmaAnnotation(AbstractTokenAnnotation):
 class PhonAnnotation(AbstractTokenAnnotation):
     """Phonetic annotation:  a token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.PHON
     ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'phon'
@@ -2413,7 +2415,7 @@ class PhonAnnotation(AbstractTokenAnnotation):
 class DomainAnnotation(AbstractExtendedTokenAnnotation):
     """Domain annotation:  an extended token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.DOMAIN
     ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'domain'
@@ -2429,7 +2431,7 @@ class SynsetFeature(Feature):
 class SenseAnnotation(AbstractTokenAnnotation):
     """Sense annotation: a token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.SENSE
     ACCEPTED_DATA = (Feature,SynsetFeature, Description)
     XMLTAG = 'sense'
@@ -2437,7 +2439,7 @@ class SenseAnnotation(AbstractTokenAnnotation):
 class SubjectivityAnnotation(AbstractTokenAnnotation):
     """Subjectivity annotation: a token annotation element"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.SUBJECTIVITY
     ACCEPTED_DATA = (Feature, Description)
     XMLTAG = 'subjectivity'
