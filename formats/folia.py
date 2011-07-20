@@ -791,7 +791,7 @@ class AbstractElement(object):
         return s
         
         
-    def select(self, Class, set=None, recursive=True,  ignorelist=[], node=None):
+    def select(self, Class, set=None, recursive=True,  ignorelist=['Original','Suggestion','Alternative'], node=None):
         """Select child elements of the specified class. 
         
         A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into. 
@@ -1346,7 +1346,7 @@ class AllowTokenAnnotation(AllowCorrections):
         """
         l = []
         if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
-        for e in self.select(Alternative):
+        for e in self.select(Alternative,None, True, ['Original','Suggestion']):
             if annotationtype is None:
                 l.append(e)
             elif len(e) >= 1: #child elements?
