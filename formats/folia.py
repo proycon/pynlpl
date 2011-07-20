@@ -720,8 +720,9 @@ class AbstractElement(object):
             
         #Some attributes only need to be added if they are not the same as what's already set in the declaration    
         try:
-            if self.set and (not self.ANNOTATIONTYPE in self.doc.annotationdefaults or not self.set in self.doc.annotationdefaults[self.ANNOTATIONTYPE]):
-                attribs['{' + NSFOLIA + '}set'] = self.set        
+            if self.set:
+                if len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys()[0] != self.set:
+                    attribs['{' + NSFOLIA + '}set'] = self.set        
         except AttributeError:
             pass
         
