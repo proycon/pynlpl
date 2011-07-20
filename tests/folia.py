@@ -211,12 +211,12 @@ class Test2Sanity(unittest.TestCase):
         """Sanity check - Checking if all elements know who's their daddy""" 
         def check(parent, indent = ''):         
             for child in parent:
-                print indent + repr(child)
+#                print indent + repr(child)
                 if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
                     self.assertEqual( child.parent, parent)                
                     check(child, indent + '  ')                        
 
-        print repr(self.doc.data[0])
+#        print repr(self.doc.data[0])
         check(self.doc.data[0],'  ')
 
     def test016a_description(self):        
