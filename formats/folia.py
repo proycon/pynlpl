@@ -19,7 +19,7 @@ from StringIO import StringIO
 from copy import copy
 from pynlpl.formats.imdi import RELAXNG_IMDI
 from datetime import datetime
-from dateutil.parser import parse as parse_datetime
+#from dateutil.parser import parse as parse_datetime
 import pynlpl.math
 import inspect
 import glob
@@ -66,6 +66,7 @@ class NoDefaultError(Exception):
 
 class NoDescription(Exception):
     pass
+
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     object.doc = doc #The FoLiA root document
@@ -185,10 +186,11 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         if isinstance(kwargs['datetime'], datetime):
             object.datetime = kwargs['datetime']
         else:
-            try:
-                object.datetime = parse_datetime(kwargs['datetime'])            
-            except:
-                raise ValueError("Unable to parse datetime: " + str(repr(kwargs['datetime'])))
+            
+            #try:
+            object.datetime = parse_datetime(kwargs['datetime'])            
+            #except:
+            #    raise ValueError("Unable to parse datetime: " + str(repr(kwargs['datetime'])))
         del kwargs['datetime']                
     elif Attrib.DATETIME in required:
         raise ValueError("Datetime is required")
@@ -231,7 +233,35 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     
         
 
-
+def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-to-parse-xsddatetime-format
+  """Returns (datetime, tz offset in minutes) or (None, None)."""
+  m = re.match(""" ^
+    (?P<year>-?[0-9]{4}) - (?P<month>[0-9]{2}) - (?P<day>[0-9]{2})
+    T (?P<hour>[0-9]{2}) : (?P<minute>[0-9]{2}) : (?P<second>[0-9]{2})
+    (?P<microsecond>\.[0-9]{1,6})?
+    (?P<tz>
+      Z | (?P<tz_hr>[-+][0-9]{2}) : (?P<tz_min>[0-9]{2})
+    )?
+    $ """, s, re.X)
+  if m is not None:
+    values = m.groupdict()
+    if values["tz"] in ("Z", None):
+      tz = 0
+    else:
+      tz = int(values["tz_hr"]) * 60 + int(values["tz_min"])
+    if values["microsecond"] is None:
+      values["microsecond"] = 0
+    else:
+      values["microsecond"] = values["microsecond"][1:]
+      values["microsecond"] += "0" * (6 - len(values["microsecond"]))
+    values = dict((k, int(v)) for k, v in values.iteritems()
+                  if not k.startswith("tz"))
+    try:
+        
+      return datetime(**values) # , tz
+    except ValueError:
+      pass
+  return None
 
 
         
