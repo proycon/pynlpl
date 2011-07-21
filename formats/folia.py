@@ -26,6 +26,9 @@ import glob
 import os
 import re
 
+FOLIAVERSION = '0.5'
+LIBVERSION = '0.5.10' #== FoLiA version + library revision
+
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 
@@ -2758,6 +2761,7 @@ class Document(object):
     IDSEPARATOR = '.'
     
     def __init__(self, *args, **kwargs):
+        global FOLIAVERSION
         """Start/load a FoLiA document:
         
         There are four ways of loading a FoLiA document::
@@ -2784,7 +2788,7 @@ class Document(object):
         """
         
         
-        
+        self.version = FOLIAVERSION
         
         self.data = [] #will hold all texts (usually only one)
         
@@ -3068,10 +3072,15 @@ class Document(object):
                 raise Exception("Invalid annotation type")            
         return l
         
-    def xml(self):    
+    def xml(self): 
+        global LIBVERSION
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
+        if self.version:
+            attribs['{' + NSFOLIA + '}version'] = self.version
+        
+        attribs['{' + NSFOLIA + '}generator'] = 'pynlpl.formats.folia-v' + LIBVERSION
         
         metadataattribs = {}
         if self.metadatatype == MetaDataType.NATIVE:
@@ -3305,6 +3314,11 @@ class Document(object):
                 self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
             except KeyError:
                 raise Exception("FoLiA Document has no ID!")
+            if 'version' in node.attrib:
+                self.version = node.attrib['version']
+            else:
+                self.version = None
+                
             for subnode in node:
                 if subnode.tag == '{' + NSFOLIA + '}metadata':
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Metadata"
@@ -3802,6 +3816,8 @@ def relaxng(filename=None):
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.attribute(name='id',ns="http://www.w3.org/XML/1998/namespace"),
+                E.optional( E.attribute(name='version') ), 
+                E.optional( E.attribute(name='generator') ),
                 E.element( #metadata
                     E.optional(E.attribute(name='type')),
                     E.element( E.zeroOrMore( E.choice( *relaxng_declarations() ) ) ,name='annotations'),
