@@ -976,7 +976,7 @@ class AbstractElement(object):
             done = {}
             if includechildren:
                 for c in cls.ACCEPTED_DATA:
-                    if c.__name__[:8] == 'Abstract':
+                    if c.__name__[:8] == 'Abstract' and inspect.isclass(c):
                         for c2 in globals().values():
                             if inspect.isclass(c2) and issubclass(c2, c):
                                 try:
