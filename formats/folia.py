@@ -978,16 +978,19 @@ class AbstractElement(object):
                 for c in cls.ACCEPTED_DATA:
                     if c.__name__[:8] == 'Abstract' and inspect.isclass(c):
                         for c2 in globals().values():
-                            if inspect.isclass(c2) and issubclass(c2, c):
-                                try:
-                                    if c2.XMLTAG and not (c2.XMLTAG in done):
-                                        if c2.OCCURRENCES == 1:
-                                            elements.append( E.optional( E.ref(name=c2.XMLTAG) ) )
-                                        else:
-                                            elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
-                                        done[c2.XMLTAG] = True
-                                except AttributeError:
-                                    continue
+                            try:
+                                if inspect.isclass(c2) and issubclass(c2, c):
+                                    try:
+                                        if c2.XMLTAG and not (c2.XMLTAG in done):
+                                            if c2.OCCURRENCES == 1:
+                                                elements.append( E.optional( E.ref(name=c2.XMLTAG) ) )
+                                            else:
+                                                elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
+                                            done[c2.XMLTAG] = True
+                                    except AttributeError:
+                                        continue
+                            except TypeError:
+                                pass
                     else:
                         try:
                             if c.XMLTAG and not (c.XMLTAG in done):
