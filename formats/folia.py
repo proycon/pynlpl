@@ -1179,6 +1179,12 @@ class Description(AbstractElement):
         kwargs = {}
         kwargs['value'] = node.text
         return Description(doc, **kwargs)    
+        
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)                
     
     
 class AllowCorrections(object):
@@ -2011,8 +2017,8 @@ class Feature(AbstractElement):
         self.confidence = None
         self.n = None
         self.datetime = None
-        if not isinstance(doc, Document):
-            raise Exception("First argument of Feature constructor must be a Document instance")
+        if not isinstance(doc, Document) and not (doc is None):
+            raise Exception("First argument of Feature constructor must be a Document instance, not " + str(type(doc)))
         self.doc = doc
         
         
@@ -3463,6 +3469,12 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
         return E.content(self.value, **attribs)        
         
     @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)        
+        
+    @classmethod
     def parsexml(Class, node, doc):
         global NSFOLIA
         kwargs = {}
@@ -3488,7 +3500,7 @@ class Gap(AbstractElement):
         for e in self:
             if isinstance(e, Content):
                 return e.value
-        raise NoSuchAnnotation
+        return ""
             
     
 
@@ -3788,6 +3800,7 @@ def relaxng(filename=None):
     grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.attribute(name='id',ns="http://www.w3.org/XML/1998/namespace"),
                 E.element( #metadata
+                    E.optional(E.attribute(name='type')),
                     E.element( E.zeroOrMore( E.choice( *relaxng_declarations() ) ) ,name='annotations'),
                     E.zeroOrMore(
                         E.element(E.attribute(name='id'), E.text(), name='meta'),
@@ -3835,7 +3848,7 @@ def relaxng(filename=None):
 #    def savesql(self, filename):
 
 
-def validate(filename):
+def validate(filename,schema=None):
     try:
         doc = ElementTree.parse(filename)
     except:
@@ -3849,8 +3862,10 @@ def validate(filename):
         if m is not None:
             metadata.remove(m)
     
-    grammar = ElementTree.RelaxNG(relaxng())
-    grammar.assertValid(doc) #will raise exceptions
+    if not schema:
+        schema = ElementTree.RelaxNG(relaxng())
+    else:
+        schema.assertValid(doc) #will raise exceptions
 
 
 XML2CLASS = {}
