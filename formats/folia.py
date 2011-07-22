@@ -27,7 +27,7 @@ import os
 import re
 
 FOLIAVERSION = '0.5'
-LIBVERSION = '0.5.10' #== FoLiA version + library revision
+LIBVERSION = '0.5.11' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -3376,9 +3376,12 @@ class Document(object):
             elif node.tag[nslendcoi:][0:3] == 'div': #support for div0, div1, etc:
                 Class = Division
                 return Class.parsexml(node,self)     
-            elif node.tag[nslendcoi:][0:3] == 'item': #support for listitem
+            elif node.tag[nslendcoi:] == 'item': #support for listitem
                 Class = ListItem
                 return Class.parsexml(node,self)                     
+            elif node.tag[nslendcoi:] == 'figDesc': #support for description in figures
+                Class = Description
+                return Class.parsexml(node,self)                                     
             else:       
                 raise Exception("Unknown DCOI XML tag: " + node.tag)
         else:
