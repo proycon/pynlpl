@@ -1019,7 +1019,7 @@ class Test6Query(unittest.TestCase):
 
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
-<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="WR-P-E-J-0000000001">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="WR-P-E-J-0000000001" version="%s" generator="pynlpl.formats.folia-v%s">
   <metadata type="imdi">
     <annotations>
       <token-annotation annotator="ilktok" annotatortype="auto" />
@@ -1980,7 +1980,7 @@ bli bli bla, bla bla bli
        </content>
       </gap>      
   </text>  
-</FoLiA>"""
+</FoLiA>"""  % (folia.FOLIAVERSION, folia.LIBVERSION)
 
 
 DCOIEXAMPLE=u"""<?xml version="1.0" encoding="iso-8859-15"?>

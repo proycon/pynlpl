@@ -3078,9 +3078,9 @@ class Document(object):
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
         if self.version:
-            attribs['{' + NSFOLIA + '}version'] = self.version
+            attribs['version'] = self.version
         
-        attribs['{' + NSFOLIA + '}generator'] = 'pynlpl.formats.folia-v' + LIBVERSION
+        attribs['generator'] = 'pynlpl.formats.folia-v' + LIBVERSION
         
         metadataattribs = {}
         if self.metadatatype == MetaDataType.NATIVE:
