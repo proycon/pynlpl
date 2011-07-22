@@ -3376,6 +3376,9 @@ class Document(object):
             elif node.tag[nslendcoi:][0:3] == 'div': #support for div0, div1, etc:
                 Class = Division
                 return Class.parsexml(node,self)     
+            elif node.tag[nslendcoi:][0:3] == 'item': #support for listitem
+                Class = ListItem
+                return Class.parsexml(node,self)                     
             else:       
                 raise Exception("Unknown DCOI XML tag: " + node.tag)
         else:
