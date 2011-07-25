@@ -107,6 +107,8 @@ class WSDSystemOutput(object):
     def loadfromtimbl(self, filename):
         timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
         for features, referenceclass, predictedclass, distribution, distance in timbloutput:
+            if len(features) == 0:
+                raise Exception("Empty feature vector in " + filename)
             word_id = features[0] #note: this is an assumption that must be adhered to!
             if distribution:
                 self.append(word_id, distribution)
