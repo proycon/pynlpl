@@ -17,6 +17,7 @@
 from pynlpl.formats.timbl import TimblOutput
 from pynlpl.statistics import Distribution
 import codecs
+from sys import stderr
 
 class WSDSystemOutput(object):
     def __init__(self, filename = None):
@@ -108,7 +109,7 @@ class WSDSystemOutput(object):
         timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
         for features, referenceclass, predictedclass, distribution, distance in timbloutput:
             if len(features) == 0:
-                raise Exception("Empty feature vector in " + filename)
+                print >>stderr, "Empty feature vector in " + filename
             word_id = features[0] #note: this is an assumption that must be adhered to!
             if distribution:
                 self.append(word_id, distribution)
