@@ -387,8 +387,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( s[2].id, s.id + '.w.3' )
         self.assertEqual( s[3].id, s.id + '.w.4' )
         self.assertEqual( s[4].id, s.id + '.w.5' )
-        self.assertEqual( s[5].id, s.id + '.w.6' )
-        
+        self.assertEqual( s[5].id, s.id + '.w.6' )        
         
         #index check
         self.assertEqual( self.doc[s.id], s )
@@ -402,6 +401,10 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( len(p.sentences()) , tmp + 1)
         self.assertEqual( p[-1] , s)
         
+        # text() ok?
+        self.assertEqual( s.text(), "Dit is een nieuwe zin." )
+        
+        # xml() ok?
         self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1" annotator="testscript"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2" annotator="testscript"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3" annotator="testscript"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4" annotator="testscript"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5" annotator="testscript" space="no"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" annotator="testscript"><t>.</t></w></s>')
         
     def test001b_addsentence(self):        
