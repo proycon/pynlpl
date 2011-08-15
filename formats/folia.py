@@ -26,8 +26,8 @@ import glob
 import os
 import re
 
-FOLIAVERSION = '0.5'
-LIBVERSION = '0.5.11' #== FoLiA version + library revision
+FOLIAVERSION = '0.5.1'
+LIBVERSION = '0.5.1.12' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -47,7 +47,7 @@ class AnnotationType:
     #Alternative is a special one, not declared and not used except for ID generation
                   
 class TextCorrectionLevel:
-    UNCORRECTED, INLINE, CORRECTED = range(3)                  
+    OCR, SPEECHTOTEXT, ORIGINAL, INLINE, PROCESSED = range(5)                  
           
 class MetaDataType:
     NATIVE, CMDI, IMDI = range(3)     
@@ -204,11 +204,17 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'text' in kwargs:
         object.settext(kwargs['text'])
         del kwargs['text']
-    if 'correctedtext' in kwargs:
-        object.settext(kwargs['text'], TextCorrectionLevel.CORRECTED)
-        del kwargs['correctedtext']
-    if 'uncorrectedtext' in kwargs:
-        object.settext(kwargs['text'], TextCorrectionLevel.UNCORRECTED)        
+    if 'processedtext' in kwargs:
+        object.settext(kwargs['text'], TextCorrectionLevel.PROCESSED)
+        del kwargs['processedtext']
+    elif 'correctedtext' in kwargs: #backwards compatible alias
+        object.settext(kwargs['text'], TextCorrectionLevel.PROCESSED)
+        del kwargs['correctedtext']        
+    if 'originaltext' in kwargs:
+        object.settext(kwargs['text'], TextCorrectionLevel.ORIGINAL)        
+        del kwargs['originaltext']
+    if 'uncorrectedtext' in kwargs: #backwards compatible alias
+        object.settext(kwargs['text'], TextCorrectionLevel.ORIGINAL)        
         del kwargs['uncorrectedtext']
         
     if doc and doc.debug >= 2:
@@ -277,7 +283,7 @@ class AbstractElement(object):
     OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited, default=0)
     OCCURRENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
 
-    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.UNCORRECTED #Specifies the minimum text correction level allowed (only if allowed at all in ACCEPTED_DATA), this will be the default for any textcontent set
+    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.ORIGINAL #Specifies the minimum text correction level allowed (only if allowed at all in ACCEPTED_DATA), this will be the default for any textcontent set
     TEXTDELIMITER = " " #Delimiter to use when dynamically gathering text from child elements
     PRINTABLE = True #Is this element printable (aka, can its text method be called?)
     
@@ -310,37 +316,44 @@ class AbstractElement(object):
                 return e.value
         raise NoDescription
         
-    def text(self, corrected=None):
+    def text(self, correctionlevel=None):
         """Get the text associated with this element, will always be a unicode instance. 
         
-         Text content always has a certain *correction level* associated with it, determining whether the text is corrected or not.
-         A correction level can be specified if you want to fetch only text prior- or post- correction.
-        
-         If no desired correctionlevel is specified 
-           the *best* level will be selected automatically in the following fashion:
-            * Will first grab the corrected textcontent explicitly associated with the element
+         Text content always has a certain *correction level* associated with it, determining the level
+         of correction inherent in the text, the following are supported, in order:
+            TextCorrectionLevel.PROCESSED     - Text is up to date with the latest corrections (if there are any)
+            TextCorrectionLevel.INLINE        - Corrections are applied inline (not implemented yet)
+            TextCorrectionLevel.ORIGINAL      - Original unprocessed/uncorrected text
+            TextCorrectionLevel.OCR           - Pre-original OCR output, some basic corrections/normalisation may have been applied already
+            TextCorrectionLevel.SPEECHTOTEXT  - Pre-original Speech-to-Text output, some basic corrections/normalisation may have been applied already
+         
+         A correction level can be specified if you want to fetch a specific level, otherwise
+         the *best* level will be selected automatically in the following fashion:
+            * Will first grab the PROCESSED textcontent explicitly associated with the element
+            * If not found but inline corrections are present, those will be applied (in the order found)
             * If not found, it will descend into the children and build text dynamically
-            * If that yields no text, it will resort to the original uncorrected text
-            * If none is found, a NoSuchText exception is raised.
+            * If that yields no text, it will resort to the ORIGINAL uncorrected text explicitly associated (OCR & SPEECHTOTEXT are never selected automatically unless explicitly asked for)
+            * If no text is found at all, a NoSuchText exception is raised.
         """
         #TODO: Implement handling of INLINE corrected textcontent
-        if not self.PRINTABLE:
+        
+        if not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
             
-        if not (corrected is None):
-            if self.MINTEXTCORRECTIONLEVEL > corrected:
-                raise NotImplementedError("No such text allowed for " + self.__class__.__name__) #on purpose        
+        if not (correctionlevel is None):
+            if self.MINTEXTCORRECTIONLEVEL > correctionlevel:
+                raise NoSuchText("No such text allowed for " + self.__class__.__name__  + ' (' + str(correctionlevel) + ')') #on purpose        
             text = None
             for child in self:
-                if isinstance(child, TextContent) and child.corrected == corrected:
+                if isinstance(child, TextContent) and child.corrected == correctionlevel:
                     text = child
             if text is None:
                 raise NoSuchText
             else:
                 return text.value  
         else:
-            if self.hastext(TextCorrectionLevel.CORRECTED):
-                return self.text(TextCorrectionLevel.CORRECTED)
+            if self.hastext(TextCorrectionLevel.PROCESSED):
+                return self.text(TextCorrectionLevel.PROCESSED)
             else:
                 #try to get text dynamically from children
                 s = ""
@@ -358,16 +371,16 @@ class AbstractElement(object):
                         
                 if s.strip():
                     return s.strip()
-                elif self.MINTEXTCORRECTIONLEVEL <= TextCorrectionLevel.UNCORRECTED:
+                elif self.MINTEXTCORRECTIONLEVEL <= TextCorrectionLevel.ORIGINAL:
                     #Resort to original uncorrected text (if available)
-                    return self.text(TextCorrectionLevel.UNCORRECTED)
+                    return self.text(TextCorrectionLevel.ORIGINAL)
                 else:
                     #No text
                     raise NoSuchText
                       
     def originaltext(self):
         """Alias for retrieving the original uncorrect text"""
-        return self.text(TextCorrectionLevel.UNCORRECTED)
+        return self.text(TextCorrectionLevel.ORIGINAL)
         
     def overridetextdelimiter(self):
         """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
@@ -811,7 +824,7 @@ class AbstractElement(object):
             otherelements = []
             for child in self:
                 if isinstance(child, TextContent):
-                    if child.corrected == TextCorrectionLevel.UNCORRECTED:
+                    if child.corrected == TextCorrectionLevel.ORIGINAL:
                         textelements.insert(0, child)                
                     else:
                         textelements.append(child)                
@@ -1590,7 +1603,7 @@ class TextContent(AbstractElement):
         """Required keyword arguments:
             
                 * ``value=``: Set to a unicode or str containing the text
-                * ``corrected=``: Correction level, can be set to TextCorrectionLevel.UNCORRECTED or TextCorrectionLevel.CORRECTED
+                * ``corrected=``: Correction level, can be set to TextCorrectionLevel.ORIGINAL or TextCorrectionLevel.CORRECTED
             
             Example::
             
@@ -1698,7 +1711,7 @@ class TextContent(AbstractElement):
         if self.corrected < self.parent.MINTEXTCORRECTIONLEVEL:
             raise ValueError("Text Content (" + str(self.corrected) + ") must be of higher CorrectionLevel (" + str(self.parent.MINTEXTCORRECTIONLEVEL) + ")")
             
-        if self.corrected == TextCorrectionLevel.UNCORRECTED or self.corrected == TextCorrectionLevel.CORRECTED:
+        if self.corrected != TextCorrectionLevel.INLINE:
             #there can be only one of this type.
             for child in self.parent:
                 if not child is self and isinstance(child, TextContent) and child.corrected == self.corrected:            
@@ -1722,10 +1735,10 @@ class TextContent(AbstractElement):
         if not 'corrected' in kwargs:
             if 'instance' in kwargs:
                 kwargs['corrected'] = instance.corrected
-            elif Class.MINTEXTCORRECTIONLEVEL == TextCorrectionLevel.UNCORRECTED:
-                kwargs['corrected'] = TextCorrectionLevel.UNCORRECTED
+            elif Class.MINTEXTCORRECTIONLEVEL == TextCorrectionLevel.ORIGINAL:
+                kwargs['corrected'] = TextCorrectionLevel.ORIGINAL
             else:
-                kwargs['corrected'] = TextCorrectionLevel.CORRECTED
+                kwargs['corrected'] = TextCorrectionLevel.PROCESSED
         replace = super(TextContent, Class).findreplacables(parent, set, **kwargs)
         replace = [ x for x in replace if x.corrected == kwargs['corrected']]
         del kwargs['corrected'] #always delete what we processed
@@ -1741,11 +1754,15 @@ class TextContent(AbstractElement):
         kwargs = {}
         if 'corrected' in node.attrib:
             if node.attrib['corrected'] == 'yes':
-                kwargs['corrected'] = TextCorrectionLevel.CORRECTED
+                kwargs['corrected'] = TextCorrectionLevel.PROCESSED
             elif node.attrib['corrected'] == 'inline':
                 kwargs['corrected'] = TextCorrectionLevel.INLINE
             elif node.attrib['corrected'] == 'no':
-                kwargs['corrected'] = TextCorrectionLevel.UNCORRECTED
+                kwargs['corrected'] = TextCorrectionLevel.ORIGINAL
+            elif node.attrib['corrected'] == 'ocr':
+                kwargs['corrected'] = TextCorrectionLevel.OCR
+            elif node.attrib['corrected'] == 'speechtotext':
+                kwargs['corrected'] = TextCorrectionLevel.SPEECHTOTEXT                
             else:
                 raise Exception("Invalid value for corrected: ", node.attrib['corrected'])
         
@@ -1781,7 +1798,11 @@ class TextContent(AbstractElement):
             attribs['{' + NSFOLIA + '}ref'] = self.ref.id
         if self.corrected == TextCorrectionLevel.INLINE:
             attribs['{' + NSFOLIA + '}corrected'] = 'inline'
-        elif self.corrected == TextCorrectionLevel.CORRECTED and self.parent and self.parent.MINTEXTCORRECTIONLEVEL < TextCorrectionLevel.CORRECTED:
+        elif self.corrected == TextCorrectionLevel.OCR:
+            attribs['{' + NSFOLIA + '}corrected'] = 'ocr'
+        elif self.corrected == TextCorrectionLevel.SPEECHTOTEXT:
+            attribs['{' + NSFOLIA + '}corrected'] = 'speechtotext'
+        elif self.corrected == TextCorrectionLevel.PROCESSED and self.parent and self.parent.MINTEXTCORRECTIONLEVEL < TextCorrectionLevel.PROCESSED:
             attribs['{' + NSFOLIA + '}corrected'] = 'yes'
             
         return E.t(self.value, **attribs)
@@ -1813,7 +1834,7 @@ class Word(AbstractStructureElement, AllowCorrections):
     ANNOTATIONTYPE = AnnotationType.TOKEN
     #ACCEPTED_DATA DEFINED LATER (after Correction)
     
-    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.CORRECTED
+    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.PROCESSED
     TEXTDELIMITER = " "
     
     def __init__(self, doc, *args, **kwargs):
@@ -2156,7 +2177,7 @@ class Suggestion(AbstractCorrectionChild):
     OCCURRENCES = 0 #unlimited
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     
-    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.CORRECTED
+    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.PROCESSED
 
 class New(AbstractCorrectionChild):
     REQUIRED_ATTRIBS = (),
@@ -2164,7 +2185,7 @@ class New(AbstractCorrectionChild):
     OCCURRENCES = 1
     XMLTAG = 'new'
     
-    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.CORRECTED
+    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.PROCESSED
     
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):

@@ -109,8 +109,8 @@ class Test2Sanity(unittest.TestCase):
         s = self.doc.sentences(1)
         self.assertTrue( isinstance(s, folia.Sentence) )
         self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.1' )
-        self.assertRaises( folia.NoSuchText, s.text, folia.TextCorrectionLevel.CORRECTED) #no text DIRECTLY associated with the sentence
-        self.assertRaises( folia.NoSuchText, s.text, folia.TextCorrectionLevel.UNCORRECTED) #no text DIRECTLY associated with the sentence
+        self.assertRaises( folia.NoSuchText, s.text, folia.TextCorrectionLevel.PROCESSED) #no text DIRECTLY associated with the sentence
+        self.assertRaises( folia.NoSuchText, s.text, folia.TextCorrectionLevel.ORIGINAL) #no text DIRECTLY associated with the sentence
         self.assertEqual( str(s), "Stemma is een ander woord voor stamboom ." )  #THIS TEST USED TO HAVE A TRAILING SPACE, REMOVED NOW WITH REFACTORED LIBRARY
         
     def test007_index(self):                                    
@@ -360,7 +360,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual(q.text(), 'volle lijn')
         
         s = self.doc['WR-P-E-J-0000000001.p.1.s.8']
-        self.assertEqual(s.text(), 'Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .')
+        self.assertEqual(s.text(), 'Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .') #(spelling errors are present in sentence)
         
         #a word from the quote
         w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.2']
@@ -602,14 +602,14 @@ class Test4Edit(unittest.TestCase):
         """Edit Check - Checking for exception on an adding TextContent of wrong level"""     
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
         
-        self.assertRaises(  ValueError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.UNCORRECTED )
+        self.assertRaises(  ValueError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.ORIGINAL )
         
 
     def test009c_duptextcontent(self):
         """Edit Check - Checking for exception on an adding duplicate textcontent"""     
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
         
-        self.assertRaises(  folia.DuplicateAnnotationError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.CORRECTED )
+        self.assertRaises(  folia.DuplicateAnnotationError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.PROCESSED )
         
     def test010_documentlesselement(self):
         """Edit Check - Creating an initially document-less tokenannotation element and adding it to a word"""     
@@ -707,6 +707,33 @@ class Test4Edit(unittest.TestCase):
         
         self.assertEqual( pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="WW(pv,tgw,met-t)" datetime="1982-12-15T19:00:01"/>')        
                 
+    def test017_wordtext(self):
+        """Edit Check - Altering word text"""
+        
+        #Important note: directly altering text is usually bad practise, you'll want to use proper corrections instead.
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.9']
+        self.assertEqual(w.text(), 'terweil')
+        
+        w.settext('terwijl')
+        self.assertEqual(w.text(), 'terwijl')
+    
+    def test018a_sentencetext(self):    
+        """Edit Check - Altering sentence text (untokenised by definition)"""
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
+        
+        self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom .') #text is obtained from children, since there is no direct text associated
+
+        self.assertRaises( folia.NoSuchText, s.text, folia.TextCorrectionLevel.PROCESSED) #no text DIRECTLY associated with the sentence
+        self.assertRaises( folia.NoSuchText, s.text, folia.TextCorrectionLevel.ORIGINAL) #no text DIRECTLY associated with the sentence
+        self.assertRaises( folia.NoSuchText, s.text, folia.TextCorrectionLevel.OCR) #no text DIRECTLY associated with the sentence
+        self.assertRaises( folia.NoSuchText, s.text, folia.TextCorrectionLevel.SPEECHTOTEXT) #no text DIRECTLY associated with the sentence
+        
+        #associating text directly with the sentence: de-tokenised by definition!
+        s.settext('Stemma is een ander woord voor stamboom.') 
+        self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom.')
+        
+        
+    
         
     #def test008_addaltcorrection(self):            
     #    """Edit Check - Adding alternative corrections"""        
