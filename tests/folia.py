@@ -732,10 +732,19 @@ class Test4Edit(unittest.TestCase):
         s.settext('Stemma is een ander woord voor stamboom.') 
         self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom.')
         
-    
+    def test018b_sentencetext(self):    
+        """Edit Check - Altering sentence text (untokenised by definition)"""
+           
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.8']
+        self.assertEqual( s.text(), 'Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .' ) #dynamic from children
+
+        s.settext('Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.', folia.TextCorrectionLevel.ORIGINAL ) 
+        s.settext('Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.', folia.TextCorrectionLevel.PROCESSED )
         
+        self.assertEqual( s.text(), 'Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.' ) 
         
-    
+        self.assertEqual( s.text(folia.TextCorrectionLevel.PROCESSED), 'Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.' )
+        self.assertEqual( s.text(folia.TextCorrectionLevel.ORIGINAL), 'Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.' )
         
     #def test008_addaltcorrection(self):            
     #    """Edit Check - Adding alternative corrections"""        
