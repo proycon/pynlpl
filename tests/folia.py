@@ -353,6 +353,22 @@ class Test2Sanity(unittest.TestCase):
         
         self.assertEqual( w.incorrection(), None)
         
+    def test0029_quote(self):
+        """Sanity Check - Quote"""
+        q = self.doc['WR-P-E-J-0000000001.p.1.s.8.q.1']
+        self.assertTrue( isinstance(q, folia.Quote) )
+        self.assertEqual(q.text(), 'volle lijn')
+        
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.8']
+        self.assertEqual(s.text(), 'Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .')
+        
+        #a word from the quote
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.2']
+        #check if sentence matches
+        self.assertTrue( (w.sentence() is s) )
+        
+        
+        
     def test099_write(self):        
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
@@ -1925,16 +1941,18 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <pos class="LID(onbep,stan,agr)"/>
               <lemma class="een"/>
             </w>
-            <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.2">
-              <t>volle</t>
-              <pos class="ADJ(prenom,basis,met-e,stan)"/>
-              <lemma class="vol"/>
-            </w>
-            <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.3">
-              <t>lijn</t>
-              <pos class="N(soort,ev,basis,zijd,stan)"/>
-              <lemma class="lijn"/>
-            </w>
+            <quote xml:id="WR-P-E-J-0000000001.p.1.s.8.q.1">
+                <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.2">
+                  <t>volle</t>
+                  <pos class="ADJ(prenom,basis,met-e,stan)"/>
+                  <lemma class="vol"/>
+                </w>
+                <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.3">
+                  <t>lijn</t>
+                  <pos class="N(soort,ev,basis,zijd,stan)"/>
+                  <lemma class="lijn"/>
+                </w>
+            </quote>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.4">
               <t>duidt</t>
               <pos class="WW(pv,tgw,met-t)"/>
