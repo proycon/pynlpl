@@ -741,7 +741,7 @@ class Test4Edit(unittest.TestCase):
         s.settext('Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.', folia.TextCorrectionLevel.ORIGINAL ) 
         s.settext('Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.', folia.TextCorrectionLevel.PROCESSED )
         
-        self.assertEqual( s.text(), 'Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.' ) 
+        self.assertEqual( s.text(), 'Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.' ) #processed version by default
         
         self.assertEqual( s.text(folia.TextCorrectionLevel.PROCESSED), 'Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.' )
         self.assertEqual( s.text(folia.TextCorrectionLevel.ORIGINAL), 'Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.' )
