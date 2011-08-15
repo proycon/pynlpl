@@ -324,6 +324,24 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( pos.datetime, datetime(2011, 7, 20, 19, 0, 1) ) 
         
         self.assertEqual( pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/>')        
+    
+    def test028_wordparents(self):  
+        """Sanity Check - Finding parents of word"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.15']
+        
+        s = w.sentence()
+        self.assertTrue( isinstance(s, folia.Sentence) )
+        self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.8')
+        
+        p = w.paragraph()
+        self.assertTrue( isinstance(p, folia.Paragraph) )
+        self.assertEqual( p.id, 'WR-P-E-J-0000000001.p.1')
+
+        div = w.division()
+        self.assertTrue( isinstance(div, folia.Division) )
+        self.assertEqual( div.id, 'WR-P-E-J-0000000001.div0.1')
+        
+        self.assertEqual( w.incorrection(), None)
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
