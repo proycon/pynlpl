@@ -359,6 +359,8 @@ class AbstractElement(object):
                 s = ""
                 #print "NEW S"
                 for e in self:
+                    if isinstance(e, TextContent): #ignore textcontent elements
+                        continue 
                     try:                  
                         delimiter = e.overridetextdelimiter()
                         if delimiter is None:

@@ -732,6 +732,8 @@ class Test4Edit(unittest.TestCase):
         s.settext('Stemma is een ander woord voor stamboom.') 
         self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom.')
         
+    
+        
         
     
         
