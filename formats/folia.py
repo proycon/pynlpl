@@ -477,10 +477,10 @@ class AbstractElement(object):
             return (len([ x for x in self.select(TextContent,None,False) if x.corrected == corrected]) > 0)            
     
             
-    def settext(self, text, corrected=None):
+    def settext(self, text, corrected=TextCorrectionLevel.PROCESSED):
         """Set the text for this element. You may specificy an explicit correctionlevel if desired. (see ``text()`` for more information)"""
-        if corrected is None:
-            corrected = self.MINTEXTCORRECTIONLEVEL
+        #if corrected is None:
+        #    corrected = self.MINTEXTCORRECTIONLEVEL
         self.replace(TextContent, value=text, corrected=corrected) 
 
     def setdocument(self, doc):
