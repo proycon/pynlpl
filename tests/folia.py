@@ -1461,6 +1461,7 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <pos class="N(soort,ev,basis,zijd,stan)"/>
               <lemma class="werkwijz"/>
             </w>
+            <whitespace />
             <w xml:id="WR-P-E-J-0000000001.p.1.s.3.w.2">
               <t>Hiervoor</t>
               <pos class="BW()"/>
