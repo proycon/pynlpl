@@ -255,7 +255,7 @@ class Test2Sanity(unittest.TestCase):
         raise NotImplementedError
 
 
-    def test020_spanannotation(self):
+    def test020a_spanannotation(self):
         """Sanity Check - Span Annotation (Syntax)"""        
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
         l = s.annotation(folia.SyntaxLayer)
@@ -270,6 +270,16 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( l[0][2][1].cls,  'pp' ) 
         self.assertEqual( l[0][2][1].text(),  'voor stamboom' ) 
         self.assertEqual( l[0][2].text(),  'een ander woord voor stamboom' ) 
+        
+    def test020b_spanannotation(self):
+        """Sanity Check - Span Annotation (Chunking)"""        
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
+        l = s.annotation(folia.ChunkingLayer)
+        
+        self.assertTrue( isinstance(l[0], folia.Chunk ) ) 
+        self.assertEqual( l[0].text(),  'een ander woord' )         
+        self.assertEqual( l[1].text(),  'voor stamboom' ) 
+                
         
     def test021_previousword(self):        
         """Sanity Check - Obtaining previous word"""
@@ -1232,6 +1242,17 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
                  <wref id="WR-P-E-J-0000000001.p.1.s.1.w.8" t="." />
                 </su>
             </syntax>
+            <chunking>
+                <chunk>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.3" t="een" />
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.4" t="ander" />
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.5" t="woord" />                
+                </chunk>
+                <chunk>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.6" t="voor" />
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.7" t="stamboom" />
+                </chunk>
+            </chunking>            
           </s>
           <s xml:id="WR-P-E-J-0000000001.p.1.s.2">
             <w xml:id="WR-P-E-J-0000000001.p.1.s.2.w.1">
