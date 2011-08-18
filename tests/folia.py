@@ -547,7 +547,7 @@ class Test4Edit(unittest.TestCase):
         
         set = self.doc.defaultset(folia.AnnotationType.POS)
         
-        alt2 = w.alternatives(folia.AnnotationType.POS, set)        
+        alt2 = w.alternatives(folia.PosAnnotation, set)        
         
         self.assertEqual( alt[0],alt2[0] )        
         self.assertEqual( len(alt),1 )

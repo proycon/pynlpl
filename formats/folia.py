@@ -1400,25 +1400,25 @@ class AllowTokenAnnotation(AllowCorrections):
         else:
             raise NoSuchAnnotation()            
 
-    def alternatives(self, annotationtype=None, set=None):
+    def alternatives(self, Class=None, set=None):
         """Obtain a list of alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
         
         Arguments:
-            * ``annotationtype`` - The kind of annotation to retrieve: member of the AnnotationType class. Or None to select alternatives regardless of the annotations they contain.
+            * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation). Or set to None to select all alternatives regardless of what type they are.
             * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
             
         Returns:
             List of Alternative elements
         """
         l = []
-        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
+    
         for e in self.select(Alternative,None, True, ['Original','Suggestion']):
-            if annotationtype is None:
+            if Class is None:
                 l.append(e)
             elif len(e) >= 1: #child elements?
                 for e2 in e:
                     try:
-                        if e2.ANNOTATIONTYPE == annotationtype:
+                        if isinstance(e2, Class):
                             try:
                                 if set is None or e2.set == set:
                                     found = True
