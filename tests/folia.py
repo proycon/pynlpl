@@ -458,7 +458,7 @@ class Test4Edit(unittest.TestCase):
         p = self.doc.paragraphs(-1)
                     
         #how many sentences?
-        tmp = len(p)                    
+        tmp = len(p.sentences())                    
                     
         s = p.append(folia.Sentence)
         s.append(folia.Word,'Dit')
