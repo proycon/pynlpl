@@ -3660,7 +3660,7 @@ class CorpusFiles(Corpus):
                 if self.conditionf(f):
                     try:
                         yield f
-                    except Exception as e::
+                    except Exception as e:
                         print >>stderr, "Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e)
                         if not self.ignoreerrors:
                             raise
