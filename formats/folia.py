@@ -3638,7 +3638,7 @@ class Corpus:
                     try:
                         yield Document(file=f)
                     except:
-                        print >>sys.stderr, "Error, unable to parse " + f
+                        print >>stderr, "Error, unable to parse " + f
                         if not self.ignoreerrors:
                             raise
         for d in glob.glob(self.corpusdir+"/*"):
@@ -3648,7 +3648,7 @@ class Corpus:
                         try:
                             yield Document(file=f)
                         except:
-                            print >>sys.stderr, "Error, unable to parse " + f
+                            print >>stderr, "Error, unable to parse " + f
                             if not self.ignoreerrors:
                                 raise
 
@@ -3661,7 +3661,7 @@ class CorpusFiles(Corpus):
                     try:
                         yield f
                     except:
-                        print >>sys.stderr, "Error, unable to parse " + f
+                        print >>stderr, "Error, unable to parse " + f
                         if not self.ignoreerrors:
                             raise
         for d in glob.glob(self.corpusdir+"/*"):
@@ -3671,7 +3671,7 @@ class CorpusFiles(Corpus):
                         try:
                             yield f
                         except:
-                            print >>sys.stderr, "Error, unable to parse " + f
+                            print >>stderr, "Error, unable to parse " + f
                             if not self.ignoreerrors:
                                 raise
     
