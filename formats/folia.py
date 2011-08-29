@@ -3637,8 +3637,8 @@ class Corpus:
                 if self.conditionf(f):
                     try:
                         yield Document(file=f)
-                    except:
-                        print >>stderr, "Error, unable to parse " + f
+                    except Exception as e:
+                        print >>stderr, "Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e)
                         if not self.ignoreerrors:
                             raise
         for d in glob.glob(self.corpusdir+"/*"):
@@ -3647,8 +3647,8 @@ class Corpus:
                     if self.conditionf(f):
                         try:
                             yield Document(file=f)
-                        except:
-                            print >>stderr, "Error, unable to parse " + f
+                        except Exception as e:
+                            print >>stderr, "Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e)
                             if not self.ignoreerrors:
                                 raise
 
