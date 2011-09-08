@@ -19,7 +19,7 @@ import random
 sys.path.append(sys.path[0] + '/../../')
 os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
-from pynlpl.evaluation import AbstractExperiment, WPSParamSearch, ExperimentPool
+from pynlpl.evaluation import AbstractExperiment, WPSParamSearch, ExperimentPool, ClassEvaluation
 
 class ParamExperiment(AbstractExperiment):
     def defaultparameters(self):
@@ -65,6 +65,18 @@ class ExperimentPoolTest(unittest.TestCase):
         for experiment in pool.run():
             print "DONE: sleep " + str(experiment.parameters['duration'])
         self.assertEqual(1, False) 
+        
+class ClassEvaluationTest(unittest.TestCase):
+    def setUp(self):
+        self.goals = ['sun','sun','rain','cloudy','sun','rain']
+        self.observations = ['cloudy','cloudy','cloudy','rain','sun','sun']
+    
+        
+    def test001(self):
+        e = ClassEvaluation(self.goals, self.observations)
+        print
+        print e
+    
 
 if __name__ == '__main__':
     unittest.main()
