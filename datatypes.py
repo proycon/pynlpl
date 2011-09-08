@@ -216,3 +216,19 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         """Priority queues can be added up, as long as they all have minimize or maximize (rather than mixed). In case of fixed-length queues, the FIRST queue in the operation will be authorative for the fixed lengthness of the result!"""
         assert (isinstance(other, PriorityQueue) and self.minimize == other.minimize)
         return PriorityQueue(self.data + other.data, self.f, self.minimize, self.length, self.blockworse, self.blockequal)
+
+
+
+#class SuffixTree(object):
+#   def __init__(self):
+#       self.data = {}
+#       
+#   
+#   def append(self, seq):
+#       if len(seq) > 1:
+#           for item in seq:
+#                self.append(item)
+#        else:
+#            
+#                     
+#    def compile(self, s):

@@ -107,6 +107,12 @@ class FrequencyList:
             self.count(type,value)     
         else:
             raise ValueError("This type is already set!")
+            
+    def __delitem__(self, type):
+        type = self._validate(type)
+        del self._count[type]
+        if self._ranked: self._ranked = None
+        
     
     def typetokenratio(self):
         """Computes the type/token ratio"""
