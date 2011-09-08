@@ -16,13 +16,13 @@
 
 """This is a Python library containing classes for Statistic and Information Theoretical computations. It also contains some code from Peter Norvig, AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html"""
 
-
 import math
 import codecs
 import random
 import operator
 
 class FrequencyList:
+    """A frequency list (implemented using dictionaries)"""
 
     def __init__(self, tokens = None, casesensitive = True):
         self._count = {}
@@ -174,8 +174,22 @@ class FrequencyList:
     def __str__(self):
         return "\n".join(self.output())        
 
+
+
+class FrequencyTrie:
+    def __init__(self):
+        self.data = Tree()
+        
+    def count(self, sequence):
+            
+        
+        self.data.append( Tree(item) )
+    
+    
+        
+
 class Distribution:
-    """A distribution can be created over a FrequencyList or a plain dictionary with numeric values. It will be normalized automatically."""
+    """A distribution can be created over a FrequencyList or a plain dictionary with numeric values. It will be normalized automatically. This implemtation uses dictionaries/hashing"""
 
     def __init__(self, data, base = 2):
         self.base = base #logarithmic base: can be set to 2, 10 or math.e (or anything else). when set to None, it's set to e automatically
@@ -362,7 +376,8 @@ def stddev(values, meanval=None):  #from AI: A Modern Appproach
     """The standard deviation of a set of values.
     Pass in the mean if you already know it."""
     if meanval == None: meanval = mean(values)
-    return math.sqrt(sum([(x - meanval)**2 for x in values]) / (len(values)-1))
+    import pdb; pdb.set_trace()
+    return math.sqrt( sum([(x - meanval)**2 for x in values]) / (len(values)-1) )
 
 def dotproduct(X, Y):  #from AI: A Modern Appproach 
     """Return the sum of the element-wise product of vectors x and y.
