@@ -61,6 +61,9 @@ class FrequencyList:
                 return type.lower()
             else:
                 return type
+                
+    def values():
+         return self._count.values()
 
     def append(self,tokens):
         """Add a list of tokens to the frequencylist. This method will count them for you."""
@@ -212,7 +215,9 @@ class Distribution:
         else:
             raise Exception("Can't create distribution")
         self._ranked = None
-        
+
+    def values():
+         return self._count.values()        
 
     def _validate(self,type):
         return type
