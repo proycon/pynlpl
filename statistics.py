@@ -376,7 +376,6 @@ def stddev(values, meanval=None):  #from AI: A Modern Appproach
     """The standard deviation of a set of values.
     Pass in the mean if you already know it."""
     if meanval == None: meanval = mean(values)
-    import pdb; pdb.set_trace()
     return math.sqrt( sum([(x - meanval)**2 for x in values]) / (len(values)-1) )
 
 def dotproduct(X, Y):  #from AI: A Modern Appproach 
