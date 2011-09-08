@@ -20,7 +20,7 @@ from copy import copy
 from pynlpl.formats.imdi import RELAXNG_IMDI
 from datetime import datetime
 #from dateutil.parser import parse as parse_datetime
-import pynlpl.math
+import pynlpl.algorithms
 import inspect
 import glob
 import os
@@ -2936,7 +2936,7 @@ class Document(object):
             
             #we're not commited to a particular size, expand to various ones
             for size in range(len(variablewildcards), maxgapsize+1):
-                for distribution in  pynlpl.math.sum_to_n(size, len(variablewildcards)): #gap distributions, (amount) of 'True' wildcards
+                for distribution in  pynlpl.algorithms.sum_to_n(size, len(variablewildcards)): #gap distributions, (amount) of 'True' wildcards
                     patterns = []
                     for pattern in args:
                         if pattern.variablesize():
