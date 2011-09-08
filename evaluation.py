@@ -102,72 +102,94 @@ class ClassEvaluation(object):
         self.observations.append(observation)
         self.computed = False
 
-    def precision(self, cls=None):
+    def precision(self, cls=None, macro=False):
+        """Compute precision, either for a particular class or for the classification as a whole. In the latter case, the computation defaults to microaverage, set the last parameter to True to get macroaverage"""
         if not self.computed: self.compute()
         if cls:
             if self.tp[cls] + self.fp[cls] > 0:
                 return self.tp[cls] / float(self.tp[cls] + self.fp[cls])
             else:
                 return float('nan')
+        elif not self.observations:
+            return float('nan')                
         else:
-            if len(self.observations) > 0:
-                return sum( ( self.precision(x) for x in self.observations ) ) / float(len(self.observations))
+            if macro:
+                results = [ self.precision(c) for c in self.classes() ]
+                return sum(results) / float(len(results))                
             else: 
-                return float('nan')
+                return self.tptotal / float(self.tptotal + self.fptotal) 
 
-    def recall(self, cls=None):
+    def recall(self, cls=None, macro=False):
+        """Compute recall (aka sensitivity, true positive rate), either for a particular class or for the classification as a whole. In the latter case, the computation defaults to microaverage, set the last parameter to True to get macroaverage"""
         if not self.computed: self.compute()
         if cls:
             if self.tp[cls] + self.fn[cls] > 0:
                 return self.tp[cls] / float(self.tp[cls] + self.fn[cls])
             else:
                 return float('nan')
+        elif not self.observations:
+            return float('nan')                
         else:
-            if len(self.observations) > 0:
-                return sum( ( self.recall(x) for x in self.observations ) ) / float(len(self.observations))
+            if macro:
+                results = [ self.recall(c) for c in self.classes() ]
+                return sum(results) / float(len(results))                
             else:
-                return float('nan')
+                return self.tptotal / float(self.tptotal + self.fntotal) 
 
-    def specificity(self, cls=None):
+    def specificity(self, cls=None, macro=False):
+        """Compute specificity (true negative rate), either for a particular class or for the classification as a whole. In the latter case, the computation defaults to microaverage, set the last parameter to True to get macroaverage"""
         if not self.computed: self.compute()
         if cls:
             if self.tn[cls] + self.fp[cls] > 0:
                 return self.tn[cls] / float(self.tn[cls] + self.fp[cls])
             else:
                 return float('nan')
+        elif not self.observations:
+            return float('nan')                
         else:
-            if len(self.observations) > 0:
-                return sum( ( self.specificity(x) for x in self.observations ) ) / float(len(self.observations))
+            if macro:
+                results = [ self.specificity(c) for c in self.classes() ]
+                return sum(results) / float(len(results))                
             else:
-                return float('nan')
+                return self.tntotal / float(self.tntotal + self.fptotal) 
+                                
 
-    def accuracy(self, cls=None):
+    def accuracy(self, cls=None, macro=False):
+        """Compute accuracy, either for a particular class or for the classification as a whole. In the latter case, the computation defaults to microaverage, set the last parameter to True to get macroaverage"""
         if not self.computed: self.compute()
         if cls:
             if self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls] > 0:
                 return (self.tp[cls]+self.tn[cls]) / float(self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls])
             else:
                 return float('nan')
-        else:
-            if len(self.observations) > 0:
-                return sum( ( self.tp[x] for x in self.tp ) ) / float(len(self.observations))
-            else:
-                return float('nan')
+        elif not self.observations:
+            return float('nan')
+        else: 
+            if macro:
+                results = [ self.accuracy(c) for c in self.classes() ]
+                return sum(results) / float(len(results))
+            else:            
+                return (self.tptotal + self.tntotal) / float(self.tptotal + self.tntotal + self.fptotal + self.fntotal)
+            
         
-    def fscore(self, cls=None, beta=1):
+    def fscore(self, cls=None, beta=1, macro=False):
+        """Compute F-score, either for a particular class or for the classification as a whole. In the latter case, the computation defaults to microaverage, set the last parameter to True to get macroaverage"""
         if not self.computed: self.compute()
         if cls:
             prec = self.precision(cls)
             rec =  self.recall(cls)
-            if prec * rec > 0:
+            if (beta*beta * prec + rec) > 0:
                 return (1 + beta*beta) * ((prec * rec) / (beta*beta * prec + rec))
             else:
                 return float('nan')
-        else:
-            if len(self.observations) > 0:
-                return sum( ( self.fscore(x) for x in self.observations ) ) / float(len(self.observations))
+        elif not self.observations:
+            return float('nan')
+        else: 
+            if macro:
+                results = [ self.fscore(c) for c in self.classes() ]
+                return sum(results) / float(len(results))
             else:
-                return float('nan')
+                return (1 + beta*beta) * ((self.precision() * self.recall()) / (beta*beta * self.precision() + self.recall()))
 
 
     def __iter__(self):
@@ -179,7 +201,7 @@ class ClassEvaluation(object):
         self.fp = {}
         self.tn = {}
         self.fn = {}
-        for x in set(self.observations + self.goals):
+        for x in self.classes():
             self.tp[x] = 0
             self.fp[x] = 0
             self.tn[x] = 0
@@ -203,8 +225,17 @@ class ClassEvaluation(object):
         l = len(self.goals)
         for o in set(self.observations):
             self.tn[o] = l - self.tp[o] - self.fp[o] - self.fn[o]
+        
+
+        self.tptotal = sum( ( self.tp[c] for c in self.classes() ) )
+        self.fptotal = sum( ( self.fp[c] for c in self.classes() ) )
+        self.tntotal = sum( ( self.tn[c] for c in self.classes() ) )
+        self.fntotal = sum( ( self.fn[c] for c in self.classes() ) )
             
         self.computed = True
+
+    def classes(self):
+        return set(self.goals + self.observations)
 
 
     def confusionmatrix(self, casesensitive =True):
@@ -215,11 +246,16 @@ class ClassEvaluation(object):
         o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
         for cls in set(self.observations):
             o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
-        o += "\nAccuracy             : " + str(self.accuracy()) + "\n"
-        o += "Recall      (macroav): "+ str(self.recall()) + "\n"
-        o += "Precision   (macroav): " + str(self.precision()) + "\n"
-        o += "Specificity (macroav): " + str(self.specificity()) + "\n"
-        o += "F-score     (macroav): " + str(self.fscore()) + "\n"
+        o += "\nAccuracy    (microav): " + str(self.accuracy()) + "\n"
+        o += "Recall      (microav): "+ str(self.recall()) + "\n"
+        o += "Precision   (microav): " + str(self.precision()) + "\n"
+        o += "Specificity (microav): " + str(self.specificity()) + "\n"
+        o += "F-score  (B1,microav): " + str(self.fscore()) + "\n\n"
+        o += "Accuracy    (macroav): " + str(self.accuracy(None,True)) + "\n"
+        o += "Recall      (macroav): " + str(self.recall(None,True)) + "\n"
+        o += "Precision   (macroav): " + str(self.precision(None,True)) + "\n"
+        o += "Specificity (macroav): " + str(self.specificity(None,True)) + "\n"
+        o += "F-score  (B1,macroav): " + str(self.fscore(None,1,True)) + "\n"
         return o
 
 
