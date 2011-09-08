@@ -173,17 +173,20 @@ class FrequencyList:
         
     def __str__(self):
         return "\n".join(self.output())        
-
-
-
-class FrequencyTrie:
-    def __init__(self):
-        self.data = Tree()
         
-    def count(self, sequence):
-            
-        
-        self.data.append( Tree(item) )
+    def values(self):
+        return self._count.values()
+
+
+
+#class FrequencyTrie:
+#    def __init__(self):
+#        self.data = Tree()
+#        
+#    def count(self, sequence):
+#            
+#        
+#        self.data.append( Tree(item) )
     
     
         
@@ -301,6 +304,9 @@ class Distribution:
 
     def __repr__(self):
         return repr(self._dist)
+        
+    def values(self):
+        return self._dist.values()
 
 # ********************* Common Functions ******************************
 
