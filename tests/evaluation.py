@@ -19,7 +19,7 @@ import random
 sys.path.append(sys.path[0] + '/../../')
 os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
-from pynlpl.evaluation import AbstractExperiment, WPSParamSearch, ExperimentPool, ClassEvaluation
+from pynlpl.evaluation import AbstractExperiment, WPSParamSearch, ExperimentPool
 
 class ParamExperiment(AbstractExperiment):
     def defaultparameters(self):
@@ -49,7 +49,6 @@ class PoolExperiment(AbstractExperiment):
 
 class WPSTest(unittest.TestCase):
     def test_wps(self):
-        """Wrapped Prograssive Sampling test test"""
         inputdata = [ 1,2,3,4,5,6 ]
         parameterscope = [ ('a',[2,4]), ('b',[2,5,8]),  ('c',[3,6,9]) ]
         search = WPSParamSearch(ParamExperiment, inputdata, len(inputdata), parameterscope)
@@ -60,7 +59,6 @@ class WPSTest(unittest.TestCase):
 
 class ExperimentPoolTest(unittest.TestCase):
     def test_pool(self):
-        """Experiment pool test"""
         pool = ExperimentPool(4)
         for i in range(0,15):
             pool.append( PoolExperiment(None, duration=random.randint(1,60)) )
@@ -68,19 +66,6 @@ class ExperimentPoolTest(unittest.TestCase):
             print "DONE: sleep " + str(experiment.parameters['duration'])
         self.assertEqual(1, False) 
 
-        
-class ClassEvaluationTest(unittest.TestCase):
-    def setUp(self):
-        self.goals = ['sun','sun','rain','cloudy','sun','rain']
-        self.observations = ['cloudy','cloudy','cloudy','rain','sun','sun']
-    
-        
-    def test001(self):
-        e = ClassEvaluation(self.goals, self.observations)
-        print e
-        print e
-    
-    
 if __name__ == '__main__':
     unittest.main()
 
