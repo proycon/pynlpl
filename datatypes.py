@@ -217,8 +217,48 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         assert (isinstance(other, PriorityQueue) and self.minimize == other.minimize)
         return PriorityQueue(self.data + other.data, self.f, self.minimize, self.length, self.blockworse, self.blockequal)
 
+class Tree(object):
+    """Simple tree structure. Nodes are themselves trees."""
+    
+    def __init__(self, value = None, children = None):
+        self.parent = None
+        self.value = value
+        if children:
+            self.children = None
+        else:
+            for c in children:
+                self.append(c)
+                
+    def leaf(self):
+        """Is this a leaf node or not?"""
+        return not self.children
+                
+    def __len__(self):
+        if not self.children: 
+            return 0
+        else:
+            return len(self.children)
+            
+    def __nonzero__(self):
+        return True
+        
+    def __iter__(self):
+        for c in self.children:
+            return c
+            
+    def append(self, item):
+        if not isinstance(item, Tree):
+            return ValueError("Can only append items of type Tree")
+        item.parent = self
+        self.children.append(item)
 
+    def __getitem__(self, index):
+        try:
+            return self.children[index]
+        except:
+            raise
 
+        
 #class SuffixTree(object):
 #   def __init__(self):
 #       self.data = {}
