@@ -76,6 +76,7 @@ class ClassEvaluationTest(unittest.TestCase):
         e = ClassEvaluation(self.goals, self.observations)
         print
         print e
+        print e.confusionmatrix()
     
 
 if __name__ == '__main__':

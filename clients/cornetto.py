@@ -49,7 +49,7 @@ class CornettoClient:
             printf( "cornettodb/views/remote_open()" )
         # permission denied on cornetto with apache
     #    http = httplib2.Http( ".cache" )
-        http = httplib2.Http()
+        http = httplib2.Http(disable_ssl_certificate_validation=True)
 
         # VU DEBVisDic authentication
         http.add_credentials( self.userid, self.passwd )
