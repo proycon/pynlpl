@@ -178,6 +178,9 @@ class FrequencyList:
         return self._count.values()
 
 
+    def dict(self):
+        return self._count
+    
 
 #class FrequencyTrie:
 #    def __init__(self):
