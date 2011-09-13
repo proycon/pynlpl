@@ -331,7 +331,12 @@ class Trie(object):
             raise
             
             
-        
+    def size(self):
+        """Size is number of nodes under the trie, including the current node"""
+        if self.children:
+            return sum( ( c.size() for c in self.children.values() ) ) + 1
+        else:
+            return 1
         
         
         
