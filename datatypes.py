@@ -265,49 +265,74 @@ class Tree(object):
 
 
 
-#class Trie(object):
-#    """Simple trie structure. Nodes are themselves tries."""
-#    
-#    def __init__(self, children = None):
-#        self.parent = None
-#        if not children:
-#            self.children = None
-#        else:
-#            for c in children:
-#                self.append(c)
-#                
-#    def leaf(self):
-#        """Is this a leaf node or not?"""
-#        return not self.children
-#                
-#    def __len__(self):
-#        if not self.children: 
-#            return 0
-#        else:
-#            return len(self.children)
-#            
-#    def __nonzero__(self):
-#        return True
-#        
-#    def __iter__(self):
-#        for value, trie in self.children:
-#            return value, trie
-#            
-#    def append(self, item):
-#        if not isinstance(item, Trie):
-#            return ValueError("Can only append items of type Trie")
-#        if not self.children: self.children = {}
-#        item.parent = self
-#        self.children.append(item)
-#
-#    def __getitem__(self, index):
-#        try:
-#            return self.children[index]
-#        except:
-#            raise
-#            
-#    def __str__(self):
-#        return str(value)
+class Trie(object):
+    """Simple trie structure. Nodes are themselves tries, values are stored on the edges, not the nodes."""
+    
+    def __init__(self, children = None):
+        self.parent = None
+        if not children:
+            self.children = None
+        else:
+            for c in children:
+                self.attach(c)
+                
+    def leaf(self):
+        """Is this a leaf node or not?"""
+        return not self.children
+                
+    def __len__(self):
+        if not self.children: 
+            return 0
+        else:
+            return len(self.children)
+            
+    def __nonzero__(self):
+        return True
+        
+    def __iter__(self):
+        if self.children:
+            for key in self.children.keys():
+                yield key
+            
+    def items(self):
+        if self.children:
+            for key, trie in self.children.items():
+                yield key, trie
+            
+    def __setitem__(self, key, subtrie):
+        if not isinstance(subtrie, Trie):
+            return ValueError("Can only set items of type Trie, got " + str(type(subtrie)))
+        if not self.children: self.children = {}
+        subtrie.parent = self
+        self.children[key] = value 
+            
+    def append(self, sequence):
+        if not sequence:
+            return self
+        elif not (sequence[0] in self.children):
+            self.children[sequence[0]] = Trie()
+            return self.children[sequence[0]].append( sequence[1:] )
+        else:
+            return self.children[sequence[0]].append( sequence[1:] )
+        
+    def find(self, sequence):
+        if not sequence:
+            return self
+        elif sequence[0] in self.children:
+            return self.children[sequence[0]].find(sequence[1:])
+        else:
+            return False
+
+    def __contains__(self, key):
+        return (key in self.children)
+    
+
+    def __getitem__(self, key):
+        try:
+            return self.children[key]
+        except:
+            raise
+            
             
         
         
