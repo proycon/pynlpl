@@ -268,13 +268,10 @@ class Tree(object):
 class Trie(object):
     """Simple trie structure. Nodes are themselves tries, values are stored on the edges, not the nodes."""
     
-    def __init__(self, children = None):
+    def __init__(self, sequence = None):
         self.parent = None
-        if not children:
-            self.children = None
-        else:
-            for c in children:
-                self.attach(c)
+        if sequence:
+            self.append(sequence)
                 
     def leaf(self):
         """Is this a leaf node or not?"""
