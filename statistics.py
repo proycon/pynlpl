@@ -24,11 +24,12 @@ import operator
 class FrequencyList:
     """A frequency list (implemented using dictionaries)"""
 
-    def __init__(self, tokens = None, casesensitive = True):
+    def __init__(self, tokens = None, casesensitive = True, dovalidation = True):
         self._count = {}
         self._ranked = {}
         self.total = 0 #number of tokens
         self.casesensitive = casesensitive
+        self.dovalidation = dovalidation
         if tokens: self.append(tokens)
 
     
@@ -70,7 +71,7 @@ class FrequencyList:
 
     def count(self, type, amount = 1):
         """Count a certain type. The counter will increase by the amount specified (defaults to one)"""        
-        type = self._validate(type)
+        if self.dovalidation: type = self._validate(type)
         if self._ranked: self._ranked = None
         if type in self._count:
             self._count[type] += amount
@@ -97,19 +98,19 @@ class FrequencyList:
             yield type, count
 
     def __getitem__(self, type):
-        type = self._validate(type)
+        if self.dovalidation: type = self._validate(type)
         return self._count[type]
 
     def __setitem__(self, type, value):
         """alias for count, but can only be called once"""
-        type = self._validate(type)
+        if self.dovalidation: type = self._validate(type)
         if not type in self._count:
             self.count(type,value)     
         else:
             raise ValueError("This type is already set!")
             
     def __delitem__(self, type):
-        type = self._validate(type)
+        if self.dovalidation: type = self._validate(type)
         del self._count[type]
         if self._ranked: self._ranked = None
         
@@ -134,7 +135,7 @@ class FrequencyList:
 
     def p(self, type): 
         """Returns the probability (relative frequency) of the token"""
-        type = self._validate(type)
+        if self.dovalidation: type = self._validate(type)
         return self._count[type] / float(self.total)
 
 
@@ -143,7 +144,7 @@ class FrequencyList:
 
     def __contains__(self, type):
         """Checks if the specified type is in the frequency list"""
-        type = self._validate(type)
+        if self.dovalidation: type = self._validate(type)
         return type in self._count
 
     def __add__(self, otherfreqlist):
@@ -220,15 +221,12 @@ class Distribution:
         self._ranked = None
         
 
-    def _validate(self,type):
-        return type
 
     def _rank(self):
         if not self._ranked: self._ranked = sorted(self._dist.items(),key=lambda x: x[1], reverse=True )
 
     def information(self, type):
         """Computes the information content of the specified type: -log_e(p(X))"""
-        type = self._validate(type)
         if not self.base:
             return -math.log(self._dist[type])
         else:
@@ -236,7 +234,6 @@ class Distribution:
 
     def poslog(self, type):
         """alias for information content"""
-        type = self._validate(type)
         return self.information(type)
 
     def entropy(self, base = 2):
@@ -270,7 +267,6 @@ class Distribution:
 
     def __getitem__(self, type):
         """Return the probability for this type"""
-        type = self._validate(type)
         return self._dist[type]
 
     def __iter__(self):

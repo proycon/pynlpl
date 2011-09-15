@@ -270,12 +270,17 @@ class Trie(object):
     
     def __init__(self, sequence = None):
         self.parent = None
+        self.children = None
+        self.value = None
         if sequence:
             self.append(sequence)
                 
     def leaf(self):
         """Is this a leaf node or not?"""
         return not self.children
+        
+    def root(self):
+        return not self.parent
                 
     def __len__(self):
         if not self.children: 
@@ -300,13 +305,16 @@ class Trie(object):
         if not isinstance(subtrie, Trie):
             return ValueError("Can only set items of type Trie, got " + str(type(subtrie)))
         if not self.children: self.children = {}
+        subtrie.value = key
         subtrie.parent = self
         self.children[key] = value 
             
     def append(self, sequence):
-        if not sequence:
+        if not sequence: 
             return self
-        elif not (sequence[0] in self.children):
+        if not self.children: 
+            self.children = {}
+        if not (sequence[0] in self.children):
             self.children[sequence[0]] = Trie()
             return self.children[sequence[0]].append( sequence[1:] )
         else:
@@ -315,7 +323,7 @@ class Trie(object):
     def find(self, sequence):
         if not sequence:
             return self
-        elif sequence[0] in self.children:
+        elif self.children and sequence[0] in self.children:
             return self.children[sequence[0]].find(sequence[1:])
         else:
             return False
@@ -337,9 +345,42 @@ class Trie(object):
             return sum( ( c.size() for c in self.children.values() ) ) + 1
         else:
             return 1
+            
+    def path(self):
+        if self.parent:
+            return (self,) + self.parent.path()
+        else:
+            return (self,)
+            
+    def depth(self):
+        if self.parent:
+            return 1 + self.parent.depth()
+        else:
+            return 1
+    
+    def sequence(self):
+        if self.parent:
+            if self.value:
+                return (self.value,) + self.parent.sequence()
+            else:
+                return self.parent.sequence()                
+        else:
+            return (self,)
+            
         
+    def walk(self, leavesonly=True, maxdepth=None, _depth = 0):
+        """Depth-first search, walking through trie, returning all encounterd nodes (by default only leaves)"""
+        if self.children:
+            if not maxdepth or (maxdepth and _depth < maxdepth):                
+                for key, child in self.children.items():
+                    if child.leaf():
+                        yield child
+                    else:
+                        for results in child.walk(leavesonly, maxdepth, _depth + 1):
+                            yield results
+                    
         
-        
+    
         
 #class SuffixTree(object):
 #   def __init__(self):
