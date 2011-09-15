@@ -229,6 +229,11 @@ class Classer(object):
     def encodeseq(self, sequence):
         return tuple( self.encode(x) for x in sequence  )
         
+    def __len__(self):
+        try:
+            return len(self.class2word)
+        except:
+            return len(self.word2class)
         
         
         
