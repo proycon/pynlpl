@@ -176,7 +176,7 @@ class Classer(object):
         self.decoder = decoder
         if self.decoder:
             self.class2word = []
-        elif self.encoder:
+        if self.encoder:
             self.word2class = {}
         if isinstance(f, FrequencyList):            
             for word, count in f:       
