@@ -13,6 +13,8 @@
 
 import unicodedata
 import string
+import codecs
+from statistics import FrequencyList
 
 try:
     from itertools import permutations
@@ -164,4 +166,55 @@ def swap(tokens, maxdist=2):
                 yield newtokens
         if maxdist == len(tokens):
             break
+        
+
+
+class Classer(object):
+    def __init__(self, f):
+        """Pass either a filename or a frequency list"""
+        self.class2word = []
+        self.word2class = {}
+        if isinstance(f, FrequencyList):            
+            for word, count in f:             
+                self.class2word.append(word)            
+            for cls, word in enumerate(self.class2word):
+                self.word2class[word] = cls
+        elif isinstance(f, str):
+            f = codecs.open(f,'r','utf-8')      
+            cls = 0
+            for line in f:
+                word = line.strip().split('\t')[1]
+                self.class2word.append(word)
+                self.word2class[word] = cls 
+                cls += 1
+            f.close()
+        else: 
+            raise Exception("Expected FrequencyList or filename, got " + str(type(f)))
+
+    def save(self, filename):
+        f = codecs.open(filename,'w','utf-8')   
+        for cls, word in enumerate(self.class2word):
+            f.write( str(cls) + '\t' + word + '\n')
+        f.close()
+                    
+    def decode(self, x):
+        return self.class2word[x]
+        
+    def encode(self, x):
+        return self.word2class[x]
+                        
+    def decodeseq(self, sequence):
+        return [ self.decode(x) for x in sequence  ] 
+        
+    def encodeseq(self, sequence):
+        return [ self.encode(x) for x in sequence  ] 
+        
+        
+        
+        
+        
+            
+    
+    
+    
         
