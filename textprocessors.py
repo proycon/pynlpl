@@ -170,38 +170,58 @@ def swap(tokens, maxdist=2):
 
 
 class Classer(object):
-    def __init__(self, f):
+    def __init__(self, f, encoder=True, decoder=True):
         """Pass either a filename or a frequency list"""
-        self.class2word = []
-        self.word2class = {}
+        self.encoder = encoder
+        self.decoder = decoder
+        if self.decoder:
+            self.class2word = []
+        elif self.encoder:
+            self.word2class = {}
         if isinstance(f, FrequencyList):            
-            for word, count in f:             
+            for word, count in f:       
                 self.class2word.append(word)            
-            for cls, word in enumerate(self.class2word):
-                self.word2class[word] = cls
+            if self.encoder:
+                for cls, word in enumerate(self.class2word):
+                    self.word2class[word] = cls
+            if not self.decoder:
+                del self.class2word
         elif isinstance(f, str):
             f = codecs.open(f,'r','utf-8')      
             cls = 0
             for line in f:
                 word = line.strip().split('\t')[1]
-                self.class2word.append(word)
-                self.word2class[word] = cls 
+                if self.decoder: self.class2word.append(word)
+                if self.encoder: self.word2class[word] = cls 
                 cls += 1
             f.close()
         else: 
             raise Exception("Expected FrequencyList or filename, got " + str(type(f)))
 
     def save(self, filename):
+        if not self.decoder: raise Exception("Decoder not enabled!")
         f = codecs.open(filename,'w','utf-8')   
         for cls, word in enumerate(self.class2word):
             f.write( str(cls) + '\t' + word + '\n')
         f.close()
                     
     def decode(self, x):
-        return self.class2word[x]
-        
-    def encode(self, x):
-        return self.word2class[x]
+        try:
+            return self.class2word[x]
+        except:
+            if not self.decoder: 
+                raise Exception("Decoder not enabled!")
+            else:
+                raise
+            
+    def encode(self, x):        
+        try:
+            return self.word2class[x]
+        except:
+            if not self.encoder:
+                raise Exception("Encoder not enabled!")
+            else:
+                raise
                         
     def decodeseq(self, sequence):
         return [ self.decode(x) for x in sequence  ] 

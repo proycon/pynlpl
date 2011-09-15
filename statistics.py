@@ -161,8 +161,10 @@ class FrequencyList:
         for type, count in self:
             if isinstance(type,tuple) or isinstance(type,list):
                 yield u" ".join(type) + delimiter + str(count)
-            else:
+            elif isinstance(type,str) or isinstance(type,unicode):
                 yield type + delimiter + str(count)
+            else:
+                yield str(type) + delimiter + str(count)
 
     def __repr__(self):
         return repr(self._count)
