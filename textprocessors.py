@@ -224,10 +224,10 @@ class Classer(object):
                 raise
                         
     def decodeseq(self, sequence):
-        return [ self.decode(x) for x in sequence  ] 
+        return tuple( self.decode(x) for x in sequence  )
         
     def encodeseq(self, sequence):
-        return [ self.encode(x) for x in sequence  ] 
+        return tuple( self.encode(x) for x in sequence  )
         
         
         
