@@ -69,6 +69,9 @@ class NoDefaultError(Exception):
 
 class NoDescription(Exception):
     pass
+    
+class UnresolvableTextContent(Exception):
+    pass
 
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
@@ -734,6 +737,16 @@ class AbstractElement(object):
                 self.remove(replace[0])
             return self.append(child, *args, **kwargs)
                 
+    def ancestors(self, Class=None):
+        e = self
+        while e:
+            if e.parent:
+                e = e.parent
+                if not Class or isinstance(e,Class):
+                    yield e 
+            else:
+                break
+
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
         """Return an XML Element for this element and all its children."""
@@ -1180,6 +1193,8 @@ class Description(AbstractElement):
         return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)                
     
     
+        
+    
 class AllowCorrections(object):
     def correct(self, **kwargs):
         """Apply a correction (TODO: documentation to be written still)"""
@@ -1619,7 +1634,10 @@ class TextContent(AbstractElement):
             if isinstance(self.ref, AbstractElement):
                 self.ref = kwargs['ref']
             else:
-                self.ref = doc.index[kwargs['ref']]
+                try:
+                    self.ref = doc.index[kwargs['ref']]
+                except:
+                    raise UnresolvableTextContent("Unable to resolve textcontent reference: " + kwargs['ref'] + " (class=" + self.cls+")")
             del kwargs['ref']
         else:
             self.ref = None #will be set upon parent.append()
@@ -1633,6 +1651,29 @@ class TextContent(AbstractElement):
     def text(self):
         """Obtain the text (unicode instance)"""
         return self.value
+        
+    def validateref(self):
+        """Validates the Text Content's references. Raises UnresolvableTextContent when invalid"""
+        
+        if self.offset is None: return True #nothing to test
+        if self.ref:
+            ref = self.ref
+        else:
+            ref = self.finddefaultreference()
+        
+        if not ref: 
+            raise UnresolvableTextContent("Default reference for textcontent not found!")
+        elif ref.hastext(self.cls):
+            raise UnresolvableTextContent("Reference has no such text (class=" + self.cls+")")
+        elif self.value != ref.textcontent(self.cls).value[self.offset:self.offset+len(self.value)]:
+            raise UnresolvableTextContent("Referenced found but does not match!")
+        else:
+            #finally, we made it!
+            return True
+            
+        
+            
+        
         
         
     def __unicode__(self):
@@ -1658,13 +1699,37 @@ class TextContent(AbstractElement):
         
     def postappend(self):
         """(Method for internal usage, see ``AbstractElement.postappend()``)"""
-        try:
-            if not self.ref and self.parent.parent and self.parent.parent.hastext():
-                self.ref = self.parent.parent
-        except:
-            pass
-                                
+        if isinstance(self.parent, Original):
+            if self.cls == 'current': self.cls = 'original'
+        
+        #assert (self.testreference() == True)
         super(TextContent, self).postappend()
+        
+    
+    def finddefaultreference(self):
+        """Find the default reference for text offsets:
+          The parent of the current textcontent's parent (counting only Structure Elements and Subtoken Annotation Elements)
+          
+          Note: This returns not a TextContent element, but its parent. Whether the textcontent actually exists is checked later/elsewhere
+        """        
+            
+        depth = 0
+        e = self
+        while True:
+            print e.__class__
+            if e.parent:         
+                e = e.parent
+            else:
+                print "no parent, breaking"
+                return False
+                
+            if isinstance(e,AbstractStructureElement) or isinstance(e,AbstractSubtokenAnnotation):
+                depth += 1
+                if depth == 2:
+                    return e
+                
+        
+        return False
         
     
     def __iter__(self):
@@ -1717,13 +1782,18 @@ class TextContent(AbstractElement):
         attribs = {}  
         if not self.offset is None:
             attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
-        if self.parent and self.ref and self.ref != self.parent.parent:
+        if self.parent and self.ref:
             attribs['{' + NSFOLIA + '}ref'] = self.ref.id        
-        if self.cls != 'current':
+        
+
+        if self.cls != 'current' and not (self.cls == 'original' and any( isinstance(x, Original) for x in self.ancestors() )  ):
             attribs['{' + NSFOLIA + '}class'] = self.cls        
+        else:
+            if '{' + NSFOLIA + '}class' in attribs:
+                del attribs['{' + NSFOLIA + '}class']
 
         return E.t(self.value, **attribs)
-        
+                
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
             global NSFOLIA
