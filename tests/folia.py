@@ -209,15 +209,17 @@ class Test2Sanity(unittest.TestCase):
         
     def test015_parenttest(self):                                        
         """Sanity check - Checking if all elements know who's their daddy""" 
-        def check(parent, indent = ''):         
+        
+        def check(parent, indent = ''):  
+            
             for child in parent:
-#                print indent + repr(child)
-                if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):
-                    self.assertEqual( child.parent, parent)                
+                if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):                    
+                    print indent + repr(child), child.id, child.cls
+                    self.assertTrue( child.parent is parent)                
                     check(child, indent + '  ')                        
-
-#        print repr(self.doc.data[0])
-        check(self.doc.data[0],'  ')
+            return True
+        
+        self.assertTrue( check(self.doc.data[0],'  ') )
 
     def test016a_description(self):        
         """Sanity Check - Description"""
