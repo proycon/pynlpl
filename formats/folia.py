@@ -26,8 +26,8 @@ import glob
 import os
 import re
 
-FOLIAVERSION = '0.5.1'
-LIBVERSION = '0.5.1.12' #== FoLiA version + library revision
+FOLIAVERSION = '0.6.0'
+LIBVERSION = '0.6.0.13' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -42,12 +42,12 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME = range(6)
 
 class AnnotationType:
-    TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY = range(17)
+    TEXT, TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY = range(18)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
-class TextCorrectionLevel:
-    OCR, SPEECHTOTEXT, ORIGINAL, INLINE, PROCESSED = range(5)                  
+class TextCorrectionLevel: #THIS IS NOW COMPLETELY OBSOLETE AND ONLY HERE FOR BACKWARD COMPATIBILITY!
+    CORRECTED, UNCORRECTED, ORIGINAL, INLINE = range(4)                  
           
 class MetaDataType:
     NATIVE, CMDI, IMDI = range(3)     
@@ -283,9 +283,8 @@ class AbstractElement(object):
     OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited, default=0)
     OCCURRENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
 
-    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.ORIGINAL #Specifies the minimum text correction level allowed (only if allowed at all in ACCEPTED_DATA), this will be the default for any textcontent set
     TEXTDELIMITER = " " #Delimiter to use when dynamically gathering text from child elements
-    PRINTABLE = True #Is this element printable (aka, can its text method be called?)
+    PRINTABLE = False #Is this element printable (aka, can its text method be called?)
     
     
     def __init__(self, doc, *args, **kwargs):
@@ -316,73 +315,44 @@ class AbstractElement(object):
                 return e.value
         raise NoDescription
         
-    def text(self, correctionlevel=None):
-        """Get the text associated with this element, will always be a unicode instance. 
-        
-         Text content always has a certain *correction level* associated with it, determining the level
-         of correction inherent in the text, the following are supported, in order:
-            TextCorrectionLevel.PROCESSED     - Text is up to date with the latest corrections (if there are any)
-            TextCorrectionLevel.INLINE        - Corrections are applied inline (not implemented yet)
-            TextCorrectionLevel.ORIGINAL      - Original unprocessed/uncorrected text
-            TextCorrectionLevel.OCR           - Pre-original OCR output, some basic corrections/normalisation may have been applied already
-            TextCorrectionLevel.SPEECHTOTEXT  - Pre-original Speech-to-Text output, some basic corrections/normalisation may have been applied already
-         
-         A correction level can be specified if you want to fetch a specific level, otherwise
-         the *best* level will be selected automatically in the following fashion:
-            * Will first grab the PROCESSED textcontent explicitly associated with the element
-            * If not found but inline corrections are present, those will be applied (in the order found)
-            * If not found, it will descend into the children and build text dynamically
-            * If that yields no text, it will resort to the ORIGINAL uncorrected text explicitly associated (OCR & SPEECHTOTEXT are never selected automatically unless explicitly asked for)
-            * If no text is found at all, a NoSuchText exception is raised.
-        """
-        #TODO: Implement handling of INLINE corrected textcontent
+    def text(self, cls='current'):
+        """Get the text associated with this element (of the specified class), will always be a unicode instance.  
+        If no text is directly associated with the element, it will be obtained from the children. If that doesn't result
+        in any text either, an exception will be raised.
+            
+        """        
         
         if not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
-            
-        if not (correctionlevel is None):
-            if self.MINTEXTCORRECTIONLEVEL > correctionlevel:
-                raise NoSuchText("No such text allowed for " + self.__class__.__name__  + ' (' + str(correctionlevel) + ')') #on purpose        
-            text = None
-            for child in self:
-                if isinstance(child, TextContent) and child.corrected == correctionlevel:
-                    text = child
-            if text is None:
-                raise NoSuchText
-            else:
-                return text.value  
-        else:
-            if self.hastext(TextCorrectionLevel.PROCESSED):
-                return self.text(TextCorrectionLevel.PROCESSED)
-            else:
-                #try to get text dynamically from children
-                s = ""
-                #print "NEW S"
-                for e in self:
-                    if isinstance(e, TextContent): #ignore textcontent elements
-                        continue 
-                    try:                  
-                        delimiter = e.overridetextdelimiter()
-                        if delimiter is None:
-                            delimiter = self.TEXTDELIMITER #default delimiter set by parent                        
-                        a =  unicode(e) + delimiter
-                        #print "ADDING: ", a, " ( delimiter "+str(type(self))+ ": ", delimiter,')'
-                        s += a
-                    except NoSuchText:
-                        continue                
+
+        
+        #Find explicit text content (same class)
+        for e in self:
+            if isinstance(e, TextContent):
+                if e.cls == cls:
+                    return e.value
                         
-                if s.strip():
-                    return s.strip()
-                elif self.MINTEXTCORRECTIONLEVEL <= TextCorrectionLevel.ORIGINAL:
-                    #Resort to original uncorrected text (if available)
-                    return self.text(TextCorrectionLevel.ORIGINAL)
-                else:
-                    #No text
-                    raise NoSuchText
+        #Not found, descend into children
+        s = ""
+        for e in self:            
+            if e.PRINTABLE and not isinstance(e, TextContent):
+                try:
+                    delimiter = e.overridetextdelimiter()
+                    if delimiter is None:
+                        delimiter = self.TEXTDELIMITER #default delimiter set by parent                        
+                    s += e.text(cls) + delimiter
+                except NoSuchText:
+                    continue           
+
+        if s.strip():
+            return s.strip()
+        else:
+            #No text found at all :`(
+            raise NoSuchText
                       
     def originaltext(self):
         """Alias for retrieving the original uncorrect text"""
-        return self.text(TextCorrectionLevel.ORIGINAL)
+        return self.text('original')
         
     def overridetextdelimiter(self):
         """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
@@ -470,20 +440,14 @@ class AbstractElement(object):
         raise NotImplementedError #TODO: IMPLEMENT
                             
         
-    def hastext(self,corrected=None):
-        """Does this element have text? May specify a correctionlevel to test for texts of a particular correctionlevel (see text() for more information)"""
-        if corrected is None:
-            #regardless of correctionlevel:
-            return (len(self.select(TextContent,None,False)) > 0)
-        else:
-            return (len([ x for x in self.select(TextContent,None,False) if x.corrected == corrected]) > 0)            
+    def hastext(self,cls='current'):
+        """Does this element have text (of the specified class)"""
+        return (len([ x for x in self.select(TextContent,None,False) if x.cls == cls]) > 0)            
     
             
-    def settext(self, text, corrected=TextCorrectionLevel.PROCESSED):
-        """Set the text for this element. You may specificy an explicit correctionlevel if desired. (see ``text()`` for more information)"""
-        #if corrected is None:
-        #    corrected = self.MINTEXTCORRECTIONLEVEL
-        self.replace(TextContent, value=text, corrected=corrected) 
+    def settext(self, text, cls='current'):
+        """Set the text for this element (and class)"""
+        self.replace(TextContent, value=text, cls=cls) 
 
     def setdocument(self, doc):
         """Associate a document with this element"""
@@ -572,8 +536,7 @@ class AbstractElement(object):
         If a *class* derived from AbstractElement is passed as first argument, an instance will first be created and then appended.            
                     
         Keyword arguments:
-            * ``alternative=``     - If set to True, the element will be made into an alternative. 
-            * ``corrected=``       - Used only when passing strings to be made into TextContent elements.
+            * ``alternative=``     - If set to True, the element will be made into an alternative.             
             
         Generic example, passing a pre-generated instance::
         
@@ -583,9 +546,9 @@ class AbstractElement(object):
             
             word.append( folia.LemmaAnnotation, cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL )
         
-        Generic example, setting text of a specific correctionlevel::
+        Generic example, setting text with a class:
         
-            word.append( "house", corrected=folia.TextCorrectionLevel.CORRECTED )
+            word.append( "house", cls='original' )
             
             
         """
@@ -607,9 +570,6 @@ class AbstractElement(object):
             if Class.addable(self, set):
                 if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
                     kwargs['generate_id_in'] = self
-                if Class is TextContent:
-                    if not 'corrected' in kwargs:
-                        kwargs['corrected'] = self.MINTEXTCORRECTIONLEVEL                    
                 child = Class(self.doc, *args, **kwargs)
         elif args:            
             raise Exception("Too many arguments specified. Only possible when first argument is a class and not an instance")
@@ -617,10 +577,7 @@ class AbstractElement(object):
         #Do the actual appending        
         if not Class and (isinstance(child,str) or isinstance(child,unicode)) and TextContent in self.ACCEPTED_DATA:
             #you can pass strings directly (just for convenience), will be made into textcontent automatically.
-            if 'corrected' in kwargs:
-                child = TextContent(self.doc, child, corrected=kwargs['corrected'] ) #MAYBE TODO: corrected attribute?
-            else: 
-                child = TextContent(self.doc, child, corrected=self.MINTEXTCORRECTIONLEVEL )
+            child = TextContent(self.doc, child )
             self.data.append(child)
             child.parent = self
         elif Class or (isinstance(child, AbstractElement) and child.__class__.addable(self, set)): #(prevents calling addable again if already done above)
@@ -679,9 +636,6 @@ class AbstractElement(object):
             if Class.addable(self, set):
                 if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
                     kwargs['generate_id_in'] = self
-                if Class is TextContent:
-                    if not 'corrected' in kwargs:
-                        kwargs['corrected'] = self.MINTEXTCORRECTIONLEVEL                    
                 child = Class(self.doc, *args, **kwargs)
         elif args:            
             raise Exception("Too many arguments specified. Only possible when first argument is a class and not an instance")
@@ -689,10 +643,7 @@ class AbstractElement(object):
         #Do the actual appending        
         if not Class and (isinstance(child,str) or isinstance(child,unicode)) and TextContent in self.ACCEPTED_DATA:
             #you can pass strings directly (just for convenience), will be made into textcontent automatically.
-            if 'corrected' in kwargs:
-                child = TextContent(self.doc, child, corrected=kwargs['corrected'] ) #MAYBE TODO: corrected attribute?
-            else: 
-                child = TextContent(self.doc, child, corrected=self.MINTEXTCORRECTIONLEVEL )
+            child = TextContent(self.doc, child )
             self.data.insert(index, child)
             child.parent = self
         elif Class or (isinstance(child, AbstractElement) and child.__class__.addable(self, set)): #(prevents calling addable again if already done above)
@@ -729,7 +680,7 @@ class AbstractElement(object):
             try:
                 set = child.set
             except:
-                set = None  
+                set = None                  
 
         if inspect.isclass(child):
             Class = child
@@ -820,13 +771,13 @@ class AbstractElement(object):
             
         if not skipchildren and self.data:
             #append children,
-            # we want make sure that text elements are in the right order,
+            # we want make sure that text elements are in the right order, 'current' class first
             # so we first put them in  a list
             textelements = []
             otherelements = []
             for child in self:
                 if isinstance(child, TextContent):
-                    if child.corrected == TextCorrectionLevel.ORIGINAL:
+                    if child.cls == 'current':
                         textelements.insert(0, child)                
                     else:
                         textelements.append(child)                
@@ -1282,7 +1233,7 @@ class AllowCorrections(object):
             for new in addnew:
                 kwargs2 = {}
                 if isinstance(new, TextContent):
-                    kwargs2['corrected'] = new.corrected
+                    kwargs2['cls'] = new.cls
                 try:
                     set = new.set
                 except:
@@ -1502,7 +1453,7 @@ class AllowGenerateID(object):
                  
                  
 class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
-    
+    PRINTABLE = True
     TEXTDELIMITER = "\n\n" #bigger gap between structure elements
     
     def __init__(self, doc, *args, **kwargs):            
@@ -1596,20 +1547,23 @@ class TextContent(AbstractElement):
     Text content elements can specify offset that refer to text at a higher parent level. Use the following keyword arguments:
         * ``ref=``: The instance to point to, this points to the element holding the text content element, not the text content element itself.
         * ``offset=``: The offset where this text is found, offsets start at 0
-        * ``length=``: The length of the text found, only needs to be specified if different from the current length.
-        * ``newoffset=``: The new offset, after correction, where this text is found, offsets start at 0.         
     """
     XMLTAG = 't'
-    
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    ANNOTATIONTYPE = AnnotationType.TEXT
+    OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
+    OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
+        
     def __init__(self, doc, *args, **kwargs):
         """Required keyword arguments:
             
                 * ``value=``: Set to a unicode or str containing the text
-                * ``corrected=``: Correction level, can be set to TextCorrectionLevel.ORIGINAL or TextCorrectionLevel.CORRECTED
-            
+                                                            
             Example::
             
-                text = folia.TextContent(doc, value='test', corrected=folia.TextCorrectionLevel.CORRECTED)
+                text = folia.TextContent(doc, value='test')
+                
+                text = folia.TextContent(doc, value='test',cls='original')
             
         """
         
@@ -1632,27 +1586,13 @@ class TextContent(AbstractElement):
             kwargs['value'] = u""
         else:
             raise Exception("Invalid value: " + repr(kwargs['value']))
-
-        #Correct can be True, False or 'inline'
-        if 'corrected' in kwargs:
-            self.corrected = kwargs['corrected']
-            del kwargs['corrected']
-        else:
-            self.corrected = None
-
         
         if 'offset' in kwargs: #offset
             self.offset = int(kwargs['offset'])
             del kwargs['offset']
         else:
             self.offset = None            
-
-        if 'newoffset' in kwargs: #new offset
-            self.newoffset = int(kwargs['newoffset'])
-            del kwargs['offset']
-        else:
-            self.newoffset = None            
-
+    
             
         if 'ref' in kwargs: #reference to offset
             if isinstance(self.ref, AbstractElement):
@@ -1663,19 +1603,16 @@ class TextContent(AbstractElement):
         else:
             self.ref = None #will be set upon parent.append()
             
-        if 'length' in kwargs:
-            self.length = int(kwargs['length'])
-        else:
-            self.length = len(self.value)
-            
+        #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
+        if not 'cls' in kwargs and not 'class' in kwargs:
+            kwargs['cls'] = 'current'            
+
         super(TextContent,self).__init__(doc, *args, **kwargs)
     
-    def text(self, corrected = None):
+    def text(self):
         """Obtain the text (unicode instance)"""
-        if corrected is None or corrected == self.corrected:
-            return self.value
-        else:
-            raise NoSuchText
+        return self.value
+        
         
     def __unicode__(self):
         return self.value
@@ -1705,20 +1642,7 @@ class TextContent(AbstractElement):
                 self.ref = self.parent.parent
         except:
             pass
-                        
-    
-        if self.corrected is None:
-            self.corrected = self.parent.MINTEXTCORRECTIONLEVEL                    
-            
-        if self.corrected < self.parent.MINTEXTCORRECTIONLEVEL:
-            raise ValueError("Text Content (" + str(self.corrected) + ") must be of higher CorrectionLevel (" + str(self.parent.MINTEXTCORRECTIONLEVEL) + ")")
-            
-        if self.corrected != TextCorrectionLevel.INLINE:
-            #there can be only one of this type.
-            for child in self.parent:
-                if not child is self and isinstance(child, TextContent) and child.corrected == self.corrected:            
-                    raise DuplicateAnnotationError("Text element with same corrected status (except for inline) may not occur multiple times!")
-        
+                                
         super(TextContent, self).postappend()
         
     
@@ -1734,16 +1658,11 @@ class TextContent(AbstractElement):
     def findreplacables(Class, parent, set, **kwargs):
         """(Method for internal usage, see AbstractElement)"""
         #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
-        if not 'corrected' in kwargs:
-            if 'instance' in kwargs:
-                kwargs['corrected'] = instance.corrected
-            elif Class.MINTEXTCORRECTIONLEVEL == TextCorrectionLevel.ORIGINAL:
-                kwargs['corrected'] = TextCorrectionLevel.ORIGINAL
-            else:
-                kwargs['corrected'] = TextCorrectionLevel.PROCESSED
+        if not 'cls' in kwargs:            
+            kwargs['cls'] = 'current'
         replace = super(TextContent, Class).findreplacables(parent, set, **kwargs)
-        replace = [ x for x in replace if x.corrected == kwargs['corrected']]
-        del kwargs['corrected'] #always delete what we processed
+        replace = [ x for x in replace if x.cls == kwargs['cls']]
+        del kwargs['cls'] #always delete what we processed
         return replace
         
         
@@ -1792,21 +1711,11 @@ class TextContent(AbstractElement):
         attribs = {}  
         if not self.offset is None:
             attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
-        if not self.newoffset is None:
-            attribs['{' + NSFOLIA + '}newoffset'] = str(self.newoffset)
-        if self.length != len(self.value):
-            attribs['{' + NSFOLIA + '}length'] = str(self.length)
         if self.parent and self.ref and self.ref != self.parent.parent:
-            attribs['{' + NSFOLIA + '}ref'] = self.ref.id
-        if self.corrected == TextCorrectionLevel.INLINE:
-            attribs['{' + NSFOLIA + '}corrected'] = 'inline'
-        elif self.corrected == TextCorrectionLevel.OCR:
-            attribs['{' + NSFOLIA + '}corrected'] = 'ocr'
-        elif self.corrected == TextCorrectionLevel.SPEECHTOTEXT:
-            attribs['{' + NSFOLIA + '}corrected'] = 'speechtotext'
-        elif self.corrected == TextCorrectionLevel.PROCESSED and self.parent and self.parent.MINTEXTCORRECTIONLEVEL < TextCorrectionLevel.PROCESSED:
-            attribs['{' + NSFOLIA + '}corrected'] = 'yes'
-            
+            attribs['{' + NSFOLIA + '}ref'] = self.ref.id        
+        if self.cls != 'current':
+            attribs['{' + NSFOLIA + '}class'] = self.cls        
+
         return E.t(self.value, **attribs)
         
     @classmethod
@@ -1836,7 +1745,6 @@ class Word(AbstractStructureElement, AllowCorrections):
     ANNOTATIONTYPE = AnnotationType.TOKEN
     #ACCEPTED_DATA DEFINED LATER (after Correction)
     
-    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.PROCESSED
     TEXTDELIMITER = " "
     
     def __init__(self, doc, *args, **kwargs):
@@ -2083,11 +1991,12 @@ class Feature(AbstractElement):
 class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID): 
     """Abstract element, all subtoken annotation elements are derived from this class"""
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
-    
+    PRINTABLE = True
     
 class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID): 
     """Abstract element, all span annotation elements are derived from this class"""
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
+    PRINTABLE = True
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
@@ -2143,6 +2052,7 @@ class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Description)
     TEXTDELIMITER = ""
+    PRINTABLE = True
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
@@ -2179,15 +2089,13 @@ class Suggestion(AbstractCorrectionChild):
     OCCURRENCES = 0 #unlimited
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     
-    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.PROCESSED
 
 class New(AbstractCorrectionChild):
     REQUIRED_ATTRIBS = (),
     OPTIONAL_ATTRIBS = (),    
     OCCURRENCES = 1
     XMLTAG = 'new'
-    
-    MINTEXTCORRECTIONLEVEL = TextCorrectionLevel.PROCESSED
+
     
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
@@ -2240,6 +2148,7 @@ class Correction(AbstractExtendedTokenAnnotation):
     XMLTAG = 'correction'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     TEXTDELIMITER = ""
+    PRINTABLE = True
     
     def hasnew(self):
         return bool(self.select(New,None,False, False))
@@ -2253,6 +2162,18 @@ class Correction(AbstractExtendedTokenAnnotation):
     def hassuggestions(self):
         return bool(self.select(Suggestion,None,False, False))                
     
+    
+    def text(self, cls = 'current'):
+        if cls == 'current':
+            for e in self:
+                if isinstance(e, New) or isinstance(e, Current):
+                    return e.text(cls)
+        elif cls == 'original':
+            for e in self:
+                if isinstance(e, Original):
+                    return e.text(cls)
+        raise NoSuchText
+
     
     def new(self,index = None):
         if index is None:
