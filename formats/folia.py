@@ -1604,7 +1604,7 @@ class TextContent(AbstractElement):
             self.ref = None #will be set upon parent.append()
             
         #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
-        if not 'cls' in kwargs and not 'class' in kwargs:
+        if not ('cls' in kwargs) and not ('class' in kwargs):
             kwargs['cls'] = 'current'            
 
         super(TextContent,self).__init__(doc, *args, **kwargs)
@@ -1673,26 +1673,11 @@ class TextContent(AbstractElement):
         nslen = len(NSFOLIA) + 2
         args = []
         kwargs = {}
-        if 'corrected' in node.attrib:
-            if node.attrib['corrected'] == 'yes':
-                kwargs['corrected'] = TextCorrectionLevel.PROCESSED
-            elif node.attrib['corrected'] == 'inline':
-                kwargs['corrected'] = TextCorrectionLevel.INLINE
-            elif node.attrib['corrected'] == 'no':
-                kwargs['corrected'] = TextCorrectionLevel.ORIGINAL
-            elif node.attrib['corrected'] == 'ocr':
-                kwargs['corrected'] = TextCorrectionLevel.OCR
-            elif node.attrib['corrected'] == 'speechtotext':
-                kwargs['corrected'] = TextCorrectionLevel.SPEECHTOTEXT                
-            else:
-                raise Exception("Invalid value for corrected: ", node.attrib['corrected'])
+        if 'class' in node.attrib:
+                kwargs['cls'] = node.attrib['class']
         
         if 'offset' in node.attrib:
             kwargs['offset'] = int(node.attrib['offset'])
-        elif 'newoffset' in node.attrib:
-            kwargs['newoffset'] = int(node.attrib['newoffset'])
-        elif 'length' in node.attrib:
-            kwargs['length'] = int(node.attrib['length'])
         elif 'ref' in node.attrib:
             kwargs['ref'] = node.attrib['ref']
         

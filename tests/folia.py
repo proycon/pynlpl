@@ -366,7 +366,13 @@ class Test2Sanity(unittest.TestCase):
         #check if sentence matches
         self.assertTrue( (w.sentence() is s) )
         
+    def test030_textcontent(self):
+        """Sanity check - Text Content"""
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.4']
         
+        self.assertEqual( s.text(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
+        self.assertEqual( s.text('original'), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')    
+        self.assertRaises( folia.NoSuchText, s.text, 'BLAH' )
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
@@ -1575,13 +1581,16 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
             </w>
           </s>
           <s xml:id="WR-P-E-J-0000000001.p.1.s.4">
+            <t>De hoofdletter A wordt gebruikt voor het originele handschrift.</t>
+            <t class="original">De hoofdletter A wordt gebruikt voor het originele handschrift.</t>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.1">
-              <t>De</t>
+              <t offset="0">De</t>
+              <t offset="0" class="original">De</t>
               <pos class="LID(bep,stan,rest)"/>
               <lemma class="de"/>
             </w>
             <w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.2">
-              <t>hoofdletter</t>
+              <t offset="3">hoofdletter</t>
               <pos class="N(soort,ev,basis,zijd,stan)"/>
               <lemma class="hoofdletter"/>
             </w>
