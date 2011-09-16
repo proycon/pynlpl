@@ -314,11 +314,32 @@ class AbstractElement(object):
             if isinstance(e, Description):
                 return e.value
         raise NoDescription
+    
+    def textcontent(self, cls='current'):
+        """Get the text explicitly associated with this element (of the specified class).
+        Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
+        not found. 
+        
+        Unlike text(), this method does not recurse into child elements!          
+        """        
+        
+        if not self.PRINTABLE: #only printable elements can hold text
+            raise NoSuchText
+
+        
+        #Find explicit text content (same class)
+        for e in self:
+            if isinstance(e, TextContent):
+                if e.cls == cls:
+                    return e
+                    
+        raise NoSuchText
+                            
         
     def text(self, cls='current'):
         """Get the text associated with this element (of the specified class), will always be a unicode instance.  
         If no text is directly associated with the element, it will be obtained from the children. If that doesn't result
-        in any text either, an exception will be raised.
+        in any text either, a NoSuchText exception will be raised.
             
         """        
         

@@ -374,6 +374,14 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( s.text('original'), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')    
         self.assertRaises( folia.NoSuchText, s.text, 'BLAH' )
         
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.4.w.2']
+        self.assertEqual( w.text(), 'hoofdletter')
+        
+        self.assertEqual( w.textcontent().value, 'hoofdletter')
+        self.assertEqual( w.textcontent().offset, 3)
+        
+        
+        
     def test099_write(self):        
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
