@@ -73,6 +73,8 @@ class NoDescription(Exception):
 class UnresolvableTextContent(Exception):
     pass
 
+class NotWellFormedError(Exception):
+    pass
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     object.doc = doc #The FoLiA root document
@@ -3893,11 +3895,14 @@ def relaxng(filename=None):
 #    def savesql(self, filename):
 
 
-def validate(filename,schema=None):
+def validate(filename,deep=False,schema=None):
+    if not os.path.exists(filename):
+        raise IOError("No such file")
+        
     try:
         doc = ElementTree.parse(filename)
     except:
-        raise Exception("Not well-formed XML!")
+        raise NotWellFormedError("Not well-formed XML!")
     
     #See if there's inline IMDI and strip it off prior to validation (validator doesn't do IMDI)
     m = doc.xpath('//folia:metadata', namespaces={'f': 'http://ilk.uvt.nl/folia','folia': 'http://ilk.uvt.nl/folia' })
@@ -3912,6 +3917,9 @@ def validate(filename,schema=None):
     else:
         schema.assertValid(doc) #will raise exceptions
 
+    if deep:
+        doc = Document(tree=doc)
+        #TODO
 
 XML2CLASS = {}
 for c in vars().values():

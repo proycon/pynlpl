@@ -1121,6 +1121,10 @@ class Test6Query(unittest.TestCase):
         matches = list(self.doc.findwords( folia.Pattern('bli','bla','blu', matchannotation=folia.SenseAnnotation) ))
         self.assertEqual( len(matches), 0 )
 
+class Test7Validation(unittest.TestCase):    
+      def test001_shallowvalidation(self): 
+        """Validation - Shallow validation against automatically generated RelaxNG schema"""
+        folia.validate('/tmp/foliasavetest.xml')
     
 FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="WR-P-E-J-0000000001" version="%s" generator="pynlpl.formats.folia-v%s">
