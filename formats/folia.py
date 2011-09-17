@@ -25,6 +25,7 @@ import inspect
 import glob
 import os
 import re
+import urllib
 
 FOLIAVERSION = '0.6.0'
 LIBVERSION = '0.6.0.13' #== FoLiA version + library revision
@@ -73,7 +74,13 @@ class NoDescription(Exception):
 class UnresolvableTextContent(Exception):
     pass
 
-class NotWellFormedError(Exception):
+class MalformedXMLError(Exception):
+    pass
+    
+class DeepValidationError(Exception):
+    pass
+    
+class SetDefinitionError(DeepValidationError):
     pass
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
@@ -550,8 +557,18 @@ class AbstractElement(object):
         #If the element was not associated with a document yet, do so now (and for all unassociated children:
         if not self.doc and self.parent.doc:
             self.setdocument(self.parent.doc)
-        
-                
+            
+        if self.doc and self.doc.deepvalidation:
+            self.deepvalidation()
+            
+            
+    def deepvalidation(self):
+        if self.doc and self.doc.deepvalidation and self.set and self.set[0] != '_':
+            try:
+                self.doc.setdefinitions[self.set].testclass(self.cls)
+            except KeyError:
+                raise DeepValidationError("Set definition for " + self.set + " not loaded!")
+    
     def append(self, child, *args, **kwargs):
         """Append a child element. Returns the added element     
 
@@ -2821,10 +2838,12 @@ class Document(object):
         self.metadata = {} #will point to XML Element holding IMDI or CMDI metadata
         self.metadatatype = MetaDataType.NATIVE
         self.metadatafile = None #reference to external metadata file
-    
+        
+        self.setdefinitions = {} #key: set name, value: SetDefinition instance (only used when deepvalidation=True) 
+        
         #The metadata fields FoLiA is directly aware of:
         self._title = self._date = self._publisher = self._license = self._language = None
-    
+        
     
         if 'debug' in kwargs:
             self.debug = kwargs['debug']
@@ -2836,6 +2855,12 @@ class Document(object):
         else:
             self.loadall = True
     
+    
+        if 'deepvalidation' in kwargs:
+            self.deepvalidation = bool(kwargs['deepvalidation'])
+        else:
+            self.deepvalidation = False
+            
         if 'id' in kwargs:
             self.id = kwargs['id']
         elif 'file' in kwargs:
@@ -2850,7 +2875,8 @@ class Document(object):
         elif 'tree' in kwargs:
             self.parsexml(kwargs['tree'])
         else:
-            raise Exception("No ID, filename or tree specified")
+            raise Exception("No ID, filename or tree specified")        
+            
                             
             
     def load(self, filename):
@@ -3165,6 +3191,11 @@ class Document(object):
                     set = None
                 self.annotations.append( (type, set) )
                 
+                if self.deepvalidation and not set in self.setdefinitions:
+                    if set[0] != '_': #ignore sets starting with an underscore, they are ad-hoc sets by definition
+                        self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
+                        
+
                 defaults = {}
                 if 'annotator' in subnode.attrib:
                     defaults['annotator'] = subnode.attrib['annotator']
@@ -3816,20 +3847,34 @@ class SetDefinition(AbstractDefinition):
             elif subnode.tag == '{' + NSFOLIA + '}subset':
                 subsets.append( ClassDefinition.parsexml(subnode) )
             elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
-                raise Exception("Invalid tag in Set definition: " + subnode.tag)
+                raise SetDefinitionError("Invalid tag in Set definition: " + subnode.tag)
                 
         return SetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],classes, subsets, constraintindex)
+
+    def testclass(cls):
+        raise NotImplementedError #TODO, IMPLEMENT!
+        
+    def testsubclass(cls, subset, subclass):
+        raise NotImplementedError #TODO, IMPLEMENT!
         
         
 def loadsetdefinition(filename):
     global NSFOLIA
-    tree = ElementTree.parse(filename)
+    if filename[0:7] == 'http://':
+        f = urllib.urlopen(filename)
+        try:
+            tree = ElementTree.parse(StringIO("\n".join(f.readlines())))
+        except IOError:
+            raise DeepValidationError("Unable to download " + set)
+        f.close()
+    else:
+        tree = ElementTree.parse(filename)
     root = self.tree.getroot()
     if root.tag != '{' + NSFOLIA + '}set':
-        raise Exception("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
+        raise SetDefinitionError("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
     
     return Set.parsexml(root)            
-        
+
 
 def relaxng_declarations():
     global NSFOLIA
@@ -3902,7 +3947,7 @@ def validate(filename,deep=False,schema=None):
     try:
         doc = ElementTree.parse(filename)
     except:
-        raise NotWellFormedError("Not well-formed XML!")
+        raise MalformedXMLError("Malformed XML!")
     
     #See if there's inline IMDI and strip it off prior to validation (validator doesn't do IMDI)
     m = doc.xpath('//folia:metadata', namespaces={'f': 'http://ilk.uvt.nl/folia','folia': 'http://ilk.uvt.nl/folia' })
@@ -3918,8 +3963,7 @@ def validate(filename,deep=False,schema=None):
         schema.assertValid(doc) #will raise exceptions
 
     if deep:
-        doc = Document(tree=doc)
-        #TODO
+        doc = Document(tree=doc, deepvalidation=True)
 
 XML2CLASS = {}
 for c in vars().values():

@@ -214,7 +214,7 @@ class Test2Sanity(unittest.TestCase):
             
             for child in parent:
                 if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):                    
-                    print indent + repr(child), child.id, child.cls
+                    #print indent + repr(child), child.id, child.cls
                     self.assertTrue( child.parent is parent)                
                     check(child, indent + '  ')                        
             return True
@@ -1122,6 +1122,10 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( len(matches), 0 )
 
 class Test7Validation(unittest.TestCase):    
+      def test000_relaxng(self): 
+        """Validation - RelaxNG schema generation"""
+        folia.relaxng()
+
       def test001_shallowvalidation(self): 
         """Validation - Shallow validation against automatically generated RelaxNG schema"""
         folia.validate('/tmp/foliasavetest.xml')
