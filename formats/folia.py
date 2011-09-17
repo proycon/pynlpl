@@ -3623,9 +3623,31 @@ class Figure(AbstractStructureElement):
             del kwargs['url']
         else:
             self.url = None 
+            
+        if 'src' in kwargs:
+            self.src = kwargs['src']
+            del kwargs['src']
+        else:
+            self.src = None 
+            
         super(Figure, self).__init__(doc, *args, **kwargs)
         
-
+    def xml(self, attribs = None,elements = None, skipchildren = False):   
+        global NSFOLIA
+        if self.src:
+            if not attribs: attribs = {}
+            attribs['{' + NSFOLIA + '}src'] = self.src
+        return super(Figure, self).xml(attribs, elements, skipchildren)     
+        
+    #@classmethod
+    #def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+    #    global NSFOLIA
+    #    if not extraattribs:
+    #        extraattribs = 'src'
+    #TODO!        
+            
+        
+          
 
 class Division(AbstractStructureElement):    
     """Structure element representing some kind of division. Divisions may be nested at will, and may include almost all kinds of other structure elements."""

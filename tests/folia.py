@@ -77,11 +77,11 @@ class Test2Sanity(unittest.TestCase):
         
     def test002_count_sentences(self):                                    
         """Sanity check - Sentences count"""        
-        self.assertEqual( len(self.doc.sentences()) , 9)        
+        self.assertEqual( len(self.doc.sentences()) , 12)        
     
     def test003_count_words(self):                                    
         """Sanity check - Word count"""        
-        self.assertEqual( len(self.doc.words()) , 151)
+        self.assertEqual( len(self.doc.words()) , 157)
     
     def test004_first_word(self):                                    
         """Sanity check - First word"""            
@@ -99,9 +99,9 @@ class Test2Sanity(unittest.TestCase):
         #grab first word
         w = self.doc.words(-1) # shortcut for doc.words()[0]         
         self.assertTrue( isinstance(w, folia.Word) )
-        self.assertEqual( w.id , 'WR-P-E-J-0000000001.p.1.s.8.w.17' ) 
-        self.assertEqual( w.text() , "." )             
-        self.assertEqual( str(w) , "." )             
+        self.assertEqual( w.id , 'sandbox.figure.1.caption.s.1.w.2' ) 
+        self.assertEqual( w.text() , "stamboom" )             
+        self.assertEqual( str(w) , "stamboom" )             
         
     def test006_first_sentence(self):                                    
         """Sanity check - Sentence"""                                
@@ -1479,6 +1479,7 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
             </w>
           </s>
           <s xml:id="WR-P-E-J-0000000001.p.1.s.3">
+            <whitespace />
             <w xml:id="WR-P-E-J-0000000001.p.1.s.3.w.1">
               <t>Werkwijze</t>
               <pos class="N(soort,ev,basis,zijd,stan)"/>
@@ -2099,6 +2100,43 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
             </w>
           </s>
         </p>
+      </div>
+      <div xml:id="sandbox">
+          <list  xml:id="sandbox.list.1">
+              <listitem xml:id="sandbox.list.1.listitem.1">
+                  <s xml:id="sandbox.list.1.listitem.1.s.1">
+                      <w xml:id="sandbox.list.1.listitem.1.s.1.w.1">
+                          <t>Eerste</t>
+                      </w>
+                      <w xml:id="sandbox.list.1.listitem.1.s.1.w.2">
+                          <t>testitem</t>
+                      </w>                      
+                  </s>                  
+              </listitem>
+              <listitem xml:id="sandbox.list.1.listitem.2">
+                  <s xml:id="sandbox.list.1.listitem.2.s.1">
+                      <w xml:id="sandbox.list.1.listitem.2.s.1.w.1">
+                          <t>Tweede</t>
+                      </w>
+                      <w xml:id="sandbox.list.1.listitem.2.s.1.w.2">
+                          <t>testitem</t>
+                      </w>                      
+                  </s>                  
+              </listitem>
+          </list>
+          <figure xml:id="sandbox.figure.1" src="http://upload.wikimedia.org/wikipedia/commons/8/8e/Family_tree.svg">
+              <desc>Stamboom plaatje van wikipedia</desc>              
+              <caption>
+                  <s xml:id="sandbox.figure.1.caption.s.1">
+                      <w xml:id="sandbox.figure.1.caption.s.1.w.1">
+                          <t>Een</t>
+                      </w>
+                      <w xml:id="sandbox.figure.1.caption.s.1.w.2">
+                          <t>stamboom</t>
+                      </w>                      
+                  </s>
+              </caption>
+          </figure>
       </div>
       <gap xml:id="WR-P-E-J-0000000001.gap.1" class="backmatter" annotator="proycon">
        <desc>Backmatter</desc>
