@@ -234,7 +234,7 @@ class Test2Sanity(unittest.TestCase):
     def test017_gap(self):            
         """Sanity Check - Gap"""
         gap = self.doc["WR-P-E-J-0000000001.gap.1"]
-        self.assertEqual( gap.content().strip(), 'bli bli bla, bla bla bli')
+        self.assertEqual( gap.content().strip()[:11], u'De tekst is')
         self.assertEqual( gap.cls, 'backmatter')
         self.assertEqual( gap.description(), 'Backmatter')
         
@@ -2142,7 +2142,8 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
        <desc>Backmatter</desc>
        <content>
 <![CDATA[
-bli bli bla, bla bla bli
+De tekst is beschikbaar onder de licentie Creative Commons Naamsvermelding/Gelijk delen, er kunnen aanvullende voorwaarden van toepassing zijn. Zie de Gebruiksvoorwaarden voor meer informatie.
+Wikipedia® is een geregistreerd handelsmerk van de Wikimedia Foundation, Inc., een organisatie zonder winstoogmerk.
 ]]>
        </content>
       </gap>      
