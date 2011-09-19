@@ -2669,6 +2669,75 @@ class Sentence(AbstractStructureElement):
 
 Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description)        
 
+
+class Caption(AbstractStructureElement):    
+    """Element used for captions for figures or tables, contains sentences"""
+    OPTIONAL_ATTRIBS = (Attrib.ID,)
+    ACCEPTED_DATA = (Sentence, Description)
+    OCCURRENCES = 1
+    XMLTAG = 'caption'
+
+    
+class Label(AbstractStructureElement):    
+    """Element used for labels. Mostly in within list item. Contains words."""
+    OPTIONAL_ATTRIBS = (Attrib.ID,)
+    ACCEPTED_DATA = (Word, Description)
+    XMLTAG = 'label'
+
+class ListItem(AbstractStructureElement):
+    """Single element in a List. Structure element. Contained within List element."""
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
+    #ACCEPTED_DATA = (List, Sentence) #Defined below
+    XMLTAG = 'listitem'
+    
+    
+class List(AbstractStructureElement):    
+    """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
+    ACCEPTED_DATA = (ListItem,Description, Caption)
+    XMLTAG = 'list'
+    
+
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label)
+
+class Figure(AbstractStructureElement):    
+    """Element for the representation of a graphical figure. Structure element."""
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
+    ACCEPTED_DATA = (Sentence, Description, Caption)
+    XMLTAG = 'figure'
+    #TODO: relaxNG
+    
+    def __init__(self, doc, *args, **kwargs):
+        if 'url' in kwargs:
+            self.url = kwargs['url']
+            del kwargs['url']
+        else:
+            self.url = None 
+            
+        if 'src' in kwargs:
+            self.src = kwargs['src']
+            del kwargs['src']
+        else:
+            self.src = None 
+            
+        super(Figure, self).__init__(doc, *args, **kwargs)
+        
+    def xml(self, attribs = None,elements = None, skipchildren = False):   
+        global NSFOLIA
+        if self.src:
+            if not attribs: attribs = {}
+            attribs['{' + NSFOLIA + '}src'] = self.src
+        return super(Figure, self).xml(attribs, elements, skipchildren)     
+        
+    #@classmethod
+    #def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+    #    global NSFOLIA
+    #    if not extraattribs:
+    #        extraattribs = 'src'
+    #TODO!        
+            
+
+
 class Paragraph(AbstractStructureElement):    
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
@@ -3580,72 +3649,7 @@ class Gap(AbstractElement):
             
     
 
-class Caption(AbstractStructureElement):    
-    """Element used for captions for figures or tables, contains sentences"""
-    OPTIONAL_ATTRIBS = (Attrib.ID,)
-    ACCEPTED_DATA = (Sentence, Description)
-    OCCURRENCES = 1
-    XMLTAG = 'caption'
 
-    
-class Label(AbstractStructureElement):    
-    """Element used for labels. Mostly in within list item. Contains words."""
-    OPTIONAL_ATTRIBS = (Attrib.ID,)
-    ACCEPTED_DATA = (Word, Description)
-    XMLTAG = 'label'
-
-class ListItem(AbstractStructureElement):
-    """Single element in a List. Structure element. Contained within List element."""
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
-    #ACCEPTED_DATA = (List, Sentence) #Defined below
-    XMLTAG = 'listitem'
-    
-    
-class List(AbstractStructureElement):    
-    """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
-    ACCEPTED_DATA = (ListItem,Description, Caption)
-    XMLTAG = 'list'
-    
-
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label)
-
-class Figure(AbstractStructureElement):    
-    """Element for the representation of a graphical figure. Structure element."""
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
-    ACCEPTED_DATA = (Sentence, Description, Caption)
-    XMLTAG = 'figure'
-    #TODO: relaxNG
-    
-    def __init__(self, doc, *args, **kwargs):
-        if 'url' in kwargs:
-            self.url = kwargs['url']
-            del kwargs['url']
-        else:
-            self.url = None 
-            
-        if 'src' in kwargs:
-            self.src = kwargs['src']
-            del kwargs['src']
-        else:
-            self.src = None 
-            
-        super(Figure, self).__init__(doc, *args, **kwargs)
-        
-    def xml(self, attribs = None,elements = None, skipchildren = False):   
-        global NSFOLIA
-        if self.src:
-            if not attribs: attribs = {}
-            attribs['{' + NSFOLIA + '}src'] = self.src
-        return super(Figure, self).xml(attribs, elements, skipchildren)     
-        
-    #@classmethod
-    #def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-    #    global NSFOLIA
-    #    if not extraattribs:
-    #        extraattribs = 'src'
-    #TODO!        
-            
         
           
 
