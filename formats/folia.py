@@ -3260,7 +3260,7 @@ class Document(object):
                     set = None
                 self.annotations.append( (type, set) )
                 
-                if self.deepvalidation and not set in self.setdefinitions:
+                if set and self.deepvalidation and not set in self.setdefinitions:
                     if set[0] != '_': #ignore sets starting with an underscore, they are ad-hoc sets by definition
                         self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
                         
@@ -3966,7 +3966,7 @@ def relaxng(filename=None):
 #    def savesql(self, filename):
 
 
-def validate(filename,deep=False,schema=None):
+def validate(filename,schema=None,deep=False):
     if not os.path.exists(filename):
         raise IOError("No such file")
         
