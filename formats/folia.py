@@ -27,8 +27,8 @@ import os
 import re
 import urllib
 
-FOLIAVERSION = '0.6.0'
-LIBVERSION = '0.6.0.13' #== FoLiA version + library revision
+FOLIAVERSION = '0.6.1'
+LIBVERSION = '0.6.1.14' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -2513,6 +2513,14 @@ class SynsetFeature(Feature):
     XMLTAG = 'synset'
     ANNOTATIONTYPE = AnnotationType.SENSE
     SUBSET = 'synset' #associated subset
+
+class ActorFeature(Feature):
+    """Actor feature, to be used within Event"""
+    XMLATTRIB = 'actor' #allow feature as attribute
+    XMLTAG = 'actor'
+    ANNOTATIONTYPE = AnnotationType.SENSE
+    SUBSET = 'actor' #associated subset
+
     
 
 class SenseAnnotation(AbstractTokenAnnotation):
@@ -3676,6 +3684,16 @@ class Text(AbstractStructureElement):
     ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description)
     XMLTAG = 'text' 
     TEXTDELIMITER = "\n\n"        
+
+class Event(AbstractStructureElement):
+    """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
+    
+    REQUIRED_ATTRIBS = (Attrib.CLASS,)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.Annotator, Attrib.N,)
+    ACCEPTED_DATA = (AbstractStructureElement,)
+    XMLTAG = 'event' 
+    
+
 
 class Corpus:
     """A corpus of various FoLiA document"""
