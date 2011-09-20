@@ -1,7 +1,10 @@
 #-*- coding:utf-8 -*-
 
 ###############################################################
-#  PyNLPl - DutchSemCor
+#  Modified by Ruben Izquierdo
+#  We need also to store the TIMBL distance to the nearest neighboor  
+#
+# PyNLPl - DutchSemCor
 #       by Maarten van Gompel (proycon)
 #       http://ilk.uvt.nl/~mvgompel
 #       Induction for Linguistic Knowledge Research Group
@@ -22,17 +25,20 @@ from sys import stderr
 class WSDSystemOutput(object):
     def __init__(self, filename = None):
         self.data = {}
+        self.distances={}
         if filename:
             self.load(filename)
 
-    def append(self, word_id, senses):
+    def append(self, word_id, senses,distance):
        assert (not word_id in self.data)
        if isinstance(senses, Distribution):
             self.data[word_id] = ( (x,y) for x,y in senses ) #PATCH UNDONE (#TODO: this is a patch, something's not right in Distribution?)
+            self.distances[word_id]=distance
             return
        else:
            assert isinstance(senses, list) and len(senses) >= 1
 
+       self.distances[word_id]=distance
        if len(senses[0]) == 1:
             #not a (sense_id, confidence) tuple! compute equal confidence for all elements automatically:
             confidence = 1 / float(len(senses))
@@ -48,10 +54,11 @@ class WSDSystemOutput(object):
                self.data[word_id] = Distribution(senses)
           else:
                self.data[word_id] = senses
+        
 
     def __iter__(self):
         for word_id, senses in  self.data.items():
-            yield word_id, senses
+            yield word_id, senses,self.distances[word_id]
 
     def __len__(self):
         return len(self.data)
@@ -70,25 +77,33 @@ class WSDSystemOutput(object):
                 self.append(word_id, [(fields[1],None)])
             else:
                 senses = []
+                distance='+vdiUNKNOWN'
                 for i in range(1,len(fields),2):
-                    if fields[i+1] == '?': fields[i+1] = None
-                    senses.append( (fields[i], fields[i+1]) )
-                self.append(word_id, senses)
+                    if i+1==len(fields):
+                        #The last field is the distance
+                        distance=fields[i]
+                    else:
+                        if fields[i+1] == '?': fields[i+1] = None
+                        senses.append( (fields[i], fields[i+1]) )
+                self.append(word_id, senses,distance)
+                
         f.close()
 
     def save(self, filename):
         f = codecs.open(filename,'w','utf-8')
-        for word_id, senses in self:
+        for word_id, senses,distance in self:
             f.write(word_id)
             for sense, confidence in senses:
                 if confidence == None: confidence = "?"
                 f.write(" " + sense + " " + str(confidence))
+            if word_id in self.distances.keys():
+                f.write(' '+str(self.distances[word_id]))
             f.write("\n")
         f.close()
 
     def out(self, filename):
-        for word_id, senses in self:
-            print word_id,
+        for word_id, senses,distance in self:
+            print word_id,distance,
             for sense, confidence in senses:
                 if confidence == None: confidence = "?"
                 print " " + sense + " " + str(confidence),
@@ -97,7 +112,7 @@ class WSDSystemOutput(object):
     def senses(self, bestonly=False):
         """Returns a list of all predicted senses"""
         l = []
-        for word_id, senses in self:
+        for word_id, senses,distance in self:
             for sense, confidence in senses:
                 if not sense in l: l.append(sense)
                 if bestonly:
@@ -108,11 +123,13 @@ class WSDSystemOutput(object):
     def loadfromtimbl(self, filename):
         timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
         for features, referenceclass, predictedclass, distribution, distance in timbloutput:
+            if distance != None:
+                distance='+vdi'+str(distance)
             if len(features) == 0:
                 print >>stderr, "Empty feature vector in " + filename
             word_id = features[0] #note: this is an assumption that must be adhered to!
             if distribution:
-                self.append(word_id, distribution)
+                self.append(word_id, distribution,distance)
             
 
 
