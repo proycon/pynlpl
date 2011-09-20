@@ -270,8 +270,11 @@ class Trie(object):
     
     def __init__(self, sequence = None):
         self.parent = None
+<<<<<<< HEAD
         self.children = None
         self.value = None
+=======
+>>>>>>> fix
         if sequence:
             self.append(sequence)
                 
