@@ -3689,7 +3689,7 @@ class Event(AbstractStructureElement):
     """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
     
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.Annotator, Attrib.N,)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR, Attrib.N,)
     ACCEPTED_DATA = (AbstractStructureElement,)
     XMLTAG = 'event' 
     
