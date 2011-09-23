@@ -43,7 +43,7 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME = range(6)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY = range(18)
+    TEXT, TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT = range(19)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -188,8 +188,8 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'n' in kwargs:
         if not Attrib.N in supported:
             raise ValueError("N is not supported")
-            object.n = kwargs['n']
-        del kwargs['n']                
+        object.n = kwargs['n']
+        del kwargs['n']
     elif Attrib.N in required:
         raise ValueError("N is required")
     else:
@@ -239,7 +239,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         print >>stderr, "   @n            = ", repr(object.n)
         print >>stderr, "   @datetime     = ", repr(object.datetime)
         
-                
     #set index
     if object.id and doc:
         if object.id in doc.index:
@@ -249,7 +248,16 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + object.id
             doc.index[object.id] = object
 
-    
+    #Parse feature attributes (shortcut for feature specification for some elements)
+    for c in object.ACCEPTED_DATA:
+        if issubclass(c, Feature):
+            try:
+                if c.SUBSET in kwargs:
+                    object.append(c,cls=kwargs[c.SUBSET])
+                    del kwargs[c.SUBSET]
+            except:
+                pass
+                
     return kwargs
     
         
@@ -390,6 +398,19 @@ class AbstractElement(object):
     def overridetextdelimiter(self):
         """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
         return None #do not override
+
+    def feat(self,subset):
+        """Obtain the feature value of the specific subset.
+        
+        Example::
+        
+            sense = word.annotation(folia.Sense)
+            synset = sense.feat('synset')        
+        """
+        
+        for f in self:
+            if isinstance(f, Feature) and f.subset == subset:
+                return f.cls
 
     def __ne__(self, other):
         return not (self == other)
@@ -819,6 +840,20 @@ class AbstractElement(object):
         except AttributeError:
             pass            
             
+            
+        omitchildren =  []
+        
+        #Are there predetermined Features in ACCEPTED_DATA?
+        for c in self.ACCEPTED_DATA:
+            if issubclass(c, Feature) and c.SUBSET:
+                #Do we have any of those?
+                for c2 in self.data:
+                    if c2.__class__ is c and c.SUBSET == c2.SUBSET and c2.cls:
+                        #Yes, serialize them as attributes
+                        attribs[c2.SUBSET] = c2.cls
+                        omitchildren.append(c2) #and skip them as elements
+                        break
+            
         e  = E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
         
             
@@ -834,7 +869,7 @@ class AbstractElement(object):
                         textelements.insert(0, child)                
                     else:
                         textelements.append(child)                
-                else:
+                elif not (child in omitchildren):
                     otherelements.append(child)
             for child in textelements+otherelements:
                 e.append(child.xml())
@@ -1136,7 +1171,7 @@ class AbstractElement(object):
             if not AnnotationType.CORRECTION in doc.annotationdefaults:
                 doc.declare(AnnotationType.CORRECTION, set='http://ilk.uvt.nl/folia/sets/dcoi-corrections.foliaset')
             instance.correct(generate_id_in=instance, cls=dcoicorrection, original=dcoicorrectionoriginal, new=text)
-        return instance        
+        return instance
             
     def resolveword(self, id):
         return None
@@ -1566,18 +1601,7 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         return super(AbstractStructureElement, self).__eq__(other)
 
 class AbstractAnnotation(AbstractElement):
-    def feat(self,subset):
-        """Obtain the feature value of the specific subset.
-        
-        Example::
-        
-            sense = word.annotation(folia.Sense)
-            synset = sense.feat('synset')        
-        """
-        
-        for f in self:
-            if isinstance(f, Feature) and f.subset == subset:
-                return f.cls
+    pass
 
 class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID): 
     """Abstract element, all token annotation elements are derived from this class"""
@@ -2521,6 +2545,13 @@ class ActorFeature(Feature):
     ANNOTATIONTYPE = AnnotationType.SENSE
     SUBSET = 'actor' #associated subset
 
+class Event(AbstractStructureElement):
+    
+    REQUIRED_ATTRIBS = (Attrib.CLASS,)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR, Attrib.N,)
+    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature)
+    ANNOTATIONTYPE = AnnotationType.EVENT
+    XMLTAG = 'event'    
     
 
 class SenseAnnotation(AbstractTokenAnnotation):
@@ -2565,7 +2596,7 @@ class Sentence(AbstractStructureElement):
     
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace)
+    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace, Event)
     XMLTAG = 's'
     TEXTDELIMITER = ' '
     
@@ -2702,11 +2733,11 @@ class ListItem(AbstractStructureElement):
 class List(AbstractStructureElement):    
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
-    ACCEPTED_DATA = (ListItem,Description, Caption)
+    ACCEPTED_DATA = (ListItem,Description, Caption, Event)
     XMLTAG = 'list'
-    
+    TEXTDELIMITER = '\n'
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event)
 
 class Figure(AbstractStructureElement):    
     """Element for the representation of a graphical figure. Structure element."""
@@ -2715,16 +2746,11 @@ class Figure(AbstractStructureElement):
     XMLTAG = 'figure'
     #TODO: relaxNG
     
-    def __init__(self, doc, *args, **kwargs):
-        if 'url' in kwargs:
-            self.url = kwargs['url']
-            del kwargs['url']
-        else:
-            self.url = None 
-            
+    def __init__(self, doc, *args, **kwargs):            
         if 'src' in kwargs:
             self.src = kwargs['src']
             del kwargs['src']
+            
         else:
             self.src = None 
             
@@ -2736,6 +2762,13 @@ class Figure(AbstractStructureElement):
             if not attribs: attribs = {}
             attribs['{' + NSFOLIA + '}src'] = self.src
         return super(Figure, self).xml(attribs, elements, skipchildren)     
+        
+    def caption(self):
+        try:
+            caption = self.select(folia.Caption)[0]
+            return caption.text
+        except:
+            return NoSuchText
         
     #@classmethod
     #def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -2751,7 +2784,7 @@ class Paragraph(AbstractStructureElement):
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace, List, Figure)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace, List, Figure, Event)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n"
             
@@ -2761,7 +2794,7 @@ class Head(AbstractStructureElement):
     
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Sentence,Description)
+    ACCEPTED_DATA = (Sentence,Description, Event)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'          
@@ -3674,24 +3707,19 @@ class Division(AbstractStructureElement):
                 return e
         raise NoSuchAnnotation()
               
-Division.ACCEPTED_DATA = (Division, Gap, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
+Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
 
 class Text(AbstractStructureElement):
     """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
     
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description)
     XMLTAG = 'text' 
     TEXTDELIMITER = "\n\n"        
 
-class Event(AbstractStructureElement):
-    """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
+
     
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR, Attrib.N,)
-    ACCEPTED_DATA = (AbstractStructureElement,)
-    XMLTAG = 'event' 
     
 
 

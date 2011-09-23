@@ -382,7 +382,37 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( w.textcontent().value, 'hoofdletter')
         self.assertEqual( w.textcontent().offset, 3)
         
+    def test031_sense(self):   
+        """Sanity Check - Lexical Semantic Sense Annotation"""
+        w = self.doc['sandbox.list.1.listitem.1.s.1.w.1']
+        sense = w.annotation(folia.SenseAnnotation)
         
+        self.assertEqual( sense.cls , 'some.sense.id')
+        self.assertEqual( sense.feat('synset') , 'some.synset.id')
+        
+    def test032_event(self):   
+        """Sanity Check - Events"""
+        l= self.doc['sandbox.list.1']
+        event = l.annotation(folia.Event)
+        
+        self.assertEqual( event.cls , 'applause')
+        self.assertEqual( event.feat('actor') , 'audience')
+
+    def test033_list(self):   
+        """Sanity Check - List"""
+        l = self.doc['sandbox.list.1']
+        self.assertTrue( isinstance( l[0], folia.ListItem) ) 
+        self.assertEqual( l[0].n, 1 ) #testing common n attribute
+        self.assertEqual( l[0].text(), 'Eerste testitem') 
+        self.assertTrue( isinstance( l[-1], folia.ListItem) )
+        self.assertEqual( l[-1].text(), 'Tweede testitem')
+        self.assertEqual( l[0].n, 2 )
+
+    def test034_figure(self):   
+        """Sanity Check - Figure"""
+        fig = self.doc['sandbox.figure.1']
+        self.assertEqual( fig.src, "http://upload.wikimedia.org/wikipedia/commons/8/8e/Family_tree.svg")
+        self.assertEqual( fig.caption(), 'Een stamboom')
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
@@ -397,8 +427,8 @@ class Test2Sanity(unittest.TestCase):
         self.doc.save('/tmp/foliatest100.xml')        
         self.assertEqual(  folia.Document(file='/tmp/foliatest100.xml',debug=False), self.doc )
     
-    def test100b_sanity(self):                       
-        """Sanity Check - B - Checking output file against input using diff (should be equal)"""
+    def test100b_sanity_xmldiff(self):                       
+        """Sanity Check - B - Checking output file against input using xmldiff (should be equal)"""
         global FOLIAEXAMPLE
         f = codecs.open('/tmp/foliatest.xml','w','utf-8')
         f.write(FOLIAEXAMPLE)    
@@ -1140,6 +1170,8 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
       <lemma-annotation set="lemmas-nl" annotator="tadpole" annotatortype="auto" />
       <correction-annotation set="corrections" annotator="proycon" annotatortype="manual" />
       <errordetection-annotation set="corrections" annotator="proycon" annotatortype="manual" />
+      <sense-annotation set="sense-set" />
+      <event-annotation set="event-set" />
     </annotations>
     <imdi:METATRANSCRIPT xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" Date="2009-01-27" Type="SESSION" Version="1">
     <imdi:Session>
@@ -2104,17 +2136,19 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
       </div>
       <div xml:id="sandbox">
           <list  xml:id="sandbox.list.1">
-              <listitem xml:id="sandbox.list.1.listitem.1">
+              <listitem xml:id="sandbox.list.1.listitem.1" n="1">
                   <s xml:id="sandbox.list.1.listitem.1.s.1">
                       <w xml:id="sandbox.list.1.listitem.1.s.1.w.1">
                           <t>Eerste</t>
+                          <sense class="some.sense.id" synset="some.synset.id" />
                       </w>
                       <w xml:id="sandbox.list.1.listitem.1.s.1.w.2">
                           <t>testitem</t>
                       </w>                      
                   </s>                  
               </listitem>
-              <listitem xml:id="sandbox.list.1.listitem.2">
+              <event class="applause" actor="audience" />
+              <listitem xml:id="sandbox.list.1.listitem.2" n="2">
                   <s xml:id="sandbox.list.1.listitem.2.s.1">
                       <w xml:id="sandbox.list.1.listitem.2.s.1.w.1">
                           <t>Tweede</t>
