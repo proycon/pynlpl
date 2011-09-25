@@ -417,9 +417,73 @@ class MarkovChain(object):
         
         
 class HiddenMarkovModel(MarkovChain):
-    pass #TODO
+    def __init__(self, startstate, endstate = None):
+        self.observablenodes = {}
+        self.edges_toobservables = {}
+        super(HiddenMarkovModel, self).__init__(startstate,endstate)
         
-    
+    def setemission(self, state, distribution):
+        self.nodes.add(state)
+        if not isinstance(distribution, Distribution):
+            distribution = Distribution(distribution)
+        self.edges_toobservables[state] = distribution
+        self.observablenodes.update(distribution.keys())        
+
+    def print_dptable(self, V):
+        print "    ",
+        for i in range(len(V)): print "%7s" % ("%d" % i),
+        print
+     
+        for y in V[0].keys():
+            print "%.5s: " % y,
+            for t in range(len(V)):
+                print "%.7s" % ("%f" % V[t][y]),
+            print
+     
+    #Adapted from: http://en.wikipedia.org/wiki/Viterbi_algorithm 
+    def viterbi(observations, doprint=False):
+        #states, start_p, trans_p, emit_p):
+        
+        V = [{}] #Viterbi matrix
+        path = {}
+     
+        # Initialize base cases (t == 0)
+        for node in self.edges_out[self.startnode].keys():
+            try:
+                V[0][node] = self.edges_out[self.startnode][node] * self.edges_toobservables[node][observations[0]]
+                path[node] = [node]
+            except KeyError:
+                pass #will be 0, don't store
+     
+        # Run Viterbi for t > 0
+        for t in range(1,len(observations)):
+            V.append({})
+            newpath = {}
+     
+            for node in self.nodes:
+                column = []
+                for prevnode in V[t-1].keys():
+                    try:
+                        column.append( (V[t-1][prevnode] * self.edges_out[prevnode][node] * self.edges_toobservables[node][observations[t]],  prevnode ) )
+                    except KeyError:
+                        pass #will be 0 
+                
+                if column:
+                    (prob, state) = max(column)
+                    V[t][node] = prob
+                    newpath[node] = path[state] + [y]
+     
+            # Don't need to remember the old paths
+            path = newpath
+     
+        if doprint: print_dptable(V)
+        
+        if not V[len(observations) - 1]:
+            return (0,[])
+        else:
+            (prob, state) = max([(V[len(observations) - 1][node], node) for node in V[len(observations) - 1].keys()])
+            return (prob, path[state])
+
     
 
 # ********************* Common Functions ******************************
