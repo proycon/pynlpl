@@ -3719,8 +3719,7 @@ class Text(AbstractStructureElement):
     TEXTDELIMITER = "\n\n"        
 
 
-    
-    
+        
 
 
 class Corpus:
