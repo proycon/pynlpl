@@ -418,7 +418,7 @@ class MarkovChain(object):
         
 class HiddenMarkovModel(MarkovChain):
     def __init__(self, startstate, endstate = None):
-        self.observablenodes = {}
+        self.observablenodes = set()
         self.edges_toobservables = {}
         super(HiddenMarkovModel, self).__init__(startstate,endstate)
         
@@ -441,16 +441,16 @@ class HiddenMarkovModel(MarkovChain):
             print
      
     #Adapted from: http://en.wikipedia.org/wiki/Viterbi_algorithm 
-    def viterbi(observations, doprint=False):
+    def viterbi(self,observations, doprint=False):
         #states, start_p, trans_p, emit_p):
         
         V = [{}] #Viterbi matrix
         path = {}
      
         # Initialize base cases (t == 0)
-        for node in self.edges_out[self.startnode].keys():
+        for node in self.edges_out[self.startstate].keys():
             try:
-                V[0][node] = self.edges_out[self.startnode][node] * self.edges_toobservables[node][observations[0]]
+                V[0][node] = self.edges_out[self.startstate][node] * self.edges_toobservables[node][observations[0]]
                 path[node] = [node]
             except KeyError:
                 pass #will be 0, don't store
@@ -471,7 +471,7 @@ class HiddenMarkovModel(MarkovChain):
                 if column:
                     (prob, state) = max(column)
                     V[t][node] = prob
-                    newpath[node] = path[state] + [y]
+                    newpath[node] = path[state] + [node]
      
             # Don't need to remember the old paths
             path = newpath

@@ -18,7 +18,7 @@ import unittest
 sys.path.append(sys.path[0] + '/../../')
 os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
-from pynlpl.statistics import FrequencyList
+from pynlpl.statistics import FrequencyList, HiddenMarkovModel
 from pynlpl.textprocessors import Windower
 
 
@@ -74,6 +74,19 @@ class BigramFrequencyListTest(unittest.TestCase):
             f.append(Windower(sentence,2))
         self.assertTrue(( f[('is','a')] == 2 and  f[('this','is')] == 1))
 
-
+class HMMTest(unittest.TestCase):
+    def test_viterbi(self):
+        """Viterbi decode run on Hidden Markov Model"""
+        hmm = HiddenMarkovModel('start')
+        hmm.settransitions('start',{'rainy':0.6,'sunny':0.4})
+        hmm.settransitions('rainy',{'rainy':0.7,'sunny':0.3})
+        hmm.settransitions('sunny',{'rainy':0.4,'sunny':0.6}) 
+        hmm.setemission('rainy', {'walk': 0.1, 'shop': 0.4, 'clean': 0.5})
+        hmm.setemission('sunny', {'walk': 0.6, 'shop': 0.3, 'clean': 0.1})
+        observations = ['walk', 'shop', 'clean']
+        prob, path = hmm.viterbi(observations)
+        self.assertEqual( path, ['sunny', 'rainy', 'rainy'])
+        self.assertEqual( prob, 0.01344)
+        
 if __name__ == '__main__':
     unittest.main()
