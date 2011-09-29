@@ -29,16 +29,16 @@ class WSDSystemOutput(object):
         if filename:
             self.load(filename)
 
-    def append(self, word_id, senses,distance):
+    def append(self, word_id, senses,distance=0):
        assert (not word_id in self.data)
        if isinstance(senses, Distribution):
             self.data[word_id] = ( (x,y) for x,y in senses ) #PATCH UNDONE (#TODO: this is a patch, something's not right in Distribution?)
-            self.distances[word_id]=distance
             return
        else:
            assert isinstance(senses, list) and len(senses) >= 1
 
        self.distances[word_id]=distance
+       
        if len(senses[0]) == 1:
             #not a (sense_id, confidence) tuple! compute equal confidence for all elements automatically:
             confidence = 1 / float(len(senses))
