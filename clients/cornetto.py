@@ -27,6 +27,7 @@ import sys
 import httplib2                    # version 0.6.0+
 import urlparse                    # renamed to urllib.parse in Python 3.0
 import httplib, urllib, base64
+from sys import stderr 
 #import pickle
 
 printf = lambda x: sys.stdout.write(x+ "\n")
@@ -48,8 +49,12 @@ class CornettoClient:
         if self.debug:
             printf( "cornettodb/views/remote_open()" )
         # permission denied on cornetto with apache
-    #    http = httplib2.Http( ".cache" )
-        http = httplib2.Http(disable_ssl_certificate_validation=True)
+        #    http = httplib2.Http( ".cache" )
+        try:
+            http = httplib2.Http(disable_ssl_certificate_validation=True)
+        except TypeError:
+            print >>stderr, "[CornettoClient] WARNING: Older version of httplib2! Can not disable_ssl_certificate_validation" 
+            http = httplib2.Http() #for older httplib2 
 
         # VU DEBVisDic authentication
         http.add_credentials( self.userid, self.passwd )
