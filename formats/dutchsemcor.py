@@ -123,11 +123,12 @@ class WSDSystemOutput(object):
 
     def loadfromtimbl(self, filename):
         timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
-        for features, referenceclass, predictedclass, distribution, distance in timbloutput:
+        for i, (features, referenceclass, predictedclass, distribution, distance) in enumerate(timbloutput):
             if distance != None:
                 distance='+vdi'+str(distance)
             if len(features) == 0:
-                print >>stderr, "Empty feature vector in " + filename
+                print >>stderr, "WARNING: Empty feature vector in " + filename + " (line " + str(i+1) + ") skipping!!"
+                continue
             word_id = features[0] #note: this is an assumption that must be adhered to!
             if distribution:
                 self.append(word_id, distribution,distance)
