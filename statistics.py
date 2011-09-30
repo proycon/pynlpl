@@ -251,6 +251,8 @@ class Distribution:
                 entropy += self._dist[type] * -math.log(self._dist[type], base)     
         return entropy
 
+    def perplexity(self, base=2):
+        return base ** self.entropy(base)
 
     def mode(self):
         """Returns the type that occurs the most frequently in the probability distribution"""
