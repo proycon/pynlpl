@@ -37,8 +37,6 @@ class TimblOutput:
             line = line.strip()
             if line and line[0] != '#': #ignore empty lines and comments
                 segments = [ x for i, x in enumerate(line.split(self.delimiter)) if x not in self.ignorevalues and i+1 not in self.ignorecolumns ]
-                #print str(line.encode('utf-8'))
-                #print str(segments)
                               
                 #segments = [ x for x in line.split() if x != "^" and not (len(x) == 3 and x[0:2] == "n=") ]  #obtain segments, and filter null fields and "n=?" feature (in fixed-feature configuration)
                 

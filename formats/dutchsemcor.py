@@ -31,7 +31,8 @@ class WSDSystemOutput(object):
             self.load(filename)
 
     def append(self, word_id, senses,distance=0):
-       assert (not word_id in self.data)
+       # Commented by Ruben, there are some ID's that are repeated in all sonar test files...            
+       #assert (not word_id in self.data)
        if isinstance(senses, Distribution):
             self.data[word_id] = ( (x,y) for x,y in senses ) #PATCH UNDONE (#TODO: this is a patch, something's not right in Distribution?)
             self.distances[word_id]=distance
@@ -87,7 +88,6 @@ class WSDSystemOutput(object):
                 self.append(word_id, [(fields[1],None)])
             else:
                 senses = []
-                distance='+vdiUNKNOWN'
                 distance=-1
                 for i in range(1,len(fields),2):
                     if i+1==len(fields):
