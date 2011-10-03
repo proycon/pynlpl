@@ -37,13 +37,23 @@ class TimblOutput:
             line = line.strip()
             if line and line[0] != '#': #ignore empty lines and comments
                 segments = [ x for i, x in enumerate(line.split(self.delimiter)) if x not in self.ignorevalues and i+1 not in self.ignorecolumns ]
-              
+                #print str(line.encode('utf-8'))
+                #print str(segments)
+                              
                 #segments = [ x for x in line.split() if x != "^" and not (len(x) == 3 and x[0:2] == "n=") ]  #obtain segments, and filter null fields and "n=?" feature (in fixed-feature configuration)
                 
 
                 if not endfvec:
                     try:
-                        endfvec = segments.index("{")            
+                        # Modified by Ruben. There are some cases where one of the features is a {, and then
+                        # the module is not able to obtain the distribution of scores and senses
+                        # We have to look for the last { in the vector, and due to there is no rindex method
+                        # we obtain the reverse and then apply index.
+                        segments.reverse()
+                        aux=segments.index("{")
+                        endfvec=len(segments)-aux-1
+                        segments.reverse()
+                        #endfvec = segments.index("{")            
                     except ValueError:
                         endfvec = None
                             

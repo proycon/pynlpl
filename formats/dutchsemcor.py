@@ -26,6 +26,7 @@ class WSDSystemOutput(object):
     def __init__(self, filename = None):
         self.data = {}
         self.distances={}
+        self.maxDistance=1
         if filename:
             self.load(filename)
 
@@ -34,11 +35,16 @@ class WSDSystemOutput(object):
        if isinstance(senses, Distribution):
             self.data[word_id] = ( (x,y) for x,y in senses ) #PATCH UNDONE (#TODO: this is a patch, something's not right in Distribution?)
             self.distances[word_id]=distance
+            if distance > self.maxDistance:
+              self.maxDistance=distance
             return
        else:
            assert isinstance(senses, list) and len(senses) >= 1
 
-       self.distances[word_id]=distance        
+       self.distances[word_id]=distance
+       if distance > self.maxDistance:
+        self.maxDistance=distance
+                             
        
        if len(senses[0]) == 1:
             #not a (sense_id, confidence) tuple! compute equal confidence for all elements automatically:
@@ -57,6 +63,9 @@ class WSDSystemOutput(object):
                self.data[word_id] = senses
         
 
+    def getMaxDistance(self):
+        return self.maxDistance
+    
     def __iter__(self):
         for word_id, senses in  self.data.items():
             yield word_id, senses,self.distances[word_id]
@@ -79,10 +88,14 @@ class WSDSystemOutput(object):
             else:
                 senses = []
                 distance='+vdiUNKNOWN'
+                distance=-1
                 for i in range(1,len(fields),2):
                     if i+1==len(fields):
                         #The last field is the distance
-                        distance=fields[i]
+                        if fields[i][:4]=='+vdi': #Support for previous format of wsdout
+                            distance=float(fields[i][4:])
+                        else:
+                            distance=float(fields[i])
                     else:
                         if fields[i+1] == '?': fields[i+1] = None
                         senses.append( (fields[i], fields[i+1]) )
@@ -96,7 +109,7 @@ class WSDSystemOutput(object):
             f.write(word_id)
             for sense, confidence in senses:
                 if confidence == None: confidence = "?"
-                f.write(" " + sense + " " + str(confidence))
+                f.write(" " + str(sense) + " " + str(confidence))
             if word_id in self.distances.keys():
                 f.write(' '+str(self.distances[word_id]))
             f.write("\n")
@@ -125,7 +138,8 @@ class WSDSystemOutput(object):
         timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
         for i, (features, referenceclass, predictedclass, distribution, distance) in enumerate(timbloutput):
             if distance != None:
-                distance='+vdi'+str(distance)
+                #distance='+vdi'+str(distance)
+                distance=float(distance)
             if len(features) == 0:
                 print >>stderr, "WARNING: Empty feature vector in " + filename + " (line " + str(i+1) + ") skipping!!"
                 continue
