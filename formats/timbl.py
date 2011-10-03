@@ -47,7 +47,7 @@ class TimblOutput:
                         # the module is not able to obtain the distribution of scores and senses
                         # We have to look for the last { in the vector, and due to there is no rindex method
                         # we obtain the reverse and then apply index.
-                        aux=reversed(segments).index("{")
+                        aux=list(reversed(segments)).index("{")
                         endfvec=len(segments)-aux-1
                         #endfvec = segments.index("{")            
                     except ValueError:
