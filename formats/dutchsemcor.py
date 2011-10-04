@@ -146,7 +146,23 @@ class WSDSystemOutput(object):
             word_id = features[0] #note: this is an assumption that must be adhered to!
             if distribution:
                 self.append(word_id, distribution,distance)
-            
+
+    def fromTimblToWsdout(self,fileTimbl,fileWsdout):
+        timbloutput = TimblOutput(codecs.open(fileTimbl,'r','utf-8'))
+        wsdoutfile = codecs.open(fileWsdout,'w','utf-8')
+        for i, (features, referenceclass, predictedclass, distribution, distance) in enumerate(timbloutput):
+            if len(features) == 0:
+                print >>stderr, "WARNING: Empty feature vector in " + filename + " (line " + str(i+1) + ") skipping!!"
+                continue
+            word_id = features[0] #note: this is an assumption that must be adhered to!
+            if distribution:
+                wsdoutfile.write(word_id+' ')
+                for sense, confidence in distribution:
+                    if confidence== None: confidence='?'
+                    wsdoutfile.write(sense+' '+str(confidence)+' ')
+                wsdoutfile.write(str(distance)+'\n')
+        wsdoutfile.close()
+                                                    
 
 
 class DataSet(object): #for testsets/trainingsets
