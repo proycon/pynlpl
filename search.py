@@ -13,6 +13,8 @@
 from sys import stderr
 from pynlpl.datatypes import FIFOQueue, PriorityQueue
 from collections import deque
+from bisect import bisect_left
+
 
 class AbstractSearchState(object):
     def __init__(self,  parent = None, cost = 0):
@@ -476,3 +478,9 @@ class HillClimbingSearch(AbstractSearch): #TODO: TEST
         assert isinstance(state, AbstractSearchState)
         super(HillClimbingSearch,self).__init__(**kwargs)
         self.fringe = PriorityQueue([state], lambda x: x.score, self.minimize, length=0, blockworse=True, blockequal=False,duplicates=False)
+
+#From http://stackoverflow.com/questions/212358/binary-search-in-python
+def binary_search(a, x, lo=0, hi=None):   # can't use a to specify default for hi 
+    hi = hi if hi is not None else len(a) # hi defaults to len(a)   
+    pos = bisect_left(a,x,lo,hi)          # find insertion position
+    return (pos if pos != hi and a[pos] == x else -1) # don't walk off the end
