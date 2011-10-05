@@ -15,4 +15,13 @@ def sum_to_n(n, size, limit=None): #from http://stackoverflow.com/questions/2065
             yield [i] + tail
     
 
-
+def consecutivegaps(n): 
+    """Compute all possible single consecutive gaps in a sequence (no gaps allowed at immediate beginning or end of a sequence). Returns
+    (beginindex, length) tuples. Runs in  O(n(n+1) / 2) time. Argument is the length of the sequence rather than the sequence itself"""
+    begin = 1
+    while begin < n - 2:
+        length = (n - 1) - begin
+        while length > 0:
+            yield (begin, length)
+            length -= 1
+        begin += 1
