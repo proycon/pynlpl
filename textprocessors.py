@@ -170,7 +170,7 @@ def swap(tokens, maxdist=2):
 
 
 class Classer(object):
-    def __init__(self, f, encoder=True, decoder=True):
+    def __init__(self, f, encoder=True, decoder=True, encoding=None):
         """Pass either a filename or a frequency list"""
         self.encoder = encoder
         self.decoder = decoder
@@ -197,10 +197,14 @@ class Classer(object):
             f.close()
         else: 
             raise Exception("Expected FrequencyList or filename, got " + str(type(f)))
+        self.encoding = encoding
 
     def save(self, filename):
         if not self.decoder: raise Exception("Decoder not enabled!")
-        f = codecs.open(filename,'w','utf-8')   
+        if self.encoding:
+            f = codecs.open(filename,'w',self.encoding)   
+        else:
+            f = open(filename,'w')
         for cls, word in enumerate(self.class2word):
             f.write( str(cls) + '\t' + word + '\n')
         f.close()
