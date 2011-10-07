@@ -379,7 +379,7 @@ class Trie(object):
                         for results in child.walk(leavesonly, maxdepth, _depth + 1):
                             yield results
                     
-        
+
     
         
 #class SuffixTree(object):

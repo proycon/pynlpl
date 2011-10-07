@@ -239,11 +239,24 @@ class Classer(object):
         except:
             return len(self.word2class)
         
-        
+    def encodefile(self, fromfile, tofile):
+        ffrom = open(fromfile,'r')  
+        fto = open(tofile,'w')
+        for line in ffrom:
+            seq = self.encodeseq(line.strip().split(' '))
+            a = array.array('L')
+            for i in seq:
+                a.append(i)
+            a.tofile(f)            
+        fto.close()
+        ffrom.close()
         
         
             
-    
+        
+        
+            
+
     
     
         
