@@ -16,6 +16,7 @@
 
 
 import bisect
+import array
 
 class Queue: #from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
     """Queue is an abstract class/interface. There are three types:
@@ -378,8 +379,63 @@ class Trie(object):
                     else:
                         for results in child.walk(leavesonly, maxdepth, _depth + 1):
                             yield results
-                    
+                        
+    
 
+def containsnullbyte(i):
+     while True:
+        r = i % 256
+        if i % 256 == 0:
+            return True
+        if i >= 256:
+            i = i / 256
+        else:
+            return False
+    
+
+def inttobytearray(i,bigendian=False, nonullbyte=False):
+    #convert int to byte array
+    a = array.array('B')
+    while True:
+        r = i % 256
+        #print hex(r), bin(r)
+        if nonullbyte and r == 0:
+            raise ValueError("Null byte encountered")
+        a.append(r)
+        if i >= 256:
+            i = i / 256
+        else:
+            break
+    if bigendian: a.reverse()
+    return a
+    
+    
+def bytearraytoint(a,bigendian=False):
+    i = 0
+    for n,b in enumerate(a):
+        if bigendian: n = len(a) - 1 - n
+        i += b * 256**n
+    return i
+    
+def intarraytobytearray(intarray,bigendian=False):
+    """Converts an array of integers (with some value restrictions) to an array of bytes in which elements are NULL-byte delimited"""
+    a = array.array('B')
+    l = len(intarray)
+    for n,  i in enumerate(intarray):
+        a += inttobytearray(i,bigendian,True)
+        if n < l - 1:
+            a.append(0) 
+    return a
+
+def bytearraytointarray(bytearray, bigendian=False):
+    """Converts a NULL-byte delimited array of bytes into an array of integers"""
+    a = array.array('I')
+    begin = 0    
+    for n, b in enumerate(bytearray):
+        if b == 0:
+            a.append( bytearraytoint(b[begin:n]) )
+    a.append( bytearraytoint(b[begin:len(bytearray)]) )
+    return a
     
         
 #class SuffixTree(object):

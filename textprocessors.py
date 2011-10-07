@@ -15,6 +15,7 @@ import unicodedata
 import string
 import codecs
 from statistics import FrequencyList
+from datatypes import intarraytobytearray, containsnullbyte
 
 try:
     from itertools import permutations
@@ -170,34 +171,62 @@ def swap(tokens, maxdist=2):
 
 
 class Classer(object):
-    def __init__(self, f, encoder=True, decoder=True, encoding=None):
+    def __init__(self, f, **kwargs):
         """Pass either a filename or a frequency list"""
-        self.encoder = encoder
-        self.decoder = decoder
+        if 'decoder' in kwargs:
+            self.decoder = bool(kwargs['decoder'])
+        else:
+            self.decoder = True
+        
+        if 'encoder' in kwargs:
+            self.encoder = bool(kwargs['encoder'])
+        else:
+            self.encoder = True
+
+        self.newestclass = 0
+            
         if self.decoder:
-            self.class2word = []
-        if self.encoder:
+            self.class2word = {} 
+        if self.encoder:    
             self.word2class = {}
-        if isinstance(f, FrequencyList):            
-            for word, count in f:       
-                self.class2word.append(word)            
-            if self.encoder:
-                for cls, word in enumerate(self.class2word):
-                    self.word2class[word] = cls
+
+        if 'encoding' in kwargs and kwargs['encoding']:
+            self.encoding = kwargs['encoding']
+        else:
+            self.encoding = None
+            
+        if 'filesupport' in kwargs:
+            self.filesupport = bool(kwargs['filesupport'])
+        else:
+            self.filesupport = False
+            
+        if self.filesupport:
+            self.newestclass = 1 #0 and 1 are reserved for space and newline
+                    
+        if isinstance(f, FrequencyList):                        
+            for word, _ in f:  
+                self.newestclass += 1
+                if self.filesupport:
+                    while containsnullbyte(self.newestclass): 
+                        self.newestclass += 1
+                print self.newestclass, word
+                if self.decoder:
+                    self.class2word[self.newestclass] = word  
+                if self.encoder:
+                    self.word2class[word] = self.newestclass
             if not self.decoder:
                 del self.class2word
         elif isinstance(f, str):
             f = codecs.open(f,'r','utf-8')      
-            cls = 0
             for line in f:
-                word = line.strip().split('\t')[1]
-                if self.decoder: self.class2word.append(word)
+                cls, word = line.strip().split('\t')[1]
+                if self.decoder: self.class2word[cls] = word
                 if self.encoder: self.word2class[word] = cls 
-                cls += 1
             f.close()
         else: 
             raise Exception("Expected FrequencyList or filename, got " + str(type(f)))
-        self.encoding = encoding
+        
+        
 
     def save(self, filename):
         if not self.decoder: raise Exception("Decoder not enabled!")
@@ -205,8 +234,9 @@ class Classer(object):
             f = codecs.open(filename,'w',self.encoding)   
         else:
             f = open(filename,'w')
-        for cls, word in enumerate(self.class2word):
-            f.write( str(cls) + '\t' + word + '\n')
+        for cls, word in sorted(self.class2word.items()):
+            if cls:
+                f.write( str(cls) + '\t' + word + '\n')
         f.close()
                     
     def decode(self, x):
@@ -240,19 +270,16 @@ class Classer(object):
             return len(self.word2class)
         
     def encodefile(self, fromfile, tofile):
+        assert self.filesupport
         ffrom = open(fromfile,'r')  
         fto = open(tofile,'w')
         for line in ffrom:
-            seq = self.encodeseq(line.strip().split(' '))
-            a = array.array('L')
-            for i in seq:
-                a.append(i)
-            a.tofile(f)            
+            a = intarraytobytearray( self.encodeseq( line.strip().split(' ') ))
+            a.append(1) #newline
+            a.tofile(fto)            
         fto.close()
         ffrom.close()
         
-        
-            
         
         
             
