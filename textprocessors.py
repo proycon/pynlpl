@@ -14,8 +14,9 @@
 import unicodedata
 import string
 import codecs
+import array
 from statistics import FrequencyList
-from datatypes import intarraytobytearray, containsnullbyte
+from datatypes import intarraytobytearray, bytearraytoint, containsnullbyte
 
 try:
     from itertools import permutations
@@ -219,9 +220,9 @@ class Classer(object):
         elif isinstance(f, str):
             f = codecs.open(f,'r','utf-8')      
             for line in f:
-                cls, word = line.strip().split('\t')[1]
-                if self.decoder: self.class2word[cls] = word
-                if self.encoder: self.word2class[word] = cls 
+                cls, word = line.strip().split('\t',2)
+                if self.decoder: self.class2word[int(cls)] = word
+                if self.encoder: self.word2class[word] = int(cls)
             f.close()
         else: 
             raise Exception("Expected FrequencyList or filename, got " + str(type(f)))
@@ -275,12 +276,33 @@ class Classer(object):
         fto = open(tofile,'w')
         for line in ffrom:
             a = intarraytobytearray( self.encodeseq( line.strip().split(' ') ))
+            a.append(0) #delimiter
             a.append(1) #newline
+            a.append(0) #delimiter
             a.tofile(fto)            
         fto.close()
         ffrom.close()
         
-        
+    def decodefile(self, filename):
+        f = open(filename)
+        buffer = array.array('B')
+        line = []
+        b = chr(0)
+        nullbyte = chr(0)
+        while b != "":
+            b = f.read(1)
+            if b == "": break
+            if b == nullbyte:
+                cls = bytearraytoint(buffer)
+                if cls == 1:
+                    yield line
+                    line = []
+                else:
+                    line.append( self.decode(cls) )
+                buffer = array.array('B')
+            else:
+                buffer.append(ord(b))
+        f.close()
         
             
 
