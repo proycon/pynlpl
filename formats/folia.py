@@ -1145,7 +1145,7 @@ class AbstractElement(object):
             kwargs[key] = value
                                 
         #D-Coi support:
-        if dcoi and TextContent in Class.ACCEPTED_DATA:
+        if dcoi and TextContent in Class.ACCEPTED_DATA and node.text:
             text = node.text.strip()
                     
 
@@ -2799,22 +2799,21 @@ class Head(AbstractStructureElement):
     TEXTDELIMITER = ' '
     XMLTAG = 'head'          
         
-#class Query(object):
-#    """An XPath query on a FoLiA document"""
-#    def __init__(self, files, expression):
-#        if not isinstance(files, list) and not isinstance(files, tuple):
-#            self.files = [files]
-#        else:
-#            self.files = files
-#        expression = expression.replace("active()", "(not(ancestor::original) and not(ancestor::suggestion) and not(ancestor::alternative))")
-#        self.expression = expression
-#        
-#    def __iter__(self):
-#        for filename in files:
-#            doc = Document(partial=filename)
-#            
-#    
-#        raise NotImplementedError
+class Query(object):
+    """An XPath query on one or more FoLiA documents"""
+    def __init__(self, files, expression):
+        if isinstance(files, str) or isinstance(files, unicode):
+            self.files = [files]
+        else:
+            self.files = files
+        expression = expression.replace("active()", "(not(ancestor::original) and not(ancestor::suggestion) and not(ancestor::alternative))")
+        self.expression = expression
+        
+    def __iter__(self):
+        for filename in self.files:
+            doc = Document(file=filename, partial=True)
+            for result in doc.xpath(self.expression, True):
+                yield result            
 
 class RegExp(object):
     def __init__(self, regexp):
@@ -2960,10 +2959,10 @@ class Document(object):
         else:
             self.debug = False
     
-        if 'load' in kwargs:
-            self.loadall = kwargs['load'] #Load all in memory
+        if 'partial' in kwargs:
+            self.partial = kwargs['partial'] 
         else:
-            self.loadall = True
+            self.partial = False #Load all in memory
     
     
         if 'deepvalidation' in kwargs:
@@ -2993,6 +2992,9 @@ class Document(object):
         """Load a FoLiA or D-Coi XML file"""
         self.tree = ElementTree.parse(filename)
         self.parsexml(self.tree.getroot())
+        if not self.partial:
+            #XML Tree is now obsolete (only needed when partially loaded for xpath queries)
+            self.tree = None
 
     def items(self):
         """Returns a depth-first flat list of all items in the document"""
@@ -3001,8 +3003,10 @@ class Document(object):
             l += e.items()
         return l
             
-    def xpath(self, query):
+    def xpath(self, query, _preparsed=False):
         """Run Xpath expression and parse the resulting elements"""
+        if not _preparsed:
+            query = query.replace("active()", "(not(ancestor::original) and not(ancestor::suggestion) and not(ancestor::alternative))")
         for result in self.tree.xpath(query,namespaces={'f': 'http://ilk.uvt.nl/folia','folia': 'http://ilk.uvt.nl/folia' }):
             yield self.parsexml(result)
             
@@ -3511,7 +3515,7 @@ class Document(object):
                         if subsubnode.tag == '{' + NSFOLIA + '}meta':
                             if subsubnode.text:
                                 self.metadata[subsubnode.attrib['id']] = subsubnode.text
-                elif subnode.tag == '{' + NSFOLIA + '}text' and self.loadall:
+                elif subnode.tag == '{' + NSFOLIA + '}text' and not self.partial:
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
                     self.data.append( self.parsexml(subnode) )
         elif node.tag == '{' + NSDCOI + '}DCOI':

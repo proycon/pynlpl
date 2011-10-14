@@ -402,11 +402,11 @@ class Test2Sanity(unittest.TestCase):
         """Sanity Check - List"""
         l = self.doc['sandbox.list.1']
         self.assertTrue( isinstance( l[0], folia.ListItem) ) 
-        self.assertEqual( l[0].n, 1 ) #testing common n attribute
+        self.assertEqual( l[0].n, '1' ) #testing common n attribute
         self.assertEqual( l[0].text(), 'Eerste testitem') 
         self.assertTrue( isinstance( l[-1], folia.ListItem) )
         self.assertEqual( l[-1].text(), 'Tweede testitem')
-        self.assertEqual( l[0].n, 2 )
+        self.assertEqual( l[-1].n, '2' )
 
     def test034_figure(self):   
         """Sanity Check - Figure"""
@@ -1152,7 +1152,17 @@ class Test6Query(unittest.TestCase):
         matches = list(self.doc.findwords( folia.Pattern('bli','bla','blu', matchannotation=folia.SenseAnnotation) ))
         self.assertEqual( len(matches), 0 )
 
-class Test7Validation(unittest.TestCase):    
+class Test7XpathQuery(unittest.TestCase):                
+    def test050_findwords_xpath(self):     
+        """Xpath Querying - Collect all words"""        
+        count = 0
+        for word in folia.Query('/tmp/foliatest.xml','//w:active()'):            
+            count += 1
+            self.assertTrue( isinstance(word, folia.Word) )
+        self.assertEqual(count, 157)
+
+
+class Test8Validation(unittest.TestCase):    
       def test000_relaxng(self): 
         """Validation - RelaxNG schema generation"""
         folia.relaxng()

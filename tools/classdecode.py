@@ -6,4 +6,4 @@ import sys
 
 classer = Classer(sys.argv[1])
 for line in classer.decodefile(sys.argv[2]):
-    print " ".join(line)
+    print " ".join(line).encode('utf-8')
