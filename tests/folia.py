@@ -66,7 +66,7 @@ class Test2Sanity(unittest.TestCase):
     def setUp(self):
         self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
         
-    def test000_count_paragraphs(self):                                    
+    def test000_count_text(self):
         """Sanity check - One text """        
         self.assertEqual( len(self.doc), 1) 
         self.assertTrue( isinstance( self.doc[0], folia.Text )) 
@@ -96,14 +96,14 @@ class Test2Sanity(unittest.TestCase):
         
     def test005_last_word(self):                                    
         """Sanity check - Last word"""            
-        #grab first word
+        #grab last word
         w = self.doc.words(-1) # shortcut for doc.words()[0]         
         self.assertTrue( isinstance(w, folia.Word) )
         self.assertEqual( w.id , 'sandbox.figure.1.caption.s.1.w.2' ) 
         self.assertEqual( w.text() , "stamboom" )             
         self.assertEqual( str(w) , "stamboom" )             
         
-    def test006_first_sentence(self):                                    
+    def test006_second_sentence(self):                                    
         """Sanity check - Sentence"""                                
         #grab second sentence
         s = self.doc.sentences(1)
