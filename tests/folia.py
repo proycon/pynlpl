@@ -1064,7 +1064,7 @@ class Test6Query(unittest.TestCase):
                 folia.Word(doc,id=doc.id + '.s.1.w.1', text="a"),
                 folia.Word(doc,id=doc.id + '.s.1.w.2', text="a"),
                 folia.Word(doc,id=doc.id + '.s.1.w.3', text="a"),
-                folia.Word(doc,id=doc.id + '.s.1.w.4', text="a"),
+                folia.Word(doc,id=doc.id + '.s.1.w.4', text="A"),
                 folia.Word(doc,id=doc.id + '.s.1.w.5', text="b"),
                 folia.Word(doc,id=doc.id + '.s.1.w.6', text="a"),
                 folia.Word(doc,id=doc.id + '.s.1.w.7', text="a"),
@@ -1075,6 +1075,8 @@ class Test6Query(unittest.TestCase):
         
         matches = list(doc.findwords( folia.Pattern('a','a')))
         self.assertEqual( len(matches), 4)       
+        matches = list(doc.findwords( folia.Pattern('a','a',casesensitive=True)))
+        self.assertEqual( len(matches), 3)       
 
     def test007_findwords_context(self):     
         """Querying - Find words with context"""
