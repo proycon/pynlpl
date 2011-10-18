@@ -13,7 +13,8 @@ freqlist = FrequencyList()
 for i, line in enumerate(f):            
     if (i % 10000 == 0): 
         print >>sys.stderr, "\tLine " + str(i+1)
-    line = line.strip().split(' ')
+    line = ['<s>'] + line.strip().split(' ') + ['</s>']
+    
     freqlist.append(line)
 f.close()
 
