@@ -26,12 +26,18 @@ import glob
 import os
 import re
 import urllib
+import multiprocessing
 
-FOLIAVERSION = '0.6.1'
-LIBVERSION = '0.6.1.14' #== FoLiA version + library revision
+FOLIAVERSION = '0.7.0'
+LIBVERSION = '0.7.0.15' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
+
+class Mode:
+    MEMORY = 0 #The entire FoLiA structure will be loaded into memory. This is the default and is required for any kind of document manipulation.
+    XPATH = 1 #The full XML structure will be loaded into memory, but conversion to FoLiA objects occurs only upon querying. The full power of XPath is available.
+    ITERATIVE = 2 #XML element are loaded and conveted to FoLiA objects iteratively on a need-to basis. A subset of XPath is supported.
 
 class AnnotatorType:
     UNSET = 0
@@ -81,6 +87,9 @@ class DeepValidationError(Exception):
     pass
     
 class SetDefinitionError(DeepValidationError):
+    pass
+    
+class ModeError(Exception):
     pass
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
@@ -212,7 +221,14 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     else:
         object.datetime = None        
     
-    
+
+    if 'auth' in kwargs:
+        object.auth = bool(kwargs['auth'])
+        del kwargs['auth']
+    else:
+        object.auth = True
+
+
     if 'text' in kwargs:
         object.settext(kwargs['text'])
         del kwargs['text']
@@ -305,7 +321,7 @@ class AbstractElement(object):
 
     TEXTDELIMITER = " " #Delimiter to use when dynamically gathering text from child elements
     PRINTABLE = False #Is this element printable (aka, can its text method be called?)
-    
+    AUTH = True #Authoritative by default. Elements the parser should skip on normal queries are non-authoritative (such as original, alternative)
     
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document) and not doc is None:
@@ -327,6 +343,16 @@ class AbstractElement(object):
                     
         for key in kwargs:
             raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)        
+            
+    #def __del__(self):
+    #    if self.doc and self.doc.debug:
+    #        print >>stderr, "[PyNLPl FoLiA DEBUG] Removing " + repr(self)
+    #    for child in self.data:
+    #        del child
+    #    self.doc = None
+    #    self.parent = None
+    #    del self.data
+        
 
     def description(self):
         """Obtain the description associated with the element, will raise NoDescription if there is none"""
@@ -831,6 +857,12 @@ class AbstractElement(object):
         try:
             if self.n:
                 attribs['{' + NSFOLIA + '}n'] = str(self.n)
+        except AttributeError:
+            pass
+            
+        try:
+            if not self.AUTH or not self.auth: #(former is static, latter isn't)
+                attribs['{' + NSFOLIA + '}auth'] = 'no'
         except AttributeError:
             pass
             
@@ -2207,6 +2239,7 @@ class Suggestion(AbstractCorrectionChild):
     XMLTAG = 'suggestion'
     OCCURRENCES = 0 #unlimited
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
+    AUTH = False
     
 
 class New(AbstractCorrectionChild):
@@ -2231,6 +2264,7 @@ class Original(AbstractCorrectionChild):
     OPTIONAL_ATTRIBS = (),    
     OCCURRENCES = 1
     XMLTAG = 'original'
+    AUTH = False
     
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
@@ -2367,7 +2401,7 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
     XMLTAG = 'alt'
     PRINTABLE = False    
-
+    AUTH = False
 
 Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractSubtokenAnnotationLayer)
 
@@ -2378,7 +2412,8 @@ class AlternativeLayers(AbstractElement):
     ACCEPTED_DATA = (AbstractAnnotationLayer,)    
     XMLTAG = 'altlayers'
     PRINTABLE = False    
-    
+    AUTH = False
+
 
 class WordReference(AbstractElement):
     """Word reference. Use to refer to words from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word objects will be used"""
@@ -2398,6 +2433,7 @@ class WordReference(AbstractElement):
         self.confidence = None
         self.n = None
         self.datetime = None
+        self.auth = False
         self.data = []
     
     @classmethod
@@ -2589,6 +2625,14 @@ class Quote(AbstractStructureElement):
             if r:
                 return r
         return None        
+        
+    def append(self, child, *args, **kwargs):
+        if inspect.isclass(child):
+            if child is Sentence:
+                kwargs['auth'] = False
+        elif isinstance(child, Sentence):        
+            child.auth = False #Sentences under quotes are non-authoritative
+        return super(Quote, self).append(child, *args, **kwargs)
         
         
 class Sentence(AbstractStructureElement):
@@ -2806,13 +2850,12 @@ class Query(object):
             self.files = [files]
         else:
             self.files = files
-        expression = expression.replace("active()", "(not(ancestor::original) and not(ancestor::suggestion) and not(ancestor::alternative))")
         self.expression = expression
         
     def __iter__(self):
         for filename in self.files:
-            doc = Document(file=filename, partial=True)
-            for result in doc.xpath(self.expression, True):
+            doc = Document(file=filename, mode=Mode.XPATH)
+            for result in doc.xpath(self.expression):
                 yield result            
 
 class RegExp(object):
@@ -2912,7 +2955,7 @@ class Document(object):
         global FOLIAVERSION
         """Start/load a FoLiA document:
         
-        There are four ways of loading a FoLiA document::
+        There are four sources of input for loading a FoLiA document::
         
         1) Create a new document by specifying an *ID*::
         
@@ -2930,6 +2973,13 @@ class Document(object):
     
             doc = folia.Document(tree=xmltree)
     
+        Additionally, there are three modes that can be set with the mode= keyword argument: 
+         
+             * folia.Mode.MEMORY - The entire FoLiA Document will be loaded into memory. This is the default mode and the only mode in which documents can be manipulated and saved again.
+             * folia.Mode.XPATH - The full XML tree will still be loaded into memory, but conversion to FoLiA classes occurs only when queried. This mode can be used when the full power of XPath is required.
+             * folia.Mode.ITERATIVE - This is the least memory method intensive method and can only be used with the file= method described above. The document can be queried with a subset of XPath, the file is read iteratively upon each query and only small parts are kept in memory each time.
+               
+
         Optional keyword arguments:
         
             ``debug=``:  Boolean to enable/disable debug
@@ -2943,6 +2993,7 @@ class Document(object):
         self.annotationdefaults = {}
         self.annotations = [] #Ordered list of incorporated annotations ['token','pos', etc..]
         self.index = {} #all IDs go here
+        self.declared = False # Will be set to True when declarations have been processed
         
         self.metadata = {} #will point to XML Element holding IMDI or CMDI metadata
         self.metadatatype = MetaDataType.NATIVE
@@ -2959,10 +3010,10 @@ class Document(object):
         else:
             self.debug = False
     
-        if 'partial' in kwargs:
-            self.partial = kwargs['partial'] 
+        if 'mode' in kwargs:
+            self.mode = int(kwargs['mode']) 
         else:
-            self.partial = False #Load all in memory
+            self.mode = Mode.MEMORY #Load all in memory
     
     
         if 'deepvalidation' in kwargs:
@@ -2985,14 +3036,18 @@ class Document(object):
             self.parsexml(kwargs['tree'])
         else:
             raise Exception("No ID, filename or tree specified")        
-            
-                            
-            
+                    
+    #def __del__(self):
+    #    del self.index
+    #    for child in self.data:
+    #        del child
+    #    del self.data
+                    
     def load(self, filename):
         """Load a FoLiA or D-Coi XML file"""
         self.tree = ElementTree.parse(filename)
         self.parsexml(self.tree.getroot())
-        if not self.partial:
+        if self.mode != Mode.XPATH:
             #XML Tree is now obsolete (only needed when partially loaded for xpath queries)
             self.tree = None
 
@@ -3003,10 +3058,8 @@ class Document(object):
             l += e.items()
         return l
             
-    def xpath(self, query, _preparsed=False):
-        """Run Xpath expression and parse the resulting elements"""
-        if not _preparsed:
-            query = query.replace("active()", "(not(ancestor::original) and not(ancestor::suggestion) and not(ancestor::alternative))")
+    def xpath(self, query):
+        """Run Xpath expression and parse the resulting elements. Don't forget to use the FoLiA namesapace in your expressions, using folia: or the short form f: """
         for result in self.tree.xpath(query,namespaces={'f': 'http://ilk.uvt.nl/folia','folia': 'http://ilk.uvt.nl/folia' }):
             yield self.parsexml(result)
             
@@ -3290,6 +3343,7 @@ class Document(object):
     def parsexmldeclarations(self, node):
         if self.debug >= 1: 
             print >>stderr, "[PyNLPl FoLiA DEBUG] Processing Annotation Declarations"
+        self.declarated = True
         for subnode in node:
             if subnode.tag[:25] == '{' + NSFOLIA + '}' and subnode.tag[-11:] == '-annotation':
                 prefix = subnode.tag[25:][:-11]
@@ -3463,7 +3517,35 @@ class Document(object):
                 return None
         else:
             return self._language     
-           
+    
+    def parsemetadata(self, node):       
+        if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Metadata"
+        if 'type' in node.attrib and node.attrib['type'] == 'imdi':
+            self.metadatatype = MetaDataType.IMDI
+        elif 'type' in node.attrib and  node.attrib['type'] == 'cmdi':                        
+            self.metadatatype = MetaDataType.IMDI 
+        elif 'type' in node.attrib and node.attrib['type'] == 'native':                        
+            self.metadatatype = MetaDataType.NATIVE
+        else:
+            #no type specified, default to native
+            self.metadatatype = MetaDataType.NATIVE                        
+        
+        
+        self.metadata = {}
+        self.metadatafile = None
+        
+        if 'src' in node.attrib:
+            self.metadatafile =  node.attrib['src']
+                                                                                                                                     
+        for subnode in node:
+            if subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
+                self.metadatatype = MetaDataType.IMDI
+                self.setimdi(subnode)
+            if subnode.tag == '{' + NSFOLIA + '}annotations':
+                self.parsexmldeclarations(subnode)
+            if subnode.tag == '{' + NSFOLIA + '}meta':
+                if subnode.text:
+                    self.metadata[subnode.attrib['id']] = subnode.text           
 
     def parsexml(self, node):
         """Main XML parser, will invoke class-specific XML parsers. For internal use."""
@@ -3488,34 +3570,8 @@ class Document(object):
                 
             for subnode in node:
                 if subnode.tag == '{' + NSFOLIA + '}metadata':
-                    if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Metadata"
-                    if 'type' in subnode.attrib and subnode.attrib['type'] == 'imdi':
-                        self.metadatatype = MetaDataType.IMDI
-                    elif 'type' in subnode.attrib and  subnode.attrib['type'] == 'cmdi':                        
-                        self.metadatatype = MetaDataType.IMDI 
-                    elif 'type' in subnode.attrib and subnode.attrib['type'] == 'native':                        
-                        self.metadatatype = MetaDataType.NATIVE
-                    else:
-                        #no type specified, default to native
-                        self.metadatatype = MetaDataType.NATIVE                        
-                    
-                    
-                    self.metadata = {}
-                    self.metadatafile = None
-                    
-                    if 'src' in subnode.attrib:
-                        self.metadatafile =  subnode.attrib['src']
-                                                                                                                                                 
-                    for subsubnode in subnode:
-                        if subsubnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
-                            self.metadatatype = MetaDataType.IMDI
-                            self.setimdi(subsubnode)
-                        if subsubnode.tag == '{' + NSFOLIA + '}annotations':
-                            self.parsexmldeclarations(subsubnode)
-                        if subsubnode.tag == '{' + NSFOLIA + '}meta':
-                            if subsubnode.text:
-                                self.metadata[subsubnode.attrib['id']] = subsubnode.text
-                elif subnode.tag == '{' + NSFOLIA + '}text' and not self.partial:
+                    self.parsemetadata(subnode)
+                elif subnode.tag == '{' + NSFOLIA + '}text' and self.mode == Mode.MEMORY:
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
                     self.data.append( self.parsexml(subnode) )
         elif node.tag == '{' + NSDCOI + '}DCOI':
@@ -3555,6 +3611,14 @@ class Document(object):
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
         
         
+    def select(self, Class, set=None):
+        if self.mode == Mode.MEMORY:
+            return sum([ t.select(Class,set,True ) for t in self.data ],[])
+        elif self.mode == Mode.ITERATIVE:
+            pass
+            #TODO: Implement
+            
+        
     def paragraphs(self, index = None):
         """Return a list of all paragraphs found in the document.
         
@@ -3565,7 +3629,7 @@ class Document(object):
             return sum([ t.select(Paragraph) for t in self.data ],[])[index]
     
     def sentences(self, index = None):
-        """Return a list of all sentence found in the document.
+        """Return a list of all sentence found in the document. Except for sentences in quotes.
         
         If an index is specified, return the n'th sentence only (starting at 0)"""
         if index is None:
@@ -3583,6 +3647,8 @@ class Document(object):
         else:
             return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])[index]
             
+
+
 
     def text(self):
         """Returns the text of the entire document (returns a unicode instance)"""
@@ -3727,21 +3793,23 @@ class Text(AbstractStructureElement):
 
 
 class Corpus:
-    """A corpus of various FoLiA document"""
+    """A corpus of various FoLiA documents. Sequential processing."""
     
-    def __init__(self,corpusdir, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, ignoreerrors=False):
+    def __init__(self,corpusdir, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, ignoreerrors=False, **kwargs):
         self.corpusdir = corpusdir
         self.extension = extension
         self.restrict_to_collection = restrict_to_collection
         self.conditionf = conditionf
         self.ignoreerrors = ignoreerrors
+        self.kwargs = kwargs
 
     def __iter__(self):
         if not self.restrict_to_collection:
             for f in glob.glob(self.corpusdir+"/*." + self.extension):
                 if self.conditionf(f):
                     try:
-                        yield Document(file=f)
+                        gc.collect()
+                        yield Document(file=f, **self.kwargs )
                     except Exception as e:
                         print >>stderr, "Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e)
                         if not self.ignoreerrors:
@@ -3751,12 +3819,13 @@ class Corpus:
                 for f in glob.glob(d+ "/*." + self.extension):
                     if self.conditionf(f):
                         try:
-                            yield Document(file=f)
+                            gc.collect()
+                            yield Document(file=f, **self.kwargs)
                         except Exception as e:
                             print >>stderr, "Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e)
                             if not self.ignoreerrors:
                                 raise
-
+    
 
 class CorpusFiles(Corpus):
     def __iter__(self):
@@ -3779,7 +3848,36 @@ class CorpusFiles(Corpus):
                             print >>stderr, "Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e)
                             if not self.ignoreerrors:
                                 raise
+
+class ParProcCorpus(object):
+    """A corpus of various FoLiA documents. Parallel processing."""
     
+    def __init__(self,corpusdir, function, threads = 1, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, **kwargs):
+        self.function = function
+        self.threads = threads
+        self.foliakwargs = {}
+        self.corpusdir = corpusdir
+        self.extension = extension
+        self.restrict_to_collection = restrict_to_collection
+        self.conditionf = conditionf
+        self.ignoreerrors = True
+        self.foliakwargs = kwargs
+
+        
+    def setdocumentkwargs(self, **kwargs):
+        self.foliakwargs = kwargs            
+        
+    def run(self, *args, **kwargs):
+        pool = multiprocessing.Pool(processes=self.threads) 
+        #queue = multiprocessing.Queue()
+        
+        for output in pool.imap( self.function, ( (filename, args, kwargs) for filename in CorpusFiles(self.corpusdir, self.extension, self.restrict_to_collection, self.conditionf, True) ) ):
+            yield output
+    
+    def __iter__(self):
+        for output in self.run():
+            yield output
+      
 
 class SetType:
     CLOSED, OPEN, MIXED = range(3)
