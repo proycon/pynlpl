@@ -22,7 +22,25 @@ os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 from StringIO import StringIO
 from datetime import datetime
 import lxml.etree
+import lxml.objectify
 from pynlpl.formats import folia
+
+
+def xmlcheck(xml,expect):    
+    obj1 = lxml.objectify.fromstring(expect)
+    expect = lxml.etree.tostring(obj1)        
+    obj2 = lxml.objectify.fromstring(xml)
+    xml = lxml.etree.tostring(obj2)        
+    passed = (expect == xml)
+    if not passed:
+        print >>sys.stderr,"XML fragments don't match:"
+        print >>sys.stderr,"--------------------------REFERENCE-------------------------------------"
+        print expect
+        print >>sys.stderr,"--------------------------ACTUAL RESULT---------------------------------"
+        print xml
+        print >>sys.stderr,"------------------------------------------------------------------------"
+    return passed
+
 
 class Test1Read(unittest.TestCase):
                         
@@ -334,7 +352,7 @@ class Test2Sanity(unittest.TestCase):
         pos = w.annotation(folia.PosAnnotation)
         self.assertEqual( pos.datetime, datetime(2011, 7, 20, 19, 0, 1) ) 
         
-        self.assertEqual( pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/>')        
+        self.assertTrue( xmlcheck(pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/>') )        
     
     def test028_wordparents(self):  
         """Sanity Check - Finding parents of word"""
@@ -494,7 +512,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( s.text(), "Dit is een nieuwe zin." )
         
         # xml() ok?
-        self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1" annotator="testscript"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2" annotator="testscript"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3" annotator="testscript"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4" annotator="testscript"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5" annotator="testscript" space="no"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" annotator="testscript"><t>.</t></w></s>')
+        self.assertTrue( xmlcheck( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1" annotator="testscript"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2" annotator="testscript"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3" annotator="testscript"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4" annotator="testscript"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5" annotator="testscript" space="no"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" annotator="testscript"><t>.</t></w></s>') )
         
     def test001b_addsentence(self):        
         """Edit Check - Adding a sentence to last paragraph (shortcut)"""
@@ -521,7 +539,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( len(p.sentences()) , tmp + 1)
         self.assertEqual( p[-1] , s)
         
-        self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" class="PUNCTUATION"><t>.</t></w></s>')
+        self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" class="PUNCTUATION"><t>.</t></w></s>'))
         
     def test002_addannotation(self):        
         """Edit Check - Adding a token annotation (pos, lemma) (pre-generated instances)"""
@@ -545,7 +563,7 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )
         
-        self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma set="adhoclemma" class="NAAM" datetime="1982-12-15T19:00:01" annotatortype="auto" annotator="testscript"/></w>')                
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma set="adhoclemma" class="NAAM" datetime="1982-12-15T19:00:01" annotatortype="auto" annotator="testscript"/></w>') )             
         
     def test002b_addannotation(self):   
         """Edit Check - Adding a token annotation (pos, lemma) (instances generated on the fly)"""
@@ -569,7 +587,7 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )       
     
-        self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma class="NAAM" set="adhoclemma" annotatortype="auto" annotator="testscript"/></w>')
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma class="NAAM" set="adhoclemma" annotatortype="auto" annotator="testscript"/></w>'))
 
 
     def test004_addinvalidannotation(self):        
@@ -599,7 +617,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( len(alt2),1 )        
         self.assertTrue( isinstance(alt[0].annotation(folia.PosAnnotation, set), folia.PosAnnotation) )
 
-        self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="naam"/><alt xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11.alt.1"><pos class="V"/></alt></w>')
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="naam"/><alt xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11.alt.1" auth="no"><pos class="V"/></alt></w>'))
 
 
     def test006_addcorrection(self):        
@@ -611,7 +629,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).new(0).text() ,'stippellijn' )     
         self.assertEqual( w.text(), 'stippellijn')    
 
-        self.assertEqual( w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>')
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
         
     def test007_addcorrection2(self):                
         """Edit Check - Correcting a Token Annotation element"""        
@@ -623,7 +641,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).original(0) ,oldpos ) 
         self.assertEqual( w.annotation(folia.Correction).new(0),newpos )     
         
-        self.assertEqual( w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><pos class="N(soort,ev,basis,zijd,stan)"/></new><original auth="no"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/></original></correction><lemma class="stippelijn"/></w>')
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><pos class="N(soort,ev,basis,zijd,stan)"/></new><original auth="no"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/></original></correction><lemma class="stippelijn"/></w>'))
     
     def test008_addsuggestion(self):
         """Edit Check - Suggesting a text correction"""        
@@ -634,7 +652,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
         self.assertEqual( w.text(), 'stippelijn')    
         
-        self.assertEqual( w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><suggestion auth="no"><t>stippellijn</t></suggestion></correction></w>')
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><suggestion auth="no"><t>stippellijn</t></suggestion></correction></w>'))
         
     def test009a_idclash(self):
         """Edit Check - Checking for exception on adding a duplicate ID"""     
@@ -669,7 +687,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( pos.parent, w)
         self.assertEqual( pos.doc, w.doc)
         
-        self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>')
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>'))
         
     def test011_subtokenannot(self):            
         """Edit Check - Adding Subtoken annotation (morphological analysis)"""        
@@ -687,7 +705,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( l[1].feat('type'), 'suffix' ) 
         self.assertEqual( l[1].feat('function'), 'plural' )         
     
-        self.assertEqual( w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme><t offset="0">handschrift</t><feat subset="type" class="stem"/><feat subset="function" class="lexical"/></morpheme><morpheme><t offset="11">en</t><feat subset="type" class="suffix"/><feat subset="function" class="plural"/></morpheme></morphology></w>')
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme><t offset="0">handschrift</t><feat subset="type" class="stem"/><feat subset="function" class="lexical"/></morpheme><morpheme><t offset="11">en</t><feat subset="type" class="suffix"/><feat subset="function" class="plural"/></morpheme></morphology></w>'))
 
     def test012_alignment(self):            
         """Edit Check - Alignment"""        
@@ -723,7 +741,7 @@ class Test4Edit(unittest.TestCase):
             ])
         )
         
-        self.assertEqual( layer.xmlstring(),'<syntax xmlns="http://ilk.uvt.nl/folia"><su xml:id="WR-P-E-J-0000000001.p.1.s.4.su.1"><su class="s"><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.1" t="De"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.2" t="hoofdletter"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.3" t="A"/></su></su><su class="vp"><su class="vp"><su class="v"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.4" t="wordt"/></su><su class="participle"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.5" t="gebruikt"/></su></su><su class="pp"><su class="prep"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.6" t="voor"/></su><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.7" t="het"/></su><su class="adj"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.8" t="originele"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.9" t="handschrift"/></su></su></su></su></su></su></syntax>')
+        self.assertTrue( xmlcheck(layer.xmlstring(),'<syntax xmlns="http://ilk.uvt.nl/folia"><su xml:id="WR-P-E-J-0000000001.p.1.s.4.su.1"><su class="s"><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.1" t="De"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.2" t="hoofdletter"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.3" t="A"/></su></su><su class="vp"><su class="vp"><su class="v"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.4" t="wordt"/></su><su class="participle"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.5" t="gebruikt"/></su></su><su class="pp"><su class="prep"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.6" t="voor"/></su><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.7" t="het"/></su><su class="adj"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.8" t="originele"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.9" t="handschrift"/></su></su></su></su></su></su></syntax>'))
 
     def test014_replace(self):            
         """Edit Check - Replacing an annotation"""
@@ -733,7 +751,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( len(list(word.annotations(folia.PosAnnotation))), 1)   
         self.assertEqual( word.annotation(folia.PosAnnotation).cls, 'BOGUS')   
     
-        self.assertEqual( word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/><pos class="BOGUS"/></w>')
+        self.assertTrue( xmlcheck(word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/><pos class="BOGUS"/></w>'))
     
     def test015_remove(self):            
         """Edit Check - Removing an annotation"""
@@ -742,7 +760,7 @@ class Test4Edit(unittest.TestCase):
         
         self.assertRaises( folia.NoSuchAnnotation, word.annotations, folia.PosAnnotation )
     
-        self.assertEqual( word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/></w>')
+        self.assertTrue( xmlcheck(word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/></w>'))
 
     def test016_datetime(self):
         """Edit Check - Time stamp"""
@@ -750,7 +768,7 @@ class Test4Edit(unittest.TestCase):
         pos = w.annotation(folia.PosAnnotation)
         pos.datetime = datetime(1982, 12, 15, 19, 0, 1) #(the datetime of my joyful birth)
         
-        self.assertEqual( pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="WW(pv,tgw,met-t)" datetime="1982-12-15T19:00:01"/>')        
+        self.assertTrue( xmlcheck(pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="WW(pv,tgw,met-t)" datetime="1982-12-15T19:00:01"/>'))
                 
     def test017_wordtext(self):
         """Edit Check - Altering word text"""
@@ -790,7 +808,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( s.text('original'), 'Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.' )
         self.assertTrue( s.hastext('original') )
         
-        self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8"><t>Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.</t><t class="original">Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.</t><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.1"><t>Een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><quote xml:id="WR-P-E-J-0000000001.p.1.s.8.q.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.2"><t>volle</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="vol"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.3"><t>lijn</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="lijn"/></w></quote><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.4"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.5"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.6"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.7"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.8"><t>,</t><pos class="LET()"/><lemma class=","/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.9"><t>terweil</t><errordetection class="spelling" error="yes"/><pos class="VG(onder)"/><lemma class="terweil"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.10"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.12"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.13"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14"><t>onzekere</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="onzeker"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14.c.1" class="spelling"><suggestion  auth="no"><t>twijfelachtige</t></suggestion><suggestion  auth="no"><t>ongewisse</t></suggestion></correction></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.15"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.16"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.17"><t>.</t><pos class="LET()"/><lemma class="."/></w></s>')                
+        self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8"><t>Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.</t><t class="original">Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.</t><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.1"><t>Een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><quote xml:id="WR-P-E-J-0000000001.p.1.s.8.q.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.2"><t>volle</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="vol"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.3"><t>lijn</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="lijn"/></w></quote><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.4"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.5"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.6"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.7"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.8"><t>,</t><pos class="LET()"/><lemma class=","/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.9"><t>terweil</t><errordetection class="spelling" error="yes"/><pos class="VG(onder)"/><lemma class="terweil"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.10"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.12"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.13"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14"><t>onzekere</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="onzeker"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14.c.1" class="spelling"><suggestion  auth="no"><t>twijfelachtige</t></suggestion><suggestion  auth="no"><t>ongewisse</t></suggestion></correction></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.15"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.16"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.17"><t>.</t><pos class="LET()"/><lemma class="."/></w></s>'))                
         
     #def test008_addaltcorrection(self):            
     #    """Edit Check - Adding alternative corrections"""        
@@ -875,7 +893,7 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( s.words(-2).text(), 'line' )
             self.assertEqual( s.text(), 'De site staat on line .' )
             self.assertEqual( len(s.words()), 6 )
-            self.assertEqual( s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4a"><t>on</t></w><w xml:id="example.s.1.w.4b"><t>line</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>online</t></w></original></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>')
+            self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4a"><t>on</t></w><w xml:id="example.s.1.w.4b"><t>line</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>online</t></w></original></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
             
         
         def test001_splitcorrection2(self):  
@@ -902,7 +920,7 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( s.words(-2).text(), 'online' )
             self.assertEqual( s.text(), 'De site staat online .' )
 
-            self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><current><w xml:id="example.s.1.w.4"><t>online</t></w></current><suggestion auth="no"><w xml:id="example.s.1.w.6"><t>on</t></w><w xml:id="example.s.1.w.7"><t>line</t></w></suggestion></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>')
+            self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><current><w xml:id="example.s.1.w.4"><t>online</t></w></current><suggestion auth="no"><w xml:id="example.s.1.w.6"><t>on</t></w><w xml:id="example.s.1.w.7"><t>line</t></w></suggestion></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
 
             
         def test002_mergecorrection(self):         
@@ -932,7 +950,7 @@ class Test5Correction(unittest.TestCase):
             self.assertTrue( isinstance(w.incorrection(), folia.Correction) ) #incorrection return the correction the word is part of, or None if not part of a correction, 
             
             
-            self.assertEqual( s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4-5"><t>online</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w></original></correction><w xml:id="example.s.1.w.6"><t>.</t></w></s>')         
+            self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4-5"><t>online</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w></original></correction><w xml:id="example.s.1.w.6"><t>.</t></w></s>'))         
 
             
         def test003_deletecorrection(self):         
@@ -954,7 +972,7 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( len(s.words()), 5 )
             self.assertEqual( s.text(), 'Ik zie een huis .')
             
-            self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new/><original auth="no"><w xml:id="example.s.1.w.4"><t>groot</t></w></original></correction><w xml:id="example.s.1.w.5"><t>huis</t></w><w xml:id="example.s.1.w.6"><t>.</t></w></s>')        
+            self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new/><original auth="no"><w xml:id="example.s.1.w.4"><t>groot</t></w></original></correction><w xml:id="example.s.1.w.5"><t>huis</t></w><w xml:id="example.s.1.w.6"><t>.</t></w></s>') )       
 
         def test004_insertcorrection(self):         
             """Correction - Insert"""
@@ -999,7 +1017,7 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
             self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
             
-            self.assertEqual( w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" annotatortype="auto" auth="no"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>')
+            self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" auth="no" annotatortype="auto"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
             
             
 class Test6Query(unittest.TestCase):
