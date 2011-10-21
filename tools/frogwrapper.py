@@ -26,9 +26,9 @@ def legacyout(i, word,lemma,morph,pos):
         print
 
 def usage():
-    print >>sys.stderr,"frogwrapper.py  [options] [inputfile]"
+    print >>sys.stderr,"frogwrapper.py  [options]"
     print >>sys.stderr,"------------------------------------------------------"
-    print >>sys.stderr,"Input type:"
+    print >>sys.stderr,"Input file:"
     print >>sys.stderr,"\t--txt=[file]       Plaintext input"
     print >>sys.stderr,"\t--xml=[file]       XML Input"        
     print >>sys.stderr,"\t--folia=[file]     FoLiA XML Input"
@@ -282,6 +282,6 @@ else:
                         print >>sys.stderr,"WARNING: Sentence found that was not in original"                     
 
 if not legacy:
-    print foliadoc
+    print foliadoc.xmlstring()
 if save and foliafile:
     foliadoc.save()

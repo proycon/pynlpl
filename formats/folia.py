@@ -13,6 +13,10 @@
 
 
 from lxml import etree as ElementTree
+LXE=True
+#import xml.etree.cElementTree as ElementTree
+#LXE = False #LXML ETREE?
+
 from lxml.builder import E, ElementMaker
 from sys import stderr
 from StringIO import StringIO
@@ -913,9 +917,13 @@ class AbstractElement(object):
 
     def xmlstring(self, pretty_print=False):
         """Return a string with XML presentation for this element and all its children."""
-        s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')        
+        global LXE
+        if LXE:
+            s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')        
+        else:
+            s = ElementTree.tostring(self.xml(), encoding='utf-8')
         s = s.replace('ns0:','') #ugly patch to get rid of namespace prefix
-        s = s.replace(':ns0','')
+        s = s.replace(':ns0','')            
         return s
         
         
@@ -3380,10 +3388,13 @@ class Document(object):
                     print >>stderr, "[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults)
 
     def setimdi(self, node):
+        global LXE
         #TODO: node or filename
         ns = {'imdi': 'http://www.mpi.nl/IMDI/Schema/IMDI'}
         self.metadatatype = MetaDataType.IMDI
         self.metadata = node
+        if not LXE:
+            return False
         n = node.xpath('imdi:Session/imdi:Title', namespaces=ns)
         if n and n[0].text: self._title = n[0].text
         n = node.xpath('imdi:Session/imdi:Date', namespaces=ns)
@@ -3549,14 +3560,16 @@ class Document(object):
 
     def parsexml(self, node):
         """Main XML parser, will invoke class-specific XML parsers. For internal use."""
-        global XML2CLASS, NSFOLIA, NSDCOI
+        global XML2CLASS, NSFOLIA, NSDCOI, LXE
         nslen = len(NSFOLIA) + 2
         nslendcoi = len(NSDCOI) + 2
         
-        if isinstance(node,ElementTree._ElementTree):        
+        
+        if LXE and isinstance(node,ElementTree._ElementTree):
             node = node.getroot()
-        elif not isinstance(node,ElementTree._Element):
-            node = ElementTree.parse(StringIO(node)).getroot()         
+        elif isinstance(node, str) or isinstance(node, unicode):
+            node = ElementTree.parse(StringIO(node)).getroot()                         
+            
         if node.tag == '{' + NSFOLIA + '}FoLiA':
             if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found FoLiA document"
             try:
@@ -3655,8 +3668,12 @@ class Document(object):
         return unicode(self)
        
     def xmlstring(self):
-        return ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
-
+        global LXE
+        if LXE:            
+            return ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
+        else:
+            return ElementTree.tostring(self.xml(), encoding='utf-8')
+            
     def __unicode__(self):
         """Returns the text of the entire document"""
         s = u""
@@ -4058,7 +4075,7 @@ def relaxng_declarations():
 
             
 def relaxng(filename=None):
-    global NSFOLIA
+    global NSFOLIA, LXE
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.attribute(name='id',ns="http://www.w3.org/XML/1998/namespace"),
@@ -4095,7 +4112,10 @@ def relaxng(filename=None):
     #    grammar.append(e)
     if filename:
         f = open(filename,'w')
-        f.write( ElementTree.tostring(relaxng(),pretty_print=True).replace("</define>","</define>\n\n") )
+        if LXE:
+            f.write( ElementTree.tostring(relaxng(),pretty_print=True).replace("</define>","</define>\n\n") )
+        else:
+            f.write( ElementTree.tostring(relaxng()).replace("</define>","</define>\n\n") )
         f.close()
 
     return grammar
@@ -4111,7 +4131,7 @@ def relaxng(filename=None):
 #        
 #        
 #    def savesql(self, filename):
-
+# in-place prettyprint formatter
 
 def validate(filename,schema=None,deep=False):
     if not os.path.exists(filename):
