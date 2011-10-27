@@ -21,17 +21,30 @@ os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
 from StringIO import StringIO
 from datetime import datetime
-import lxml.etree
 import lxml.objectify
 from pynlpl.formats import folia
+if folia.LXE:
+    from lxml import etree as ElementTree
+else:
+    import xml.etree.cElementTree as ElementTree
 
 
 def xmlcheck(xml,expect):    
-    obj1 = lxml.objectify.fromstring(expect)
-    expect = lxml.etree.tostring(obj1)        
-    obj2 = lxml.objectify.fromstring(xml)
-    xml = lxml.etree.tostring(obj2)        
-    passed = (expect == xml)
+    #obj1 = lxml.objectify.fromstring(expect)
+    #expect = lxml.etree.tostring(obj1)
+    f = open('/tmp/foliatest.fragment.expect.xml','w')
+    f.write(expect)
+    f.close()
+    f = open('/tmp/foliatest.fragment.out.xml','w')
+    f.write(xml)
+    f.close()
+            
+    retcode = os.system('xmldiff /tmp/foliatest.fragment.expect.xml /tmp/foliatest.fragment.out.xml')
+    passed = (retcode == 0)
+    
+    #obj2 = lxml.objectify.fromstring(xml)
+    #xml = lxml.etree.tostring(obj2)        
+    #passed = (expect == xml)
     if not passed:
         print >>sys.stderr,"XML fragments don't match:"
         print >>sys.stderr,"--------------------------REFERENCE-------------------------------------"
@@ -67,22 +80,23 @@ class Test1Read(unittest.TestCase):
         self.assertTrue(isinstance(doc,folia.Document))
         
     def test3_readfromstring(self):        
-        """Reading from pre-parsed XML tree (lxml)"""        
+        """Reading from pre-parsed XML tree"""        
         global FOLIAEXAMPLE
-        doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
+        doc = folia.Document(tree=ElementTree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
         self.assertTrue(isinstance(doc,folia.Document))
 
     def test4_readdcoi(self):        
         """Reading D-Coi file"""
         global DCOIEXAMPLE
-        doc = folia.Document(tree=lxml.etree.parse(StringIO(DCOIEXAMPLE.encode('iso-8859-15'))))
+        doc = folia.Document(string=DCOIEXAMPLE.encode('iso-8859-15'))
+        #doc = folia.Document(tree=lxml.etree.parse(StringIO(DCOIEXAMPLE.encode('iso-8859-15'))))
         self.assertTrue(isinstance(doc,folia.Document))
         self.assertEqual(len(doc.words()),1465)
                         
 class Test2Sanity(unittest.TestCase):
     
     def setUp(self):
-        self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
+        self.doc = folia.Document(string=FOLIAEXAMPLE)
         
     def test000_count_text(self):
         """Sanity check - One text """        
@@ -463,8 +477,7 @@ class Test4Edit(unittest.TestCase):
         
     def setUp(self):
         global FOLIAEXAMPLE
-        self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
-
+        self.doc = folia.Document(string=FOLIAEXAMPLE)    
     
     def test001_addsentence(self):        
         """Edit Check - Adding a sentence to last paragraph (verbose)"""
@@ -991,12 +1004,12 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( len(s.words()), 6 )
             
             self.assertEqual( s.text(), 'Ik zie een groot huis .')
-            self.assertEqual( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.3b"><t>groot</t></w></new><original auth="no"/></correction><w xml:id="example.s.1.w.4"><t>huis</t></w><w xml:id="example.s.1.w.5"><t>.</t></w></s>')
+            self.assertTrue( xmlcheck( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.3b"><t>groot</t></w></new><original auth="no"/></correction><w xml:id="example.s.1.w.4"><t>huis</t></w><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
 
         def test005_reusecorrection(self):     
             """Correction - Re-using a correction with only suggestions"""
             global FOLIAEXAMPLE
-            self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
+            self.doc = folia.Document(string=FOLIAEXAMPLE.encode('utf-8'))
             
             w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
             w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
@@ -1023,7 +1036,7 @@ class Test5Correction(unittest.TestCase):
 class Test6Query(unittest.TestCase):
     def setUp(self):
         global FOLIAEXAMPLE
-        self.doc = folia.Document(tree=lxml.etree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
+        self.doc = folia.Document(string=FOLIAEXAMPLE.encode('utf-8'))
     
     def test001_findwords_simple(self):     
         """Querying - Find words (simple)"""

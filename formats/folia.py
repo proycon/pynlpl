@@ -15,7 +15,7 @@
 from lxml import etree as ElementTree
 LXE=True
 #import xml.etree.cElementTree as ElementTree
-#LXE = False #LXML ETREE?
+#LXE = False
 
 from lxml.builder import E, ElementMaker
 from sys import stderr
@@ -3340,8 +3340,10 @@ class Document(object):
         elif self.metadatatype == MetaDataType.IMDI:
             if self.metadatafile:
                 return [] #external
+            elif self.metadata:
+                return [ElementTree.parse(StringIO(self.metadata)).getroot()] #inline
             else:
-                return [self.metadata] #inline
+                return []
         elif self.metadatatype == MetaDataType.CMDI: #CMDI, by definition external
             return []
 
@@ -3392,9 +3394,10 @@ class Document(object):
         #TODO: node or filename
         ns = {'imdi': 'http://www.mpi.nl/IMDI/Schema/IMDI'}
         self.metadatatype = MetaDataType.IMDI
-        self.metadata = node
-        if not LXE:
-            return False
+        if LXE:            
+            self.metadata = ElementTree.tostring(node, xml_declaration=False, pretty_print=True, encoding='utf-8')
+        else:
+            self.metadata = ElementTree.tostring(node, encoding='utf-8')
         n = node.xpath('imdi:Session/imdi:Title', namespaces=ns)
         if n and n[0].text: self._title = n[0].text
         n = node.xpath('imdi:Session/imdi:Date', namespaces=ns)
@@ -3565,7 +3568,7 @@ class Document(object):
         nslendcoi = len(NSDCOI) + 2
         
         
-        if LXE and isinstance(node,ElementTree._ElementTree):
+        if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)):
             node = node.getroot()
         elif isinstance(node, str) or isinstance(node, unicode):
             node = ElementTree.parse(StringIO(node)).getroot()                         
@@ -3825,7 +3828,6 @@ class Corpus:
             for f in glob.glob(self.corpusdir+"/*." + self.extension):
                 if self.conditionf(f):
                     try:
-                        gc.collect()
                         yield Document(file=f, **self.kwargs )
                     except Exception as e:
                         print >>stderr, "Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e)
@@ -3836,7 +3838,6 @@ class Corpus:
                 for f in glob.glob(d+ "/*." + self.extension):
                     if self.conditionf(f):
                         try:
-                            gc.collect()
                             yield Document(file=f, **self.kwargs)
                         except Exception as e:
                             print >>stderr, "Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e)
