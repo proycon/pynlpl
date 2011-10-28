@@ -379,7 +379,7 @@ class ExperimentPool:
 class WPSParamSearch(object):
     """ParamSearch with support for Wrapped Progressive Sampling"""
     
-    def __init__(self, experimentclass, inputdata, size, parameterscope, poolsize=1, sizefunc=None, prunefunc=None, delete=True): #parameterscope: {'parameter':[values]}
+    def __init__(self, experimentclass, inputdata, size, parameterscope, poolsize=1, sizefunc=None, prunefunc=None, constraintfunc = None, delete=True): #parameterscope: {'parameter':[values]}
         self.ExperimentClass = experimentclass
         self.inputdata = inputdata
         self.poolsize = poolsize #0 or 1: sequential execution (uses experiment.run() ), >1: parallel execution using ExperimentPool (uses experiment.start() )
@@ -399,10 +399,15 @@ class WPSParamSearch(object):
             self.prunefunc = prunefunc
         else:
             self.prunefunc = lambda i: 0.5
-
+            
+        if constraintfunc != None:
+            self.constraintfunc = constraintfunc
+        else:
+            self.constraintfunc = lambda x: True
+            
         #compute all parameter combinations:
         verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope.items() ]
-        self.parametercombinations = [ (x,0) for x in itertools_product(*verboseparameterscope) ] #generator
+        self.parametercombinations = [ (x,0) for x in itertools_product(*verboseparameterscope) if self.constraintfunc(dict(x)) ] #generator
 
     def _combine(self,name, values): #TODO: can't we do this inline in a list comprehension?
         l = []
@@ -469,9 +474,9 @@ class WPSParamSearch(object):
 
 class ParamSearch(WPSParamSearch):
     """A simpler version of ParamSearch without Wrapped Progressive Sampling"""
-    def __init__(self, experimentclass, inputdata, parameterscope, poolsize=1, delete=True): #parameterscope: {'parameter':[values]}
+    def __init__(self, experimentclass, inputdata, parameterscope, poolsize=1, constraintfunc = None, delete=True): #parameterscope: {'parameter':[values]}
         prunefunc = lambda x: 0
-        super(ParamSearch, self).__init__(experimentclass, inputdata, -1, parameterscope, poolsize, None,prunefunc, delete)
+        super(ParamSearch, self).__init__(experimentclass, inputdata, -1, parameterscope, poolsize, None,prunefunc, constraintfunc, delete)
     
     def __iter__(self):
          for parametercombination, score in sorted(self.test(), key=lambda v: v[1]):
