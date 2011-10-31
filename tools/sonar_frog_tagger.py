@@ -5,6 +5,7 @@ from pynlpl.formats.sonar import CorpusX, CorpusDocumentX, ns
 from pynlpl.clients.frogclient import FrogClient
 import sys
 import os.path
+import time
 
 sonardir = sys.argv[1]
 
