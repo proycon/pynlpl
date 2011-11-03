@@ -3053,7 +3053,15 @@ class Document(object):
                     
     def load(self, filename):
         """Load a FoLiA or D-Coi XML file"""
-        self.tree = ElementTree.parse(filename)
+        global LXE
+        if LXE and not Mode.XPATH:
+            #workaround for xml:id problem
+            f = open(filename)
+            s = f.read().replace(' xml:id=', ' id=')
+            f.close()
+            self.tree = ElementTree.parse(StringIO(s))
+        else:
+            self.tree = ElementTree.parse(filename)
         self.parsexml(self.tree.getroot())
         if self.mode != Mode.XPATH:
             #XML Tree is now obsolete (only needed when partially loaded for xpath queries)
