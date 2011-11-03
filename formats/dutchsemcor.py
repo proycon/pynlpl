@@ -152,7 +152,7 @@ class WSDSystemOutput(object):
         wsdoutfile = codecs.open(fileWsdout,'w','utf-8')
         for i, (features, referenceclass, predictedclass, distribution, distance) in enumerate(timbloutput):
             if len(features) == 0:
-                print >>stderr, "WARNING: Empty feature vector in " + filename + " (line " + str(i+1) + ") skipping!!"
+                print >>stderr, "WARNING: Empty feature vector in " + fileTimbl + " (line " + str(i+1) + ") skipping!!"
                 continue
             word_id = features[0] #note: this is an assumption that must be adhered to!
             if distribution:
