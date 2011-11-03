@@ -3054,7 +3054,7 @@ class Document(object):
     def load(self, filename):
         """Load a FoLiA or D-Coi XML file"""
         global LXE
-        if LXE and not Mode.XPATH:
+        if LXE and self.mode != Mode.XPATH:
             #workaround for xml:id problem
             f = open(filename)
             s = f.read().replace(' xml:id=', ' id=')
