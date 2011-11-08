@@ -3262,7 +3262,7 @@ class Document(object):
         
         """
         if text is Text:
-            text = Text(id=self.id + '.text.' + str(len(self.data)+1) )            
+            text = Text(self, id=self.id + '.text.' + str(len(self.data)+1) )            
         else:
             assert isinstance(text, Text)        
         self.data.append(text)
