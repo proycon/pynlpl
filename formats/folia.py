@@ -3586,7 +3586,10 @@ class Document(object):
             try:
                 self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
             except KeyError:
-                raise Exception("FoLiA Document has no ID!")
+                try:
+                    self.id = node.attrib['id']
+                except KeyError:
+                    raise Exception("FoLiA Document has no ID!")
             if 'version' in node.attrib:
                 self.version = node.attrib['version']
             else:
