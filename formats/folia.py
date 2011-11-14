@@ -3908,7 +3908,7 @@ class CorpusProcessor(object):
     
         
     def run(self, *args, **kwargs):
-        if not preindex:
+        if not self.preindex:
             self.index = CorpusFiles(self.corpusdir, self.extension, self.restrict_to_collection, self.conditionf, True) #generator            
         pool = multiprocessing.Pool(self.threads,None,None, self.maxtasksperchild) 
         if self.ordered:
