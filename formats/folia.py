@@ -31,9 +31,10 @@ import os
 import re
 import urllib
 import multiprocessing
+import threading
 
 FOLIAVERSION = '0.7.0'
-LIBVERSION = '0.7.0.15' #== FoLiA version + library revision
+LIBVERSION = '0.7.0.16' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -1610,9 +1611,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return self.select(Word,None,True,['Original','Suggestion','Alternative'])
+            return self.select(Word,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer'])
         else:
-            return self.select(Word,None,True,['Original','Suggestion','Alternative'])[index]            
+            return self.select(Word,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer'])[index]            
             
                    
     def paragraphs(self, index = None):
@@ -1622,9 +1623,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all        
         """
         if index is None:
-            return self.select(Paragraph,None,True,['Original','Suggestion','Alternative'])
+            return self.select(Paragraph,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer'])
         else:
-            return self.select(Paragraph,None,True,['Original','Suggestion','Alternative'])[index]
+            return self.select(Paragraph,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer'])[index]
     
     def sentences(self, index = None):
         """Returns a list of Sentence elements found (recursively) under this element
@@ -1633,9 +1634,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative'])
+            return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative','AbstractAnnotationLayer'])
         else:
-            return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative'])[index]
+            return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative','AbstractAnnotationLayer'])[index]
             
     def __eq__(self, other):
         return super(AbstractStructureElement, self).__eq__(other)
@@ -2586,13 +2587,13 @@ class ActorFeature(Feature):
     """Actor feature, to be used within Event"""
     XMLATTRIB = 'actor' #allow feature as attribute
     XMLTAG = 'actor'
-    ANNOTATIONTYPE = AnnotationType.SENSE
+    ANNOTATIONTYPE = AnnotationType.EVENT
     SUBSET = 'actor' #associated subset
 
 class Event(AbstractStructureElement):
     
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR, Attrib.N,)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR, Attrib.N,Attrib.DATETIME)
     ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature)
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'    
@@ -2817,10 +2818,10 @@ class Figure(AbstractStructureElement):
         
     def caption(self):
         try:
-            caption = self.select(folia.Caption)[0]
-            return caption.text
+            caption = self.select(Caption)[0]            
+            return caption.text()
         except:
-            return NoSuchText
+            raise NoSuchText
         
     #@classmethod
     #def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -3054,14 +3055,14 @@ class Document(object):
     def load(self, filename):
         """Load a FoLiA or D-Coi XML file"""
         global LXE
-        if LXE and self.mode != Mode.XPATH:
-            #workaround for xml:id problem
-            f = open(filename)
-            s = f.read().replace(' xml:id=', ' id=')
-            f.close()
-            self.tree = ElementTree.parse(StringIO(s))
-        else:
-            self.tree = ElementTree.parse(filename)
+        #if LXE and self.mode != Mode.XPATH:
+        #    #workaround for xml:id problem (disabled)
+        #    #f = open(filename)
+        #    #s = f.read().replace(' xml:id=', ' id=')
+        #    #f.close()
+        #    self.tree = ElementTree.parse(filename)
+        #else:
+        self.tree = ElementTree.parse(filename)
         self.parsexml(self.tree.getroot())
         if self.mode != Mode.XPATH:
             #XML Tree is now obsolete (only needed when partially loaded for xpath queries)
@@ -3262,7 +3263,7 @@ class Document(object):
         
         """
         if text is Text:
-            text = Text(id=self.id + '.text.' + str(len(self.data)+1) )            
+            text = Text(self, id=self.id + '.text.' + str(len(self.data)+1) )            
         else:
             assert isinstance(text, Text)        
         self.data.append(text)
@@ -3666,16 +3667,14 @@ class Document(object):
 
         
     def words(self, index = None):
-        """Return a list of all words found in the document.
+        """Return a list of all active words found in the document. Does not descend into annotation layers, alternatives, originals, suggestions.
         
         If an index is specified, return the n'th word only (starting at 0)"""        
         if index is None:            
-            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])
+            return sum([ t.select(Word,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer']) for t in self.data ],[])
         else:
-            return sum([ t.select(Word,None,True,[AbstractSpanAnnotation]) for t in self.data ],[])[index]
+            return sum([ t.select(Word,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer']) for t in self.data ],[])[index]
             
-
-
 
     def text(self):
         """Returns the text of the entire document (returns a unicode instance)"""
@@ -3824,7 +3823,7 @@ class Text(AbstractStructureElement):
 
 
 class Corpus:
-    """A corpus of various FoLiA documents. Sequential processing."""
+    """A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing. Note that due to a memory issue in the underlying lxml library. This class is NOT suitable for parsing a huge number of FoLiA documents (anything above a say a 1000)! Use CorpusProcessor instead, which also makes optimal use of multi-core machines."""
     
     def __init__(self,corpusdir, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, ignoreerrors=False, **kwargs):
         self.corpusdir = corpusdir
@@ -3857,6 +3856,8 @@ class Corpus:
     
 
 class CorpusFiles(Corpus):
+    """A corpus of various FoLiA documents. Yields the filenames on each iteration. NOte: Do NOT use this this to instantiate a large number of FoLiA documents (>1000) in a loop, due to a memory issue in the underlying lxml library. Use CorpusProcessor instead, which also makes optimal use of multi-core machines."""
+    
     def __iter__(self):
         if not self.restrict_to_collection:
             for f in glob.glob(self.corpusdir+"/*." + self.extension):
@@ -3878,35 +3879,51 @@ class CorpusFiles(Corpus):
                             if not self.ignoreerrors:
                                 raise
 
-class ParProcCorpus(object):
-    """A corpus of various FoLiA documents. Parallel processing."""
+
+        
+        
+
+class CorpusProcessor(object):
+    """Processes a corpus of various FoLiA documents using a parallel processing. Calls a user-defined function with the three-tuple (filename, args, kwargs) for each file in the corpus. The user-defined function is itself responsible for instantiating a FoLiA document! args and kwargs, as received by the custom function, are set through the run() method, which yields the result of the custom function on each iteration."""
     
-    def __init__(self,corpusdir, function, threads = 1, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, **kwargs):
+    def __init__(self,corpusdir, function, threads = None, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, maxtasksperchild=100, preindex = False, ordered=True, chunksize = 1):
         self.function = function
-        self.threads = threads
-        self.foliakwargs = {}
+        self.threads = threads #If set to None, will use all available cores by default
         self.corpusdir = corpusdir
         self.extension = extension
         self.restrict_to_collection = restrict_to_collection
         self.conditionf = conditionf
-        self.ignoreerrors = True
-        self.foliakwargs = kwargs
-
-        
-    def setdocumentkwargs(self, **kwargs):
-        self.foliakwargs = kwargs            
+        self.ignoreerrors = True        
+        self.maxtasksperchild = maxtasksperchild #This should never be set too high due to lxml leaking memory!!!
+        self.preindex = preindex
+        self.chunksize = chunksize
+        if preindex:
+            self.index = list(CorpusFiles(self.corpusdir, self.extension, self.restrict_to_collection, self.conditionf, True))        
+    
+    def __len__(self):
+        if self.preindex:
+            return len(self.index)
+        else:
+            return ValueError("Can only retrieve length if instantiated with preindex=True")
+    
         
     def run(self, *args, **kwargs):
-        pool = multiprocessing.Pool(processes=self.threads) 
-        #queue = multiprocessing.Queue()
-        
-        for output in pool.imap( self.function, ( (filename, args, kwargs) for filename in CorpusFiles(self.corpusdir, self.extension, self.restrict_to_collection, self.conditionf, True) ) ):
+        if not preindex:
+            self.index = CorpusFiles(self.corpusdir, self.extension, self.restrict_to_collection, self.conditionf, True) #generator            
+        pool = multiprocessing.Pool(self.threads,None,None, self.maxtasksperchild) 
+        if self.ordered:
+            results = pool.imap( self.function,  ( (filename, args, kwargs) for filename in self.index), self.chunksize)
+        else:
+            results = pool.imap_unordered( self.function,  ( (filename, args, kwargs) for filename in self.index), self.chunksize)
+        pool.close()
+                
+        for output in results:
             yield output
     
     def __iter__(self):
         for output in self.run():
             yield output
-      
+                        
 
 class SetType:
     CLOSED, OPEN, MIXED = range(3)
