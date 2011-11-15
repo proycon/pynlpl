@@ -36,11 +36,11 @@ def bingcorpsearch(word,concfilter = '', extraquery='',license=None, start=1, co
                             yield (content[begin:wordindex].strip(), content[wordindex:wordindex+wordlength].strip(), content[wordindex+wordlength:i+1], result.url)
                     wordindex = concindex = None
                     begin = i + 1
-                if content[i:i+len(word)].lower() == word.lower():
+                if len(word)+i <= len(content) and content[i:i+len(word)].lower() == word.lower():
                     wordindex = i
                     wordlength = len(word)
                     for j in range(len(word),len(content)):                        
-                        if content[i+j] == ' ' or  content[i+j] == '?' or content[i+j] == '!' or content[i+j] == '\n':
+                        if i+j < len(content) and (content[i+j] == ' ' or  content[i+j] == '?' or content[i+j] == '!' or content[i+j] == '\n'):
                             wordlength = j
                             break                                                                
                 if concfilter and content[i:len(concfilter)].lower() == concfilter.lower():
@@ -83,11 +83,11 @@ def googlecorpsearch(word,concfilter = '', extraquery='',license=None, start=1, 
                             yield (content[begin:wordindex].strip(), content[wordindex:wordindex+wordlength].strip(), content[wordindex+wordlength:i+1], result.url)
                     wordindex = concindex = None
                     begin = i + 1
-                if content[i:i+len(word)].lower() == word.lower():
+                if len(word)+i <= len(content) and content[i:i+len(word)].lower() == word.lower():
                     wordindex = i
                     wordlength = len(word)
                     for j in range(len(word),len(content)):                        
-                        if content[i+j] == ' ' or  content[i+j] == '?' or content[i+j] == '!' or content[i+j] == '\n':
+                        if i+j < len(content) and (content[i+j] == ' ' or  content[i+j] == '?' or content[i+j] == '!' or content[i+j] == '\n'):
                             wordlength = j
                             break                                                                
                 if concfilter and content[i:len(concfilter)].lower() == concfilter.lower():
