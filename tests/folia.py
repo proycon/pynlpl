@@ -487,6 +487,14 @@ class Test2Sanity(unittest.TestCase):
         fig = self.doc['sandbox.figure.1']
         self.assertEqual( fig.src, "http://upload.wikimedia.org/wikipedia/commons/8/8e/Family_tree.svg")
         self.assertEqual( fig.caption(), 'Een stamboom')
+
+    def test035_event(self):   
+        """Sanity Check - Event"""
+        e = self.doc['sandbox.event.1']
+        self.assertEqual( e.feat('actor'), 'proycon')
+        self.assertEqual( e.feat('begindatetime'), '2011-12-15T19:01')
+        self.assertEqual( e.feat('enddatetime'), '2011-12-15T19:05')
+                        
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
@@ -2287,7 +2295,7 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
         </p>
       </div>
       <div xml:id="sandbox">
-          <list  xml:id="sandbox.list.1">
+          <list xml:id="sandbox.list.1">
               <listitem xml:id="sandbox.list.1.listitem.1" n="1">
                   <s xml:id="sandbox.list.1.listitem.1.s.1">
                       <w xml:id="sandbox.list.1.listitem.1.s.1.w.1">
@@ -2311,19 +2319,21 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
                   </s>                  
               </listitem>
           </list>
-          <figure xml:id="sandbox.figure.1" src="http://upload.wikimedia.org/wikipedia/commons/8/8e/Family_tree.svg">
-              <desc>Stamboom plaatje van wikipedia</desc>              
-              <caption>
-                  <s xml:id="sandbox.figure.1.caption.s.1">
-                      <w xml:id="sandbox.figure.1.caption.s.1.w.1">
-                          <t>Een</t>
-                      </w>
-                      <w xml:id="sandbox.figure.1.caption.s.1.w.2">
-                          <t>stamboom</t>
-                      </w>                      
-                  </s>
-              </caption>
-          </figure>
+          <event xml:id="sandbox.event.1" class="presentation" actor="proycon" begindatetime="2011-12-15T19:01" enddatetime="2011-12-15T19:05">                
+              <figure xml:id="sandbox.figure.1" src="http://upload.wikimedia.org/wikipedia/commons/8/8e/Family_tree.svg">
+                  <desc>Stamboom plaatje van wikipedia</desc>              
+                  <caption>
+                      <s xml:id="sandbox.figure.1.caption.s.1">
+                          <w xml:id="sandbox.figure.1.caption.s.1.w.1">
+                              <t>Een</t>
+                          </w>
+                          <w xml:id="sandbox.figure.1.caption.s.1.w.2">
+                              <t>stamboom</t>
+                          </w>                      
+                      </s>
+                  </caption>
+              </figure>
+           </event>
       </div>
       <gap xml:id="WR-P-E-J-0000000001.gap.1" class="backmatter" annotator="proycon">
        <desc>Backmatter</desc>

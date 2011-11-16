@@ -54,7 +54,7 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME = range(6)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY = range(20)
+    TEXT, TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMEDEVENT = range(21)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -592,7 +592,11 @@ class AbstractElement(object):
             count = len(parent.select(Class,set,True, ['Original','Suggestion','Alternative','AlternativeLayers'])) 
             if count >= Class.OCCURRENCESPERSET:
                 if raiseexceptions:
-                    raise DuplicateAnnotationError("Unable to add another object of set " + set + " and type " + Class.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum for the set.")                
+                    if parent.id:                        
+                        extra = ' (id=' + parent.id + ')'
+                    else:
+                        extra = ''                    
+                    raise DuplicateAnnotationError("Unable to add another object of set " + set + " and type " + Class.__name__ + " to " + parent.__class__.__name__ + " " + extra + ". There are already " + str(count) + " instances of this class, which is the maximum for the set.")                
                 else:
                     return False
                 
@@ -1585,7 +1589,8 @@ class AllowGenerateID(object):
                  
 class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     PRINTABLE = True
-    TEXTDELIMITER = "\n\n" #bigger gap between structure elements
+    TEXTDELIMITER = "\n\n" #bigger gap between structure elements    
+    OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited, default=1)
     
     def __init__(self, doc, *args, **kwargs):            
         super(AbstractStructureElement,self).__init__(doc, *args, **kwargs)
@@ -2131,6 +2136,9 @@ class Feature(AbstractElement):
             self.cls = kwargs['class']
         else:
             raise Exception("No class specified!")            
+            
+        if isinstance(self.cls, datetime):
+            self.cls = self.cls.strftime("%Y-%m-%dT%H:%M:%S")
         
     def xml(self):
         global NSFOLIA
@@ -2529,6 +2537,13 @@ class Dependency(AbstractSpanAnnotation):
         """Returns the dependent of the dependency relation. Instance of DependencyDependent"""
         return self.select(DependencyDependent)[0]
     
+class TimedEvent(AbstractSpanAnnotation):
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
+    ACCEPTED_DATA = (Description, Feature)
+    ANNOTATIONTYPE = AnnotationType.TIMEDEVENT
+    XMLTAG = 'timedevent'
+
 class Morpheme(AbstractSubtokenAnnotation):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
     REQUIRED_ATTRIBS = ()
@@ -2567,6 +2582,12 @@ class DependenciesLayer(AbstractAnnotationLayer):
     """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
     ACCEPTED_DATA = (Dependency,Description)
     XMLTAG = 'dependencies'
+
+class TimingLayer(AbstractAnnotationLayer):
+    """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
+    ACCEPTED_DATA = (TimedEvent,Description)
+    XMLTAG = 'timing'
+
 
 class MorphologyLayer(AbstractSubtokenAnnotationLayer):
     """Morphology Layer: Annotation layer for Morpheme subtoken annotation elements. For morphological analysis."""
@@ -2617,21 +2638,30 @@ class SynsetFeature(Feature):
     """Synset feature, to be used within Sense"""
     XMLATTRIB = 'synset' #allow feature as attribute
     XMLTAG = 'synset'
-    ANNOTATIONTYPE = AnnotationType.SENSE
     SUBSET = 'synset' #associated subset
 
 class ActorFeature(Feature):
     """Actor feature, to be used within Event"""
     XMLATTRIB = 'actor' #allow feature as attribute
     XMLTAG = 'actor'
-    ANNOTATIONTYPE = AnnotationType.EVENT
     SUBSET = 'actor' #associated subset
 
-class Event(AbstractStructureElement):
+class BegindatetimeFeature(Feature):
+    """Begindatetime feature, to be used within Event"""
+    XMLATTRIB = 'begindatetime' #allow feature as attribute
+    XMLTAG = 'begindatetime'
+    SUBSET = 'begindatetime' #associated subset
     
+class EnddatetimeFeature(Feature):
+    """Enddatetime feature, to be used within Event"""
+    XMLATTRIB = 'enddatetime' #allow feature as attribute
+    XMLTAG = 'enddatetime'
+    SUBSET = 'enddatetime' #associated subset    
+
+class Event(AbstractStructureElement):    
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR, Attrib.N,Attrib.DATETIME)
-    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature)
+    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature)
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'    
     
