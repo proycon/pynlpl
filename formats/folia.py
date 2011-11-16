@@ -2100,6 +2100,7 @@ class Feature(AbstractElement):
     """Feature elements can be used to associate subsets and subclasses with almost any
     annotation element"""
     
+    OCCURRENCESPERSET = 0 #unlimited
     XMLTAG = 'feat'
     XMLATTRIB = None
     SUBSET = None
