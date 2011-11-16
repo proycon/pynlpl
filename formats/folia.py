@@ -33,8 +33,8 @@ import urllib
 import multiprocessing
 import threading
 
-FOLIAVERSION = '0.7.0'
-LIBVERSION = '0.7.0.16' #== FoLiA version + library revision
+FOLIAVERSION = '0.8.0'
+LIBVERSION = '0.8.0.17' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -54,7 +54,7 @@ class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME = range(6)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT = range(19)
+    TEXT, TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY = range(20)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -581,15 +581,15 @@ class AbstractElement(object):
                 
         if Class.OCCURRENCES > 0:
             #check if the parent doesn't have too many already
-            count = len(parent.select(Class,None,True,['Original','Suggestion','Alternative']))
+            count = len(parent.select(Class,None,True,['Original','Suggestion','Alternative','AlternativeLayers']))
             if count >= Class.OCCURRENCES:
                 if raiseexceptions:
                     raise DuplicateAnnotationError("Unable to add another object of type " + child.__class__.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum.")                
                 else:
-                    return False
+                    return False                    
             
         if Class.OCCURRENCESPERSET > 0 and set and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
-            count = len(parent.select(Class,set,True, ['Original','Suggestion','Alternative'])) 
+            count = len(parent.select(Class,set,True, ['Original','Suggestion','Alternative','AlternativeLayers'])) 
             if count >= Class.OCCURRENCESPERSET:
                 if raiseexceptions:
                     raise DuplicateAnnotationError("Unable to add another object of set " + set + " and type " + Class.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum for the set.")                
@@ -1463,7 +1463,7 @@ class AllowTokenAnnotation(AllowCorrections):
         Raises:
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
-        l = self.select(Class,set,True,['Original','Suggestion','Alternative'])
+        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers'])
         if not l:
             raise NoSuchAnnotation()
         else:
@@ -1471,12 +1471,12 @@ class AllowTokenAnnotation(AllowCorrections):
     
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        l = self.select(Class,set,True,['Original','Suggestion','Alternative'])
+        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers'])
         return len(l)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.select(type,set,True,['Original','Suggestion','Alternative'])
+        l = self.select(type,set,True,['Original','Suggestion','Alternative','AlternativeLayers'])
         if len(l) >= 1:
             return l[0]
         else:
@@ -2498,6 +2498,36 @@ class Entity(AbstractSpanAnnotation):
     ACCEPTED_DATA = (WordReference, Description, Feature)
     ANNOTATIONTYPE = AnnotationType.ENTITY
     XMLTAG = 'entity'
+
+
+class DependencyHead(AbstractSpanAnnotation):
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = ()
+    ACCEPTED_DATA = (WordReference,Description, Feature,)
+    ANNOTATIONTYPE = AnnotationType.DEPENDENCY
+    XMLTAG = 'hd'    
+
+class DependencyDependent(AbstractSpanAnnotation):
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = ()
+    ACCEPTED_DATA = (WordReference,Description, Feature)
+    ANNOTATIONTYPE = AnnotationType.DEPENDENCY
+    XMLTAG = 'dep'    
+
+class Dependency(AbstractSpanAnnotation):    
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
+    ACCEPTED_DATA = (Description, Feature,DependencyHead, DependencyDependent)
+    ANNOTATIONTYPE = AnnotationType.DEPENDENCY
+    XMLTAG = 'dependency'    
+    
+    def head(self):
+        """Returns the head of the dependency relation. Instance of DependencyHead"""
+        return self.select(DependencyHead)[0]
+            
+    def dependent(self):
+        """Returns the dependent of the dependency relation. Instance of DependencyDependent"""
+        return self.select(DependencyDependent)[0]
     
 class Morpheme(AbstractSubtokenAnnotation):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
@@ -2514,6 +2544,8 @@ class Subentity(AbstractSubtokenAnnotation):
     ACCEPTED_DATA = (Feature,TextContent)
     ANNOTATIONTYPE = AnnotationType.SUBENTITY
     XMLTAG = 'subentity'
+    
+
         
     
 class SyntaxLayer(AbstractAnnotationLayer):
@@ -2530,6 +2562,11 @@ class EntitiesLayer(AbstractAnnotationLayer):
     """Entities Layer: Annotation layer for Entity span annotation elements. For named entities."""
     ACCEPTED_DATA = (Entity,Description)
     XMLTAG = 'entities'
+    
+class DependenciesLayer(AbstractAnnotationLayer):
+    """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
+    ACCEPTED_DATA = (Dependency,Description)
+    XMLTAG = 'dependencies'
 
 class MorphologyLayer(AbstractSubtokenAnnotationLayer):
     """Morphology Layer: Annotation layer for Morpheme subtoken annotation elements. For morphological analysis."""

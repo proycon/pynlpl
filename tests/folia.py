@@ -312,7 +312,49 @@ class Test2Sanity(unittest.TestCase):
         self.assertTrue( isinstance(l[0], folia.Chunk ) ) 
         self.assertEqual( l[0].text(),  'een ander woord' )         
         self.assertEqual( l[1].text(),  'voor stamboom' ) 
-                
+    
+    def test020c_spanannotation(self):
+        """Sanity Check - Span Annotation (Entities)"""        
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
+        l = s.annotation(folia.EntitiesLayer)
+        
+        self.assertTrue( isinstance(l[0], folia.Entity) )
+        self.assertEqual( l[0].text(),  'ander woord' )                                     
+        
+    def test020d_spanannotation(self):
+        """Sanity Check - Span Annotation (Dependencies)"""        
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
+        l = s.annotation(folia.DependenciesLayer)
+        
+        self.assertTrue( isinstance(l[0], folia.Dependency) )
+        self.assertEqual( l[0].head().text(),  'is' )                         
+        self.assertEqual( l[0].dependent().text(),  'Stemma' )                         
+        self.assertEqual( l[0].cls,  'su' )    
+        
+        self.assertTrue( isinstance(l[1], folia.Dependency) )
+        self.assertEqual( l[1].head().text(),  'is' )                         
+        self.assertEqual( l[1].dependent().text(),  'woord' )                         
+        self.assertEqual( l[1].cls,'predc' )    
+        
+        self.assertTrue( isinstance(l[2], folia.Dependency) )
+        self.assertEqual( l[2].head().text(),  'woord' )                         
+        self.assertEqual( l[2].dependent().text(),  'een' )                         
+        self.assertEqual( l[2].cls,'det' ) 
+        
+        self.assertTrue( isinstance(l[3], folia.Dependency) )
+        self.assertEqual( l[3].head().text(),  'woord' )                         
+        self.assertEqual( l[3].dependent().text(),  'ander' )                         
+        self.assertEqual( l[3].cls,'mod' )                      
+
+        self.assertTrue( isinstance(l[4], folia.Dependency) )
+        self.assertEqual( l[4].head().text(),  'woord' )                         
+        self.assertEqual( l[4].dependent().text(),  'voor' )                         
+        self.assertEqual( l[4].cls,'mod' )  
+        
+        self.assertTrue( isinstance(l[5], folia.Dependency) )
+        self.assertEqual( l[5].head().text(),  'voor' )                         
+        self.assertEqual( l[5].dependent().text(),  'stamboom' )                         
+        self.assertEqual( l[5].cls,'obj1' )                                                             
         
     def test021_previousword(self):        
         """Sanity Check - Obtaining previous word"""
@@ -1223,6 +1265,9 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
       <errordetection-annotation set="corrections" annotator="proycon" annotatortype="manual" />
       <sense-annotation set="sense-set" />
       <event-annotation set="event-set" />
+      <entity-annotation set="mwu-set" />
+      <syntax-annotation set="syntax-set" />
+      <dependency-annotation set="alpino-set" />
     </annotations>
     <imdi:METATRANSCRIPT xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" Date="2009-01-27" Type="SESSION" Version="1">
     <imdi:Session>
@@ -1385,6 +1430,12 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
               <pos class="LET()"/>
               <lemma class="."/>
             </w>
+            <entities>
+                <entity class="ander_woord">
+                    <wref id="WR-P-E-J-0000000001.p.1.s.1.w.4" t="ander" />
+                    <wref id="WR-P-E-J-0000000001.p.1.s.1.w.5" t="woord" />                    
+                </entity>
+            </entities>
             <syntax>
                 <su class="sentence">
                  <su class="subject"><wref id="WR-P-E-J-0000000001.p.1.s.1.w.1" t="Stemma" /></su>
@@ -1403,6 +1454,56 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
                  <wref id="WR-P-E-J-0000000001.p.1.s.1.w.8" t="." />
                 </su>
             </syntax>
+            <dependencies>
+                <dependency xml:id="WR-P-E-J-0000000001.p.1.s.1.dep.1" class="su">
+                    <hd>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.2" t="is" />
+                    </hd>
+                    <dep>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.1" t="Stemma" />
+                    </dep>
+                </dependency>
+                <dependency xml:id="WR-P-E-J-0000000001.p.1.s.1.dep.2" class="predc">
+                    <hd>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.2" t="is" />
+                    </hd>
+                    <dep>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.5" t="woord" />
+                    </dep>
+                </dependency>                
+                <dependency xml:id="WR-P-E-J-0000000001.p.1.s.1.dep.3" class="det">
+                    <hd>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.5" t="woord" />
+                    </hd>
+                    <dep>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.3" t="een" />
+                    </dep>
+                </dependency>                 
+                <dependency xml:id="WR-P-E-J-0000000001.p.1.s.1.dep.4" class="mod">
+                    <hd>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.5" t="woord" />
+                    </hd>
+                    <dep>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.4" t="ander" />
+                    </dep>
+                </dependency>                 
+                <dependency xml:id="WR-P-E-J-0000000001.p.1.s.1.dep.5" class="mod">
+                    <hd>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.5" t="woord" />
+                    </hd>
+                    <dep>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.6" t="voor" />
+                    </dep>
+                </dependency>                     
+                <dependency xml:id="WR-P-E-J-0000000001.p.1.s.1.dep.6" class="obj1">
+                    <hd>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.6" t="voor" />
+                    </hd>
+                    <dep>
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.7" t="stamboom" /> 
+                    </dep>
+                </dependency>       
+            </dependencies>            
             <chunking>
                 <chunk>
                         <wref id="WR-P-E-J-0000000001.p.1.s.1.w.3" t="een" />
