@@ -356,6 +356,16 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( l[5].dependent().text(),  'stamboom' )                         
         self.assertEqual( l[5].cls,'obj1' )                                                             
         
+    def test020e_spanannotation(self):
+        """Sanity Check - Span Annotation (Timedevent)"""        
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
+        l = s.annotation(folia.TimingLayer)
+        
+        self.assertTrue( isinstance(l[0], folia.TimedEvent ) ) 
+        self.assertEqual( l[0].text(),  'een ander woord' )         
+        self.assertEqual( l[1].cls, 'cough' )         
+        self.assertEqual( l[2].text(),  'voor stamboom' )         
+        
     def test021_previousword(self):        
         """Sanity Check - Obtaining previous word"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
@@ -1273,9 +1283,10 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
       <errordetection-annotation set="corrections" annotator="proycon" annotatortype="manual" />
       <sense-annotation set="sense-set" />
       <event-annotation set="event-set" />
+      <timedevent-annotation set="event-set" />
       <entity-annotation set="mwu-set" />
       <syntax-annotation set="syntax-set" />
-      <dependency-annotation set="alpino-set" />
+      <dependency-annotation set="alpino-set" />      
     </annotations>
     <imdi:METATRANSCRIPT xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" Date="2009-01-27" Type="SESSION" Version="1">
     <imdi:Session>
@@ -1523,6 +1534,18 @@ FOLIAEXAMPLE = u"""<?xml version="1.0" encoding="UTF-8"?>
                         <wref id="WR-P-E-J-0000000001.p.1.s.1.w.7" t="stamboom" />
                 </chunk>
             </chunking>            
+            <timing>
+                <timedevent actor="speaker" class="utterance" begindatetime="2011-12-15T19:00" enddatetime="2011-12-15T19:02">
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.3" t="een" />
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.4" t="ander" />
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.5" t="woord" />                
+                </timedevent>
+                <timedevent actor="annoying_person" class="cough" begindatetime="2011-12-15T19:03" enddatetime="2011-12-15T19:05" />
+                <timedevent actor="speaker" class="utterance" begindatetime="2011-12-15T19:06" enddatetime="2011-12-15T19:07">
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.6" t="voor" />
+                        <wref id="WR-P-E-J-0000000001.p.1.s.1.w.7" t="stamboom" />       
+                </timedevent>
+            </timing>            
           </s>
           <s xml:id="WR-P-E-J-0000000001.p.1.s.2">
             <w xml:id="WR-P-E-J-0000000001.p.1.s.2.w.1">

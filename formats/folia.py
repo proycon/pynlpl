@@ -272,12 +272,9 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     #Parse feature attributes (shortcut for feature specification for some elements)
     for c in object.ACCEPTED_DATA:
         if issubclass(c, Feature):
-            try:
-                if c.SUBSET in kwargs:
-                    object.append(c,cls=kwargs[c.SUBSET])
-                    del kwargs[c.SUBSET]
-            except:
-                pass
+            if c.SUBSET in kwargs and kwargs[c.SUBSET]:
+                object.append(c,cls=kwargs[c.SUBSET])
+                del kwargs[c.SUBSET]
                 
     return kwargs
     
@@ -858,6 +855,7 @@ class AbstractElement(object):
                     attribs['{' + NSFOLIA + '}annotatortype'] = 'manual'
         except AttributeError:
             pass       
+        
         try:
             if self.confidence:
                 attribs['{' + NSFOLIA + '}confidence'] = str(self.confidence)
@@ -877,7 +875,7 @@ class AbstractElement(object):
             
         try:
             if self.datetime:
-                attribs['{' + NSFOLIA + '}datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S") #TODO: format string                
+                attribs['{' + NSFOLIA + '}datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
         except AttributeError:
             pass            
             
@@ -892,9 +890,9 @@ class AbstractElement(object):
                     if c2.__class__ is c and c.SUBSET == c2.SUBSET and c2.cls:
                         #Yes, serialize them as attributes
                         attribs[c2.SUBSET] = c2.cls
-                        omitchildren.append(c2) #and skip them as elements
-                        break
-            
+                        omitchildren.append(c2) #and skip them as elements                        
+                        break #only one
+                        
         e  = E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
         
             
@@ -913,7 +911,7 @@ class AbstractElement(object):
                 elif not (child in omitchildren):
                     otherelements.append(child)
             for child in textelements+otherelements:
-                e.append(child.xml())
+                    e.append(child.xml())
         
         if elements: #extra elements
             for e2 in elements:
@@ -2102,7 +2100,6 @@ class Feature(AbstractElement):
     
     OCCURRENCESPERSET = 0 #unlimited
     XMLTAG = 'feat'
-    XMLATTRIB = None
     SUBSET = None
     
     def __init__(self,doc, *args, **kwargs):
@@ -2130,13 +2127,13 @@ class Feature(AbstractElement):
         elif 'subset' in kwargs: 
             self.subset = kwargs['subset']
         else:
-            raise Exception("No subset specified!")
+            raise Exception("No subset specified for " + + self.__class__.__name__)
         if 'cls' in kwargs:
             self.cls = kwargs['cls']
         elif 'class' in kwargs:
             self.cls = kwargs['class']
         else:
-            raise Exception("No class specified!")            
+            raise Exception("No class specified for " + self.__class__.__name__)            
             
         if isinstance(self.cls, datetime):
             self.cls = self.cls.strftime("%Y-%m-%dT%H:%M:%S")
@@ -2149,7 +2146,7 @@ class Feature(AbstractElement):
             attribs['{' + NSFOLIA + '}subset'] = self.subset 
         attribs['{' + NSFOLIA + '}class'] =  self.cls
         return E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
-    
+
     @classmethod
     def relaxng(cls, includechildren=True, extraattribs = None, extraelements=None):
         global NSFOLIA
@@ -2180,7 +2177,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
                 if child.text:
                     attribs['{' + NSFOLIA + '}t'] = child.text()
                 e.append( E.wref(**attribs) )
-            else:
+            elif not (isinstance(child, Feature) and child.SUBSET): #Don't add pre-defined features, they are already added as attributes
                 e.append( child.xml() )
         return e    
 
@@ -2191,7 +2188,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
             self.data.append(child)
             return child
         else:
-            return super(AbstractSpanAnnotation,self).append(child)    
+            return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)    
             
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
@@ -2538,12 +2535,6 @@ class Dependency(AbstractSpanAnnotation):
         """Returns the dependent of the dependency relation. Instance of DependencyDependent"""
         return self.select(DependencyDependent)[0]
     
-class TimedEvent(AbstractSpanAnnotation):
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
-    ACCEPTED_DATA = (Description, Feature)
-    ANNOTATIONTYPE = AnnotationType.TIMEDEVENT
-    XMLTAG = 'timedevent'
 
 class Morpheme(AbstractSubtokenAnnotation):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
@@ -2583,12 +2574,6 @@ class DependenciesLayer(AbstractAnnotationLayer):
     """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
     ACCEPTED_DATA = (Dependency,Description)
     XMLTAG = 'dependencies'
-
-class TimingLayer(AbstractAnnotationLayer):
-    """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
-    ACCEPTED_DATA = (TimedEvent,Description)
-    XMLTAG = 'timing'
-
 
 class MorphologyLayer(AbstractSubtokenAnnotationLayer):
     """Morphology Layer: Annotation layer for Morpheme subtoken annotation elements. For morphological analysis."""
@@ -2637,25 +2622,21 @@ class DomainAnnotation(AbstractExtendedTokenAnnotation):
 
 class SynsetFeature(Feature):
     """Synset feature, to be used within Sense"""
-    XMLATTRIB = 'synset' #allow feature as attribute
     XMLTAG = 'synset'
     SUBSET = 'synset' #associated subset
 
 class ActorFeature(Feature):
     """Actor feature, to be used within Event"""
-    XMLATTRIB = 'actor' #allow feature as attribute
     XMLTAG = 'actor'
     SUBSET = 'actor' #associated subset
 
 class BegindatetimeFeature(Feature):
     """Begindatetime feature, to be used within Event"""
-    XMLATTRIB = 'begindatetime' #allow feature as attribute
     XMLTAG = 'begindatetime'
     SUBSET = 'begindatetime' #associated subset
     
 class EnddatetimeFeature(Feature):
     """Enddatetime feature, to be used within Event"""
-    XMLATTRIB = 'enddatetime' #allow feature as attribute
     XMLTAG = 'enddatetime'
     SUBSET = 'enddatetime' #associated subset    
 
@@ -2665,7 +2646,19 @@ class Event(AbstractStructureElement):
     ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature)
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'    
-    
+
+class TimedEvent(AbstractSpanAnnotation):
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
+    ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature)
+    ANNOTATIONTYPE = AnnotationType.TIMEDEVENT
+    XMLTAG = 'timedevent'
+
+class TimingLayer(AbstractAnnotationLayer):
+    """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
+    ACCEPTED_DATA = (TimedEvent,Description)
+    XMLTAG = 'timing'
+
 
 class SenseAnnotation(AbstractTokenAnnotation):
     """Sense annotation: a token annotation element"""
