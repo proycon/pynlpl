@@ -39,6 +39,11 @@ LIBVERSION = '0.8.0.17' #== FoLiA version + library revision
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 
+ILLEGAL_UNICODE_CONTROL_CHARACTERS = {} #XML does not like unicode control characters
+for ordinal in range(0x20):
+    if chr(ordinal) not in '\t\r\n':
+        ILLEGAL_UNICODE_CONTROL_CHARACTERS[ordinal] = None
+
 class Mode:
     MEMORY = 0 #The entire FoLiA structure will be loaded into memory. This is the default and is required for any kind of document manipulation.
     XPATH = 1 #The full XML structure will be loaded into memory, but conversion to FoLiA objects occurs only upon querying. The full power of XPath is available.
@@ -1678,6 +1683,7 @@ class TextContent(AbstractElement):
     OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
         
     def __init__(self, doc, *args, **kwargs):
+        global ILLEGAL_UNICODE_CONTROL_CHARACTERS
         """Required keyword arguments:
             
                 * ``value=``: Set to a unicode or str containing the text
@@ -1706,9 +1712,15 @@ class TextContent(AbstractElement):
             self.value = unicode(kwargs['value'],'utf-8')        
             del kwargs['value']
         elif not kwargs['value']:
-            kwargs['value'] = u""
+            self.value = u""
+            del kwargs['value']
         else:
             raise Exception("Invalid value: " + repr(kwargs['value']))
+            
+    
+        if self.value and (self.value != self.value.translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
+            raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.value))
+            
         
         if 'offset' in kwargs: #offset
             self.offset = int(kwargs['offset'])
@@ -1880,6 +1892,7 @@ class TextContent(AbstractElement):
                 del attribs['{' + NSFOLIA + '}class']
 
         return E.t(self.value, **attribs)
+        
                 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
