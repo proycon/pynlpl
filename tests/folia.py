@@ -457,14 +457,21 @@ class Test2Sanity(unittest.TestCase):
         s = self.doc['WR-P-E-J-0000000001.p.1.s.4']
         
         self.assertEqual( s.text(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
+        self.assertEqual( s.stricttext(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
+        self.assertEqual( s.textcontent().value, 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
         self.assertEqual( s.text('original'), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')    
         self.assertRaises( folia.NoSuchText, s.text, 'BLAH' )
+        
         
         w = self.doc['WR-P-E-J-0000000001.p.1.s.4.w.2']
         self.assertEqual( w.text(), 'hoofdletter')
         
         self.assertEqual( w.textcontent().value, 'hoofdletter')
         self.assertEqual( w.textcontent().offset, 3)
+        
+        w2 = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.31']
+        self.assertEqual( w2.text(), 'vierkante')
+        self.assertEqual( w2.stricttext(), 'vierkante')
         
     def test031_sense(self):   
         """Sanity Check - Lexical Semantic Sense Annotation"""

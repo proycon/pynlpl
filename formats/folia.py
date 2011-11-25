@@ -373,9 +373,8 @@ class AbstractElement(object):
         Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
         not found. 
         
-        Unlike text(), this method does not recurse into child elements!          
-        """        
-        
+        Unlike text(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the TextContent instance rather than the actual text!                  
+        """                
         if not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
 
@@ -385,9 +384,18 @@ class AbstractElement(object):
             if isinstance(e, TextContent):
                 if e.cls == cls:
                     return e
-                    
+            elif isinstance(e, Correction):
+                try:
+                    return e.textcontent(cls)
+                except NoSuchText:
+                    pass
         raise NoSuchText
                             
+                            
+        
+    def stricttext(self, cls='current'):
+        """Get the text strictly associated with this element (of the specified class). Does not recurse into children, with the sole exception of Corection/New"""                
+        return self.textcontent(cls).value
         
     def text(self, cls='current'):
         """Get the text associated with this element (of the specified class), will always be a unicode instance.  
@@ -398,31 +406,29 @@ class AbstractElement(object):
         
         if not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
-
         
-        #Find explicit text content (same class)
-        for e in self:
-            if isinstance(e, TextContent):
-                if e.cls == cls:
-                    return e.value
-                        
-        #Not found, descend into children
-        s = ""
-        for e in self:            
-            if e.PRINTABLE and not isinstance(e, TextContent):
-                try:
-                    delimiter = e.overridetextdelimiter()
-                    if delimiter is None:
-                        delimiter = self.TEXTDELIMITER #default delimiter set by parent                        
-                    s += e.text(cls) + delimiter
-                except NoSuchText:
-                    continue           
-
+        try:
+            s = self.textcontent(cls).value
+        except NoSuchText:                    
+            #Not found, descend into children
+            s = ""
+            for e in self:            
+                if e.PRINTABLE and not isinstance(e, TextContent):
+                    try:
+                        delimiter = e.overridetextdelimiter()
+                        if delimiter is None:
+                            delimiter = self.TEXTDELIMITER #default delimiter set by parent                        
+                        s += e.text(cls) + delimiter
+                    except NoSuchText:
+                        continue           
+    
         if s.strip():
             return s.strip()
         else:
             #No text found at all :`(
             raise NoSuchText
+            
+            
                       
     def originaltext(self):
         """Alias for retrieving the original uncorrect text"""
@@ -2342,6 +2348,24 @@ class Correction(AbstractExtendedTokenAnnotation):
         
     def hassuggestions(self):
         return bool(self.select(Suggestion,None,False, False))                
+    
+    def textcontent(self, cls='current'):
+        """Get the text explicitly associated with this element (of the specified class).
+        Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
+        not found. 
+        
+        Unlike text(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the TextContent instance rather than the actual text!                  
+        """                
+        if cls == 'current':
+            for e in self:
+                if isinstance(e, New) or isinstance(e, Current):
+                    return e.textcontent(cls)
+        elif cls == 'original':
+            for e in self:
+                if isinstance(e, Original):
+                    return e.textcontent(cls)
+        raise NoSuchText
+                               
     
     
     def text(self, cls = 'current'):
