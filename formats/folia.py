@@ -535,8 +535,11 @@ class AbstractElement(object):
         
     def hastext(self,cls='current'):
         """Does this element have text (of the specified class)"""
-        return (len([ x for x in self.select(TextContent,None,False) if x.cls == cls]) > 0)            
-    
+        try:
+            r = self.textcontent(cls) 
+            return True
+        except NoSuchText:
+            return False                
             
     def settext(self, text, cls='current'):
         """Set the text for this element (and class)"""
