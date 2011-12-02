@@ -140,20 +140,19 @@ def crude_tokenizer(line):
             buffer += c          
     if buffer: tokens.append(buffer)  
     return tokens
-
-def extract_sentences(text):
-    """Crude sentence tokeniser"""
     
 
 def strip_accents(s, encoding= 'utf-8'):
-      if isinstance(s,unicode):
-          return unicodedata.normalize('NFKD', s).encode('ASCII', 'ignore')
-      else:
-          return unicodedata.normalize('NFKD', unicode(s,encoding)).encode('ASCII', 'ignore')
+    """Strip characters with diacritics and return a flat ascii representation"""
+    if isinstance(s,unicode):
+       return unicodedata.normalize('NFKD', s).encode('ASCII', 'ignore')
+    else:
+       return unicodedata.normalize('NFKD', unicode(s,encoding)).encode('ASCII', 'ignore')
 
 
 
 def swap(tokens, maxdist=2):
+    """Perform a swap operation on a sequence of tokens, exhaustively swapping all tokens up to the maximum specified distance. This is a subset of all permutations."""
     assert maxdist >= 2
     tokens = list(tokens)
     if maxdist > len(tokens):
@@ -172,8 +171,17 @@ def swap(tokens, maxdist=2):
 
 
 class Classer(object):
+    """The Classer can encode and decode tokens to an integer representation. It is constructed using a frequency list."""
+    
     def __init__(self, f, **kwargs):
-        """Pass either a filename or a frequency list"""
+        """Pass either a filename of a plain text data file or a pre-computed frequency list.
+        
+        Keyword arguments:
+            decoder = True/False   Enable decoder? Default: True
+            encoder = True/False   Enable encoder? Default: True
+            encoding = (str)       The encoding of your data (None for encoding-agnostic, default)
+        """
+        
         if 'decoder' in kwargs:
             self.decoder = bool(kwargs['decoder'])
         else:
@@ -230,6 +238,7 @@ class Classer(object):
         
 
     def save(self, filename):
+        """Save to a class file"""
         if not self.decoder: raise Exception("Decoder not enabled!")
         if self.encoding:
             f = codecs.open(filename,'w',self.encoding)   
@@ -241,6 +250,7 @@ class Classer(object):
         f.close()
                     
     def decode(self, x):
+        """Encode a class integer, return string token"""
         try:
             return self.class2word[x]
         except:
@@ -250,6 +260,7 @@ class Classer(object):
                 raise
             
     def encode(self, x):        
+        """Encode a string token, return class integer"""
         try:
             return self.word2class[x]
         except:
@@ -259,9 +270,11 @@ class Classer(object):
                 raise
                         
     def decodeseq(self, sequence):
+        """Decode a sequence, converting class integers to strings"""
         return tuple( self.decode(x) for x in sequence  )
         
     def encodeseq(self, sequence):
+        """Encode a sequence of string tokens to class integers"""
         return tuple( self.encode(x) for x in sequence  )
         
     def __len__(self):
@@ -271,6 +284,7 @@ class Classer(object):
             return len(self.word2class)
         
     def encodefile(self, fromfile, tofile):
+        """Encode a file, converting word tokens to class integers"""
         assert self.filesupport
         ffrom = open(fromfile,'r')  
         fto = open(tofile,'w')
@@ -284,6 +298,7 @@ class Classer(object):
         ffrom.close()
         
     def decodefile(self, filename):
+        """Decode a file, converting class integers to token strings"""
         f = open(filename)
         buffer = array.array('B')
         line = []

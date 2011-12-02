@@ -56,7 +56,15 @@ def Enum(*names):
 
 
 
-def log(msg, **kwargs):        
+def log(msg, **kwargs):
+    """Generic log method. Will prepend timestamp.
+    
+    Keyword arguments:
+      system   - Name of the system/module 
+      indent   - Integer denoting the desired level of indentation
+      streams  - List of streams to output to
+      stream   - Stream to output to (singleton version of streams)
+    """        
     if 'debug' in kwargs:
         if 'currentdebug' in kwargs:
             if kwargs['currentdebug'] < kwargs['debug']:

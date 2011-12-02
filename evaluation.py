@@ -39,6 +39,8 @@ class ProcessFailed(Exception):
 
 
 class ConfusionMatrix(FrequencyList):
+    """Confusion Matrix"""
+    
     def __str__(self):
         """Print Confusion Matrix in table form"""
         o = "== Confusion Matrix == (hor: goals, vert: observations)\n\n"

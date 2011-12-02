@@ -287,6 +287,7 @@ class Distribution:
             yield type, count
 
     def output(self,delimiter = '\t', freqlist = None):
+        """Generator yielding formatted strings expressing the time and probabily for each item in the distribution"""
         for type, prob in self:   
             if freqlist:
                 if isinstance(type,list) or isinstance(type, tuple):
@@ -591,7 +592,7 @@ def normalize(numbers, total=1.0):  #from AI: A Modern Appproach
 ###########################################################################################
 
 def levenshtein(s1, s2):
-    """Computes the levenshtein distance between to strings. From:  http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python"""
+    """Computes the levenshtein distance between two strings. From:  http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python"""
     if len(s1) < len(s2):
         return levenshtein(s2, s1)
     if not s1:
