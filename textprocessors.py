@@ -48,7 +48,7 @@ except ImportError: #python too old, include function explicitly (code from from
             
             
 class Windower:
-    """Moves a sliding window over a list of tokens, returning all windows"""
+    """Moves a sliding window over a list of tokens, returning all ngrams"""
 
     def __init__(self, tokens, n=1, beginmarker = "<begin>", endmarker = "<end>"):
         if isinstance(tokens, str) or  isinstance(unicode, str):
@@ -88,6 +88,23 @@ class Windower:
                 else:
                    yield tuple(self.tokens[begin:] + ((end - l) * endmarker))
 
+class MultiWindower(object):
+    "Extract n-grams of various configurations from a sequence"
+    
+    def __init__(self,tokens, min_n = 1, max_n = 9, beginmarker=None, endmarker=None):
+        if isinstance(tokens, str) or  isinstance(unicode, str):
+            self.tokens = tuple(tokens.split())
+        else:
+            self.tokens = tuple(tokens)
+        self.min_n = min_n
+        self.max_n = max_n
+        self.beginmarker = beginmarker
+        self.endmarker = endmarker        
+        
+    def __iter__(self):
+        for n in range(self.min_n, self.max_n + 1):
+            for ngram in Windower(self.tokens,n, self.beginmarker, self.endmarker):
+                yield ngram        
 
 def calculate_overlap(haystack, needle, allowpartial=True):
     """Calculate the overlap between two sequences. Yields (overlap, placement) tuples (multiple because there may be multiple overlaps!). The former is the part of the sequence that overlaps, and the latter is -1 if the overlap is on the left side, 0 if it is a subset, 1 if it overlaps on the right side, 2 if its an identical match"""    
