@@ -2683,7 +2683,7 @@ class EnddatetimeFeature(Feature):
 class Event(AbstractStructureElement):    
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR, Attrib.N,Attrib.DATETIME)
-    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature)
+    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent)
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'    
 
@@ -2866,7 +2866,7 @@ Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description)
 class Caption(AbstractStructureElement):    
     """Element used for captions for figures or tables, contains sentences"""
     OPTIONAL_ATTRIBS = (Attrib.ID,)
-    ACCEPTED_DATA = (Sentence, Description)
+    ACCEPTED_DATA = (Sentence, Description, TextContent)
     OCCURRENCES = 1
     XMLTAG = 'caption'
 
@@ -2874,7 +2874,7 @@ class Caption(AbstractStructureElement):
 class Label(AbstractStructureElement):    
     """Element used for labels. Mostly in within list item. Contains words."""
     OPTIONAL_ATTRIBS = (Attrib.ID,)
-    ACCEPTED_DATA = (Word, Description)
+    ACCEPTED_DATA = (Word, Description, TextContent)
     XMLTAG = 'label'
 
 class ListItem(AbstractStructureElement):
@@ -2887,16 +2887,16 @@ class ListItem(AbstractStructureElement):
 class List(AbstractStructureElement):    
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
-    ACCEPTED_DATA = (ListItem,Description, Caption, Event)
+    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent)
     XMLTAG = 'list'
     TEXTDELIMITER = '\n'
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent)
 
 class Figure(AbstractStructureElement):    
     """Element for the representation of a graphical figure. Structure element."""
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
-    ACCEPTED_DATA = (Sentence, Description, Caption)
+    ACCEPTED_DATA = (Sentence, Description, Caption, TextContent)
     XMLTAG = 'figure'
     #TODO: relaxNG
     
@@ -2948,7 +2948,7 @@ class Head(AbstractStructureElement):
     
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Sentence,Description, Event)
+    ACCEPTED_DATA = (Sentence,Description, Event, TextContent)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'          
