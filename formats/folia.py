@@ -34,7 +34,7 @@ import multiprocessing
 import threading
 
 FOLIAVERSION = '0.8.0'
-LIBVERSION = '0.8.0.17' #== FoLiA version + library revision
+LIBVERSION = '0.8.0.18' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -103,12 +103,17 @@ class ModeError(Exception):
     pass
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
+
+
     object.doc = doc #The FoLiA root document
     supported = required + allowed
+    
     
     if 'generate_id_in' in kwargs:
         kwargs['id'] = kwargs['generate_id_in'].generate_id(object.__class__)
         del kwargs['generate_id_in']
+
+            
             
     if 'id' in kwargs:
         if not Attrib.ID in supported:
@@ -239,6 +244,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.auth = True
 
 
+
     if 'text' in kwargs:
         object.settext(kwargs['text'])
         del kwargs['text']
@@ -264,6 +270,8 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         print >>stderr, "   @confidence   = ", repr(object.confidence)
         print >>stderr, "   @n            = ", repr(object.n)
         print >>stderr, "   @datetime     = ", repr(object.datetime)
+
+
         
     #set index
     if object.id and doc:
@@ -273,7 +281,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         else:
             if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + object.id
             doc.index[object.id] = object
-
+        
     #Parse feature attributes (shortcut for feature specification for some elements)
     for c in object.ACCEPTED_DATA:
         if issubclass(c, Feature):
@@ -336,7 +344,7 @@ class AbstractElement(object):
         self.doc = doc
         self.parent = None
         self.data = []        
-            
+        
         kwargs = parsecommonarguments(self, doc, self.ANNOTATIONTYPE, self.REQUIRED_ATTRIBS, self.OPTIONAL_ATTRIBS,**kwargs)
         for child in args:
             self.append(child)
@@ -350,7 +358,8 @@ class AbstractElement(object):
                     
         for key in kwargs:
             raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)        
-            
+        
+        
     #def __del__(self):
     #    if self.doc and self.doc.debug:
     #        print >>stderr, "[PyNLPl FoLiA DEBUG] Removing " + repr(self)
@@ -664,6 +673,7 @@ class AbstractElement(object):
         """
         
         
+        
         #obtain the set (if available, necessary for checking addability)
         if 'set' in kwargs:
             set = kwargs['set']
@@ -675,29 +685,31 @@ class AbstractElement(object):
 
         #Check if a Class rather than an instance was passed
         Class = None #do not set to child.__class__
-        if inspect.isclass(child):
+        if inspect.isclass(child):            
             Class = child
             if Class.addable(self, set):
                 if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
-                    kwargs['generate_id_in'] = self
+                    kwargs['generate_id_in'] = self                
                 child = Class(self.doc, *args, **kwargs)
         elif args:            
             raise Exception("Too many arguments specified. Only possible when first argument is a class and not an instance")
         
+        
+        
         #Do the actual appending        
         if not Class and (isinstance(child,str) or isinstance(child,unicode)) and TextContent in self.ACCEPTED_DATA:
             #you can pass strings directly (just for convenience), will be made into textcontent automatically.
-            child = TextContent(self.doc, child )
-            self.data.append(child)
+            child = TextContent(self.doc, child )            
+            self.data.append(child)                    
             child.parent = self
         elif Class or (isinstance(child, AbstractElement) and child.__class__.addable(self, set)): #(prevents calling addable again if already done above)
             if 'alternative' in kwargs and kwargs['alternative']:
-                child = Alternative(self.doc, child, generate_id_in=self)
+                child = Alternative(self.doc, child, generate_id_in=self)            
             self.data.append(child)
             child.parent = self                
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ + ". Type not allowed as child.")
-                
+            
         child.postappend()
         return child
         
@@ -1531,33 +1543,24 @@ class AllowTokenAnnotation(AllowCorrections):
 
 class AllowGenerateID(object):
     def _getmaxid(self, xmltag):        
-        maxid = 0
         try:
             if xmltag in self.maxid:
-                maxid = self.maxid[xmltag]
+                return self.maxid[xmltag]
+            else:
+                return 0
         except:
-            pass
-            
-        #if self.data: #NOT RECURSIVE ON PURPOSE!
-        #    for c in self.data:
-        #        try:
-        #            tmp = c._getmaxid(xmltag)
-        #            if tmp > maxid:
-        #                maxid = tmp
-        #        except AttributeError:
-        #            continue
-        #print repr(self), self.maxid, "\n"
-        return maxid
+            return 0
             
         
     def _setmaxid(self, child):
+        #print "set maxid on " + repr(self) + " for " + repr(child)
         try:
             self.maxid
         except AttributeError:
             self.maxid = {}            
         try:
             if child.id and child.XMLTAG:
-                fields = child.id.split(self.doc.IDSEPARATOR)
+                fields = child.id.split(self.doc.IDSEPARATOR)                            
                 if len(fields) > 1 and fields[-1].isdigit():
                     if not child.XMLTAG in self.maxid:
                         self.maxid[child.XMLTAG] = int(fields[-1])
@@ -1566,6 +1569,7 @@ class AllowGenerateID(object):
                         if self.maxid[child.XMLTAG] < int(fields[-1]):
                            self.maxid[child.XMLTAG] = int(fields[-1]) 
                            #print "set maxid on " + repr(self) + ", " + child.XMLTAG + " to " + fields[-1] 
+                        
         except AttributeError:
             pass        
                 
@@ -1579,24 +1583,46 @@ class AllowGenerateID(object):
                 xmltag = cls.XMLTAG
             except:
                 raise Exception("Expected a class such as Alternative, Correction, etc...")
-                
+
+        
         maxid = self._getmaxid(xmltag) 
-        i = 0
-        while True:
-            i += 1
-            if self.id:
-                id = self.id
-            else:
-                #this element has no ID, fall back to closest parent ID:
-                e = self
-                while e.parent:                    
-                    if e.id:
-                        id = e.id
-                        break
-                    e = e.parent                
-            id = id + '.' + xmltag + '.' + str(self._getmaxid(xmltag) + i)
-            if not id in self.doc.index:
-                return id    
+        
+        id = None
+        if self.id:
+            id = self.id
+        else:
+            #this element has no ID, fall back to closest parent ID:
+            e = self
+            while e.parent:                    
+                if e.id:
+                    id = e.id
+                    break
+                e = e.parent 
+        id = id + '.' + xmltag + '.' + str(maxid + 1)
+        try:
+            self.maxid
+        except AttributeError:
+            self.maxid = {}
+        self.maxid[xmltag] = maxid + 1 #Set MAX ID
+        return id
+        
+        #i = 0
+        #while True:
+        #    i += 1
+        #    print i
+        #    if self.id:
+        #        id = self.id
+        #    else:
+        #        #this element has no ID, fall back to closest parent ID:
+        #        e = self
+        #        while e.parent:                    
+        #            if e.id:
+        #                id = e.id
+        #                break
+        #            e = e.parent                
+        #    id = id + '.' + xmltag + '.' + str(self._getmaxid(xmltag) + i)
+        #    if not id in self.doc.index:
+        #        return id    
                  
                  
 class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
@@ -1617,7 +1643,7 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
     def append(self, child, *args, **kwargs):
         """See ``AbstractElement.append()``"""
         e = super(AbstractStructureElement,self).append(child, *args, **kwargs)
-        self._setmaxid(child)     
+        self._setmaxid(e)     
         return e
                 
 
@@ -1669,7 +1695,7 @@ class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID):
     def append(self, child, *args, **kwargs):
         """See ``AbstractElement.append()``"""
         e = super(AbstractTokenAnnotation,self).append(child, *args, **kwargs)
-        self._setmaxid(child)
+        self._setmaxid(e)
         return e
 
 class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation): 
@@ -2332,6 +2358,7 @@ class Current(AbstractCorrectionChild):
             
 class Correction(AbstractExtendedTokenAnnotation):
     REQUIRED_ATTRIBS = (Attrib.ID,)
+    REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (New,Original,Current, Suggestion, Description)
     ANNOTATIONTYPE = AnnotationType.CORRECTION
@@ -2686,6 +2713,7 @@ class Event(AbstractStructureElement):
     ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent)
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'    
+    OCCURRENCESPERSET = 0
 
 class TimedEvent(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
@@ -2693,6 +2721,7 @@ class TimedEvent(AbstractSpanAnnotation):
     ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature)
     ANNOTATIONTYPE = AnnotationType.TIMEDEVENT
     XMLTAG = 'timedevent'
+    OCCURRENCESPERSET = 0
 
 class TimingLayer(AbstractAnnotationLayer):
     """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
