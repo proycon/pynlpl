@@ -4243,6 +4243,7 @@ def relaxng(filename=None):
                 E.optional( E.attribute(name='generator') ),
                 E.element( #metadata
                     E.optional(E.attribute(name='type')),
+                    E.optional(E.attribute(name='src')),
                     E.element( E.zeroOrMore( E.choice( *relaxng_declarations() ) ) ,name='annotations'),
                     E.zeroOrMore(
                         E.element(E.attribute(name='id'), E.text(), name='meta'),
