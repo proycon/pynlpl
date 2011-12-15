@@ -4026,6 +4026,7 @@ class CorpusProcessor(object):
         self.ignoreerrors = True        
         self.maxtasksperchild = maxtasksperchild #This should never be set too high due to lxml leaking memory!!!
         self.preindex = preindex
+        self.ordered = ordered
         self.chunksize = chunksize
         if preindex:
             self.index = list(CorpusFiles(self.corpusdir, self.extension, self.restrict_to_collection, self.conditionf, True))        
