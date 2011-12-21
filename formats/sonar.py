@@ -18,10 +18,10 @@ import glob
 import os.path
 import sys
 
-try:
-    from lxml import etree as ElementTree #try lxml
-except ImportError:
-    from xml.etree.ElementTree import ElementTree #fall back to ElementTree
+#try:
+from lxml import etree as ElementTree #try lxml
+#except ImportError:
+#    from xml.etree.ElementTree import ElementTree #fall back to ElementTree
 
 from StringIO import StringIO
 from time import time
