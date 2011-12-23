@@ -4039,6 +4039,9 @@ class CorpusProcessor(object):
         else:
             return ValueError("Can only retrieve length if instantiated with preindex=True")
     
+    def execute(self):
+        for output in self.run():
+            pass
         
     def run(self, *args, **kwargs):
         if not self.preindex:
