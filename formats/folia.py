@@ -3132,7 +3132,7 @@ class Document(object):
         self.annotationdefaults = {}
         self.annotations = [] #Ordered list of incorporated annotations ['token','pos', etc..]
         self.index = {} #all IDs go here
-        self.declared = False # Will be set to True when declarations have been processed
+        self.declareprocessed = False # Will be set to True when declarations have been processed
         
         self.metadata = {} #will point to XML Element holding IMDI or CMDI metadata
         self.metadatatype = MetaDataType.NATIVE
@@ -3494,7 +3494,7 @@ class Document(object):
     def parsexmldeclarations(self, node):
         if self.debug >= 1: 
             print >>stderr, "[PyNLPl FoLiA DEBUG] Processing Annotation Declarations"
-        self.declarated = True
+        self.declareprocessed = True
         for subnode in node:
             if subnode.tag[:25] == '{' + NSFOLIA + '}' and subnode.tag[-11:] == '-annotation':
                 prefix = subnode.tag[25:][:-11]
