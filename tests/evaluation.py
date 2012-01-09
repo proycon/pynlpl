@@ -66,10 +66,23 @@ class ExperimentPoolTest(unittest.TestCase):
             print "DONE: sleep " + str(experiment.parameters['duration'])
         self.assertEqual(1, False) 
         
+#class ClassEvaluationTest(unittest.TestCase):
+#    def setUp(self):
+#        self.goals = ['sun','sun','rain','cloudy','sun','rain']
+#        self.observations = ['cloudy','cloudy','cloudy','rain','sun','sun']
+#    
+#        
+#    def test001(self):
+#        e = ClassEvaluation(self.goals, self.observations)
+#        print
+#        print e
+#        print e.confusionmatrix()
+    
+    
 class ClassEvaluationTest(unittest.TestCase):
     def setUp(self):
-        self.goals = ['sun','sun','rain','cloudy','sun','rain']
-        self.observations = ['cloudy','cloudy','cloudy','rain','sun','sun']
+        self.goals =        ['cat','cat','cat','cat','cat','cat','cat','cat',    'dog',  'dog','dog','dog','dog','dog'      ,'rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit']
+        self.observations = ['cat','cat','cat','cat','cat','dog','dog','dog',  'cat','cat','rabbit','dog','dog','dog'   ,'rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','rabbit','dog','dog']
     
         
     def test001(self):
