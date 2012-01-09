@@ -13,6 +13,7 @@
 ###############################################################    
 
 from pynlpl.statistics import FrequencyList
+from collections import defaultdict
 import subprocess
 import itertools
 import time
@@ -88,11 +89,13 @@ class ClassEvaluation(object):
         assert len(observations) == len(goals)
         self.observations = copy.copy(observations)
         self.goals = copy.copy(goals)
+        
+        self.classes = set(self.observations + self.goals)
  
-        self.tp = {}
-        self.fp = {}
-        self.tn = {}
-        self.fn = {}
+        self.tp = defaultdict(int)
+        self.fp = defaultdict(int)
+        self.tn = defaultdict(int)
+        self.fn = defaultdict(int)
 
         self.computed = False
  
@@ -102,9 +105,11 @@ class ClassEvaluation(object):
     def append(self, goal, observation):
         self.goals.append(goal)
         self.observations.append(observation)
+        self.classes.add(goal)
+        self.classes.add(observation)
         self.computed = False
 
-    def precision(self, cls=None):
+    def precision(self, cls=None, macro=False):
         if not self.computed: self.compute()
         if cls:
             if self.tp[cls] + self.fp[cls] > 0:
@@ -114,12 +119,15 @@ class ClassEvaluation(object):
                 return 0
         else:
             if len(self.observations) > 0:
-                return sum( ( self.precision(x) for x in self.observations ) ) / float(len(self.observations))
+                if macro:
+                    return sum( ( self.precision(x) for x in set(self.goals) ) ) / float(len(set(self.goals)))
+                else:                    
+                    return sum( ( self.precision(x) for x in self.goals ) ) / float(len(self.goals))
             else: 
                 #return float('nan')
                 return 0
 
-    def recall(self, cls=None):
+    def recall(self, cls=None, macro=False):
         if not self.computed: self.compute()
         if cls:
             if self.tp[cls] + self.fn[cls] > 0:
@@ -129,12 +137,15 @@ class ClassEvaluation(object):
                 return 0
         else:
             if len(self.observations) > 0:
-                return sum( ( self.recall(x) for x in self.observations ) ) / float(len(self.observations))
+                if macro:
+                    return sum( ( self.recall(x) for x in set(self.goals) ) ) / float(len(set(self.goals)))
+                else:
+                    return sum( ( self.recall(x) for x in self.goals ) ) / float(len(self.goals))
             else:
                 #return float('nan')
                 return 0
 
-    def specificity(self, cls=None):
+    def specificity(self, cls=None, macro=False):
         if not self.computed: self.compute()
         if cls:
             if self.tn[cls] + self.fp[cls] > 0:
@@ -144,7 +155,10 @@ class ClassEvaluation(object):
                 return 0
         else:
             if len(self.observations) > 0:
-                return sum( ( self.specificity(x) for x in self.observations ) ) / float(len(self.observations))
+                if macro:
+                    return sum( ( self.specificity(x) for x in set(self.goals) ) ) / float(len(set(self.goals)))
+                else:                
+                    return sum( ( self.specificity(x) for x in self.goals ) ) / float(len(self.goals))
             else:
                 #return float('nan')
                 return 0
@@ -164,7 +178,7 @@ class ClassEvaluation(object):
                 #return float('nan')
                 return 0
         
-    def fscore(self, cls=None, beta=1):
+    def fscore(self, cls=None, beta=1, macro=False):
         if not self.computed: self.compute()
         if cls:
             prec = self.precision(cls)
@@ -176,7 +190,10 @@ class ClassEvaluation(object):
                 return 0
         else:
             if len(self.observations) > 0:
-                return sum( ( self.fscore(x) for x in self.observations ) ) / float(len(self.observations))
+                if macro:
+                    return sum( ( self.fscore(x,beta) for x in set(self.goals) ) ) / float(len(set(self.goals)))                    
+                else:
+                    return sum( ( self.fscore(x,beta) for x in self.goals ) ) / float(len(self.goals))
             else:
                 #return float('nan')
                 return 0
@@ -187,16 +204,11 @@ class ClassEvaluation(object):
              yield g,o
 
     def compute(self):
-        self.tp = {}
-        self.fp = {}
-        self.tn = {}
-        self.fn = {}
-        for x in set(self.observations + self.goals):
-            self.tp[x] = 0
-            self.fp[x] = 0
-            self.tn[x] = 0
-            self.fn[x] = 0
-
+        self.tp = defaultdict(int)
+        self.fp = defaultdict(int)
+        self.tn = defaultdict(int)
+        self.fn = defaultdict(int)
+        
         for goal, observation in self:
             if goal == observation:
                 self.tp[observation] += 1
@@ -213,7 +225,7 @@ class ClassEvaluation(object):
 
 
         l = len(self.goals)
-        for o in set(self.observations):
+        for o in self.classes:
             self.tn[o] = l - self.tp[o] - self.fp[o] - self.fn[o]
             
         self.computed = True
@@ -227,11 +239,17 @@ class ClassEvaluation(object):
         o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
         for cls in set(self.observations):
             o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
-        o += "\nAccuracy             : " + str(self.accuracy()) + "\n"
-        o += "Recall      (macroav): "+ str(self.recall()) + "\n"
-        o += "Precision   (macroav): " + str(self.precision()) + "\n"
-        o += "Specificity (macroav): " + str(self.specificity()) + "\n"
-        o += "F-score     (macroav): " + str(self.fscore()) + "\n"
+        o += "\nAccuracy:              " + str(self.accuracy()) + "\n"
+        o += "Samples:               " + str(len(self.goals)) + "\n"
+        o += "Correct:               " + str(sum(  ( self.tp[x] for x in set(self.goals)) ) ) + "\n"
+        o += "Recall      (microav): "+ str(self.recall()) + "\n"
+        o += "Recall      (macroav): "+ str(self.recall(None,True)) + "\n"
+        o += "Precision   (microav): " + str(self.precision()) + "\n"
+        o += "Precision   (macroav): "+ str(self.precision(None,True)) + "\n"
+        o += "Specificity (microav): " + str(self.specificity()) + "\n"
+        o += "Specificity (macroav): "+ str(self.specificity(None,True)) + "\n"
+        o += "F-score1    (microav): " + str(self.fscore()) + "\n"
+        o += "F-score1    (macroav): " + str(self.fscore(None,1,True)) + "\n"
         return o
 
 

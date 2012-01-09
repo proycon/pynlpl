@@ -66,17 +66,17 @@ class ExperimentPoolTest(unittest.TestCase):
             print "DONE: sleep " + str(experiment.parameters['duration'])
         self.assertEqual(1, False) 
         
-#class ClassEvaluationTest(unittest.TestCase):
-#    def setUp(self):
-#        self.goals = ['sun','sun','rain','cloudy','sun','rain']
-#        self.observations = ['cloudy','cloudy','cloudy','rain','sun','sun']
-#    
-#        
-#    def test001(self):
-#        e = ClassEvaluation(self.goals, self.observations)
-#        print
-#        print e
-#        print e.confusionmatrix()
+class ClassEvaluationTest2(unittest.TestCase):
+    def setUp(self):
+        self.goals = ['sun','sun','rain','cloudy','sun','rain']
+        self.observations = ['cloudy','cloudy','cloudy','rain','sun','sun']
+    
+       
+    def test001(self):
+        e = ClassEvaluation(self.goals, self.observations)
+        print
+        print e
+        print e.confusionmatrix()
     
     
 class ClassEvaluationTest(unittest.TestCase):
@@ -87,7 +87,13 @@ class ClassEvaluationTest(unittest.TestCase):
         
     def test001(self):
         """Class evaluation test -- (See also http://en.wikipedia.org/wiki/Confusion_matrix , using same data)"""
-        e = ClassEvaluation(self.goals, self.observations)        
+        e = ClassEvaluation(self.goals, self.observations)
+        
+        print
+        print e
+        print e.confusionmatrix()
+    
+                
         self.assertEqual(e.tp['cat'], 5)
         self.assertEqual(e.fp['cat'], 2)
         self.assertEqual(e.tn['cat'], 17)
@@ -115,12 +121,9 @@ class ClassEvaluationTest(unittest.TestCase):
         self.assertEqual( round(e.fscore('rabbit'),6), 0.880000)
         self.assertEqual( round(e.fscore('dog'),6),0.428571)
 
+        self.assertEqual( round(e.accuracy(),6), 0.703704)
         
         
-        print
-        print e
-        print e.confusionmatrix()
-    
 
 if __name__ == '__main__':
     unittest.main()
