@@ -120,7 +120,7 @@ class ClassEvaluation(object):
         else:
             if len(self.observations) > 0:
                 if macro:
-                    return sum( ( self.precision(x) for x in set(self.goals) ) ) / float(len(set(self.goals)))
+                    return sum( ( self.precision(x) for x in set(self.goals) ) ) / float(len(set(self.classes)))
                 else:                    
                     return sum( ( self.precision(x) for x in self.goals ) ) / float(len(self.goals))
             else: 
@@ -138,7 +138,7 @@ class ClassEvaluation(object):
         else:
             if len(self.observations) > 0:
                 if macro:
-                    return sum( ( self.recall(x) for x in set(self.goals) ) ) / float(len(set(self.goals)))
+                    return sum( ( self.recall(x) for x in set(self.goals) ) ) / float(len(set(self.classes)))
                 else:
                     return sum( ( self.recall(x) for x in self.goals ) ) / float(len(self.goals))
             else:
@@ -156,7 +156,7 @@ class ClassEvaluation(object):
         else:
             if len(self.observations) > 0:
                 if macro:
-                    return sum( ( self.specificity(x) for x in set(self.goals) ) ) / float(len(set(self.goals)))
+                    return sum( ( self.specificity(x) for x in set(self.goals) ) ) / float(len(set(self.classes)))
                 else:                
                     return sum( ( self.specificity(x) for x in self.goals ) ) / float(len(self.goals))
             else:
@@ -191,7 +191,7 @@ class ClassEvaluation(object):
         else:
             if len(self.observations) > 0:
                 if macro:
-                    return sum( ( self.fscore(x,beta) for x in set(self.goals) ) ) / float(len(set(self.goals)))                    
+                    return sum( ( self.fscore(x,beta) for x in set(self.goals) ) ) / float(len(set(self.classes)))                    
                 else:
                     return sum( ( self.fscore(x,beta) for x in self.goals ) ) / float(len(self.goals))
             else:
@@ -237,7 +237,7 @@ class ClassEvaluation(object):
     def __str__(self):
         if not self.computed: self.compute()
         o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
-        for cls in set(self.observations):
+        for cls in sorted(set(self.classes)):
             o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
         o += "\nAccuracy:              " + str(self.accuracy()) + "\n"
         o += "Samples:               " + str(len(self.goals)) + "\n"
