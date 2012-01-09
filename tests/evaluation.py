@@ -86,7 +86,37 @@ class ClassEvaluationTest(unittest.TestCase):
     
         
     def test001(self):
-        e = ClassEvaluation(self.goals, self.observations)
+        """Class evaluation test -- (See also http://en.wikipedia.org/wiki/Confusion_matrix , using same data)"""
+        e = ClassEvaluation(self.goals, self.observations)        
+        self.assertEqual(e.tp['cat'], 5)
+        self.assertEqual(e.fp['cat'], 2)
+        self.assertEqual(e.tn['cat'], 17)
+        self.assertEqual(e.fn['cat'], 3)
+        
+        self.assertEqual(e.tp['rabbit'], 11)
+        self.assertEqual(e.fp['rabbit'], 1)
+        self.assertEqual(e.tn['rabbit'], 13)
+        self.assertEqual(e.fn['rabbit'], 2)
+        
+        self.assertEqual(e.tp['dog'], 3)
+        self.assertEqual(e.fp['dog'], 5)
+        self.assertEqual(e.tn['dog'], 16)
+        self.assertEqual(e.fn['dog'], 3)
+        
+        self.assertEqual( round(e.precision('cat'),6), 0.714286)
+        self.assertEqual( round(e.precision('rabbit'),6), 0.916667)
+        self.assertEqual( round(e.precision('dog'),6), 0.375000)
+
+        self.assertEqual( round(e.recall('cat'),6), 0.625000)
+        self.assertEqual( round(e.recall('rabbit'),6), 0.846154)
+        self.assertEqual( round(e.recall('dog'),6),0.500000)
+
+        self.assertEqual( round(e.fscore('cat'),6), 0.666667)
+        self.assertEqual( round(e.fscore('rabbit'),6), 0.880000)
+        self.assertEqual( round(e.fscore('dog'),6),0.428571)
+
+        
+        
         print
         print e
         print e.confusionmatrix()
