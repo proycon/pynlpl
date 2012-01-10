@@ -85,7 +85,7 @@ class ConfusionMatrix(FrequencyList):
 
 
 class ClassEvaluation(object):
-    def __init__(self,  goals = [], observations = []):
+    def __init__(self,  goals = [], observations = [], encoding ='utf-8'):
         assert len(observations) == len(goals)
         self.observations = copy.copy(observations)
         self.goals = copy.copy(goals)
@@ -97,6 +97,8 @@ class ClassEvaluation(object):
         self.tn = defaultdict(int)
         self.fn = defaultdict(int)
 
+        self.encoding = encoding
+        
         self.computed = False
  
         if self.observations:
@@ -234,12 +236,8 @@ class ClassEvaluation(object):
     def confusionmatrix(self, casesensitive =True):
         return ConfusionMatrix(zip(self.goals, self.observations), casesensitive)
 
-    def __str__(self):
-        if not self.computed: self.compute()
-        o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
-        for cls in sorted(set(self.classes)):
-            o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
-        o += "\nAccuracy:              " + str(self.accuracy()) + "\n"
+    def outputmetrics(self):
+        o = "Accuracy:              " + str(self.accuracy()) + "\n"
         o += "Samples:               " + str(len(self.goals)) + "\n"
         o += "Correct:               " + str(sum(  ( self.tp[x] for x in set(self.goals)) ) ) + "\n"
         o += "Recall      (microav): "+ str(self.recall()) + "\n"
@@ -252,6 +250,22 @@ class ClassEvaluation(object):
         o += "F-score1    (macroav): " + str(self.fscore(None,1,True)) + "\n"
         return o
 
+
+    def __str__(self):
+        if not self.computed: self.compute()
+        o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
+        for cls in sorted(set(self.classes)):
+            if isinstance(cls, unicode): cls = cls.encode(self.encoding)
+            o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
+        return o + "\n" + self.outputmetrics()
+
+    def __unicode__(self):
+        if not self.computed: self.compute()
+        o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
+        for cls in sorted(set(self.classes)):
+            if not isinstance(cls, unicode): cls = unicode(cls, self.encoding)
+            o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
+        return o + "\n" + self.outputmetrics()
 
 
 class AbstractExperiment(object):
