@@ -85,17 +85,18 @@ class ConfusionMatrix(FrequencyList):
 
 
 class ClassEvaluation(object):
-    def __init__(self,  goals = [], observations = [], encoding ='utf-8'):
+    def __init__(self,  goals = [], observations = [], missing = {}, encoding ='utf-8'):
         assert len(observations) == len(goals)
         self.observations = copy.copy(observations)
         self.goals = copy.copy(goals)
         
         self.classes = set(self.observations + self.goals)
- 
+        
         self.tp = defaultdict(int)
         self.fp = defaultdict(int)
         self.tn = defaultdict(int)
         self.fn = defaultdict(int)
+        self.missing = missing
 
         self.encoding = encoding
         
@@ -210,23 +211,18 @@ class ClassEvaluation(object):
         self.fp = defaultdict(int)
         self.tn = defaultdict(int)
         self.fn = defaultdict(int)
+        for cls, count in self.missing.items():
+            self.fn[cls] = count 
         
         for goal, observation in self:
             if goal == observation:
                 self.tp[observation] += 1
-                for goal2, observation2 in zip(self.goals, self.observations):
-                    if observation2 != observation and goal2 != goal:
-                        self.tn[observation] += 1
-                    
-                #for g in self.goals:
-                #    if g != observation:
-                #        self.tn[g] += 1
             elif goal != observation:
                 self.fp[observation] += 1
                 self.fn[goal] += 1
 
 
-        l = len(self.goals)
+        l = len(self.goals) + sum(self.missing.values())
         for o in self.classes:
             self.tn[o] = l - self.tp[o] - self.fp[o] - self.fn[o]
             
