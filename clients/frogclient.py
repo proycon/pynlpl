@@ -89,8 +89,9 @@ class FrogClient:
     def process_aligned(self,input_data, source_encoding="utf-8", return_unicode = True):
         output = self.process(input_data, source_encoding, return_unicode)
         outputwords = [ x[0] for x in output ]
-        alignment = self.align(input_data, outputwords)
-        for i, _ in enumerate(input_data):
+        inputwords = input_data.strip(' \t\n').split(' ')
+        alignment = self.align(inputwords, outputwords)
+        for i, _ in enumerate(inputwords):
             targetindex = alignment[i]
             if targetindex == None:
                 if self.parser:
