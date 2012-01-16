@@ -17,7 +17,6 @@
 ###############################################################
 
 from socket import *
-import re
 
 class FrogClient:
     def __init__(self,host="localhost",port=12345, tadpole_encoding="utf-8", parser=False, timeout=120.0):
@@ -37,7 +36,6 @@ class FrogClient:
 
         input_data = input_data.strip(' \t\n')
 
-        targetbuffer = re.sub("[ -]","",input_data)
         #buffer = ""
 
         #print "SEND: ",input_data #DEBUG
@@ -87,7 +85,38 @@ class FrogClient:
                             tp_output.append( (word,lemma,morph,pos) )
                         
         return tp_output
-
+    
+    def process_aligned(self,input_data, source_encoding="utf-8", return_unicode = True):
+        output = self.process(input_data, source_encoding, return_unicode)
+        outputwords = [ x[0] for x in output ]
+        alignment = self.align(input_data, outputwords)
+        for i, _ in enumerate(input_data):
+            targetindex = alignment[i]
+            if targetindex == None:
+                if self.parser:
+                    yield (None,None,None,None,None,None)
+                else:
+                    yield (None,None,None,None)
+            else:
+                yield output[targetindex]
+             
+    def align(self,inputwords, outputwords):        
+        """For each inputword, provides the index of the outputword"""
+        alignment = []
+        cursor = 0
+        for inputword in inputwords:        
+            if outputwords[cursor] == inputword:
+                alignment.append(cursor)
+                cursor += 1
+            elif outputwords[cursor+1] == inputword:
+                alignment.append(cursor+1)
+                cursor += 2
+            else:
+                alignment.append(None)
+                cursor += 1
+        return alignment
+                
+            
     def __del__(self):
         self.socket.close()
 

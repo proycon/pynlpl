@@ -84,6 +84,7 @@ class ConfusionMatrix(FrequencyList):
 
 
 
+
 class ClassEvaluation(object):
     def __init__(self,  goals = [], observations = [], missing = {}, encoding ='utf-8'):
         assert len(observations) == len(goals)
