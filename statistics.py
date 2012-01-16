@@ -162,7 +162,7 @@ class FrequencyList:
         """Print a representation of the frequency list"""
         for type, count in self:
             if isinstance(type,tuple) or isinstance(type,list):
-                yield u" ".join(type) + delimiter + str(count)
+                yield u" ".join((unicode(x) for x in type)) + delimiter + str(count)
             elif isinstance(type,str) or isinstance(type,unicode):
                 yield type + delimiter + str(count)
             else:
