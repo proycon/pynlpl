@@ -105,15 +105,15 @@ class FrogClient:
         alignment = []
         cursor = 0
         for inputword in inputwords:        
-            if outputwords[cursor] == inputword:
+            if len(outputwords) > cursor and outputwords[cursor] == inputword:
                 alignment.append(cursor)
                 cursor += 1
-            elif outputwords[cursor+1] == inputword:
+            elif len(outputwords) > cursor+1 and outputwords[cursor+1] == inputword:
                 alignment.append(cursor+1)
                 cursor += 2
             else:
                 alignment.append(None)
-                cursor += 1
+                cursor += 1                
         return alignment
                 
             
