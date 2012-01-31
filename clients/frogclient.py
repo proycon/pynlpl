@@ -76,6 +76,8 @@ class FrogClient:
                             word,lemma,morph,pos, posprob = line[1:]
                         elif len(fields) == 4:
                             word,lemma,morph,pos = line[1:]
+                        elif len(fields) == 10:
+                            word,lemma,morph,pos, posprob,parse1,parse2,chunker1,chunker2 = line[1:]
                         else:
                             raise Exception("Can't process line: ", repr(line))
 
