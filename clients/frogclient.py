@@ -76,10 +76,10 @@ class FrogClient:
                             word,lemma,morph,pos, posprob = line[1:]
                         elif len(fields) == 4:
                             word,lemma,morph,pos = line[1:]
-                        elif len(fields) == 10:
+                        elif len(fields) == 9:
                             word,lemma,morph,pos, posprob,parse1,parse2,chunker1,chunker2 = line[1:]
                         else:
-                            raise Exception("Can't process line: ", repr(line))
+                            raise Exception("Can't process response line from Frog: ", repr(line), " got unexpected number of fields ", str(len(fields) + 1))
 
                         if self.parser:
                             tp_output.append( (word,lemma,morph,pos,parse1,parse2) )
