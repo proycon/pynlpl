@@ -47,9 +47,11 @@ class FrogClient:
 
         done = False
         while not done:    
-            data = ""
+            data = data = ""
             while not data or data[-1] != '\n':
-                data += self.socket.recv(self.BUFSIZE)
+                moredata = self.socket.recv(self.BUFSIZE)
+                if not moredata: break
+                data += moredata
             if return_unicode:
                 data = unicode(data,self.tadpole_encoding)
 
