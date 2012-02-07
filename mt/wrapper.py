@@ -40,6 +40,7 @@ class MTWrapper(object):
         for path in os.environ['PATH'].split(':'):
             if os.path.isfile(path + '/' + name):
                 return path + '/' + name
+        return ""
 
     def check_common(self):
         sane = True
