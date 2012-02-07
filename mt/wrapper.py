@@ -167,7 +167,9 @@ class MTWrapper(object):
         pass            
     
 if __name__ == "__main__":        
-    print """    
+    print """#! /usr/bin/env python
+# -*- coding: utf8 -*-#     
+    
 from pynlpl.mt.wrapper import MTWrapper
 
 mtwrapper = MTWrapper()
