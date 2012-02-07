@@ -31,14 +31,15 @@ class MTWrapper(object):
         self.PATH_TIMBL = self.findpath('timbl')
         self.PATH_MKCLS = self.findpath('mkcls')
         self.PATH_GIZA = self.findpath('GIZA++')
-        self.PATH_PLAIN2SNT = self.findpath('plaint2snt.out')                
+        self.PATH_PLAIN2SNT = self.findpath('plain2snt.out')                
         self.PATH_MOSES = self.findpath('moses')
 
 
 
     def findpath(self, name):
         for path in os.environ['PATH'].split(':'):
-            if os.path.isfile(path + '/' + name):
+            if os.path.exists(path + '/' + name) and not os.path.isdir(path + '/' + name):
+                print >>sys.stderr, "Found " + name + " in " + path
                 return path + '/' + name
         return ""
 
