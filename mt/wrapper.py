@@ -150,9 +150,10 @@ class MTWrapper(object):
             for outputfile in outputfiles:
                 if not os.path.exists(outputfile):                
                     skip = False
-                    break                    
-            print >>sys.stderr, bold(yellow("Skipping " + name))  + " (output files already present)"
-            if skip: return True        
+                    break                                
+            if skip:
+                print >>sys.stderr, bold(yellow("Skipping " + name))  + " (output files already present)"
+                return True        
         print >>sys.stderr, bold(white("Calling " + name)) + ": " + cmd        
         r = subprocess.call(cmd, shell=True)
         if r != 0:
