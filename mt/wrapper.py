@@ -178,7 +178,7 @@ class MTWrapper(object):
         if not self.runcmd(self.PATH_PLAIN2SNT + ' ' + self.getsourcefilename('txt') + ' ' + self.gettargetfilename('txt'),'giza-plain2snt', self.getsourcefilename('vcb'), self.gettargetfilename('vcb'), self.getsntfilename() ): return False
         if not self.runcmd(self.PATH_MKCLS + ' -m2 -p' + self.getsourcefilename('txt') + ' -c50 -V' + self.getsourcefilename('vcb.classes') + ' opt','giza-mkcls-source', self.getsourcefilename('vcb.classes')): return False
         if not self.runcmd(self.PATH_MKCLS + ' -m2 -p' + self.gettargetfilename('txt') + ' -c50 -V' + self.gettargetfilename('vcb.classes') + ' opt','giza-mkcls-target', self.gettargetfilename('vcb.classes')): return False       
-        if not self.runcmd(self.PATH_GIZA + ' -S ' + self.gettargetfilename('vcb') + ' -T ' + self.gettargetfilename('vcb') + ' -C ' + self.getsntfilename() + ' -p0 0.98 -o ' + self.getgizafilename(),'giza', self.getsntfilename() + '.A3.final', successcodes=[0,255]): return False
+        if not self.runcmd(self.PATH_GIZA + ' -S ' + self.gettargetfilename('vcb') + ' -T ' + self.gettargetfilename('vcb') + ' -C ' + self.getsntfilename() + ' -p0 0.98 -o ' + self.getgizafilename(),'giza', self.getsntfilename() + '.A3.final'): return False
         return True
         #GIZA++ -S ${sourcelang}.vcb -T ${targetlang}.vcb -C "${sourcelang}_${targetlang}.snt" -p0 0.98 -o "${sourcelang}-${targetlang}"
 
