@@ -155,4 +155,38 @@ class MTWrapper(object):
     def build_moses_phrasetable(self):
         pass            
     
+if __name__ == "__main__":        
+    print """    
+from pynlpl.mt.wrapper import MTWrapper
+
+mtwrapper = MTWrapper()
+    
+mtwrapper.CORPUSNAME = ""
+mtwrapper.WORKDIR = "./" 
+
+mtwrapper.TRAINSOURCECORPUS = ""
+mtwrapper.TRAINTARGETCORPUS = ""
+
+mtwrapper.SOURCELANG = "" #language code
+mtwrapper.TARGETLANG = "" #language code
+
+mtwrapper.TOKENIZE_SOURCECORPUS = False #Set to true if the corpus is not tokenised yet
+mtwrapper.TOKENIZE_TARGETCORPUS = False #Set to true if the corpus is not tokenised yet
+mtwrapper.BUILD_SRILM_SOURCEMODEL = False
+mtwrapper.BUILD_SRILM_TARGETMODEL = True
+mtwrapper.BUILD_GIZA_WORDALIGNMENT = False
+mtwrapper.BUILD_MOSES_PHRASETABLE = False
+
+#defaults
+#mtwrapper.PATH_UCTO = ""      
+#mtwrapper.PATH_TIMBL = ""
+#mtwrapper.PATH_MKCLS = ""
+#mtwrapper.PATH_GIZA = ""
+#mtwrapper.PATH_PLAIN2SNT = ""                
+#mtwrapper.PATH_MOSES = ""
+
+mtwrapper.start()
+    """
+    
+    
         
