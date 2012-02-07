@@ -145,13 +145,13 @@ class MTWrapper(object):
         
     def runcmd(self, cmd, name):
         print >>sys.stderr, "----------------------------------------------------"
-        print >>sys.stderr, white("Calling " + name) + ": " + cmd        
+        print >>sys.stderr, bold(white("Calling " + name)) + ": " + cmd        
         r = subprocess.call(cmd, shell=True)
         if r != 0:
-            print >>sys.stderr, red("Runtime error from " + name)
+            print >>sys.stderr, bold(red("Runtime error from " + name))
             return False
         else:
-            print >>sys.stderr, green("Finished " + name)
+            print >>sys.stderr, bold(green("Finished " + name))
             print >>sys.stderr, "----------------------------------------------------"
         return True
         
