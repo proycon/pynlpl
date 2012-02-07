@@ -186,7 +186,5 @@ mtwrapper.BUILD_MOSES_PHRASETABLE = False
 #mtwrapper.PATH_MOSES = ""
 
 mtwrapper.start()
-    """
-    
-    
-        
+    """    
+
