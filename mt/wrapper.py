@@ -6,6 +6,7 @@ import os
 import subprocess
 import getopt
 
+
 class MTWrapper(object):
     
 
@@ -39,7 +40,7 @@ class MTWrapper(object):
     def findpath(self, name):
         for path in os.environ['PATH'].split(':'):
             if os.path.exists(path + '/' + name) and not os.path.isdir(path + '/' + name):
-                print >>sys.stderr, "Found " + name + " in " + path
+                print >>sys.stderr, green("Found " + name + " in " + path)
                 return path + '/' + name
         return ""
 
@@ -48,48 +49,48 @@ class MTWrapper(object):
         if self.WORKDIR[-1] != '/':     
             self.WORKDIR += '/'
             if not os.path.isdir(self.WORKDIR):
-                print >>sys.stderr,"Work directory does not exist, creating " + self.WORKDIR
+                print >>sys.stderr,yellow("Work directory does not exist, creating " + self.WORKDIR)
                 try:
                     os.mkdir(self.WORKDIR)
                 except:
-                    print >>sys.stderr,"Configuration error: Unable to create work directory " + self.WORKDIR
+                    print >>sys.stderr, red("Configuration error: Unable to create work directory " + self.WORKDIR)
                     sane = False
         
         sane = True
         if not self.CORPUSNAME:
-            print >>sys.stderr,"Configuration error: CORPUSNAME not specified!"
+            print >>sys.stderr,red("Configuration error: CORPUSNAME not specified!")
             sane = False
         if not self.SOURCELANG:
-            print >>sys.stderr,"Configuration error: SOURCELANG not specified!"
+            print >>sys.stderr,red("Configuration error: SOURCELANG not specified!")
             sane = False
         if not self.TARGETLANG:
-            print >>sys.stderr,"Configuration error: TARGETLANG not specified!"
+            print >>sys.stderr,red("Configuration error: TARGETLANG not specified!")
             sane = False
         return sane
 
     def check_train(self):
         sane = True                            
         if not self.TRAINSOURCECORPUS:
-            print >>sys.stderr,"Configuration error: TRAINSOURCECORPUS not specified!"
+            print >>sys.stderr,red("Configuration error: TRAINSOURCECORPUS not specified!")
             sane = False
         if not self.TRAINTARGETCORPUS:
-            print >>sys.stderr,"Configuration error: TRAINTARGETCORPUS not specified!"
+            print >>sys.stderr,red("Configuration error: TRAINTARGETCORPUS not specified!")
             sane = False
             
             
         if self.BUILD_MOSES_PHRASETABLE:            
-            print >>sys.stderr,"Configuration update: BUILD_GIZA_WORDALIGNMENT automatically enabled because BUILD_MOSES_PHRASETABLE is too"
+            print >>sys.stderr,red("Configuration update: BUILD_GIZA_WORDALIGNMENT automatically enabled because BUILD_MOSES_PHRASETABLE is too")
             self.BUILD_GIZA_WORDALIGNMENT = True
             if not self.PATH_MOSES or not os.path.isfile(self.PATH_MOSES):
                 sane = False
-                print >>sys.stderr,"Dependency error: Moses not found (PATH_MOSES=" + self.PATH_MOSES + ")"
+                print >>sys.stderr,red("Dependency error: Moses not found (PATH_MOSES=" + self.PATH_MOSES + ")")
         if self.BUILD_GIZA_WORDALIGNMENT and (not self.PATH_GIZA or not os.path.isfile(self.PATH_GIZA)): 
-            print >>sys.stderr,"Dependency error: GIZA++ not found (PATH_GIZA=" + self.PATH_GIZA + ")"
+            print >>sys.stderr,red("Dependency error: GIZA++ not found (PATH_GIZA=" + self.PATH_GIZA + ")")
         if self.BUILD_GIZA_WORDALIGNMENT and (not self.PATH_PLAIN2SNT or not os.path.isfile(self.PATH_PLAIN2SNT)): 
-            print >>sys.stderr,"Dependency error: plain2snt.out (provided by GIZA++) not found (PATH_PLAIN2SNT=" + self.PATH_PLAIN2SNT + ")"            
+            print >>sys.stderr,red("Dependency error: plain2snt.out (provided by GIZA++) not found (PATH_PLAIN2SNT=" + self.PATH_PLAIN2SNT + ")")            
             sane = False
         if self.BUILD_GIZA_WORDALIGNMENT and (not self.PATH_MKCLS or not os.path.isfile(self.PATH_MKCLS)): 
-            print >>sys.stderr,"Dependency error: mkcls (provided by GIZA++) not found (PATH_MKCLS=" + self.PATH_MKCLS + ")"            
+            print >>sys.stderr,red("Dependency error: mkcls (provided by GIZA++) not found (PATH_MKCLS=" + self.PATH_MKCLS + ")")            
             sane = False                            
         
         return sane
@@ -114,7 +115,6 @@ class MTWrapper(object):
     def usage(self):
         print >>sys.stderr,"Usage: " + os.path.basename(sys.argv[0]) + ' [command]'
         print >>sys.stderr,"Commands:"
-        print >>sys.stderr,"\ttrain                  Train the MT system"
         print >>sys.stderr,"\ttrain                  Train the MT system"
 
 
@@ -144,11 +144,15 @@ class MTWrapper(object):
                 return False
         
     def runcmd(self, cmd, name):
-        print >>sys.stderr, "Calling " + name + ": " + cmd
+        print >>sys.stderr, "----------------------------------------------------"
+        print >>sys.stderr, white("Calling " + name) + ": " + cmd        
         r = subprocess.call(cmd, shell=True)
         if r != 0:
-            print >>sys.stderr, "Runtime error from " + name
+            print >>sys.stderr, red("Runtime error from " + name)
             return False
+        else:
+            print >>sys.stderr, green("Finished " + name)
+            print >>sys.stderr, "----------------------------------------------------"
         return True
         
     def init(self):
@@ -160,8 +164,8 @@ class MTWrapper(object):
         
     def build_giza_wordalignment(self):
         if not self.runcmd(self.PATH_PLAIN2SNT + ' ' + self.getsourcefilename('txt') + ' ' + self.gettargetfilename('txt'),'giza-plain2snt'): return False
-        if not self.runcmd(self.PATH_MKCLS + ' -m2 -p ' + self.getsourcefilename('txt') + ' -c50 -V ' + self.getsourcefilename('vcb.classes') + ' opt','giza-mkcls-source'): return False
-        if not self.runcmd(self.PATH_MKCLS + ' -m2 -p ' + self.gettargetfilename('txt') + ' -c50 -V ' + self.gettargetfilename('vcb.classes') + ' opt','giza-mkcls-target'): return False       
+        if not self.runcmd(self.PATH_MKCLS + ' -m2 -p' + self.getsourcefilename('txt') + ' -c50 -V' + self.getsourcefilename('vcb.classes') + ' opt','giza-mkcls-source'): return False
+        if not self.runcmd(self.PATH_MKCLS + ' -m2 -p' + self.gettargetfilename('txt') + ' -c50 -V' + self.gettargetfilename('vcb.classes') + ' opt','giza-mkcls-target'): return False       
         if not self.runcmd(self.PATH_GIZA + ' -S ' + self.gettargetfilename('vcb') + ' -T ' + self.gettargetfilename('vcb') + ' -C ' + self.getsntfilename() + ' -p0 0.98 -o ' + self.getgizafilename(),'giza'): return False
         return True
         #GIZA++ -S ${sourcelang}.vcb -T ${targetlang}.vcb -C "${sourcelang}_${targetlang}.snt" -p0 0.98 -o "${sourcelang}-${targetlang}"
@@ -249,4 +253,39 @@ mtwrapper.BUILD_MOSES_PHRASETABLE = True
 
 mtwrapper.start()
     """ % (corpusname, workdir, sourcecorpusfile, targetcorpusfile, sourcelang, targetlang)
+
+
+
+
+def bold(s):
+   CSI="\x1B["
+   return CSI+"1m" + s + CSI + "0m"
+   
+def white(s):
+   CSI="\x1B["
+   return CSI+"37m" + s + CSI + "0m"   
+
+
+def red(s):
+   CSI="\x1B["
+   return CSI+"31m" + s + CSI + "0m"
+   
+def green(s):
+   CSI="\x1B["
+   return CSI+"32m" + s + CSI + "0m"   
+
+
+def yellow(s):
+   CSI="\x1B["
+   return CSI+"33m" + s + CSI + "0m"   
+
+   
+def blue(s):
+   CSI="\x1B["
+   return CSI+"34m" + s + CSI + "0m"   
+   
+
+def magenta(s):
+   CSI="\x1B["
+   return CSI+"35m" + s + CSI + "0m"   
 
