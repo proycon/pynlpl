@@ -3,7 +3,6 @@
 
 import sys
 import os
-import argparse
 import subprocess
 
 class MTWrapper(object):
@@ -109,17 +108,29 @@ class MTWrapper(object):
         return s    
 
 
+    def usage(self):
+        print >>sys.stderr,"Usage: " + os.path.basename(sys.argv[0]) + ' [command]'
+        print >>sys.stderr,"Commands:"
+        print >>sys.stderr,"\ttrain                  Train the MT system"
+        print >>sys.stderr,"\ttrain                  Train the MT system"
 
-    def start(self):
-        parser = argparse.ArgumentParser(prog='wrapper.py', description="Machine Translation Wrapper")
-        #parser.add_argument('--foo', action='store_true', help='foo help')
-        subparsers = parser.add_subparsers()
-        parser_train = subparsers.add_parser('train',help='Train the MT system')
-        parser_train.set_defaults(func=self.starttrain)        
-        args = parser.parse_args()
-        args.func(args)
 
-    def starttrain(self, args=None):                
+    def start(self):        
+        try:
+            cmd = sys.argv[1]
+        except:
+            self.usage()
+            sys.exit(2)
+        if cmd == 'train':
+            self.starttrain()
+        elif cmd == 'help' or cmd == '-h':
+            self.usage()
+        else:
+            print >>sys.stderr,"Error, no such command: " + cmd
+            self.usage()
+            sys.exit(2)
+            
+    def starttrain(self):                
         self.init()
         if not self.check_common(): return False
         if not self.check_train(): return False
