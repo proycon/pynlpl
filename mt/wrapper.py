@@ -101,7 +101,7 @@ class MTWrapper(object):
         return self.WORKDIR + self.CORPUSNAME + '-' + self.SOURCELANG + '.' + extension
 
     def gettargetfilename(self, extension):
-        return self.WORKDIR + self.CORPUSNAME + '-' + self.SOURCELANG + '.' + extension
+        return self.WORKDIR + self.CORPUSNAME + '-' + self.TARGETLANG + '.' + extension
     
     def getsntfilename(self):
         return self.WORKDIR + self.CORPUSNAME + '-' + self.SOURCELANG + '_' + self.CORPUSNAME + '-' + self.TARGETLANG + '.snt'
