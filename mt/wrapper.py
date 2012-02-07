@@ -140,7 +140,7 @@ class MTWrapper(object):
         
         if self.BUILD_GIZA_WORDALIGNMENT:
             if not self.build_giza_wordalignment():
-                print >>sys.stderr, "Building GIZA++ Wordalignment failed. Aborting"    
+                print >>sys.stderr, bold(red("Building GIZA++ Wordalignment failed. Aborting"))    
                 return False
         
     def runcmd(self, cmd, name, *outputfiles):
@@ -157,7 +157,7 @@ class MTWrapper(object):
         print >>sys.stderr, bold(white("Calling " + name)) + ": " + cmd        
         r = subprocess.call(cmd, shell=True)
         if r != 0:
-            print >>sys.stderr, bold(red("Runtime error from " + name))
+            print >>sys.stderr, bold(red("Runtime error from " + name + '(return code ' + str(r) + ')'))
             return False
         else:
             print >>sys.stderr, bold(green("Finished " + name))
