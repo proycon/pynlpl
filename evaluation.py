@@ -524,7 +524,7 @@ class ParamSearch(WPSParamSearch):
              yield parametercombination, score
                     
         
-def filesampler(files, testsetsize = 0.1, devsetsize = 0,outputprefix = ''):
+def filesampler(files, testsetsize = 0.1, devsetsize = 0,outputdir = ''):
         """Extract a training set, test set and optimally a development set from one file, or multiple *interdependent* files (such as a parallel corpus). It is assumed each line contains one instance (such as a word or sentence for example)."""
 
         if not isinstance(files, list):
@@ -568,19 +568,19 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0,outputprefix = ''):
                 del trainset[i]
 
         for filename in files:
-            if not outputprefix:
+            if not outputdir:
                 ftrain = open(filename + '.train','w')
             else:
-                ftrain = open(outputprefix + '.train','w')
-            if not outputprefix:
+                ftrain = open(outputdir + '/' +  os.path.basename(filename) + '.train','w')
+            if not outputdir:
                 ftest = open(filename + '.test','w')
             else:
-                ftest = open(outputprefix + '.test','w')
+                ftest = open(outputdir + '/' + os.path.basename(filename) + '.test','w')
             if devsetsize > 0:
-                if outputprefix:
+                if not outputdir:
                     fdev = open(filename + '.dev','w')
                 else:
-                    fdev = open(outputprefix + '.dev','w')
+                    fdev = open(outputdir + '/' +  os.path.basename(filename) + '.dev','w')
 
             f = open(filename,'r')
             for linenum, line in enumerate(f):
