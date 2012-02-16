@@ -20,6 +20,7 @@ import time
 import random
 import copy
 import datetime
+import os.path
 from sys import version_info,stderr
 
 if version_info[0] == 2 and version_info[1] < 6: #python2.5 doesn't have itertools.product
