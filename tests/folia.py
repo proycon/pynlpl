@@ -537,8 +537,38 @@ class Test2Sanity(unittest.TestCase):
         retcode = os.system('xmldiff /tmp/foliatest.xml /tmp/foliatest100.xml')
         self.assertEqual( retcode, 0)
     
-                
+    def test101a_metadataextref(self):          
+        """Sanity Check - Metadata external reference (CMDI)"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
+<metadata src="test.cmdi.xml" type="cmdi">
+<annotations>
+    <event-annotation set="test"/>
+</annotations>
+</metadata>
+<text xml:id="test.text" />
+</FoLiA>"""
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc.metadatatype, folia.MetaDataType.CMDI )
+        self.assertEqual( doc.metadatafile, 'test.cmdi.xml' )    
 
+    def test101b_metadataextref2(self):          
+        """Sanity Check - Metadata external reference (IMDI)"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
+<metadata src="test.imdi.xml" type="imdi">
+<annotations>
+    <event-annotation set="test"/>
+</annotations>
+</metadata>
+<text xml:id="test.text" />
+</FoLiA>"""
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc.metadatatype, folia.MetaDataType.IMDI )
+        self.assertEqual( doc.metadatafile, 'test.imdi.xml' )    
+        
+
+        
         
 class Test4Edit(unittest.TestCase):
         

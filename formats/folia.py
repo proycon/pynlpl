@@ -3678,7 +3678,7 @@ class Document(object):
         if 'type' in node.attrib and node.attrib['type'] == 'imdi':
             self.metadatatype = MetaDataType.IMDI
         elif 'type' in node.attrib and  node.attrib['type'] == 'cmdi':                        
-            self.metadatatype = MetaDataType.IMDI 
+            self.metadatatype = MetaDataType.CMDI 
         elif 'type' in node.attrib and node.attrib['type'] == 'native':                        
             self.metadatatype = MetaDataType.NATIVE
         else:
