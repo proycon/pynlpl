@@ -566,9 +566,84 @@ class Test2Sanity(unittest.TestCase):
         doc = folia.Document(string=xml)
         self.assertEqual( doc.metadatatype, folia.MetaDataType.IMDI )
         self.assertEqual( doc.metadatafile, 'test.imdi.xml' )    
-        
 
+
+    def test102a_declarations(self):
+        """Sanity Check - Declarations - Default set"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+      <gap-annotation annotator="sloot" set="gap-set"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" />
+  </text>
+</FoLiA>""" 
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'gap-set' )
         
+        
+    def test102b_declarations(self):
+        """Sanity Check - Declarations - Set mismatching """
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+      <gap-annotation annotator="sloot" set="gap-set"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" />
+  </text>
+</FoLiA>""" 
+        self.assertRaises( ValueError,  folia.Document, string=xml)   
+             
+
+    def test102c_declarations(self):
+        """Sanity Check - Multiple sets for the same annotation type"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+      <gap-annotation annotator="sloot" set="extended-gap-set"/>
+      <gap-annotation annotator="sloot" set="gap-set"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" set="gap-set"/>
+    <gap class="Y" set="extended-gap-set"/>
+  </text>
+</FoLiA>""" 
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'gap-set' )
+        self.assertEqual( doc['example.text.1'].select(folia.Gap)[1].set, 'extended-gap-set' )
+        
+    def test102d_declarations(self):
+        """Sanity Check - Multiple sets for the same annotation type (testing failure)"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+      <gap-annotation annotator="sloot" set="extended-gap-set"/>
+      <gap-annotation annotator="sloot" set="gap-set"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" set="gap-set"/>
+    <gap class="Y"/>
+  </text>
+</FoLiA>""" 
+        self.assertRaises(ValueError,  folia.Document, string=xml ) 
         
 class Test4Edit(unittest.TestCase):
         
