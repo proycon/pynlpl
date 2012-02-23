@@ -34,7 +34,7 @@ import multiprocessing
 import threading
 
 FOLIAVERSION = '0.8.0'
-LIBVERSION = '0.8.0.18' #== FoLiA version + library revision
+LIBVERSION = '0.8.0.19' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
