@@ -132,9 +132,12 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         del kwargs['set']
         
         if doc and (not (annotationtype in doc.annotationdefaults) or not (object.set in doc.annotationdefaults[annotationtype])):
-            raise ValueError("Set '" + object.set + "' is used but has no declaration!")            
+            if doc.autodeclare:
+                doc.annotations.append( (annotationtype, object.set ) ) 
+            else:
+                raise ValueError("Set '" + object.set + "' is used but has no declaration!")            
     elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
-        object.set = doc.annotationdefaults[annotationtype].keys()[0]
+        object.set = doc.annotationdefaults[annotationtype].keys()[0]    
     elif Attrib.CLASS in required:
         raise ValueError("Set is required for " + object.__class__.__name__)
     else:
@@ -156,6 +159,13 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     else:
         object.cls = None
     
+    if object.cls and not object.set:
+        if doc and doc.autodeclare:
+            if not (annotationtype, 'undefined') in doc.annotations:
+                doc.annotations.append( (annotationtype, 'undefined') )
+            object.set = 'undefined'             
+        else:
+            raise ValueError("Set is required for " + object.__class__.__name__ +  ". Class '" + object.cls + "' assigned without set.")
     
     
       
@@ -191,7 +201,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     else:
         object.annotatortype = None        
     
-        
         
     if 'confidence' in kwargs:
         if not Attrib.CONFIDENCE in supported:
@@ -3131,12 +3140,19 @@ class Document(object):
         
         self.annotationdefaults = {}
         self.annotations = [] #Ordered list of incorporated annotations ['token','pos', etc..]
+
+        #Add implicit declaration for TextContent
+        self.annotations.append( (AnnotationType.TEXT,'undefined') )
+        self.annotationdefaults[AnnotationType.TEXT] = {'undefined': {} }
+             
         self.index = {} #all IDs go here
         self.declareprocessed = False # Will be set to True when declarations have been processed
         
         self.metadata = {} #will point to XML Element holding IMDI or CMDI metadata
         self.metadatatype = MetaDataType.NATIVE
         self.metadatafile = None #reference to external metadata file
+        
+        self.autodeclare = False #Automatic declarations in case of undeclared elements (will be enabled for DCOI, since DCOI has no declarations) 
         
         self.setdefinitions = {} #key: set name, value: SetDefinition instance (only used when deepvalidation=True) 
         
@@ -3407,7 +3423,7 @@ class Document(object):
         l = []
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         
-        for annotationtype, set in self.annotations:
+        for annotationtype, set in self.annotations:            
             label = None
             #Find the 'label' for the declarations dynamically (aka: AnnotationType --> String)
             for key, value in vars(AnnotationType).items():
@@ -3415,6 +3431,10 @@ class Document(object):
                     label = key
                     break
             #gather attribs
+            
+            if annotationtype == AnnotationType.TEXT and set == 'undefined' and len(self.annotationdefaults[annotationtype][set]) == 0:
+                #this is the implicit TextContent declaration, no need to output it explicitly
+                continue                
             
             attribs = {}
             if set and set != 'undefined':
@@ -3508,6 +3528,16 @@ class Document(object):
                     set = subnode.attrib['set']
                 else:
                     set = 'undefined'
+                
+                if (type,set) in self.annotations:
+                    if type == AnnotationType.TEXT: 
+                        #explicit Text declaration, remove the implicit declaration:
+                        a = []
+                        for t,s in self.annotations:
+                            if not (t == AnnotationType.TEXT and s == 'undefined'): 
+                                a.append( (t,s) )
+                        self.annotations = a
+                    raise ValueError("Double declaration of " + subnode.tag + ", set '" + set + "' + is already declared") 
                 self.annotations.append( (type, set) )
                 
                 if set and self.deepvalidation and not set in self.setdefinitions:
@@ -3529,6 +3559,9 @@ class Document(object):
                 
                 if self.debug >= 1: 
                     print >>stderr, "[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults)
+                    
+
+        
 
     def setimdi(self, node):
         global LXE
@@ -3736,10 +3769,11 @@ class Document(object):
                     self.data.append( self.parsexml(subnode) )
         elif node.tag == '{' + NSDCOI + '}DCOI':
             if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found DCOI document"
+            self.autodeclare = True
             try:
                 self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
             except KeyError:
-                raise Exception("D-Coi Document has no ID!")
+                raise Exception("D-Coi Document has no ID!")                            
             for subnode in node:
                 if subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
                     self.metadatatype = MetaDataType.IMDI
@@ -3903,6 +3937,7 @@ class Gap(AbstractElement):
     """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
     ACCEPTED_DATA = (Content, Description)
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
+    ANNOTATIONTYPE = AnnotationType.GAP 
     XMLTAG = 'gap'
     
     def __init__(self, doc, *args, **kwargs):
