@@ -599,7 +599,7 @@ folia-v0.8" version="0.8">
     </annotations>
   </metadata>
   <text xml:id="example.text.1">
-    <gap class="X" />
+    <gap class="X" set="extended-gap-set" />
   </text>
 </FoLiA>""" 
         self.assertRaises( ValueError,  folia.Document, string=xml)   
@@ -643,7 +643,42 @@ folia-v0.8" version="0.8">
     <gap class="Y"/>
   </text>
 </FoLiA>""" 
-        self.assertRaises(ValueError,  folia.Document, string=xml ) 
+        self.assertRaises(ValueError,  folia.Document, string=xml )
+        
+
+    def test102e_declarations(self):
+        """Sanity Check - Declarations - Missing declaration"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" set="extended-gap-set" />
+  </text>
+</FoLiA>""" 
+        self.assertRaises( ValueError,  folia.Document, string=xml)   
+
+    def test102f_declarations(self):
+        """Sanity Check - Declarations - Declaration not needed"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap />
+  </text>
+</FoLiA>""" 
+        doc = folia.Document(string=xml)   
+        
+         
         
 class Test4Edit(unittest.TestCase):
         
