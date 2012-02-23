@@ -1463,7 +1463,7 @@ class Test8Validation(unittest.TestCase):
 
 
 f = codecs.open(FOLIAPATH + '/test/example.xml', 'r','utf-8')
-FOLIAEXAMPLE = u"\n".join(f.readlines()) 
+FOLIAEXAMPLE = f.read() 
 f.close()
 
 
