@@ -3417,7 +3417,7 @@ class Document(object):
             #gather attribs
             
             attribs = {}
-            if set:
+            if set and set != 'undefined':
                 attribs['{' + NSFOLIA + '}set'] = set
 
             for key, value in self.annotationdefaults[annotationtype][set].items():                
@@ -3507,7 +3507,7 @@ class Document(object):
                 if 'set' in subnode.attrib and subnode.attrib['set']:
                     set = subnode.attrib['set']
                 else:
-                    set = None
+                    set = 'undefined'
                 self.annotations.append( (type, set) )
                 
                 if set and self.deepvalidation and not set in self.setdefinitions:
