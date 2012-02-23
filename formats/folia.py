@@ -3511,7 +3511,7 @@ class Document(object):
                 self.annotations.append( (type, set) )
                 
                 if set and self.deepvalidation and not set in self.setdefinitions:
-                    if set[0] != '_': #ignore sets starting with an underscore, they are ad-hoc sets by definition
+                    if set != 'undefined' and set[0] != '_': #ignore sets starting with an underscore, they are ad-hoc sets by definition
                         self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
                         
 

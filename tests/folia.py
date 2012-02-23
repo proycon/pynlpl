@@ -678,6 +678,24 @@ folia-v0.8" version="0.8">
 </FoLiA>""" 
         doc = folia.Document(string=xml)   
         
+
+    def test102g_declarations(self):
+        """Sanity Check - Declarations - 'Undefined' set in declaration"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+        <gap-annotation annotator="sloot" />
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X"  />
+  </text>
+</FoLiA>""" 
+        doc = folia.Document(string=xml)           
+        self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'undefined' )
          
         
 class Test4Edit(unittest.TestCase):
