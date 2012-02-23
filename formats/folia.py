@@ -3176,6 +3176,10 @@ class Document(object):
         else:
             self.deepvalidation = False
             
+        if 'autodeclare' in kwargs:
+            self.autodeclare = True
+            
+            
         if 'id' in kwargs:
             self.id = kwargs['id']
         elif 'file' in kwargs:
