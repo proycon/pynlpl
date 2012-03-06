@@ -55,7 +55,7 @@ except getopt.GetoptError, err:
     # print help information and exit:
     print str(err)
     usage()
-    sys.exit(1)
+    sys.exit(1)f
 
 
 textfile = xmlfile = foliafile = None
