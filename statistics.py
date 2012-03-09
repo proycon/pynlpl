@@ -38,16 +38,17 @@ class FrequencyList:
     def load(self, filename):
         """Load a frequency list from file (in the format produced by the save method)"""
         f = codecs.open(filename,'r','utf-8')
-        for line in self.readline():
-            type, count = line.split("\t")
+        for line in self.readline():            
+            data = line.split("\t")
+            type, count = data[:2]            
             self.count(type,count)
         f.close()
             
 
-    def save(self, filename):
+    def save(self, filename, addnormalised=False):
         """Save a frequency list to file, can be loaded later using the load method"""
         f = codecs.open(filename,'w','utf-8')
-        for line in self.output():
+        for line in self.output("\t", addnormalised):
             f.write(line + '\n')
         f.close()
 
@@ -158,15 +159,24 @@ class FrequencyList:
             product.count(type,count)        
         return product
 
-    def output(self,delimiter = '\t'):
+    def output(self,delimiter = '\t', addnormalised=False):
         """Print a representation of the frequency list"""
         for type, count in self:
             if isinstance(type,tuple) or isinstance(type,list):
-                yield u" ".join((unicode(x) for x in type)) + delimiter + str(count)
+                if addnormalised:
+                    yield u" ".join((unicode(x) for x in type)) + delimiter + str(count) + delimiter + str(count/float(self.total))
+                else:
+                    yield u" ".join((unicode(x) for x in type)) + delimiter + str(count)
             elif isinstance(type,str) or isinstance(type,unicode):
-                yield type + delimiter + str(count)
+                if addnormalised:
+                    yield type + delimiter + str(count) + delimiter + str(count/float(self.total))
+                else:
+                    yield type + delimiter + str(count)
             else:
-                yield str(type) + delimiter + str(count)
+                if addnormalised:
+                    yield str(type) + delimiter + str(count) + delimiter + str(count/float(self.total))
+                else:
+                    yield str(type) + delimiter + str(count)
 
     def __repr__(self):
         return repr(self._count)
@@ -479,7 +489,7 @@ class HiddenMarkovModel(MarkovChain):
             # Don't need to remember the old paths
             path = newpath
      
-        if doprint: print_dptable(V)
+        if doprint: self.print_dptable(V)
         
         if not V[len(observations) - 1]:
             return (0,[])
