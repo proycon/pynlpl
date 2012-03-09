@@ -4325,6 +4325,44 @@ def relaxng(filename=None):
 
     return grammar
 
+
+class Reader(object):
+    """Streaming FoLiA reader"""
+    def __init__(self, filename, target):        
+        self.filename = filename        
+        self.target = target
+        if not issubclass(self.target, AbstractElement):            
+            raise ValueError("Target must be subclass of FoLiA element")
+                
+    
+    def __iter__(self):
+        global NSFOLIA        
+        f = open(self.filename,'r')    
+        
+        doc = None              
+        parser = lxml.etree.iterparse(f, events=("start","end"), tag="{" + NSFOLIA + "}metadata")
+        for action, elem in parser:
+            if action == "start" and elem.tag == "{" + NSFOLIA + "}FoLiA":
+                doc = folia.Document(id= node.attrib['{http://www.w3.org/XML/1998/namespace}id'])
+                if 'version' in node.attrib:                 
+                    doc.version = node.attrib['version'] 
+            if action == "end" and elem.tag == "{" + NSFOLIA + "}metadata":
+                doc.parsemetadata(elem)
+                break 
+
+        f.seek(0) #reset
+
+        parser = lxml.etree.iterparse(f, events=("end"), tag="{" + NSFOLIA + "}" + target.XMLTAG  )
+        for action, node in parser:            
+            element = target.parsexml(node, doc)
+            node.clear() #clean up children
+            while node.getprevious() is not None:
+                del node.getparent()[0]  # clean up preceding siblings
+            yield element
+
+        f.close() 
+        
+
 #class WordIndexer(object):
 #    def __init__(self, doc, *args, **kwargs)
 #        self.doc = doc
