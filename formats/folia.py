@@ -4339,22 +4339,31 @@ class Reader(object):
         global NSFOLIA        
         f = open(self.filename,'r')    
         
-        doc = None              
-        parser = lxml.etree.iterparse(f, events=("start","end"), tag="{" + NSFOLIA + "}metadata")
-        for action, elem in parser:
-            if action == "start" and elem.tag == "{" + NSFOLIA + "}FoLiA":
-                doc = folia.Document(id= node.attrib['{http://www.w3.org/XML/1998/namespace}id'])
+        doc = None           
+        metadata = False   
+        parser = ElementTree.iterparse(f, events=("start","end"))
+        for action, node in parser:
+            if action == "start" and node.tag == "{" + NSFOLIA + "}FoLiA":
+                doc = Document(id= node.attrib['{http://www.w3.org/XML/1998/namespace}id'])
                 if 'version' in node.attrib:                 
                     doc.version = node.attrib['version'] 
-            if action == "end" and elem.tag == "{" + NSFOLIA + "}metadata":
-                doc.parsemetadata(elem)
+            if action == "end" and node.tag == "{" + NSFOLIA + "}metadata":
+                if not doc: 
+                    raise MalformedXMLError("Metadata found, but no document? Impossible")
+                metadata = True
+                doc.parsemetadata(node)
                 break 
 
+        if not doc:
+            raise MalformedXMLError("No FoLiA Document found!")
+        elif not metadata:
+            raise MalformedXMLError("No metadata found!")
+            
         f.seek(0) #reset
 
-        parser = lxml.etree.iterparse(f, events=("end"), tag="{" + NSFOLIA + "}" + target.XMLTAG  )
+        parser = ElementTree.iterparse(f, events=("end",), tag="{" + NSFOLIA + "}" + self.target.XMLTAG  )
         for action, node in parser:            
-            element = target.parsexml(node, doc)
+            element = self.target.parsexml(node, doc)
             node.clear() #clean up children
             while node.getprevious() is not None:
                 del node.getparent()[0]  # clean up preceding siblings
