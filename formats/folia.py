@@ -4087,17 +4087,16 @@ class CorpusProcessor(object):
             self.index = CorpusFiles(self.corpusdir, self.extension, self.restrict_to_collection, self.conditionf, True) #generator            
         pool = multiprocessing.Pool(self.threads,None,None, self.maxtasksperchild) 
         if self.ordered:
-            results = pool.imap( self.function,  ( (filename, args, kwargs) for filename in self.index), self.chunksize)
+            return pool.imap( self.function,  ( (filename, args, kwargs) for filename in self.index), self.chunksize)
         else:
-            results = pool.imap_unordered( self.function,  ( (filename, args, kwargs) for filename in self.index), self.chunksize)
-        pool.close()
+            return pool.imap_unordered( self.function,  ( (filename, args, kwargs) for filename in self.index), self.chunksize)
+        #pool.close()
                 
-        for output in results:
-            yield output
+        
     
     def __iter__(self):
-        for output in self.run():
-            yield output
+        return self.run()
+        
                         
 
 class SetType:
