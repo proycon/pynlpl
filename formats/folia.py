@@ -4070,7 +4070,9 @@ class CorpusProcessor(object):
         self.ordered = ordered
         self.chunksize = chunksize
         if preindex:
-            self.index = list(CorpusFiles(self.corpusdir, self.extension, self.restrict_to_collection, self.conditionf, True))        
+            self.index = list(CorpusFiles(self.corpusdir, self.extension, self.restrict_to_collection, self.conditionf, True))
+            self.index.sort()
+                   
     
     def __len__(self):
         if self.preindex:
