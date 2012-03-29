@@ -134,6 +134,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         if doc and (not (annotationtype in doc.annotationdefaults) or not (object.set in doc.annotationdefaults[annotationtype])):
             if doc.autodeclare:
                 doc.annotations.append( (annotationtype, object.set ) ) 
+                doc.annotationdefaults[annotationtype] = {object.set: {} }
             else:
                 raise ValueError("Set '" + object.set + "' is used but has no declaration!")            
     elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
@@ -163,6 +164,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         if doc and doc.autodeclare:
             if not (annotationtype, 'undefined') in doc.annotations:
                 doc.annotations.append( (annotationtype, 'undefined') )
+                doc.annotationdefaults[annotationtype] = {'undefined': {} }
             object.set = 'undefined'             
         else:
             raise ValueError("Set is required for " + object.__class__.__name__ +  ". Class '" + object.cls + "' assigned without set.")
@@ -3443,6 +3445,7 @@ class Document(object):
             attribs = {}
             if set and set != 'undefined':
                 attribs['{' + NSFOLIA + '}set'] = set
+            
 
             for key, value in self.annotationdefaults[annotationtype][set].items():                
                 if key == 'annotatortype':
@@ -4097,7 +4100,7 @@ class CorpusProcessor(object):
         
     
     def __iter__(self):
-        return self.run()
+        return self.run()   
         
                         
 
