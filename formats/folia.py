@@ -3186,7 +3186,15 @@ class Document(object):
             self.id = kwargs['id']
         elif 'file' in kwargs:
             self.filename = kwargs['file']
-            self.load(self.filename)              
+            if 'bypassleak' in kwargs and kwargs['bypassleak']: 
+                f = open(self.filename)
+                contents = f.read()
+                f.close()
+                contents = contents.replace(' xml:id=', ' id=')
+                self.tree = ElementTree.parse(StringIO(contents))
+                self.parsexml(self.tree.getroot())                                
+            else:
+                self.load(self.filename)              
         elif 'string' in kwargs:
             s = kwargs['string']
             if isinstance(s, unicode):
