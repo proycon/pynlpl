@@ -513,7 +513,14 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( e.feat('actor'), 'proycon')
         self.assertEqual( e.feat('begindatetime'), '2011-12-15T19:01')
         self.assertEqual( e.feat('enddatetime'), '2011-12-15T19:05')
-                        
+
+    def test036_parsen(self):   
+        """Sanity Check - Paragraph and Sentence annotation"""
+        p = self.doc['WR-P-E-J-0000000001.p.1']
+        self.assertEqual( p.cls, 'firstparagraph' ) 
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.6']
+        self.assertEqual( s.cls, 'sentence' )         
+        
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
@@ -716,7 +723,36 @@ folia-v0.8" version="0.8">
   </text>
 </FoLiA>""" 
         self.assertRaises( ValueError,  folia.Document, string=xml)
-         
+        
+
+    def test103_namespaces(self):
+        """Sanity Check - Alien namespaces - Checking whether properly ignored"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <s xml:id="example.text.1.s.1">
+        <alien:blah>
+            <w xml:id="example.text.1.s.1.alienword">
+                <t>blah</t>                     
+            </w>
+        </alien:blah>
+        <w xml:id="example.text.1.s.1.w.1">
+            <t>word</t>
+            <alien:invasion number="99999" />                
+        </w>
+    </s>
+  </text>
+</FoLiA>""" 
+        doc = folia.Document(string=xml)
+        self.assertTrue( len(doc['example.text.1.s.1'].words()) == 1 ) #second word is in alien namespace, not read          
+        self.assertRaises( KeyError,  doc.__getitem__, 'example.text.1.s.1.alienword') #doesn't exist
+        
         
 class Test4Edit(unittest.TestCase):
         
@@ -977,7 +1013,7 @@ class Test4Edit(unittest.TestCase):
         s = self.doc['WR-P-E-J-0000000001.p.1.s.4']
         #sentence: 'De hoofdletter A wordt gebruikt voor het originele handschrift .'
         layer = s.append(folia.SyntaxLayer)
-        layer.append(folia.SyntacticUnit, 
+        layer.append(
             folia.SyntacticUnit(self.doc,cls='s',contents=[
                 folia.SyntacticUnit(self.doc,cls='np', contents=[
                     folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.1'] ,cls='det'),
@@ -1001,7 +1037,7 @@ class Test4Edit(unittest.TestCase):
             ])
         )
         
-        self.assertTrue( xmlcheck(layer.xmlstring(),'<syntax xmlns="http://ilk.uvt.nl/folia"><su xml:id="WR-P-E-J-0000000001.p.1.s.4.su.1"><su class="s"><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.1" t="De"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.2" t="hoofdletter"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.3" t="A"/></su></su><su class="vp"><su class="vp"><su class="v"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.4" t="wordt"/></su><su class="participle"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.5" t="gebruikt"/></su></su><su class="pp"><su class="prep"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.6" t="voor"/></su><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.7" t="het"/></su><su class="adj"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.8" t="originele"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.9" t="handschrift"/></su></su></su></su></su></su></syntax>'))
+        self.assertTrue( xmlcheck(layer.xmlstring(),'<syntax xmlns="http://ilk.uvt.nl/folia"><su class="s"><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.1" t="De"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.2" t="hoofdletter"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.3" t="A"/></su></su><su class="vp"><su class="vp"><su class="v"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.4" t="wordt"/></su><su class="participle"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.5" t="gebruikt"/></su></su><su class="pp"><su class="prep"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.6" t="voor"/></su><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.7" t="het"/></su><su class="adj"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.8" t="originele"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.9" t="handschrift"/></su></su></su></su></su></syntax>'))
 
     def test014_replace(self):            
         """Edit Check - Replacing an annotation"""

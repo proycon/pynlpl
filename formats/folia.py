@@ -33,8 +33,8 @@ import urllib
 import multiprocessing
 import threading
 
-FOLIAVERSION = '0.8.0'
-LIBVERSION = '0.8.0.19' #== FoLiA version + library revision
+FOLIAVERSION = '0.8.1'
+LIBVERSION = '0.8.1.20' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -47,7 +47,7 @@ for ordinal in range(0x20):
 class Mode:
     MEMORY = 0 #The entire FoLiA structure will be loaded into memory. This is the default and is required for any kind of document manipulation.
     XPATH = 1 #The full XML structure will be loaded into memory, but conversion to FoLiA objects occurs only upon querying. The full power of XPath is available.
-    ITERATIVE = 2 #XML element are loaded and conveted to FoLiA objects iteratively on a need-to basis. A subset of XPath is supported.
+    ITERATIVE = 2 #XML element are loaded and conveted to FoLiA objects iteratively on a need-to basis. A subset of XPath is supported. (not implemented, obsolete)
 
 class AnnotatorType:
     UNSET = 0
@@ -58,8 +58,10 @@ class AnnotatorType:
 class Attrib:
     ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME = range(6)
 
+Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
+    
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMEDEVENT, GAP = range(22)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMEDEVENT, GAP = range(28)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -335,6 +337,7 @@ def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-t
   return None
 
 
+        
         
 class AbstractElement(object):
     REQUIRED_ATTRIBS = () #List of required attributes (Members from the Attrib class)
@@ -699,7 +702,7 @@ class AbstractElement(object):
         if inspect.isclass(child):            
             Class = child
             if Class.addable(self, set):
-                if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
+                if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS):
                     kwargs['generate_id_in'] = self                
                 child = Class(self.doc, *args, **kwargs)
         elif args:            
@@ -866,7 +869,10 @@ class AbstractElement(object):
         if not elements: elements = []
         
         if self.id:
-            attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
+            if self.doc and self.doc.bypassleak:
+                attribs['XMLid'] = self.id
+            else:
+                attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
             
         #Some attributes only need to be added if they are not the same as what's already set in the declaration    
         try:
@@ -958,10 +964,9 @@ class AbstractElement(object):
     def xmlstring(self, pretty_print=False):
         """Return a string with XML presentation for this element and all its children."""
         global LXE
-        if LXE:
-            s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')        
-        else:
-            s = ElementTree.tostring(self.xml(), encoding='utf-8')
+        s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')
+        if self.doc and self.doc.bypassleak:
+            s = s.replace('XMLid=','xml:id=')                        
         s = s.replace('ns0:','') #ugly patch to get rid of namespace prefix
         s = s.replace(':ns0','')            
         return s
@@ -1641,6 +1646,10 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
     TEXTDELIMITER = "\n\n" #bigger gap between structure elements    
     OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited, default=1)
     
+    REQUIRED_ATTRIBS = (Attrib.ID,)
+    OPTIONAL_ATTRIBS = Attrib.ALL
+    
+    
     def __init__(self, doc, *args, **kwargs):            
         super(AbstractStructureElement,self).__init__(doc, *args, **kwargs)
 
@@ -1702,6 +1711,9 @@ class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID):
     """Abstract element, all token annotation elements are derived from this class"""
 
     OCCURRENCESPERSET = 1 #Do not allow duplicates within the same set
+    
+    REQUIRED_ATTRIBS = (Attrib.CLASS,)
+    OPTIONAL_ATTRIBS = Attrib.ALL
 
     def append(self, child, *args, **kwargs):
         """See ``AbstractElement.append()``"""
@@ -1723,7 +1735,7 @@ class TextContent(AbstractElement):
         * ``offset=``: The offset where this text is found, offsets start at 0
     """
     XMLTAG = 't'
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.TEXT
     OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
     OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
@@ -1951,18 +1963,17 @@ class Linebreak(AbstractStructureElement):
     REQUIRED_ATTRIBS = ()
     ACCEPTED_DATA = ()
     XMLTAG = 'br'
+    ANNOTATIONTYPE = AnnotationType.LINEBREAK 
     
 class Whitespace(AbstractStructureElement):
     """Whitespace element, signals a vertical whitespace"""
-    REQUIRED_ATTRIBS = ()
+    REQUIRED_ATTRIBS = ()    
     ACCEPTED_DATA = ()
     XMLTAG = 'whitespace'    
+    ANNOTATIONTYPE = AnnotationType.WHITESPACE 
         
 class Word(AbstractStructureElement, AllowCorrections):
-    """Word (aka token) element. Holds a word/token and all its related token annotations."""
-    
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE)
+    """Word (aka token) element. Holds a word/token and all its related token annotations."""    
     XMLTAG = 'w'
     ANNOTATIONTYPE = AnnotationType.TOKEN
     #ACCEPTED_DATA DEFINED LATER (after Correction)
@@ -2215,11 +2226,17 @@ class Feature(AbstractElement):
 
 class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID): 
     """Abstract element, all subtoken annotation elements are derived from this class"""
+    
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = Attrib.ALL
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
     PRINTABLE = True
     
 class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID): 
     """Abstract element, all span annotation elements are derived from this class"""
+    
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = Attrib.ALL
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
     PRINTABLE = True
 
@@ -2252,7 +2269,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,)
+    OPTIONAL_ATTRIBS = () 
     PRINTABLE = False
     
     def __init__(self, doc, *args, **kwargs):
@@ -2263,7 +2280,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
         
 class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
     """Annotation layers for Subtoken Annotation are derived from this abstract base class"""        
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,)
+    OPTIONAL_ATTRIBS = ()
     PRINTABLE = False
     
     def __init__(self, doc, *args, **kwargs):
@@ -2280,7 +2297,6 @@ class AbstractCorrectionChild(AbstractElement):
     PRINTABLE = True
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
     XMLTAG = 'errordetection'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
@@ -2308,7 +2324,6 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
             
                         
 class Suggestion(AbstractCorrectionChild):
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.SUGGESTION
     XMLTAG = 'suggestion'
     OCCURRENCES = 0 #unlimited
@@ -2367,10 +2382,8 @@ class Current(AbstractCorrectionChild):
                 return False
         return True    
             
-class Correction(AbstractExtendedTokenAnnotation):
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
+class Correction(AbstractExtendedTokenAnnotation):    
+    REQUIRED_ATTRIBS = ()
     ACCEPTED_DATA = (New,Original,Current, Suggestion, Description)
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
@@ -2490,6 +2503,7 @@ Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
     REQUIRED_ATTRIBS = (Attrib.ID,)
+    OPTIONAL_ATTRIBS = Attrib.ALL
     ACCEPTED_DATA = (AbstractTokenAnnotation, Correction)
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
     XMLTAG = 'alt'
@@ -2502,6 +2516,7 @@ Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Descrip
 class AlternativeLayers(AbstractElement):
     """Element grouping alternative subtoken annotation(s). Multiple altlayers elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
     REQUIRED_ATTRIBS = (Attrib.ID,)
+    OPTIONAL_ATTRIBS = Attrib.ALL
     ACCEPTED_DATA = (AbstractAnnotationLayer,)    
     XMLTAG = 'altlayers'
     PRINTABLE = False    
@@ -2561,7 +2576,6 @@ class AlignReference(AbstractElement):
 class SyntacticUnit(AbstractSpanAnnotation):
     """Syntactic Unit, span annotation element to be used in SyntaxLayer"""
     REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.SYNTAX
     XMLTAG = 'su'
     
@@ -2569,8 +2583,7 @@ SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference, Description, Feature
 
 class Chunk(AbstractSpanAnnotation):
     """Chunk element, span annotation element to be used in ChunkingLayer"""
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
+    REQUIRED_ATTRIBS = ()   
     ACCEPTED_DATA = (WordReference, Description, Feature)
     ANNOTATIONTYPE = AnnotationType.CHUNKING
     XMLTAG = 'chunk'
@@ -2578,7 +2591,6 @@ class Chunk(AbstractSpanAnnotation):
 class Entity(AbstractSpanAnnotation):
     """Entity element, for named entities, span annotation element to be used in EntitiesLayer"""
     REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (WordReference, Description, Feature)
     ANNOTATIONTYPE = AnnotationType.ENTITY
     XMLTAG = 'entity'
@@ -2600,7 +2612,6 @@ class DependencyDependent(AbstractSpanAnnotation):
 
 class Dependency(AbstractSpanAnnotation):    
     REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (Description, Feature,DependencyHead, DependencyDependent)
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'dependency'    
@@ -2616,16 +2627,12 @@ class Dependency(AbstractSpanAnnotation):
 
 class Morpheme(AbstractSubtokenAnnotation):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (Feature,TextContent)
     ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
     XMLTAG = 'morpheme'
 
 class Subentity(AbstractSubtokenAnnotation):
     """Subentity element, for named entities within a single token, subtoken annotation element to be used in SubentitiesLayer"""
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (Feature,TextContent)
     ANNOTATIONTYPE = AnnotationType.SUBENTITY
     XMLTAG = 'subentity'
@@ -2667,24 +2674,18 @@ class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
     
 class PosAnnotation(AbstractTokenAnnotation):
     """Part-of-Speech annotation:  a token annotation element"""
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.POS
     ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'pos'
 
 class LemmaAnnotation(AbstractTokenAnnotation):
     """Lemma annotation:  a token annotation element"""
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.LEMMA
     ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'lemma'
     
 class PhonAnnotation(AbstractTokenAnnotation):
     """Phonetic annotation:  a token annotation element"""
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.PHON
     ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'phon'
@@ -2692,8 +2693,6 @@ class PhonAnnotation(AbstractTokenAnnotation):
 
 class DomainAnnotation(AbstractExtendedTokenAnnotation):
     """Domain annotation:  an extended token annotation element"""
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.DOMAIN
     ACCEPTED_DATA = (Feature,Description)
     XMLTAG = 'domain'
@@ -2719,16 +2718,12 @@ class EnddatetimeFeature(Feature):
     SUBSET = 'enddatetime' #associated subset    
 
 class Event(AbstractStructureElement):    
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.ANNOTATOR, Attrib.N,Attrib.DATETIME)
     ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent)
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'    
     OCCURRENCESPERSET = 0
 
 class TimedEvent(AbstractSpanAnnotation):
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature)
     ANNOTATIONTYPE = AnnotationType.TIMEDEVENT
     XMLTAG = 'timedevent'
@@ -2742,16 +2737,12 @@ class TimingLayer(AbstractAnnotationLayer):
 
 class SenseAnnotation(AbstractTokenAnnotation):
     """Sense annotation: a token annotation element"""
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.SENSE
     ACCEPTED_DATA = (Feature,SynsetFeature, Description)
     XMLTAG = 'sense'
     
 class SubjectivityAnnotation(AbstractTokenAnnotation):
     """Subjectivity annotation: a token annotation element"""
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
     ANNOTATIONTYPE = AnnotationType.SUBJECTIVITY
     ACCEPTED_DATA = (Feature, Description)
     XMLTAG = 'subjectivity'
@@ -2759,8 +2750,7 @@ class SubjectivityAnnotation(AbstractTokenAnnotation):
 
 class Quote(AbstractStructureElement):
     """Quote: a structure element. For quotes/citations. May hold words or sentences."""
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID,)    
+    REQUIRED_ATTRIBS = ()    
     XMLTAG = 'quote'
 
     #ACCEPTED DATA defined later below
@@ -2788,11 +2778,10 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
     
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace, Event)
     XMLTAG = 's'
     TEXTDELIMITER = ' '
+    ANNOTATIONTYPE = AnnotationType.SENTENCE
     
     def __init__(self,  doc, *args, **kwargs):
         """
@@ -2905,7 +2894,6 @@ Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description)
 
 class Caption(AbstractStructureElement):    
     """Element used for captions for figures or tables, contains sentences"""
-    OPTIONAL_ATTRIBS = (Attrib.ID,)
     ACCEPTED_DATA = (Sentence, Description, TextContent)
     OCCURRENCES = 1
     XMLTAG = 'caption'
@@ -2913,31 +2901,31 @@ class Caption(AbstractStructureElement):
     
 class Label(AbstractStructureElement):    
     """Element used for labels. Mostly in within list item. Contains words."""
-    OPTIONAL_ATTRIBS = (Attrib.ID,)
     ACCEPTED_DATA = (Word, Description, TextContent)
     XMLTAG = 'label'
+    
 
 class ListItem(AbstractStructureElement):
     """Single element in a List. Structure element. Contained within List element."""
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
     #ACCEPTED_DATA = (List, Sentence) #Defined below
     XMLTAG = 'listitem'
+    ANNOTATIONTYPE = AnnotationType.LIST
     
     
 class List(AbstractStructureElement):    
-    """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
+    """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""    
     ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent)
     XMLTAG = 'list'
     TEXTDELIMITER = '\n'
+    ANNOTATIONTYPE = AnnotationType.LIST
 
 ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent)
 
 class Figure(AbstractStructureElement):    
     """Element for the representation of a graphical figure. Structure element."""
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.N)
     ACCEPTED_DATA = (Sentence, Description, Caption, TextContent)
     XMLTAG = 'figure'
+    ANNOTATIONTYPE = AnnotationType.FIGURE
     #TODO: relaxNG
     
     def __init__(self, doc, *args, **kwargs):            
@@ -2976,18 +2964,16 @@ class Figure(AbstractStructureElement):
 class Paragraph(AbstractStructureElement):    
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace, List, Figure, Event)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n"
+    ANNOTATIONTYPE = AnnotationType.PARAGRAPH
             
                 
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
     
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.N,)
+
     ACCEPTED_DATA = (Sentence,Description, Event, TextContent)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
@@ -3093,8 +3079,42 @@ class Pattern(object):
                 newsequence.append(x)
         d = { 'matchannotation':self.matchannotation, 'matchannotationset':self.matchannotationset, 'casesensitive':self.casesensitive }
         yield Pattern(*newsequence, **d )
-    
 
+
+
+class NativeMetaData(object):
+    def __init__(self, *args, **kwargs):
+        self.data = {}
+        self.order = []
+        for key, value in kwargs.items():
+            self[key] = value
+    
+    def __setitem__(self, key, value):
+        exists = key in self.data
+        self.data[key] = value
+        if not exists: self.order.append(key)  
+    
+    def __iter__(self):
+        for x in self.order:
+            yield x
+
+    def __contains__(self, x):
+        return x in self.data 
+        
+    def items(self):
+        for key in self.order:
+            yield key, self.data[key]
+    
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, key):
+        return self.data[key]
+    
+    def __delitem__(self):
+        del self.data[key]
+        self.order.remove(key)
+    
         
 class Document(object):
     """This is the FoLiA Document, all elements have to be associated with a FoLiA document. Besides holding elements, the document hold metadata including declaration, and an index of all IDs."""
@@ -3127,7 +3147,7 @@ class Document(object):
          
              * folia.Mode.MEMORY - The entire FoLiA Document will be loaded into memory. This is the default mode and the only mode in which documents can be manipulated and saved again.
              * folia.Mode.XPATH - The full XML tree will still be loaded into memory, but conversion to FoLiA classes occurs only when queried. This mode can be used when the full power of XPath is required.
-             * folia.Mode.ITERATIVE - This is the least memory method intensive method and can only be used with the file= method described above. The document can be queried with a subset of XPath, the file is read iteratively upon each query and only small parts are kept in memory each time.
+             * folia.Mode.ITERATIVE - Not implemented, obsolete. Use Reader class instead 
                
 
         Optional keyword arguments:
@@ -3150,13 +3170,17 @@ class Document(object):
         self.index = {} #all IDs go here
         self.declareprocessed = False # Will be set to True when declarations have been processed
         
-        self.metadata = {} #will point to XML Element holding IMDI or CMDI metadata
+        self.metadata = NativeMetaData() #will point to XML Element holding IMDI or CMDI metadata
         self.metadatatype = MetaDataType.NATIVE
         self.metadatafile = None #reference to external metadata file
         
         self.autodeclare = False #Automatic declarations in case of undeclared elements (will be enabled for DCOI, since DCOI has no declarations) 
         
         self.setdefinitions = {} #key: set name, value: SetDefinition instance (only used when deepvalidation=True) 
+        
+        
+        
+         
         
         #The metadata fields FoLiA is directly aware of:
         self._title = self._date = self._publisher = self._license = self._language = None
@@ -3180,27 +3204,37 @@ class Document(object):
             
         if 'autodeclare' in kwargs:
             self.autodeclare = True
-            
+        
+        if 'bypassleak' in kwargs:
+            self.bypassleak = bool(kwargs['bypassleak'])
+        else:
+            self.bypassleak = True    
+        
             
         if 'id' in kwargs:
             self.id = kwargs['id']
         elif 'file' in kwargs:
             self.filename = kwargs['file']
-            if 'bypassleak' in kwargs and kwargs['bypassleak']: 
+            if not self.bypassleak: 
+                self.load(self.filename)                                                
+            else:
                 f = open(self.filename)
                 contents = f.read()
                 f.close()
                 contents = contents.replace(' xml:id=', ' id=')
                 self.tree = ElementTree.parse(StringIO(contents))
-                self.parsexml(self.tree.getroot())                                
-            else:
-                self.load(self.filename)              
+                self.parsexml(self.tree.getroot())              
         elif 'string' in kwargs:
             s = kwargs['string']
             if isinstance(s, unicode):
                 s = s.encode('utf-8')
+            if self.bypassleak: 
+                s = s.replace(' xml:id=', ' id=')
             self.tree = ElementTree.parse(StringIO(s))
-            self.parsexml(self.tree.getroot())    
+            self.parsexml(self.tree.getroot())
+            if self.mode != Mode.XPATH:
+                #XML Tree is now obsolete (only needed when partially loaded for xpath queries)
+                self.tree = None    
         elif 'tree' in kwargs:
             self.parsexml(kwargs['tree'])
         else:
@@ -3328,7 +3362,7 @@ class Document(object):
                         value = word.text()
                     else:
                         if pattern.matchannotationset:
-                            items = word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative] )                            
+                            items = word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative])                            
                         else:
                             try:
                                 set = self.defaultset(pattern.matchannotation.ANNOTATIONTYPE)                            
@@ -3473,7 +3507,11 @@ class Document(object):
         global LIBVERSION, FOLIAVERSION
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
         attribs = {}
-        attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
+        if self.bypassleak:
+            attribs['XMLid'] = self.id
+        else:
+            attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
+
         if self.version:
             attribs['version'] = self.version
         else:
@@ -3734,7 +3772,7 @@ class Document(object):
             self.metadatatype = MetaDataType.NATIVE                        
         
         
-        self.metadata = {}
+        self.metadata = NativeMetaData() 
         self.metadatafile = None
         
         if 'src' in node.attrib:
@@ -3747,7 +3785,7 @@ class Document(object):
             if subnode.tag == '{' + NSFOLIA + '}annotations':
                 self.parsexmldeclarations(subnode)
             if subnode.tag == '{' + NSFOLIA + '}meta':
-                if subnode.text:
+                if subnode.text:                                        
                     self.metadata[subnode.attrib['id']] = subnode.text           
 
     def parsexml(self, node):
@@ -3788,7 +3826,10 @@ class Document(object):
             try:
                 self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
             except KeyError:
-                raise Exception("D-Coi Document has no ID!")                            
+                try:
+                    self.id = node.attrib['id']
+                except KeyError:
+                    raise Exception("D-Coi Document has no ID!")                            
             for subnode in node:
                 if subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
                     self.metadatatype = MetaDataType.IMDI
@@ -3823,9 +3864,7 @@ class Document(object):
     def select(self, Class, set=None):
         if self.mode == Mode.MEMORY:
             return sum([ t.select(Class,set,True ) for t in self.data ],[])
-        elif self.mode == Mode.ITERATIVE:
-            pass
-            #TODO: Implement
+        
             
         
     def paragraphs(self, index = None):
@@ -3862,11 +3901,13 @@ class Document(object):
         return unicode(self)
        
     def xmlstring(self):
-        global LXE
-        if LXE:            
-            return ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
+        s = ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
+        if self.bypassleak:
+            return s.replace('XMLid=','xml:id=')            
         else:
-            return ElementTree.tostring(self.xml(), encoding='utf-8')
+            return s
+        
+        
             
     def __unicode__(self):
         """Returns the text of the entire document"""
@@ -4005,7 +4046,7 @@ class Text(AbstractStructureElement):
 
 
 class Corpus:
-    """A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing. Note that due to a memory issue in the underlying lxml library. This class is NOT suitable for parsing a huge number of FoLiA documents (anything above a say a 1000)! Use CorpusProcessor instead, which also makes optimal use of multi-core machines."""
+    """A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing."""
     
     def __init__(self,corpusdir, extension = 'xml', restrict_to_collection = "", conditionf=lambda x: True, ignoreerrors=False, **kwargs):
         self.corpusdir = corpusdir
@@ -4038,7 +4079,7 @@ class Corpus:
     
 
 class CorpusFiles(Corpus):
-    """A corpus of various FoLiA documents. Yields the filenames on each iteration. NOte: Do NOT use this this to instantiate a large number of FoLiA documents (>1000) in a loop, due to a memory issue in the underlying lxml library. Use CorpusProcessor instead, which also makes optimal use of multi-core machines."""
+    """A corpus of various FoLiA documents. Yields the filenames on each iteration."""
     
     def __iter__(self):
         if not self.restrict_to_collection:
@@ -4339,17 +4380,37 @@ def relaxng(filename=None):
 
 
 class Reader(object):
-    """Streaming FoLiA reader"""
-    def __init__(self, filename, target):        
+    """Streaming FoLiA reader. The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found. """
+    
+    
+    def __init__(self, filename, target, bypassleak=False):                
+        """Read a FoLiA document in a streaming fashion. You select a specific target element and all occurrence of this element, including all there contents (so all elements within), will be returned. 
+        
+        Arguments:
+            
+            * ``filename``: The filename of the document to read
+            * ``target``: A FoLiA elements you want to read, passed as a class. For example: ``folia.Sentence``.
+            * ``bypassleak'': Boolean indicating whether to bypass a memory leak in lxml. Set this to true if you are processing a large number of files sequentially! This comes at the cost of a higher memory footprint, as the raw contents of the file, as opposed to the tree structure, *will* be loaded in memory.  
+        
+        """
+         
         self.filename = filename        
         self.target = target
         if not issubclass(self.target, AbstractElement):            
             raise ValueError("Target must be subclass of FoLiA element")
-                
+        self.bypassleak = bypassleak
+        
     
     def __iter__(self):
+        """Iterating over a Reader instance will cause the FoLiA document to be read. This is a generator yielding instances of the object you specified"""
+        
         global NSFOLIA        
         f = open(self.filename,'r')    
+        if self.bypassleak:
+            data = f.read()
+            data = data.replace(' xml:id="',' id="')
+            f.close()
+            f = StringIO(data)
         
         doc = None           
         metadata = False   
