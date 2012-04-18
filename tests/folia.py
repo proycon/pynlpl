@@ -635,7 +635,7 @@ folia-v0.8" version="0.8">
         self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'gap-set' )
         self.assertEqual( doc['example.text.1'].select(folia.Gap)[1].set, 'extended-gap-set' )
         
-    def test102d_declarations(self):
+    def test102d1_declarations(self):
         """Sanity Check - Declarations - Multiple sets for the same annotation type (testing failure)"""
         xml = """<?xml version="1.0"?>\n
 <FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -653,6 +653,50 @@ folia-v0.8" version="0.8">
   </text>
 </FoLiA>""" 
         self.assertRaises(ValueError,  folia.Document, string=xml )
+
+
+
+
+        
+    def test102d2_declarations(self):
+        """Sanity Check - Declarations - Multiple sets for the same annotation type (testing failure)"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+      <gap-annotation annotator="sloot" set="extended-gap-set"/>
+      <gap-annotation annotator="sloot" set="gap-set"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" set="gap-set"/>
+    <gap class="Y" set="gip-set"/>
+  </text>
+</FoLiA>""" 
+        self.assertRaises(ValueError,  folia.Document, string=xml )
+        
+    def test102d3_declarations(self):
+        """Sanity Check - Declarations - Ignore Duplicates"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+      <gap-annotation annotator="sloot" set="gap-set"/>
+      <gap-annotation annotator="sloot" set="gap-set"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" set="gap-set"/>
+  </text>
+</FoLiA>""" 
+
+        doc = folia.Document(string=xml)
+        self.assertEqual( self.doc.defaultset(folia.AnnotationType.GAP), 'gap-set' )
+        self.assertEqual( self.doc.defaultannotator(folia.AnnotationType.GAP), "sloot" )
         
 
     def test102e_declarations(self):
@@ -723,6 +767,103 @@ folia-v0.8" version="0.8">
   </text>
 </FoLiA>""" 
         self.assertRaises( ValueError,  folia.Document, string=xml)
+
+
+    def test102i_declarations(self):
+        """Sanity Check - Declarations - miscellanious trouble"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+         <gap-annotation annotator="sloot" set="gap1-set"/>
+         <gap-annotation annotator="sloot" set="gap2-set"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" set="gap1-set"/>
+  </text>
+</FoLiA>""" 
+        doc = folia.Document(string=xml)          
+        self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP,"gap1-set"), "sloot" )
+        doc.declare(folia.AnnotationType.GAP, "gap1-set", annotator='proycon' )
+        self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP,"gap1-set"), "" )
+        self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP,"gap2-set"), "sloot" )
+
+        text = doc["example.text.1"]
+        text.append( folia.Gap(doc, set='gap1-set', cls='Y', annotator='proycon') )
+        text.append( folia.Gap(doc, set='gap1-set', cls='Z1' ) )
+        text.append( folia.Gap(doc, set='gap2-set', cls='Z2' ) )
+        text.append( folia.Gap(doc, set='gap2-set', cls='Y2', annotator='onbekend' ) )
+        gaps = text.select(folia.Gap)
+        self.assertEqual( gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotator="sloot" class="X" set="gap1-set"/>' )
+        self.assertEqual( gaps[1].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotator="proycon" class="Y" set="gap1-set"/>' )
+        self.assertEqual( gaps[2].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Z1" set="gap1-set"/>' )
+        self.assertEqual( gaps[3].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Z2" set="gap2-set"/>' )
+        self.assertEqual( gaps[4].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotator="onbekend" class="Y2" set="gap2-set"/>' )
+
+
+    def test102j_declarations(self):
+        """Sanity Check - Declarations - Adding a declaration in other set."""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+         <gap-annotation annotator="sloot" set="gap-set"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" />
+  </text>
+</FoLiA>""" 
+        doc = folia.Document(string=xml)          
+        text = doc["example.text.1"]
+        doc.declare(folia.AnnotationType.GAP, "other-set", annotator='proycon' )
+        text.append( folia.Gap(doc, set='other-set', cls='Y', annotator='proycon') )
+        text.append( folia.Gap(doc, set='other-set', cls='Z' ) )
+
+        gaps = text.select(folia.Gap)
+        self.assertEqual( gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="X" set="gap-set"/>' )
+        self.assertEqual( gaps[1].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Y" set="other-set"/>' )
+        self.assertEqual( gaps[2].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Z" set="other-set"/>' )
+
+
+    def test102k_declarations(self):
+        """Sanity Check - Declarations - Several annotator types."""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+         <gap-annotation annotatortype="auto" set="gap-set"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" />
+  </text>
+</FoLiA>""" 
+        doc = folia.Document(string=xml)          
+        self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP), "auto" )
+        text = doc["example.text.1"]
+        gaps = text.select(folia.Gap)
+        self.assertEqual( gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="X"/>' )
+
+        doc.declare(folia.AnnotationType.GAP, "gap-set", annotatortype='manual' )
+        self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP), "" )
+        self.assertRaises( folia.ValueError, text.append, folia.Gap(doc, set='gap-set', cls='Y', annotatortype='unknown') )
+         
+        text.append( folia.Gap(doc, set='gap-set', cls='Y', annotatortype='manual' ) )
+        text.append( folia.Gap(doc, set='gap-set', cls='Z', annotatortype='auto' ) )
+
+        gaps = text.select(folia.Gap)
+        self.assertEqual( gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotatortype="auto" class="X" set="gap-set"/>' )
+        self.assertEqual( gaps[1].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotatortype="manual" class="Y" set="gap-set"/>' )
+        self.assertEqual( gaps[2].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotatortype="auto" class="Z" set="gap-set"/>' )
+
         
 
     def test103_namespaces(self):
