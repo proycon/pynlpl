@@ -519,8 +519,46 @@ class Test2Sanity(unittest.TestCase):
         p = self.doc['WR-P-E-J-0000000001.p.1']
         self.assertEqual( p.cls, 'firstparagraph' ) 
         s = self.doc['WR-P-E-J-0000000001.p.1.s.6']
-        self.assertEqual( s.cls, 'sentence' )         
+        self.assertEqual( s.cls, 'sentence' )        
         
+    
+    def test037_head(self):          
+        """Sanity Check - Feature test & Ambiguitity resolution of head as PoS Feature and as structure element"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
+<metadata src="test.cmdi.xml" type="cmdi">
+<annotations>
+    <pos-annotation set="test"/>
+</annotations>
+</metadata>
+<text xml:id="test.text">
+    <div xml:id="div">
+    <head xml:id="head">
+        <s xml:id="head.1.s.1">
+            <w xml:id="head.1.s.1.w.1">
+                <t>blah</t>
+                <pos class="NN(blah)" head="NN" />
+            </w>
+        </s>
+    </head>
+    <p xml:id="p.1">
+        <s xml:id="p.1.s.1">
+            <w xml:id="p.1.s.1.w.1">
+                <t>blah</t>
+                <pos class="NN(blah)">
+                    <head class="NN" />
+                </pos>
+            </w>
+        </s>
+    </p>
+    </div>
+</text>
+</FoLiA>"""
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc['head.1.s.1.w.1'].pos() , 'NN(blah)')
+        self.assertEqual( doc['head.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('head') , 'NN')
+        self.assertEqual( doc['p.1.s.1.w.1'].pos() , 'NN(blah)')
+        self.assertEqual( doc['p.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('head') , 'NN')        
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
