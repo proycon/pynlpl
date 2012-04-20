@@ -1182,16 +1182,16 @@ class AbstractElement(object):
         for subnode in node:
             if subnode.tag[:nslen] == '{' + NSFOLIA + '}':
                 if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
-                args.append(doc.parsexml(subnode) )                
+                args.append(doc.parsexml(subnode, Class) )                
             elif subnode.tag[:nslendcoi] == '{' + NSDCOI + '}':
                 #Dcoi support
                 if Class is Text and subnode.tag[nslendcoi:] == 'body':
                     for subsubnode in subnode:            
                         if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslendcoi:]
-                        args.append(doc.parsexml(subsubnode) ) 
+                        args.append(doc.parsexml(subsubnode, Class) ) 
                 else:
                     if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslendcoi:]
-                    args.append(doc.parsexml(subnode) ) 
+                    args.append(doc.parsexml(subnode, Class) ) 
             elif doc.debug >= 1:
                 print >>stderr, "[PyNLPl FoLiA DEBUG] Ignoring subnode outside of FoLiA namespace: " + subnode.tag
                     
@@ -2670,12 +2670,16 @@ class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
     ACCEPTED_DATA = (Subentity,)
     XMLTAG = 'subentities'
         
-    
+
+class HeadFeature(Feature):
+    """Synset feature, to be used within PosAnnotation"""
+    XMLTAG = 'head'
+    SUBSET = 'head' #associated subset    
     
 class PosAnnotation(AbstractTokenAnnotation):
     """Part-of-Speech annotation:  a token annotation element"""
     ANNOTATIONTYPE = AnnotationType.POS
-    ACCEPTED_DATA = (Feature,Description)
+    ACCEPTED_DATA = (Feature,HeadFeature,Description)
     XMLTAG = 'pos'
 
 class LemmaAnnotation(AbstractTokenAnnotation):
@@ -2716,6 +2720,7 @@ class EnddatetimeFeature(Feature):
     """Enddatetime feature, to be used within Event"""
     XMLTAG = 'enddatetime'
     SUBSET = 'enddatetime' #associated subset    
+
 
 class Event(AbstractStructureElement):    
     ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent)
@@ -3789,7 +3794,7 @@ class Document(object):
                 if subnode.text:                                        
                     self.metadata[subnode.attrib['id']] = subnode.text           
 
-    def parsexml(self, node):
+    def parsexml(self, node, ParentClass = None):
         """Main XML parser, will invoke class-specific XML parsers. For internal use."""
         global XML2CLASS, NSFOLIA, NSDCOI, LXE
         nslen = len(NSFOLIA) + 2
@@ -3838,15 +3843,39 @@ class Document(object):
                 elif subnode.tag == '{' + NSDCOI + '}text':
                     if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
                     self.data.append( self.parsexml(subnode) )
-        elif node.tag[:nslen] == '{' + NSFOLIA + '}' and node.tag[nslen:] in XML2CLASS:
+        elif node.tag[:nslen] == '{' + NSFOLIA + '}':
             #generic handling (FoLiA)
-            Class = XML2CLASS[node.tag[nslen:]]                
-            return Class.parsexml(node,self)
+            if not node.tag[nslen:] in XML2CLASS:
+                    raise Exception("Unknown FoLiA XML tag: " + node.tag)
+            Classes = XML2CLASS[node.tag[nslen:]]
+            if len(Classes) > 1:
+                if ParentClass:
+                    #resolve ambiguity based on context if the xml tag resolves to multiple classes (should be prevented as much as possible though!) 
+                    for Class in Classes:
+                        for AcceptedClass in ParentClass.ACCEPTED_DATA:
+                            if Class is AcceptedClass or issubclass(Class, AcceptedClass):
+                                return Class.parsexml(node,self)
+                    raise Exception("XML tag: " + node.tag + " is not supported by " + str(ParentClass))
+                else:
+                    raise Exception("XML tag: " + node.tag + " is ambiguous! Unable to resolve!")
+            else:
+                return Classes[0].parsexml(node,self)                                        
         elif node.tag[:nslendcoi] == '{' + NSDCOI + '}':
             #generic handling (D-Coi)
             if node.tag[nslendcoi:] in XML2CLASS:
-                Class = XML2CLASS[node.tag[nslendcoi:]]                
-                return Class.parsexml(node,self)     
+                Classes = XML2CLASS[node.tag[nslendcoi:]]                
+                if len(Classes) > 1:
+                    if ParentClass:
+                        #resolve ambiguity based on context if the xml tag resolves to multiple classes (should be prevented as much as possible though!) 
+                        for Class in Classes:
+                            for AcceptedClass in ParentClass.ACCEPTED_DATA:
+                                if Class is AcceptedClass or issubclass(Class, AcceptedClass):
+                                    return Class.parsexml(node,self)
+                        raise Exception("XML tag: " + node.tag + " is not supported by " + str(ParentClass))
+                    else:
+                        raise Exception("XML tag: " + node.tag + " is ambiguous! Unable to resolve!")
+                else:
+                    return Classes[0].parsexml(node,self)     
             elif node.tag[nslendcoi:][0:3] == 'div': #support for div0, div1, etc:
                 Class = Division
                 return Class.parsexml(node,self)     
@@ -4488,7 +4517,10 @@ XML2CLASS = {}
 for c in vars().values():
     try:
         if c.XMLTAG:
-            XML2CLASS[c.XMLTAG] = c
+            if not c.XMLTAG in XML2CLASS:
+                XML2CLASS[c.XMLTAG] = [c]
+            else:
+                XML2CLASS[c.XMLTAG].append(c)
     except: 
         continue
 
