@@ -2752,6 +2752,7 @@ class Quote(AbstractStructureElement):
     """Quote: a structure element. For quotes/citations. May hold words or sentences."""
     REQUIRED_ATTRIBS = ()    
     XMLTAG = 'quote'
+    TEXTDELIMITER = ' '
 
     #ACCEPTED DATA defined later below
     
