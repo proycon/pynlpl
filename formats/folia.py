@@ -2502,7 +2502,7 @@ Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction
             
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
-    REQUIRED_ATTRIBS = (Attrib.ID,)
+    REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = Attrib.ALL
     ACCEPTED_DATA = (AbstractTokenAnnotation, Correction)
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
@@ -2515,7 +2515,7 @@ Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Descrip
 
 class AlternativeLayers(AbstractElement):
     """Element grouping alternative subtoken annotation(s). Multiple altlayers elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
-    REQUIRED_ATTRIBS = (Attrib.ID,)
+    REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = Attrib.ALL
     ACCEPTED_DATA = (AbstractAnnotationLayer,)    
     XMLTAG = 'altlayers'
