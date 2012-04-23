@@ -546,7 +546,7 @@ class Test2Sanity(unittest.TestCase):
             <w xml:id="p.1.s.1.w.1">
                 <t>blah</t>
                 <pos class="NN(blah)">
-                    <head class="NN" />
+                    <feat subset="head" class="NN" />
                 </pos>
             </w>
         </s>
