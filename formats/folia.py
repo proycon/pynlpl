@@ -61,7 +61,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
     
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMEDEVENT, GAP = range(28)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMEDEVENT, GAP, ALIGNMENT, COMPLEXALIGNMENT = range(30)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -2296,6 +2296,91 @@ class AbstractCorrectionChild(AbstractElement):
     TEXTDELIMITER = ""
     PRINTABLE = True
 
+class AlignReference(AbstractElement):
+    REQUIRED_ATTRIBS = (Attrib.ID,)
+    XMLTAG = 'aref'    
+        
+    def __init__(self, doc, *args, **kwargs):
+        #Special constructor, not calling super constructor
+        if not 'id' in kwargs:
+            raise Exception("ID required for AlignReference")
+        if 't' in kwargs:
+            self.t = kwargs['t']
+        else:
+            self.t = None
+        assert(isinstance(doc,Document))
+        self.doc = doc
+        self.id = kwargs['id']
+        self.annotator = None
+        self.annotatortype = None
+        self.confidence = None
+        self.n = None
+        self.datetime = None
+        self.auth = False
+        self.set = None
+        self.cls = None
+        self.data = []
+        
+        if 'href' in kwargs: 
+            self.href = kwargs['href']
+        else:
+            self.href = None
+    
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        assert Class is AlignReference or issubclass(Class, AlignReference)
+        
+        #TODO: Parse xlink:href
+        if '{http://www.w3.org/1999/xlink}href' in node.attrib:
+            href = node.attrib['{http://www.w3.org/1999/xlink}href']
+        else:
+            href = None
+        
+        #special handling for word references
+        id = node.attrib['id']
+        return AlignReference(doc, id=id, href=href)    
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+            global NSFOLIA
+            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+            return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+        
+    def resolve(self):
+        if not self.href:
+            #no target document, same document
+            return self.doc[self.id]
+        else:
+            raise NotImplementedError
+    
+    def xml(self, attribs = None,elements = None, skipchildren = False):   
+        global NSFOLIA
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
+        if not attribs:
+            attribs = {}
+        attribs['id'] = self.id
+        if self.t: attribs['t'] = self.t
+                    
+        return E.aref( **attribs)   
+
+class Alignment(AbstractElement):
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = Attrib.ALL
+    OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
+    XMLTAG = 'alignment'
+    ANNOTATIONTYPE = AnnotationType.ALIGNMENT
+    ACCEPTED_DATA = (AlignReference, Description)
+    PRINTABLE = False
+    
+    def resolve(self):
+        l = []
+        for x in self.select(AlignReference):
+            l.append( x.resolve() )
+        return l
+        
+
 class ErrorDetection(AbstractExtendedTokenAnnotation):
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
     XMLTAG = 'errordetection'
@@ -2510,7 +2595,7 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     PRINTABLE = False    
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractSubtokenAnnotationLayer)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractSubtokenAnnotationLayer, Alignment)
 
 
 class AlternativeLayers(AbstractElement):
@@ -2564,13 +2649,6 @@ class WordReference(AbstractElement):
             return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
             
-class AlignReference(AbstractElement):
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    XMLTAG = 'aref'    
-    pass #TODO: IMPLEMENT
-        
-    
-    
     
         
 class SyntacticUnit(AbstractSpanAnnotation):
@@ -2599,20 +2677,20 @@ class Entity(AbstractSpanAnnotation):
 class DependencyHead(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = ()
-    ACCEPTED_DATA = (WordReference,Description, Feature,)
+    ACCEPTED_DATA = (WordReference,Description, Feature, Alignment)
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'hd'    
 
 class DependencyDependent(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = ()
-    ACCEPTED_DATA = (WordReference,Description, Feature)
+    ACCEPTED_DATA = (WordReference,Description, Feature, Alignment)
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'dep'    
 
 class Dependency(AbstractSpanAnnotation):    
     REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = (Description, Feature,DependencyHead, DependencyDependent)
+    ACCEPTED_DATA = (Description, Feature,DependencyHead, DependencyDependent, Alignment)
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'dependency'    
     
@@ -2784,7 +2862,7 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
     
-    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace, Event)
+    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace, Event, Alignment)
     XMLTAG = 's'
     TEXTDELIMITER = ' '
     ANNOTATIONTYPE = AnnotationType.SENTENCE
@@ -2895,19 +2973,19 @@ class Sentence(AbstractStructureElement):
 
 
 
-Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description)        
+Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description, Alignment)        
 
 
 class Caption(AbstractStructureElement):    
     """Element used for captions for figures or tables, contains sentences"""
-    ACCEPTED_DATA = (Sentence, Description, TextContent)
+    ACCEPTED_DATA = (Sentence, Description, TextContent,Alignment)
     OCCURRENCES = 1
     XMLTAG = 'caption'
 
     
 class Label(AbstractStructureElement):    
     """Element used for labels. Mostly in within list item. Contains words."""
-    ACCEPTED_DATA = (Word, Description, TextContent)
+    ACCEPTED_DATA = (Word, Description, TextContent,Alignment)
     XMLTAG = 'label'
     
 
@@ -2920,16 +2998,16 @@ class ListItem(AbstractStructureElement):
     
 class List(AbstractStructureElement):    
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""    
-    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent)
+    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent, Alignment)
     XMLTAG = 'list'
     TEXTDELIMITER = '\n'
     ANNOTATIONTYPE = AnnotationType.LIST
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,Alignment)
 
 class Figure(AbstractStructureElement):    
     """Element for the representation of a graphical figure. Structure element."""
-    ACCEPTED_DATA = (Sentence, Description, Caption, TextContent)
+    ACCEPTED_DATA = (Sentence, Description, Caption, TextContent, Alignment)
     XMLTAG = 'figure'
     ANNOTATIONTYPE = AnnotationType.FIGURE
     #TODO: relaxNG
@@ -2970,7 +3048,7 @@ class Figure(AbstractStructureElement):
 class Paragraph(AbstractStructureElement):    
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace, List, Figure, Event)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace, List, Figure, Event, Alignment)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n"
     ANNOTATIONTYPE = AnnotationType.PARAGRAPH
@@ -2980,7 +3058,7 @@ class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
     
 
-    ACCEPTED_DATA = (Sentence,Description, Event, TextContent)
+    ACCEPTED_DATA = (Sentence,Description, Event, TextContent,Alignment)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'          
