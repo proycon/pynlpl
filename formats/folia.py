@@ -2304,6 +2304,11 @@ class AlignReference(AbstractElement):
         #Special constructor, not calling super constructor
         if not 'id' in kwargs:
             raise Exception("ID required for AlignReference")
+        if not 'type' in kwargs:
+            raise Exception("Type required for AlignReference")
+        elif not inspect.isclass(kwargs['type']):            
+            raise Exception("Type must be a FoLiA element (python class)")            
+        self.type = kwargs['type']        
         if 't' in kwargs:
             self.t = kwargs['t']
         else:
@@ -2330,16 +2335,16 @@ class AlignReference(AbstractElement):
     def parsexml(Class, node, doc):
         global NSFOLIA
         assert Class is AlignReference or issubclass(Class, AlignReference)
-        
-        #TODO: Parse xlink:href
-        if '{http://www.w3.org/1999/xlink}href' in node.attrib:
-            href = node.attrib['{http://www.w3.org/1999/xlink}href']
-        else:
-            href = None
-        
+
         #special handling for word references
         id = node.attrib['id']
-        return AlignReference(doc, id=id, href=href)    
+        if not 'type' in node.attrib:
+            raise ValueError("No type in alignment reference")        
+        try:
+            type = XML2CLASS[node.attrib['type']]
+        except KeyError:            
+            raise ValueError("No such type: " + node.attrib['type'])        
+        return AlignReference(doc, id=id, type=type)    
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -2347,8 +2352,8 @@ class AlignReference(AbstractElement):
             E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
             return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
         
-    def resolve(self):
-        if not self.href:
+    def resolve(self, alignmentcontext):
+        if not alignmentcontext.href:
             #no target document, same document
             return self.doc[self.id]
         else:
@@ -2361,6 +2366,7 @@ class AlignReference(AbstractElement):
         if not attribs:
             attribs = {}
         attribs['id'] = self.id
+        attribs['type'] = self.type.XMLTAG
         if self.t: attribs['t'] = self.t
                     
         return E.aref( **attribs)   
@@ -2374,10 +2380,39 @@ class Alignment(AbstractElement):
     ACCEPTED_DATA = (AlignReference, Description)
     PRINTABLE = False
     
+    def __init__(self, doc, *args, **kwargs):
+        if 'href' in kwargs:
+            self.href =kwargs['href']
+            del kwargs['href']
+        else:
+            self.href = None
+        super(Alignment,self).__init__(doc, *args, **kwargs)
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        assert Class is Alignment or issubclass(Class, Alignment)
+        
+        instance = super(Alignment,Class).parsexml(node, doc)
+        
+        if '{http://www.w3.org/1999/xlink}href' in node.attrib:
+            instance.href = node.attrib['{http://www.w3.org/1999/xlink}href']
+        else:
+            instance.href = None            
+        
+        return instance
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):   
+        if not attribs: attribs = {}
+        if self.href:
+            attribs['{http://www.w3.org/1999/xlink}href'] = self.href
+            attribs['{http://www.w3.org/1999/xlink}type'] = 'simple'
+        return super(Alignment,self).xml(attribs,elements, False)  
+        
     def resolve(self):
         l = []
         for x in self.select(AlignReference):
-            l.append( x.resolve() )
+            l.append( x.resolve(self) )
         return l
         
 
@@ -2648,8 +2683,7 @@ class WordReference(AbstractElement):
             E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
             return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
-            
-    
+                
         
 class SyntacticUnit(AbstractSpanAnnotation):
     """Syntactic Unit, span annotation element to be used in SyntaxLayer"""
@@ -2751,7 +2785,6 @@ class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
 
 class HeadFeature(Feature):
     """Synset feature, to be used within PosAnnotation"""
-    XMLTAG = 'head'
     SUBSET = 'head' #associated subset    
     
 class PosAnnotation(AbstractTokenAnnotation):
@@ -2781,24 +2814,26 @@ class DomainAnnotation(AbstractExtendedTokenAnnotation):
 
 class SynsetFeature(Feature):
     """Synset feature, to be used within Sense"""
-    XMLTAG = 'synset'
+    #XMLTAG = 'synset'
     SUBSET = 'synset' #associated subset
 
 class ActorFeature(Feature):
     """Actor feature, to be used within Event"""
-    XMLTAG = 'actor'
+    #XMLTAG = 'actor'
     SUBSET = 'actor' #associated subset
 
 class BegindatetimeFeature(Feature):
     """Begindatetime feature, to be used within Event"""
-    XMLTAG = 'begindatetime'
+    #XMLTAG = 'begindatetime'
     SUBSET = 'begindatetime' #associated subset
     
 class EnddatetimeFeature(Feature):
     """Enddatetime feature, to be used within Event"""
-    XMLTAG = 'enddatetime'
+    #XMLTAG = 'enddatetime'
     SUBSET = 'enddatetime' #associated subset    
 
+class StyleFeature(Feature):
+    SUBSET = "style"
 
 class Event(AbstractStructureElement):    
     ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent)
@@ -3925,35 +3960,13 @@ class Document(object):
             #generic handling (FoLiA)
             if not node.tag[nslen:] in XML2CLASS:
                     raise Exception("Unknown FoLiA XML tag: " + node.tag)
-            Classes = XML2CLASS[node.tag[nslen:]]
-            if len(Classes) > 1:
-                if ParentClass:
-                    #resolve ambiguity based on context if the xml tag resolves to multiple classes (should be prevented as much as possible though!) 
-                    for Class in Classes:
-                        for AcceptedClass in ParentClass.ACCEPTED_DATA:
-                            if Class is AcceptedClass or issubclass(Class, AcceptedClass):
-                                return Class.parsexml(node,self)
-                    raise Exception("XML tag: " + node.tag + " is not supported by " + str(ParentClass))
-                else:
-                    raise Exception("XML tag: " + node.tag + " is ambiguous! Unable to resolve!")
-            else:
-                return Classes[0].parsexml(node,self)                                        
+            Class = XML2CLASS[node.tag[nslen:]]
+            return Class.parsexml(node,self)                                        
         elif node.tag[:nslendcoi] == '{' + NSDCOI + '}':
             #generic handling (D-Coi)
             if node.tag[nslendcoi:] in XML2CLASS:
-                Classes = XML2CLASS[node.tag[nslendcoi:]]                
-                if len(Classes) > 1:
-                    if ParentClass:
-                        #resolve ambiguity based on context if the xml tag resolves to multiple classes (should be prevented as much as possible though!) 
-                        for Class in Classes:
-                            for AcceptedClass in ParentClass.ACCEPTED_DATA:
-                                if Class is AcceptedClass or issubclass(Class, AcceptedClass):
-                                    return Class.parsexml(node,self)
-                        raise Exception("XML tag: " + node.tag + " is not supported by " + str(ParentClass))
-                    else:
-                        raise Exception("XML tag: " + node.tag + " is ambiguous! Unable to resolve!")
-                else:
-                    return Classes[0].parsexml(node,self)     
+                Class = XML2CLASS[node.tag[nslendcoi:]]                
+                return Class.parsexml(node,self)     
             elif node.tag[nslendcoi:][0:3] == 'div': #support for div0, div1, etc:
                 Class = Division
                 return Class.parsexml(node,self)     
@@ -4595,10 +4608,7 @@ XML2CLASS = {}
 for c in vars().values():
     try:
         if c.XMLTAG:
-            if not c.XMLTAG in XML2CLASS:
-                XML2CLASS[c.XMLTAG] = [c]
-            else:
-                XML2CLASS[c.XMLTAG].append(c)
+            XML2CLASS[c.XMLTAG] = c
     except: 
         continue
 

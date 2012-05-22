@@ -525,8 +525,8 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( s.cls, 'sentence' )        
         
     
-    def test037_head(self):          
-        """Sanity Check - Feature test & Ambiguitity resolution of head as PoS Feature and as structure element"""
+    def test037a_feat(self):          
+        """Sanity Check - Feature test (including shortcut)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
 <metadata src="test.cmdi.xml" type="cmdi">
@@ -549,7 +549,7 @@ class Test2Sanity(unittest.TestCase):
             <w xml:id="p.1.s.1.w.1">
                 <t>blah</t>
                 <pos class="NN(blah)">
-                    <head class="NN" />
+                    <feat subset="head" class="NN" />
                 </pos>
             </w>
         </s>
@@ -562,6 +562,37 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( doc['head.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('head') , 'NN')
         self.assertEqual( doc['p.1.s.1.w.1'].pos() , 'NN(blah)')
         self.assertEqual( doc['p.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('head') , 'NN')        
+        
+    def test037b_multiclassfeat(self):          
+        """Sanity Check - Multiclass feature"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
+<metadata src="test.cmdi.xml" type="cmdi">
+<annotations>
+    <pos-annotation set="test"/>
+</annotations>
+</metadata>
+<text xml:id="test.text">
+    <div xml:id="div">
+    <p xml:id="p.1">
+        <s xml:id="p.1.s.1">
+            <w xml:id="p.1.s.1.w.1">
+                <t>blah</t>
+                <pos class="NN(a,b,c)">
+                    <feat subset="x" class="a" />
+                    <feat subset="x" class="b" />
+                    <feat subset="x" class="c" />
+                </pos>
+            </w>
+        </s>
+    </p>
+    </div>
+</text>
+</FoLiA>"""
+        doc = folia.Document(string=xml)    
+        self.assertEqual( doc['p.1.s.1.w.1'].pos() , 'NN(a,b,c)')
+        self.assertEqual( doc['p.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('x') , ['a','b','c'] )        
+        
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
