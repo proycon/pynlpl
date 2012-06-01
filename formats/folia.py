@@ -473,6 +473,7 @@ class AbstractElement(object):
         for f in self:
             if isinstance(f, Feature) and f.subset == subset:
                 return f.cls
+        raise NoSuchAnnotation
 
     def __ne__(self, other):
         return not (self == other)
@@ -2786,6 +2787,7 @@ class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
 class HeadFeature(Feature):
     """Synset feature, to be used within PosAnnotation"""
     SUBSET = 'head' #associated subset    
+    XMLTAG = None
     
 class PosAnnotation(AbstractTokenAnnotation):
     """Part-of-Speech annotation:  a token annotation element"""
@@ -2815,24 +2817,29 @@ class DomainAnnotation(AbstractExtendedTokenAnnotation):
 class SynsetFeature(Feature):
     """Synset feature, to be used within Sense"""
     #XMLTAG = 'synset'
+    XMLTAG = None
     SUBSET = 'synset' #associated subset
 
 class ActorFeature(Feature):
     """Actor feature, to be used within Event"""
     #XMLTAG = 'actor'
+    XMLTAG = None
     SUBSET = 'actor' #associated subset
 
 class BegindatetimeFeature(Feature):
     """Begindatetime feature, to be used within Event"""
     #XMLTAG = 'begindatetime'
+    XMLTAG = None
     SUBSET = 'begindatetime' #associated subset
     
 class EnddatetimeFeature(Feature):
     """Enddatetime feature, to be used within Event"""
     #XMLTAG = 'enddatetime'
+    XMLTAG = None
     SUBSET = 'enddatetime' #associated subset    
 
 class StyleFeature(Feature):
+    XMLTAG = None
     SUBSET = "style"
 
 class Event(AbstractStructureElement):    
