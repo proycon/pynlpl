@@ -10,7 +10,7 @@ if not os.path.exists('pynlpl') and not os.path.exists('.readysetup'):
     print >>sys.stderr, "Running setup for first time, preparing source tree"
     os.mkdir('pynlpl')
     os.system('mv * pynlpl/ 2> /dev/null')
-    os.system('ln -s pynlpl/README; ln -s pynlpl/docs')
+    os.system('mv pynlpl/README pynlpl/docs pynlpl/setup.py pynlpl/AUTHORS pynlpl/INDEX . ')
     open('.readysetup','w')
 elif not os.path.exists('.readysetup'):
     print >>sys.stderr, "Not ready for setup. Please obtain sources anew."
