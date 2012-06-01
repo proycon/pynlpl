@@ -920,22 +920,22 @@ folia-v0.8" version="0.8">
   </text>
 </FoLiA>""" 
         doc = folia.Document(string=xml)          
-        self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP, 'gap-set'), "auto" )
+        self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP, 'gap-set'),  folia.AnnotatorType.AUTO)
         text = doc["example.text.1"]
         gaps = text.select(folia.Gap)
-        self.assertEqual( gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="X"/>' )
+        self.assertTrue( xmlcheck(gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="X"/>' ) )
 
-        doc.declare(folia.AnnotationType.GAP, "gap-set", annotatortype='manual' )
-        self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP), "" )
-        self.assertRaises( folia.ValueError, text.append, folia.Gap(doc, set='gap-set', cls='Y', annotatortype='unknown') )
+        doc.declare(folia.AnnotationType.GAP, "gap-set", annotatortype=folia.AnnotatorType.MANUAL )
+        self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP), folia.AnnotatorType.MANUAL )
+        self.assertRaises( ValueError, folia.Gap, doc, set='gap-set', cls='Y', annotatortype='unknown' )
          
         text.append( folia.Gap(doc, set='gap-set', cls='Y', annotatortype='manual' ) )
         text.append( folia.Gap(doc, set='gap-set', cls='Z', annotatortype='auto' ) )
 
         gaps = text.select(folia.Gap)
-        self.assertEqual( gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotatortype="auto" class="X" set="gap-set"/>' )
-        self.assertEqual( gaps[1].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotatortype="manual" class="Y" set="gap-set"/>' )
-        self.assertEqual( gaps[2].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotatortype="auto" class="Z" set="gap-set"/>' )
+        self.assertTrue( xmlcheck(gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotatortype="auto" class="X" />') )
+        self.assertTrue( xmlcheck(gaps[1].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Y" />') )
+        self.assertTrue( xmlcheck(gaps[2].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotatortype="auto" class="Z" />') )
 
         
 
