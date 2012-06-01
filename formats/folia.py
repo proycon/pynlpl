@@ -3710,24 +3710,39 @@ class Document(object):
                                 a.append( (t,s) )
                         self.annotations = a
                     #raise ValueError("Double declaration of " + subnode.tag + ", set '" + set + "' + is already declared")    //doubles are okay says Ko 
-                self.annotations.append( (type, set) )
+                else:
+                    self.annotations.append( (type, set) )
                 
+                #Load set definition
                 if set and self.deepvalidation and not set in self.setdefinitions:
                     if set != 'undefined' and set[0] != '_': #ignore sets starting with an underscore, they are ad-hoc sets by definition
                         self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
                         
-
-                defaults = {}
-                if 'annotator' in subnode.attrib:
-                    defaults['annotator'] = subnode.attrib['annotator']
-                if 'annotatortype' in subnode.attrib:
-                    if subnode.attrib['annotatortype'] == 'auto':
-                        defaults['annotatortype'] = AnnotatorType.AUTO
-                    else:
-                        defaults['annotatortype'] = AnnotatorType.MANUAL                                                
-                if not type in self.annotationdefaults:
-                    self.annotationdefaults[type] = {}
-                self.annotationdefaults[type][set] = defaults
+                #Set defaults
+                if type in self.annotationdefaults and set in self.annotationdefaults[type]:
+                    #handle duplicate. If ambiguous: remove defaults
+                    if 'annotator' in subnode.attrib:
+                        if not ('annotator' in self.annotationdefaults[type][set]): 
+                            self.annotationdefaults[type][set]['annotator'] = subnode.attrib['annotator']
+                        elif self.annotationdefaults[type][set]['annotator'] != subnode.attrib['annotator']:            
+                            del self.annotationdefaults[type][set]['annotator']
+                    if 'annotatortype' in subnode.attrib:
+                        if not ('annotatortype' in self.annotationdefaults[type][set]): 
+                            self.annotationdefaults[type][set]['annotatortype'] = subnode.attrib['annotatortype']
+                        elif self.annotationdefaults[type][set]['annotatortype'] != subnode.attrib['annotatortype']:            
+                            del self.annotationdefaults[type][set]['annotatortype']
+                else:
+                    defaults = {}
+                    if 'annotator' in subnode.attrib:
+                        defaults['annotator'] = subnode.attrib['annotator']
+                    if 'annotatortype' in subnode.attrib:
+                        if subnode.attrib['annotatortype'] == 'auto':
+                            defaults['annotatortype'] = AnnotatorType.AUTO
+                        else:
+                            defaults['annotatortype'] = AnnotatorType.MANUAL                                                
+                    if not type in self.annotationdefaults:
+                        self.annotationdefaults[type] = {}
+                    self.annotationdefaults[type][set] = defaults
                 
                 if self.debug >= 1: 
                     print >>stderr, "[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults)
@@ -3779,12 +3794,15 @@ class Document(object):
     
     def defaultannotator(self, annotationtype, set=None):
         if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if not set: set = self.defaultset(annotationtype)
         try:
             return self.annotationdefaults[annotationtype][set]['annotator']        
         except KeyError:
             raise NoDefaultError
             
     def defaultannotatortype(self, annotationtype,set=None):
+        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if not set: set = self.defaultset(annotationtype)
         try:
             return self.annotationdefaults[annotationtype][set]['annotatortype']        
         except KeyError:

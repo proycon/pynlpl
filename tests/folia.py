@@ -767,8 +767,8 @@ folia-v0.8" version="0.8">
 </FoLiA>""" 
 
         doc = folia.Document(string=xml)
-        self.assertEqual( self.doc.defaultset(folia.AnnotationType.GAP), 'gap-set' )
-        self.assertEqual( self.doc.defaultannotator(folia.AnnotationType.GAP), "sloot" )
+        self.assertEqual( doc.defaultset(folia.AnnotationType.GAP), 'gap-set' )
+        self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP), "sloot" )
         
 
     def test102e_declarations(self):
@@ -823,7 +823,7 @@ folia-v0.8" version="0.8">
         self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'undefined' )
 
     def test102h_declarations(self):
-        """Sanity Check - Declarations - Double declarations (testing failure)"""
+        """Sanity Check - Declarations - Double ambiguous declarations unset default"""
         xml = """<?xml version="1.0"?>\n
 <FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
 xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
@@ -838,7 +838,8 @@ folia-v0.8" version="0.8">
     <gap />
   </text>
 </FoLiA>""" 
-        self.assertRaises( ValueError,  folia.Document, string=xml)
+        doc = folia.Document(string=xml)
+        self.assertRaises(folia.NoDefaultError, doc.defaultannotator, folia.AnnotationType.GAP)
 
 
     def test102i_declarations(self):
@@ -919,7 +920,7 @@ folia-v0.8" version="0.8">
   </text>
 </FoLiA>""" 
         doc = folia.Document(string=xml)          
-        self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP), "auto" )
+        self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP, 'gap-set'), "auto" )
         text = doc["example.text.1"]
         gaps = text.select(folia.Gap)
         self.assertEqual( gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="X"/>' )
