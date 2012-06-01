@@ -3709,7 +3709,7 @@ class Document(object):
                             if not (t == AnnotationType.TEXT and s == 'undefined'): 
                                 a.append( (t,s) )
                         self.annotations = a
-                    raise ValueError("Double declaration of " + subnode.tag + ", set '" + set + "' + is already declared") 
+                    #raise ValueError("Double declaration of " + subnode.tag + ", set '" + set + "' + is already declared")    //doubles are okay says Ko 
                 self.annotations.append( (type, set) )
                 
                 if set and self.deepvalidation and not set in self.setdefinitions:
