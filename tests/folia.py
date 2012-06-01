@@ -860,8 +860,8 @@ folia-v0.8" version="0.8">
 </FoLiA>""" 
         doc = folia.Document(string=xml)          
         self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP,"gap1-set"), "sloot" )
-        doc.declare(folia.AnnotationType.GAP, "gap1-set", annotator='proycon' )
-        self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP,"gap1-set"), "" )
+        doc.declare(folia.AnnotationType.GAP, "gap1-set", annotator='proycon' ) #slightly different behaviour from libfolia: here this overrides the earlier default
+        self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP,"gap1-set"), "proycon" )
         self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP,"gap2-set"), "sloot" )
 
         text = doc["example.text.1"]
@@ -870,11 +870,11 @@ folia-v0.8" version="0.8">
         text.append( folia.Gap(doc, set='gap2-set', cls='Z2' ) )
         text.append( folia.Gap(doc, set='gap2-set', cls='Y2', annotator='onbekend' ) )
         gaps = text.select(folia.Gap)
-        self.assertEqual( gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotator="sloot" class="X" set="gap1-set"/>' )
-        self.assertEqual( gaps[1].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotator="proycon" class="Y" set="gap1-set"/>' )
-        self.assertEqual( gaps[2].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Z1" set="gap1-set"/>' )
-        self.assertEqual( gaps[3].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Z2" set="gap2-set"/>' )
-        self.assertEqual( gaps[4].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotator="onbekend" class="Y2" set="gap2-set"/>' )
+        self.assertTrue( xmlcheck(gaps[0].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotator="sloot" class="X" set="gap1-set"/>' ) )
+        self.assertTrue( xmlcheck(gaps[1].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Y" set="gap1-set"/>') )
+        self.assertTrue( xmlcheck(gaps[2].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Z1" set="gap1-set"/>') )
+        self.assertTrue( xmlcheck(gaps[3].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Z2" set="gap2-set"/>') )
+        self.assertTrue( xmlcheck(gaps[4].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotator="onbekend" class="Y2" set="gap2-set"/>') )
 
 
     def test102j_declarations(self):
