@@ -462,18 +462,27 @@ class AbstractElement(object):
         return None #do not override
 
     def feat(self,subset):
-        """Obtain the feature value of the specific subset.
+        """Obtain the feature value of the specific subset. If a feature occurs multiple times, the values will be returned in a list.
         
         Example::
         
             sense = word.annotation(folia.Sense)
             synset = sense.feat('synset')        
         """
-        
+        r = None
         for f in self:
             if isinstance(f, Feature) and f.subset == subset:
-                return f.cls
-        raise NoSuchAnnotation
+                if r: #support for multiclass features
+                    if isinstance(r,list):
+                        r.append(f.cls)
+                    else:
+                        r = [r, f.cls]
+                else:
+                    r = f.cls
+        if r is None:
+            raise NoSuchAnnotation
+        else:
+            return r
 
     def __ne__(self, other):
         return not (self == other)
