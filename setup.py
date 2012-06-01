@@ -7,8 +7,9 @@ from setuptools import setup, find_packages
 
 os.chdir(os.path.dirname(sys.argv[0]))
 if not os.path.exists('pynlpl') and not os.path.exists('.readysetup'):
+    print >>sys.stderr, "Running setup for first time, preparing source tree"
     os.mkdir('pynlpl')
-    os.system('cp -Rpd * pynlpl/')
+    os.system('mv * pynlpl/ 2> /dev/null')
     open('.readysetup','w')
 elif not os.path.exists('.readysetup'):
     print >>sys.stderr, "Not ready for setup. Please obtain sources anew."
