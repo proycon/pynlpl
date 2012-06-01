@@ -6,15 +6,12 @@ import sys
 from setuptools import setup, find_packages
 
 os.chdir(os.path.dirname(sys.argv[0]))
-if not os.path.exists('pynlpl') and not os.path.exists('.readysetup'):
-    print >>sys.stderr, "Running setup for first time, preparing source tree"
-    os.mkdir('pynlpl')
-    os.system('mv * pynlpl/ 2> /dev/null')
-    os.system('mv pynlpl/README pynlpl/docs pynlpl/setup.py pynlpl/AUTHORS pynlpl/INDEX . ')
-    open('.readysetup','w')
-elif not os.path.exists('.readysetup'):
-    print >>sys.stderr, "Not ready for setup. Please obtain sources anew."
-    sys.exit(2)
+print >>sys.stderr, "Preparing build"
+if not os.path.exists('build'): os.mkdir('build')   
+os.chdir('build')
+if not os.path.exists('pynlpl'): os.mkdir('pynlpl')
+os.system('cp -Rpdf ../* pynlpl/ 2> /dev/null')
+os.unlink('pynlpl/setup.py')
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -29,7 +26,7 @@ setup(
     keywords = "nlp computational_linguistics search ngrams language_models linguistics toolkit",
     url = "https://github.com/proycon/pynlpl",
     packages=['pynlpl','pynlpl.clients','pynlpl.lm','pynlpl.formats','pynlpl.mt'],
-    long_description=read('README'),
+    long_description=read('../README'),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Topic :: Text Processing :: Linguistic",
