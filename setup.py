@@ -4,12 +4,14 @@
 import os
 import sys
 import shutil
+import glob
 from setuptools import setup, find_packages
 
 os.chdir(os.path.dirname(sys.argv[0]))
 if not os.path.exists('pynlpl') and not os.path.exists('.readysetup'):
     os.mkdir('pynlpl')
-    shutil.copytree('*','pynlpl/')
+    for filename in glob.glob('*'):
+        if filename[0] != '.' and filename != 'pynlpl': shutil.copyfile(filename, 'pynlpl/')    
     open('.readysetup','w')
 elif not os.path.exists('.readysetup'):
     print >>sys.stderr, "Not ready for setup. Please obtain sources anew."
