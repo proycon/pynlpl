@@ -33,8 +33,8 @@ import urllib
 import multiprocessing
 import threading
 
-FOLIAVERSION = '0.8.1'
-LIBVERSION = '0.8.1.21' #== FoLiA version + library revision
+FOLIAVERSION = '0.8.2'
+LIBVERSION = '0.8.2.22' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -1072,10 +1072,11 @@ class AbstractElement(object):
         
     
     @classmethod
-    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None, origclass = None):
             global NSFOLIA
             E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
             
+            if origclass: cls = origclass
             
             preamble = []
             try:
@@ -1115,6 +1116,7 @@ class AbstractElement(object):
             elif Attrib.DATETIME in cls.OPTIONAL_ATTRIBS:
                attribs.append( E.optional( E.attribute( E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),  name='datetime') ) )
 
+            attribs.append( E.optional( E.attribute( name='auth' ) ) )  
             
             #if cls.ALLOWTEXT:
             #    attribs.append( E.optional( E.ref(name='t') ) ) #yes, not actually an attrib, I know, but should go here
@@ -1143,6 +1145,8 @@ class AbstractElement(object):
                                         continue
                             except TypeError:
                                 pass
+                    elif issubclass(c, Feature) and c.SUBSET:
+                        attribs.append( E.optional( E.attribute(name=c.SUBSET)))  #features as attributes
                     else:
                         try:
                             if c.XMLTAG and not (c.XMLTAG in done):
@@ -1965,8 +1969,8 @@ class TextContent(AbstractElement):
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
             global NSFOLIA
-            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-            return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
+            return E.define( E.element(E.text(), E.optional( E.attribute(name='offset')), E.optional( E.attribute(name='class')),name=cls.XMLTAG ), name=cls.XMLTAG, ns=NSFOLIA)
 
 class Linebreak(AbstractStructureElement):
     """Line break element, signals a line break"""
@@ -2359,8 +2363,8 @@ class AlignReference(AbstractElement):
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
             global NSFOLIA
-            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-            return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
+            return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), E.attribute(E.text(), name='type'), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
         
     def resolve(self, alignmentcontext):
         if not alignmentcontext.href:
@@ -2430,28 +2434,7 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
     XMLTAG = 'errordetection'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
-    
-    def __init__(self,  doc, *args, **kwargs):
-        if 'error' in kwargs:            
-            if (kwargs['error'] is False or kwargs['error'].lower() == 'no' or kwargs['error'].lower() == 'false'):
-                self.error = False
-            else:
-                self.error = True
-            del kwargs['error']
-        else:
-            self.error = True        
-        super(ErrorDetection,self).__init__(doc, *args, **kwargs)
 
-
-    def xml(self, attribs = None,elements = None, skipchildren = False):   
-        if not attribs: attribs = {}
-        if self.error:
-            attribs['error'] = 'yes'
-        else:
-            attribs['error'] = 'no'
-        return super(ErrorDetection,self).xml(attribs,elements, False)  
-    
-            
                         
 class Suggestion(AbstractCorrectionChild):
     ANNOTATIONTYPE = AnnotationType.SUGGESTION
@@ -3061,7 +3044,6 @@ class Figure(AbstractStructureElement):
     ACCEPTED_DATA = (Sentence, Description, Caption, TextContent, Alignment)
     XMLTAG = 'figure'
     ANNOTATIONTYPE = AnnotationType.FIGURE
-    #TODO: relaxNG
     
     def __init__(self, doc, *args, **kwargs):            
         if 'src' in kwargs:
@@ -3087,12 +3069,15 @@ class Figure(AbstractStructureElement):
         except:
             raise NoSuchText
         
-    #@classmethod
-    #def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-    #    global NSFOLIA
-    #    if not extraattribs:
-    #        extraattribs = 'src'
-    #TODO!        
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA        
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})    
+        if not extraattribs: 
+            extraattribs = [ E.optional(E.attribute(name='src')) ]
+        else:
+            extraattribs.append( E.optional(E.attribute(name='src')) ) 
+        return AbstractStructureElement.relaxng(includechildren, extraattribs, extraelements, cls)
             
 
 
