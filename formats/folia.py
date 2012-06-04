@@ -4632,8 +4632,9 @@ def validate(filename,schema=None,deep=False):
     
     if not schema:
         schema = ElementTree.RelaxNG(relaxng())
-    else:
-        schema.assertValid(doc) #will raise exceptions
+        
+    
+    schema.assertValid(doc) #will raise exceptions
 
     if deep:
         doc = Document(tree=doc, deepvalidation=True)

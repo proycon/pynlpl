@@ -1708,8 +1708,6 @@ class Test8Validation(unittest.TestCase):
       def test001_shallowvalidation(self): 
         """Validation - Shallow validation against automatically generated RelaxNG schema"""
         folia.validate('/tmp/foliasavetest.xml')
-    
-
 
 
 f = codecs.open(FOLIAPATH + '/test/example.xml', 'r','utf-8')
