@@ -2124,6 +2124,16 @@ class Word(AbstractStructureElement, AllowCorrections):
         return super(Word,self).xml(attribs,elements, False)  
 
                 
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA        
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})    
+        if not extraattribs: 
+            extraattribs = [ E.optional(E.attribute(name='space')) ]
+        else:
+            extraattribs.append( E.optional(E.attribute(name='space')) ) 
+        return AbstractStructureElement.relaxng(includechildren, extraattribs, extraelements, cls)
+            
         
     
     def split(self, *newwords, **kwargs):
