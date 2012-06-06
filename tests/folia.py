@@ -145,6 +145,16 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.1' )
         self.assertFalse( s.hastext() ) 
         self.assertEqual( str(s), "Stemma is een ander woord voor stamboom ." ) 
+
+    def test006b_sentencetest(self):                                    
+        """Sanity check - Sentence text (including retaining tokenisation)"""                                
+        #grab second sentence
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.5']
+        self.assertTrue( isinstance(s, folia.Sentence) )
+        self.assertFalse( s.hastext() )
+        self.assertEqual( s.text(), "De andere handschriften krijgen ook een letter die verband kan houden met hun plaats van oorsprong of plaats van bewaring.")
+        self.assertEqual( s.text('current',True), "De andere handschriften krijgen ook een letter die verband kan houden met hun plaats van oorsprong of plaats van bewaring .") #not detokenised
+        self.assertEqual( s.toktext(), "De andere handschriften krijgen ook een letter die verband kan houden met hun plaats van oorsprong of plaats van bewaring .") #just an alias for the above
         
     def test007_index(self):                                    
         """Sanity check - Index"""            
