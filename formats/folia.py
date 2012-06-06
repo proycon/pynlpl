@@ -34,7 +34,7 @@ import multiprocessing
 import threading
 
 FOLIAVERSION = '0.8.2'
-LIBVERSION = '0.8.2.22' #== FoLiA version + library revision
+LIBVERSION = '0.8.2.23' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -419,12 +419,17 @@ class AbstractElement(object):
     def stricttext(self, cls='current'):
         """Get the text strictly associated with this element (of the specified class). Does not recurse into children, with the sole exception of Corection/New"""                
         return self.textcontent(cls).value
-        
-    def text(self, cls='current'):
+
+    def toktext(self,cls='current'):
+        """Alias for text with retaintokenisation=True"""
+        return self.text(cls,True)
+                    
+    def text(self, cls='current', retaintokenisation=False):
         """Get the text associated with this element (of the specified class), will always be a unicode instance.  
         If no text is directly associated with the element, it will be obtained from the children. If that doesn't result
         in any text either, a NoSuchText exception will be raised.
             
+        If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.            
         """        
         
         if not self.PRINTABLE: #only printable elements can hold text
@@ -438,10 +443,10 @@ class AbstractElement(object):
             for e in self:            
                 if e.PRINTABLE and not isinstance(e, TextContent):
                     try:
-                        delimiter = e.overridetextdelimiter()
+                        delimiter = e.overridetextdelimiter(retaintokenisation) 
                         if delimiter is None:
                             delimiter = self.TEXTDELIMITER #default delimiter set by parent                        
-                        s += e.text(cls) + delimiter
+                        s += e.text(cls,retaintokenisation) + delimiter
                     except NoSuchText:
                         continue           
     
@@ -457,7 +462,7 @@ class AbstractElement(object):
         """Alias for retrieving the original uncorrect text"""
         return self.text('original')
         
-    def overridetextdelimiter(self):
+    def overridetextdelimiter(self, retaintokenisation=False):
         """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
         return None #do not override
 
@@ -2076,9 +2081,9 @@ class Word(AbstractStructureElement, AllowCorrections):
         """Shortcut: returns the FoLiA class of the domain annotation (will return only one if there are multiple!)"""        
         return self.annotation(DomainAnnotation,set).cls     
 
-    def overridetextdelimiter(self):
+    def overridetextdelimiter(self, retaintokenisation=False):
         """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
-        if self.space:
+        if self.space or retaintokenisation:
             return ' '
         else:
             return ''
@@ -2545,15 +2550,15 @@ class Correction(AbstractExtendedTokenAnnotation):
                                
     
     
-    def text(self, cls = 'current'):
+    def text(self, cls = 'current', retaintokenisation=False):
         if cls == 'current':
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
-                    return e.text(cls)
+                    return e.text(cls, retaintokenisation)
         elif cls == 'original':
             for e in self:
                 if isinstance(e, Original):
-                    return e.text(cls)
+                    return e.text(cls, retaintokenisation)
         raise NoSuchText
 
     
@@ -4046,29 +4051,28 @@ class Document(object):
             return sum([ t.select(Word,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer']) for t in self.data ],[])[index]
             
 
-    def text(self):
+    def text(self, retaintokenisation=False):
         """Returns the text of the entire document (returns a unicode instance)"""
-        return unicode(self)
-       
+        s = u""
+        for c in self.data:
+            if s: s += "\n\n"
+            try:
+                s += c.text('current',retaintokenisation)
+            except:
+                continue
+        return s
+           
     def xmlstring(self):
         s = ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
         if self.bypassleak:
             return s.replace('XMLid=','xml:id=')            
         else:
             return s
-        
-        
+
             
     def __unicode__(self):
         """Returns the text of the entire document"""
-        s = u""
-        for c in self.data:
-            if s: s += "\n\n"
-            try:
-                s += unicode(c)
-            except:
-                continue
-        return s
+        return self.text()
 
     def __ne__(self, other):
         return not (self == other)
