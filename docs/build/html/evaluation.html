@@ -1,0 +1,291 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Evaluation &amp; Experiments &mdash; PyNLPl 0.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="PyNLPl 0.5.3 documentation" href="index.html" />
+    <link rel="next" title="FoLiA library" href="folia.html" />
+    <link rel="prev" title="Data Types" href="datatypes.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="folia.html" title="FoLiA library"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="datatypes.html" title="Data Types"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyNLPl 0.5.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pynlpl.evaluation">
+<span id="evaluation-experiments"></span><h1>Evaluation &amp; Experiments<a class="headerlink" href="#module-pynlpl.evaluation" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pynlpl.evaluation.AbstractExperiment">
+<em class="property">class </em><tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">AbstractExperiment</tt><big>(</big><em>inputdata=None</em>, <em>**parameters</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pynlpl.evaluation.AbstractExperiment.defaultparameters">
+<tt class="descname">defaultparameters</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment.defaultparameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.AbstractExperiment.delete">
+<tt class="descname">delete</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment.delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.AbstractExperiment.done">
+<tt class="descname">done</tt><big>(</big><em>warn=True</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment.done" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the subprocess done?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.AbstractExperiment.duration">
+<tt class="descname">duration</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment.duration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.AbstractExperiment.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.AbstractExperiment.sample">
+<tt class="descname">sample</tt><big>(</big><em>size</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sample of the input data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.AbstractExperiment.score">
+<tt class="descname">score</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment.score" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.AbstractExperiment.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start as a detached subprocess, immediately returning execution to caller.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.AbstractExperiment.startcommand">
+<tt class="descname">startcommand</tt><big>(</big><em>command</em>, <em>cwd</em>, <em>stdout</em>, <em>stderr</em>, <em>*arguments</em>, <em>**parameters</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment.startcommand" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.AbstractExperiment.wait">
+<tt class="descname">wait</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.AbstractExperiment.wait" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.evaluation.ClassEvaluation">
+<em class="property">class </em><tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">ClassEvaluation</tt><big>(</big><em>goals=</em><span class="optional">[</span><span class="optional">]</span>, <em>observations=</em><span class="optional">[</span><span class="optional">]</span>, <em>missing={}</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.accuracy">
+<tt class="descname">accuracy</tt><big>(</big><em>cls=None</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.accuracy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.append">
+<tt class="descname">append</tt><big>(</big><em>goal</em>, <em>observation</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.append" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.compute">
+<tt class="descname">compute</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.compute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.confusionmatrix">
+<tt class="descname">confusionmatrix</tt><big>(</big><em>casesensitive=True</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.confusionmatrix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.fscore">
+<tt class="descname">fscore</tt><big>(</big><em>cls=None</em>, <em>beta=1</em>, <em>macro=False</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.fscore" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.outputmetrics">
+<tt class="descname">outputmetrics</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.outputmetrics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.precision">
+<tt class="descname">precision</tt><big>(</big><em>cls=None</em>, <em>macro=False</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.precision" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.recall">
+<tt class="descname">recall</tt><big>(</big><em>cls=None</em>, <em>macro=False</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.recall" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.specificity">
+<tt class="descname">specificity</tt><big>(</big><em>cls=None</em>, <em>macro=False</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.specificity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.evaluation.ConfusionMatrix">
+<em class="property">class </em><tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">ConfusionMatrix</tt><big>(</big><em>tokens=None</em>, <em>casesensitive=True</em>, <em>dovalidation=True</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ConfusionMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Confusion Matrix</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.evaluation.ExperimentPool">
+<em class="property">class </em><tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">ExperimentPool</tt><big>(</big><em>size</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ExperimentPool" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pynlpl.evaluation.ExperimentPool.append">
+<tt class="descname">append</tt><big>(</big><em>experiment</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ExperimentPool.append" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ExperimentPool.poll">
+<tt class="descname">poll</tt><big>(</big><em>haltonerror=True</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ExperimentPool.poll" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ExperimentPool.run">
+<tt class="descname">run</tt><big>(</big><em>haltonerror=True</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ExperimentPool.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ExperimentPool.start">
+<tt class="descname">start</tt><big>(</big><em>experiment</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ExperimentPool.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.evaluation.ParamSearch">
+<em class="property">class </em><tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">ParamSearch</tt><big>(</big><em>experimentclass</em>, <em>inputdata</em>, <em>parameterscope</em>, <em>poolsize=1</em>, <em>constraintfunc=None</em>, <em>delete=True</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ParamSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simpler version of ParamSearch without Wrapped Progressive Sampling</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pynlpl.evaluation.ProcessFailed">
+<em class="property">exception </em><tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">ProcessFailed</tt><a class="headerlink" href="#pynlpl.evaluation.ProcessFailed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.evaluation.WPSParamSearch">
+<em class="property">class </em><tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">WPSParamSearch</tt><big>(</big><em>experimentclass</em>, <em>inputdata</em>, <em>size</em>, <em>parameterscope</em>, <em>poolsize=1</em>, <em>sizefunc=None</em>, <em>prunefunc=None</em>, <em>constraintfunc=None</em>, <em>delete=True</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.WPSParamSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>ParamSearch with support for Wrapped Progressive Sampling</p>
+<dl class="method">
+<dt id="pynlpl.evaluation.WPSParamSearch.searchbest">
+<tt class="descname">searchbest</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.WPSParamSearch.searchbest" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.WPSParamSearch.test">
+<tt class="descname">test</tt><big>(</big><em>i=None</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.WPSParamSearch.test" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pynlpl.evaluation.filesampler">
+<tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">filesampler</tt><big>(</big><em>files</em>, <em>testsetsize=0.1</em>, <em>devsetsize=0</em>, <em>trainsetsize=0</em>, <em>outputdir=''</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.filesampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract a training set, test set and optimally a development set from one file, or multiple <em>interdependent</em> files (such as a parallel corpus). It is assumed each line contains one instance (such as a word or sentence for example).</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="datatypes.html"
+                        title="previous chapter">Data Types</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="folia.html"
+                        title="next chapter">FoLiA library</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/evaluation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="folia.html" title="FoLiA library"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="datatypes.html" title="Data Types"
+             >previous</a> |</li>
+        <li><a href="index.html">PyNLPl 0.5.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Maarten van Gompel.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

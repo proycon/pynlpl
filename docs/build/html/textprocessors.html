@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Text Processors &mdash; PyNLPl 0.5.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="PyNLPl 0.5.3 documentation" href="index.html" />
+    <link rel="prev" title="Statistics and Information Theory" href="statistics.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="statistics.html" title="Statistics and Information Theory"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyNLPl 0.5.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-textprocessors">
+<span id="text-processors"></span><h1>Text Processors<a class="headerlink" href="#module-textprocessors" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="textprocessors.Classer">
+<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Classer</tt><big>(</big><em>f</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#textprocessors.Classer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Classer can encode and decode tokens to an integer representation. It is constructed using a frequency list.</p>
+<dl class="method">
+<dt id="textprocessors.Classer.decode">
+<tt class="descname">decode</tt><big>(</big><em>x</em><big>)</big><a class="headerlink" href="#textprocessors.Classer.decode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode a class integer, return string token</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.Classer.decodefile">
+<tt class="descname">decodefile</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#textprocessors.Classer.decodefile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode a file, converting class integers to token strings</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.Classer.decodeseq">
+<tt class="descname">decodeseq</tt><big>(</big><em>sequence</em><big>)</big><a class="headerlink" href="#textprocessors.Classer.decodeseq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode a sequence, converting class integers to strings</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.Classer.encode">
+<tt class="descname">encode</tt><big>(</big><em>x</em><big>)</big><a class="headerlink" href="#textprocessors.Classer.encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode a string token, return class integer</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.Classer.encodefile">
+<tt class="descname">encodefile</tt><big>(</big><em>fromfile</em>, <em>tofile</em><big>)</big><a class="headerlink" href="#textprocessors.Classer.encodefile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode a file, converting word tokens to class integers</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.Classer.encodeseq">
+<tt class="descname">encodeseq</tt><big>(</big><em>sequence</em><big>)</big><a class="headerlink" href="#textprocessors.Classer.encodeseq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encode a sequence of string tokens to class integers</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.Classer.save">
+<tt class="descname">save</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#textprocessors.Classer.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save to a class file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="textprocessors.MultiWindower">
+<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">MultiWindower</tt><big>(</big><em>tokens</em>, <em>min_n=1</em>, <em>max_n=9</em>, <em>beginmarker=None</em>, <em>endmarker=None</em><big>)</big><a class="headerlink" href="#textprocessors.MultiWindower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract n-grams of various configurations from a sequence</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="textprocessors.Windower">
+<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Windower</tt><big>(</big><em>tokens</em>, <em>n=1</em>, <em>beginmarker='&lt;begin&gt;'</em>, <em>endmarker='&lt;end&gt;'</em><big>)</big><a class="headerlink" href="#textprocessors.Windower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Moves a sliding window over a list of tokens, returning all ngrams</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="textprocessors.calculate_overlap">
+<tt class="descclassname">textprocessors.</tt><tt class="descname">calculate_overlap</tt><big>(</big><em>haystack</em>, <em>needle</em>, <em>allowpartial=True</em><big>)</big><a class="headerlink" href="#textprocessors.calculate_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the overlap between two sequences. Yields (overlap, placement) tuples (multiple because there may be multiple overlaps!). The former is the part of the sequence that overlaps, and the latter is -1 if the overlap is on the left side, 0 if it is a subset, 1 if it overlaps on the right side, 2 if its an identical match</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="textprocessors.crude_tokenizer">
+<tt class="descclassname">textprocessors.</tt><tt class="descname">crude_tokenizer</tt><big>(</big><em>line</em><big>)</big><a class="headerlink" href="#textprocessors.crude_tokenizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a very crude tokenizer</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="textprocessors.strip_accents">
+<tt class="descclassname">textprocessors.</tt><tt class="descname">strip_accents</tt><big>(</big><em>s</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#textprocessors.strip_accents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Strip characters with diacritics and return a flat ascii representation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="textprocessors.swap">
+<tt class="descclassname">textprocessors.</tt><tt class="descname">swap</tt><big>(</big><em>tokens</em>, <em>maxdist=2</em><big>)</big><a class="headerlink" href="#textprocessors.swap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a swap operation on a sequence of tokens, exhaustively swapping all tokens up to the maximum specified distance. This is a subset of all permutations.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="statistics.html"
+                        title="previous chapter">Statistics and Information Theory</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/textprocessors.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="statistics.html" title="Statistics and Information Theory"
+             >previous</a> |</li>
+        <li><a href="index.html">PyNLPl 0.5.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Maarten van Gompel.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

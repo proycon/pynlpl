@@ -12,7 +12,7 @@ if not os.path.exists('pynlpl'):
     os.chdir('build')
     if not os.path.exists('pynlpl'): os.mkdir('pynlpl')
     os.system('cp -Rpdf ../* pynlpl/ 2> /dev/null')
-    os.system('mv -f pynlpl/setup.py .')
+    os.system('mv -f pynlpl/setup.py pynlpl/setup.cfg .')
     os.system('cp -f pynlpl/README .')    
 
 def read(fname):
