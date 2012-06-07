@@ -13,14 +13,14 @@ if not os.path.exists('pynlpl'):
     if not os.path.exists('pynlpl'): os.mkdir('pynlpl')
     os.system('cp -Rpdf ../* pynlpl/ 2> /dev/null')
     os.system('mv -f pynlpl/setup.py .')
-    os.system('ln -sf pynlpl/README')    
+    os.system('cp -f pynlpl/README .')    
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name = "PyNLPl",
-    version = "0.5.3",
+    version = "0.5.3.1",
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
     description = ("PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl can be used for example the computation of n-grams, frequency lists and distributions, language models. There are also more complex data types, such as Priority Queues, and search algorithms, such as Beam Search."),
