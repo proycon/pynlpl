@@ -6,12 +6,14 @@ import sys
 from setuptools import setup, find_packages
 
 os.chdir(os.path.dirname(sys.argv[0]))
-print >>sys.stderr, "Preparing build"
-if not os.path.exists('build'): os.mkdir('build')   
-os.chdir('build')
-if not os.path.exists('pynlpl'): os.mkdir('pynlpl')
-os.system('cp -Rpdf ../* pynlpl/ 2> /dev/null')
-os.unlink('pynlpl/setup.py')
+if not os.path.exists('pynlpl'):   
+    print >>sys.stderr, "Preparing build"
+    if not os.path.exists('build'): os.mkdir('build')   
+    os.chdir('build')
+    if not os.path.exists('pynlpl'): os.mkdir('pynlpl')
+    os.system('cp -Rpdf ../* pynlpl/ 2> /dev/null')
+    os.system('mv -f pynlpl/setup.py .')
+    os.system('ln -sf pynlpl/README')    
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
