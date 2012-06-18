@@ -967,6 +967,30 @@ folia-v0.8" version="0.8">
         self.assertTrue( xmlcheck(gaps[1].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" class="Y" />') )
         self.assertTrue( xmlcheck(gaps[2].xmlstring(), '<gap xmlns="http://ilk.uvt.nl/folia" annotatortype="auto" class="Z" />') )
 
+
+
+    def test102l_declarations(self):
+        """Sanity Check - Declarations - Datetime default."""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+         <gap-annotation set="gap-set" datetime="2011-12-15T19:00" />
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" />
+  </text>
+</FoLiA>""" 
+        doc = folia.Document(string=xml)          
+        self.assertEqual( doc.defaultdatetime(folia.AnnotationType.GAP, 'gap-set'),  folia.parse_datetime('2011-12-15T19:00') )
+        
+        self.assertEqual( doc["example.text.1"].select(folia.Gap)[0].datetime ,  folia.parse_datetime('2011-12-15T19:00') )
+        
+                        
+
         
 
     def test103_namespaces(self):

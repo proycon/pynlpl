@@ -34,7 +34,7 @@ import multiprocessing
 import threading
 
 FOLIAVERSION = '0.8.2'
-LIBVERSION = '0.8.2.23' #== FoLiA version + library revision
+LIBVERSION = '0.8.2.24' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -243,7 +243,9 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             object.datetime = parse_datetime(kwargs['datetime'])            
             #except:
             #    raise ValueError("Unable to parse datetime: " + str(repr(kwargs['datetime'])))
-        del kwargs['datetime']                
+        del kwargs['datetime']        
+    elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults[annotationtype] and 'datetime' in doc.annotationdefaults[annotationtype][object.set]:
+        object.datetime = doc.annotationdefaults[annotationtype][object.set]['datetime']                
     elif Attrib.DATETIME in required:
         raise ValueError("Datetime is required")
     else:
@@ -932,7 +934,7 @@ class AbstractElement(object):
             pass
             
         try:
-            if self.datetime:
+            if self.datetime and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'datetime' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.datetime != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['datetime'])):
                 attribs['{' + NSFOLIA + '}datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
         except AttributeError:
             pass            
@@ -3630,6 +3632,8 @@ class Document(object):
                         attribs['{' + NSFOLIA + '}' + key] = 'manual'
                     elif value == AnnotatorType.AUTO:
                         attribs['{' + NSFOLIA + '}' + key] = 'auto'
+                elif key == 'datetime':
+                     attribs['{' + NSFOLIA + '}' + key] = value.strftime("%Y-%m-%dT%H:%M:%S") #proper iso-formatting
                 elif value:
                     attribs['{' + NSFOLIA + '}' + key] = value
             if label:
@@ -3755,7 +3759,13 @@ class Document(object):
                         if subnode.attrib['annotatortype'] == 'auto':
                             defaults['annotatortype'] = AnnotatorType.AUTO
                         else:
-                            defaults['annotatortype'] = AnnotatorType.MANUAL                                                
+                            defaults['annotatortype'] = AnnotatorType.MANUAL
+                    if 'datetime' in subnode.attrib:                                                
+                        if isinstance(subnode.attrib['datetime'], datetime):
+                            defaults['datetime'] = subnode.attrib['datetime']
+                        else:
+                            defaults['datetime'] = parse_datetime(subnode.attrib['datetime'])
+                
                     if not type in self.annotationdefaults:
                         self.annotationdefaults[type] = {}
                     self.annotationdefaults[type][set] = defaults
@@ -3823,6 +3833,16 @@ class Document(object):
             return self.annotationdefaults[annotationtype][set]['annotatortype']        
         except KeyError:
             raise NoDefaultError
+
+
+    def defaultdatetime(self, annotationtype,set=None):
+        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if not set: set = self.defaultset(annotationtype)
+        try:
+            return self.annotationdefaults[annotationtype][set]['datetime']        
+        except KeyError:
+            raise NoDefaultError
+            
             
 
             
@@ -4482,7 +4502,7 @@ def relaxng_declarations():
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     for key, value in vars(AnnotationType).items():
         if key[0] != '_':
-            yield E.element( E.optional( E.attribute(name='set')) , E.optional(E.attribute(name='annotator')) , E.optional( E.attribute(name='annotatortype') )  , name=key.lower() + '-annotation')
+            yield E.element( E.optional( E.attribute(name='set')) , E.optional(E.attribute(name='annotator')) , E.optional( E.attribute(name='annotatortype') ) , E.optional( E.attribute(name='datetime') )  , name=key.lower() + '-annotation')
 
             
 def relaxng(filename=None):
