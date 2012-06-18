@@ -678,6 +678,26 @@ folia-v0.8" version="0.8">
         self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'gap-set' )
         
         
+    def test102a2_declarations(self):
+        """Sanity Check - Declarations - Default set, no further defaults"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
+xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
+folia-v0.8" version="0.8">
+  <metadata type="native">
+    <annotations>
+      <gap-annotation set="gap-set"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" annotator="proycon" annotatortype="manual" />
+  </text>
+</FoLiA>""" 
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'gap-set' )
+        self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].annotator, 'proycon' )
+        self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].annotatortype, folia.AnnotatorType.MANUAL)        
+        
     def test102b_declarations(self):
         """Sanity Check - Declarations - Set mismatching """
         xml = """<?xml version="1.0"?>\n
