@@ -2322,7 +2322,7 @@ class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
                 
         
 class AbstractCorrectionChild(AbstractElement):
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME)
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME,Attrib.N)
     ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Description)
     TEXTDELIMITER = ""
     PRINTABLE = True
