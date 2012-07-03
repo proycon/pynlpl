@@ -1,3 +1,5 @@
+# -*- coding: utf8 -*-
+
 ###############################################################
 #  PyNLPl - Text Processors
 #       by Maarten van Gompel (proycon)
@@ -105,6 +107,60 @@ class MultiWindower(object):
         for n in range(self.min_n, self.max_n + 1):
             for ngram in Windower(self.tokens,n, self.beginmarker, self.endmarker):
                 yield ngram        
+
+
+class ReflowText(object):
+    def __init__(self, stream, filternontext=True):
+        self.stream = stream
+        self.filternontext = filternontext
+        
+    def __iter__(self):
+        eosmarkers = ('.',':','?','!','"',"'",u"„",u"”",u"’")
+        emptyline = 0
+        pagebreak = False
+        niceeos = True
+        buffer = ""
+        for line in self.stream:
+            
+            line = line.strip()
+            if line:
+                if emptyline:
+                    if buffer:
+                        yield buffer
+                        yield ""
+                        emptyline = 0
+                        buffer = ""
+                    
+                if buffer: buffer += ' '                
+                if (line[-1] in eosmarkers):
+                    buffer += line
+                    yield buffer
+                    buffer = ""
+                    emptyline = 0
+                elif len(line) > 2 and line[-1] == '-' and line[-2].isalpha():
+                    #undo hyphenisation
+                    buffer += line[:-1]
+                else:    
+                    if self.filternontext:
+                        hastext = False
+                        for c in line:
+                            if c.isalpha():
+                                hastext = True
+                                break
+                    else:                                
+                        hastext = True
+                        
+                    if hastext:
+                        buffer += line
+            else:                    
+                emptyline += 1
+              
+            #print "BUFFER=[" + buffer.encode('utf-8') + "] emptyline=" + str(emptyline)
+            
+        if buffer:
+            yield buffer
+            
+
 
 def calculate_overlap(haystack, needle, allowpartial=True):
     """Calculate the overlap between two sequences. Yields (overlap, placement) tuples (multiple because there may be multiple overlaps!). The former is the part of the sequence that overlaps, and the latter is -1 if the overlap is on the left side, 0 if it is a subset, 1 if it overlaps on the right side, 2 if its an identical match"""    
