@@ -12,42 +12,72 @@
 
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
-import subprocess
 import shlex
-import time
 import sys
 
-class GWSProtocol(basic.LineReceiver):
-    def lineReceived(self, line):
-        #post line as input to process
-        while self.factory.busy: 
-            time.sleep(0.1)
-        #send output to client
-        self.factory.process.stdin.write(line+"\n")
-        output = self.factory.process.stdout.readline().strip()
-        self.sendLine(output)
-        
-class GWSFactory(protocol.ServerFactory):
-    protocol = GWSProtocol
-
-    def __init__(self, cmd, shell=True, sendstderr=False):
-        if isinstance(cmd, str) or isinstance(cmd,unicode):
-            self.cmd = shlex.split(cmd)
-        else: 
-            self.cmd = cmd
+class GWSNetProtocol(basic.LineReceiver):        
+    def connectionMade(self):
+        print >>sys.stderr, "Client connected"
+        if self.factory.connections != 0:
+            self.transport.loseConnection()            
+        else:
+            self.factory.connections += 1
+            self.sendLine("READY")
             
-        self.sendstderr = False
-        self.busy = False
-        print >>sys.stderr, "Launching background process"
-        print >>sys.stderr, self.cmd        
-        self.process = subprocess.Popen(self.cmd, shell, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    def lineReceived(self, line):
+        print >>sys.stderr, "Client in: " + line
+        self.factory.processprotocol.transport.write(line +'\n')        
+        self.factory.processprotocol.currentclient = self 
         
-    def __delete__(self):
-        self.process.close()
+    def connectionLost(self, reason):
+        if self.factory.processprotocol.currentclient == self:
+            self.factory.processprotocol.currentclient = None
+
+class GWSFactory(protocol.ServerFactory):
+    protocol = GWSNetProtocol
+
+    def __init__(self, processprotocol):
+        self.connections = 0
+        self.processprotocol = processprotocol
+        
+
+class GWSProcessProtocol(protocol.ProcessProtocol):
+    def __init__(self, printstderr=True, sendstderr= False):
+        self.currentclient = None        
+        self.printstderr = printstderr
+        self.sendstderr = sendstderr
+        
+    def connectionMade(self):
+        pass
+    
+    def outReceived(self, data):
+        print >>sys.stderr, "Process out " + data
+        if self.currentclient:        
+            self.currentclient.sendLine(data.strip())                
+        
+    def errReceived(self, data):
+        print >>sys.stderr, "Process err " + data
+        if self.currentclient:        
+            self.currentclient.sendLine(data.strip())
+        if self.printstderr:    
+            print >>sys.stderr, data.strip()
+            
+    def processExited(self, reason):
+        print >>sys.stderr, "Process died"
+        pass
+    
+    def processEnded(self, reason):
+        print >>sys.stderr, "Process died"
+        pass
+    
     
 class GenericWrapperServer:
-    """Generic Server around a stdin/stdout based CLI tool"""
-    def __init__(self, cmdline, port, shell=True,sendstderr= False, close_fds=True):
-        reactor.listenTCP(port, GWSFactory(cmdline, shell, sendstderr))
-        reactor.run()
+    """Generic Server around a stdin/stdout based CLI tool. Only accepts one client at a time to prevent concurrency issues !!!!!"""
+    def __init__(self, cmdline, port, printstderr= True, sendstderr= False):
+        gwsprocessprotocol = GWSProcessProtocol(printstderr, sendstderr)
+        cmdline = shlex.split(cmdline)
+        reactor.spawnProcess(gwsprocessprotocol, cmdline[0], cmdline)
 
+        gwsfactory = GWSFactory(gwsprocessprotocol)
+        reactor.listenTCP(port, gwsfactory)
+        reactor.run()
