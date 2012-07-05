@@ -30,6 +30,7 @@ class GWSNetProtocol(basic.LineReceiver):
         self.factory.processprotocol.currentclient = self 
         
     def connectionLost(self, reason):
+        self.factory.connections -= 1
         if self.factory.processprotocol.currentclient == self:
             self.factory.processprotocol.currentclient = None
 
