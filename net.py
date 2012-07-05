@@ -58,7 +58,7 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         
     def errReceived(self, data):
         print >>sys.stderr, "Process err " + data
-        if self.currentclient:        
+        if self.sendstderr and self.currentclient:        
             self.currentclient.sendLine(data.strip())
         if self.printstderr:    
             print >>sys.stderr, data.strip()
