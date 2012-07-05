@@ -65,12 +65,12 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
             
     def processExited(self, reason):
         print >>sys.stderr, "Process died"
-        pass
+        raise Exception("Process ended")
     
     def processEnded(self, reason):
         print >>sys.stderr, "Process died"
-        pass
-    
+        raise Exception("Process ended")
+            
     
 class GenericWrapperServer:
     """Generic Server around a stdin/stdout based CLI tool. Only accepts one client at a time to prevent concurrency issues !!!!!"""
