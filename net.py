@@ -67,13 +67,13 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         print >>sys.stderr, "Process died"
         if self.currentclient:
             self.currentclient.transport.loseConnection()
-        reactor.crash()       
+        reactor.stop()       
     
     def processEnded(self, reason):
         print >>sys.stderr, "Process died"
         if self.currentclient:
             self.currentclient.transport.loseConnection()
-        reactor.crash()
+        reactor.stop()
             
     
 class GenericWrapperServer:
