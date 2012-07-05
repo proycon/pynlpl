@@ -18,10 +18,10 @@ import sys
 class GWSNetProtocol(basic.LineReceiver):        
     def connectionMade(self):
         print >>sys.stderr, "Client connected"
-        if self.factory.connections != 0:
+        self.factory.connections += 1
+        if self.factory.connections != 1:
             self.transport.loseConnection()            
-        else:
-            self.factory.connections += 1
+        else:            
             self.sendLine("READY")
             
     def lineReceived(self, line):
