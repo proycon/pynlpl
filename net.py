@@ -43,34 +43,38 @@ class GWSFactory(protocol.ServerFactory):
         
 
 class GWSProcessProtocol(protocol.ProcessProtocol):
-    def __init__(self, printstderr=True, sendstderr= False):
+    def __init__(self, printstderr=True, sendstderr= False, filterout = None, filtererr = None):
         self.currentclient = None        
         self.printstderr = printstderr
         self.sendstderr = sendstderr
+        if not filterout:
+            self.filterout = lambda x: x
+        if not filtererr:
+            self.filtererr = lambda x: x
         
     def connectionMade(self):
         pass
     
     def outReceived(self, data):
         print >>sys.stderr, "Process out " + data
-        if self.currentclient:        
-            self.currentclient.sendLine(data.strip())                
+        data = self.filterout(data.strip())
+        if self.currentclient and data:        
+            self.currentclient.sendLine(data)                
         
     def errReceived(self, data):
         print >>sys.stderr, "Process err " + data
-        if self.sendstderr and self.currentclient:        
-            self.currentclient.sendLine(data.strip())
-        if self.printstderr:    
-            print >>sys.stderr, data.strip()
+        data = self.filtererr(data.strip())
+        if self.sendstderr and self.currentclient and data:        
+            self.currentclient.sendLine(data)
+        if self.printstderr and data:    
+            print >>sys.stderr, data
             
     def processExited(self, reason):
-        print >>sys.stderr, "Process died"
-        if self.currentclient:
-            self.currentclient.transport.loseConnection()
-        reactor.stop()       
+        print >>sys.stderr, "Process exited"
+           
     
     def processEnded(self, reason):
-        print >>sys.stderr, "Process died"
+        print >>sys.stderr, "Process ended"
         if self.currentclient:
             self.currentclient.transport.loseConnection()
         reactor.stop()
@@ -78,8 +82,8 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
     
 class GenericWrapperServer:
     """Generic Server around a stdin/stdout based CLI tool. Only accepts one client at a time to prevent concurrency issues !!!!!"""
-    def __init__(self, cmdline, port, printstderr= True, sendstderr= False):
-        gwsprocessprotocol = GWSProcessProtocol(printstderr, sendstderr)
+    def __init__(self, cmdline, port, printstderr= True, sendstderr= False, filterout = None, filtererr = None):
+        gwsprocessprotocol = GWSProcessProtocol(printstderr, sendstderr, filterout, filtererr)
         cmdline = shlex.split(cmdline)
         reactor.spawnProcess(gwsprocessprotocol, cmdline[0], cmdline)
 
