@@ -49,8 +49,12 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         self.sendstderr = sendstderr
         if not filterout:
             self.filterout = lambda x: x
+        else:
+            self.filterout = filterout
         if not filtererr:
             self.filtererr = lambda x: x
+        else:
+            self.filtererr = filtererr
         
     def connectionMade(self):
         pass
@@ -63,11 +67,12 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         
     def errReceived(self, data):
         print >>sys.stderr, "Process err " + data
+        if self.printstderr and data:    
+            print >>sys.stderr, data.strip()
         data = self.filtererr(data.strip())
         if self.sendstderr and self.currentclient and data:        
             self.currentclient.sendLine(data)
-        if self.printstderr and data:    
-            print >>sys.stderr, data
+        
             
     def processExited(self, reason):
         print >>sys.stderr, "Process exited"
