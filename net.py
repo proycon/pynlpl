@@ -61,17 +61,19 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
     
     def outReceived(self, data):
         print >>sys.stderr, "Process out " + data
-        data = self.filterout(data.strip())
-        if self.currentclient and data:        
-            self.currentclient.sendLine(data)                
+        for line in data.strip().split('\n'):
+            line = self.filterout(line.strip())
+            if self.currentclient and line:        
+                self.currentclient.sendLine(line)                
         
     def errReceived(self, data):
         print >>sys.stderr, "Process err " + data
         if self.printstderr and data:    
             print >>sys.stderr, data.strip()
-        data = self.filtererr(data.strip())
-        if self.sendstderr and self.currentclient and data:        
-            self.currentclient.sendLine(data)
+        for line in data.strip().split('\n'):                
+            line = self.filtererr(line.strip())
+            if self.sendstderr and self.currentclient and line:        
+                self.currentclient.sendLine(line)
         
             
     def processExited(self, reason):
