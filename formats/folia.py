@@ -34,7 +34,7 @@ import multiprocessing
 import threading
 
 FOLIAVERSION = '0.8.2'
-LIBVERSION = '0.8.2.24' #== FoLiA version + library revision
+LIBVERSION = '0.8.2.25' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -103,6 +103,7 @@ class SetDefinitionError(DeepValidationError):
     
 class ModeError(Exception):
     pass
+
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
 
@@ -120,6 +121,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'id' in kwargs:
         if not Attrib.ID in supported:
             raise ValueError("ID is not supported")
+        isncname(kwargs['id'])
         object.id = kwargs['id']
         del kwargs['id']
     elif Attrib.ID in required:
@@ -3349,6 +3351,7 @@ class Document(object):
         
             
         if 'id' in kwargs:
+            isncname(kwargs['id'])
             self.id = kwargs['id']
         elif 'file' in kwargs:
             self.filename = kwargs['file']
@@ -4450,6 +4453,7 @@ class SubsetDefinition(AbstractDefinition):
 
 class SetDefinition(AbstractDefinition):
     def __init__(self, id, classes = [], subsets = [], constraintindex = {}):
+        isncname(id)
         self.id = id
         self.classes = classes
         self.subsets = subsets
@@ -4631,6 +4635,19 @@ class Reader(object):
 #        
 #    def savesql(self, filename):
 # in-place prettyprint formatter
+
+def isncname(name):
+    #not entirely according to specs http://www.w3.org/TR/REC-xml/#NT-Name , but simplified: 
+    for i, c in enumerate(name):                
+        if i == 0:
+            if not c.isalpha():
+                raise ValueError('Invalid XML NCName identifier: ' + name + ' (at position ' + str(i+1)+')')
+        else:
+            if not c.isalnum() and not (c in ['-','_','.']):
+                raise ValueError('Invalid XML NCName identifier: ' + name + ' (at position ' + str(i+1)+')')
+    return True
+            
+        
 
 def validate(filename,schema=None,deep=False):
     if not os.path.exists(filename):
