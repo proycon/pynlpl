@@ -72,18 +72,21 @@ class MetaDataType:
     NATIVE, CMDI, IMDI = range(3)     
     
 class NoSuchAnnotation(Exception):
+    """Exception raised when the requested type of annotation does not exist for the selected element"""
     pass
 
 class NoSuchText(Exception):
+    """Exception raised when the requestion type of text content does not exist for the selected element"""
     pass
 
 class DuplicateAnnotationError(Exception):
     pass
     
 class DuplicateIDError(Exception):
+    """Exception raised when an identifier that is already in use is assigned again to another element"""
     pass    
     
-class NoDefaultError(Exception):
+class NoDefaultError(Exception):        
     pass
 
 class NoDescription(Exception):
@@ -106,7 +109,7 @@ class ModeError(Exception):
 
     
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
-
+    """Internal function, parses common FoLiA attributes and sets up the instance accordingly"""
 
     object.doc = doc #The FoLiA root document
     supported = required + allowed
@@ -344,6 +347,9 @@ def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-t
         
         
 class AbstractElement(object):
+    """This is the abstract base class from which all FoLiA elements are derived. This class should not be instantiated directly, but can useful if you want to check if a variable is an instance of any FoLiA element: isinstance(x, AbstractElement). It contains methods and variables also commonly inherited."""     
+        
+    
     REQUIRED_ATTRIBS = () #List of required attributes (Members from the Attrib class)
     OPTIONAL_ATTRIBS = () #List of optional attributes (Members from the Attrib class)
     ACCEPTED_DATA = () #List of accepted data, classes inherited from AbstractElement
@@ -356,7 +362,7 @@ class AbstractElement(object):
     PRINTABLE = False #Is this element printable (aka, can its text method be called?)
     AUTH = True #Authoritative by default. Elements the parser should skip on normal queries are non-authoritative (such as original, alternative)
     
-    def __init__(self, doc, *args, **kwargs):
+    def __init__(self, doc, *args, **kwargs):        
         if not isinstance(doc, Document) and not doc is None:
             raise Exception("Expected first parameter to be instance of Document, got " + str(type(doc)))
         self.doc = doc
@@ -444,18 +450,24 @@ class AbstractElement(object):
         except NoSuchText:                    
             #Not found, descend into children
             s = ""
+            delimiter = None
             for e in self:            
                 if e.PRINTABLE and not isinstance(e, TextContent):
                     try:
+                        t = e.text(cls,retaintokenisation)
+                        if delimiter and t: #if there is a delimiter stored, output it now
+                            #print >>stderr, "Outputting delimiter: " + repr(delimiter)
+                            s += delimiter
+                        s += t                        
                         delimiter = e.overridetextdelimiter(retaintokenisation) 
-                        if delimiter is None:
-                            delimiter = self.TEXTDELIMITER #default delimiter set by parent                        
-                        s += e.text(cls,retaintokenisation) + delimiter
+                        #delimiter will be buffered and only printed upon next iteration, this prevent the delimiter being output at the end of a sequence
+                        #print >>stderr, "Delimiter for " + repr(e) + ": " + repr(delimiter)
                     except NoSuchText:
                         continue           
-    
-        if s.strip():
-            return s.strip()
+        
+        s = s.strip(' \r\n\t')    
+        if s:
+            return s
         else:
             #No text found at all :`(
             raise NoSuchText
@@ -467,8 +479,8 @@ class AbstractElement(object):
         return self.text('original')
         
     def overridetextdelimiter(self, retaintokenisation=False):
-        """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
-        return None #do not override
+        """May return a customised text delimiter instead of the default for this class."""
+        return self.TEXTDELIMITER #do not override
 
     def feat(self,subset):
         """Obtain the feature value of the specific subset. If a feature occurs multiple times, the values will be returned in a list.
@@ -547,6 +559,7 @@ class AbstractElement(object):
     def __iter__(self):
         """Iterate over all children of this element"""
         return iter(self.data)
+          
 
     def __contains__(self, element):
         """Tests if the specified element is part of the children of the element"""
@@ -869,6 +882,7 @@ class AbstractElement(object):
             return self.append(child, *args, **kwargs)
                 
     def ancestors(self, Class=None):
+        """Generator yielding all ancestors of this element, effectively back-tracing its path to the root element."""         
         e = self
         while e:
             if e.parent:
@@ -880,7 +894,7 @@ class AbstractElement(object):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
-        """Return an XML Element for this element and all its children."""
+        """Serialises the FoLiA element to XML, bu returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead."""
         global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
         
@@ -981,7 +995,7 @@ class AbstractElement(object):
         return e
 
     def xmlstring(self, pretty_print=False):
-        """Return a string with XML presentation for this element and all its children."""
+        """Serialises this FoLiA element to XML, returns a string with XML representation for this element and all its children."""
         global LXE
         s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')
         if self.doc and self.doc.bypassleak:
@@ -1082,6 +1096,8 @@ class AbstractElement(object):
     
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None, origclass = None):
+            """Returns a RelaxNG definition for this element (as an XML element (lxml.etree) rather than a string)"""    
+        
             global NSFOLIA
             E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
             
@@ -1581,6 +1597,8 @@ class AllowTokenAnnotation(AllowCorrections):
         
 
 class AllowGenerateID(object):
+    """Classes inherited from this class allow for automatic ID generation, using the convention of adding a period, the name of the element , another period, and a sequence number"""
+    
     def _getmaxid(self, xmltag):        
         try:
             if xmltag in self.maxid:
@@ -1665,6 +1683,8 @@ class AllowGenerateID(object):
                  
                  
 class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
+    """Abstract element, all structure elements inherit from this class. Never instantiated directly."""
+    
     PRINTABLE = True
     TEXTDELIMITER = "\n\n" #bigger gap between structure elements    
     OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited, default=1)
@@ -1986,14 +2006,17 @@ class Linebreak(AbstractStructureElement):
     REQUIRED_ATTRIBS = ()
     ACCEPTED_DATA = ()
     XMLTAG = 'br'
-    ANNOTATIONTYPE = AnnotationType.LINEBREAK 
+    ANNOTATIONTYPE = AnnotationType.LINEBREAK
+    TEXTDELIMITER = "\n" 
     
 class Whitespace(AbstractStructureElement):
     """Whitespace element, signals a vertical whitespace"""
     REQUIRED_ATTRIBS = ()    
     ACCEPTED_DATA = ()
     XMLTAG = 'whitespace'    
-    ANNOTATIONTYPE = AnnotationType.WHITESPACE 
+    ANNOTATIONTYPE = AnnotationType.WHITESPACE
+    
+    TEXTDELIMITER = "\n\n" 
         
 class Word(AbstractStructureElement, AllowCorrections):
     """Word (aka token) element. Holds a word/token and all its related token annotations."""    
@@ -2888,7 +2911,7 @@ class Quote(AbstractStructureElement):
     """Quote: a structure element. For quotes/citations. May hold words or sentences."""
     REQUIRED_ATTRIBS = ()    
     XMLTAG = 'quote'
-    TEXTDELIMITER = ' '
+    TEXTDELIMITER = ''
 
     #ACCEPTED DATA defined later below
     
@@ -3105,7 +3128,7 @@ class Paragraph(AbstractStructureElement):
 
     ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace, List, Figure, Event, Alignment)
     XMLTAG = 'p'
-    TEXTDELIMITER = "\n"
+    TEXTDELIMITER = "\n\n"
     ANNOTATIONTYPE = AnnotationType.PARAGRAPH
             
                 
@@ -4200,6 +4223,7 @@ class Division(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.N)
     XMLTAG = 'div'
     ANNOTATIONTYPE = AnnotationType.DIVISION
+    TEXTDELIMITER = "\n\n\n"
             
     def head(self):
         for e in self.data:
@@ -4216,7 +4240,7 @@ class Text(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.N,)
     ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description)
     XMLTAG = 'text' 
-    TEXTDELIMITER = "\n\n"        
+    TEXTDELIMITER = "\n\n\n"        
 
 
         
