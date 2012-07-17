@@ -4265,7 +4265,7 @@ class Text(AbstractStructureElement):
     
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, TextContent)
     XMLTAG = 'text' 
     TEXTDELIMITER = "\n\n\n"        
 
