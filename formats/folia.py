@@ -358,7 +358,7 @@ class AbstractElement(object):
     OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited, default=0)
     OCCURRENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
 
-    TEXTDELIMITER = " " #Delimiter to use when dynamically gathering text from child elements
+    TEXTDELIMITER = None #Delimiter to use when dynamically gathering text from child elements
     PRINTABLE = False #Is this element printable (aka, can its text method be called?)
     AUTH = True #Authoritative by default. Elements the parser should skip on normal queries are non-authoritative (such as original, alternative)
     
@@ -434,7 +434,7 @@ class AbstractElement(object):
         """Alias for text with retaintokenisation=True"""
         return self.text(cls,True)
                     
-    def text(self, cls='current', retaintokenisation=False):
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter=""):
         """Get the text associated with this element (of the specified class), will always be a unicode instance.  
         If no text is directly associated with the element, it will be obtained from the children. If that doesn't result
         in any text either, a NoSuchText exception will be raised.
@@ -444,29 +444,32 @@ class AbstractElement(object):
         
         if not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
+                        
         
-        try:
+        #print >>stderr, repr(self) + '.text()'
+        
+        if self.hastext(cls):            
             s = self.textcontent(cls).value
-        except NoSuchText:                    
+            #print >>stderr, "text content: " + s            
+        else:                 
             #Not found, descend into children
-            s = ""
-            delimiter = None
+            delimiter = ""
+            s = ""            
             for e in self:            
                 if e.PRINTABLE and not isinstance(e, TextContent):
                     try:
-                        t = e.text(cls,retaintokenisation)
-                        if delimiter and t: #if there is a delimiter stored, output it now
-                            #print >>stderr, "Outputting delimiter: " + repr(delimiter)
-                            s += delimiter
-                        s += t                        
-                        delimiter = e.overridetextdelimiter(retaintokenisation) 
+                        s += e.text(cls,retaintokenisation, delimiter)                                                
+                        delimiter = e.gettextdelimiter(retaintokenisation)                         
                         #delimiter will be buffered and only printed upon next iteration, this prevent the delimiter being output at the end of a sequence
                         #print >>stderr, "Delimiter for " + repr(e) + ": " + repr(delimiter)
                     except NoSuchText:
                         continue           
         
-        s = s.strip(' \r\n\t')    
-        if s:
+        s = s.strip(' \r\n\t')
+        if s and previousdelimiter:
+            #print >>stderr, "Outputting previous delimiter: " + repr(previousdelimiter)
+            return previousdelimiter + s
+        elif s:
             return s
         else:
             #No text found at all :`(
@@ -478,9 +481,16 @@ class AbstractElement(object):
         """Alias for retrieving the original uncorrect text"""
         return self.text('original')
         
-    def overridetextdelimiter(self, retaintokenisation=False):
+    def gettextdelimiter(self, retaintokenisation=False):
         """May return a customised text delimiter instead of the default for this class."""
-        return self.TEXTDELIMITER #do not override
+        if self.TEXTDELIMITER is None:
+            delimiter = ""
+            #no text delimite rof itself, recurse into children to inherit delimiter            
+            for child in reversed(self):
+                return child.gettextdelimiter(retaintokenisation)                
+            return delimiter
+        else:
+            return self.TEXTDELIMITER
 
     def feat(self,subset):
         """Obtain the feature value of the specific subset. If a feature occurs multiple times, the values will be returned in a list.
@@ -2024,7 +2034,7 @@ class Word(AbstractStructureElement, AllowCorrections):
     ANNOTATIONTYPE = AnnotationType.TOKEN
     #ACCEPTED_DATA DEFINED LATER (after Correction)
     
-    TEXTDELIMITER = " "
+    #will actually be determined by gettextdelimiter()
     
     def __init__(self, doc, *args, **kwargs):
         """Keyword arguments:
@@ -2108,8 +2118,8 @@ class Word(AbstractStructureElement, AllowCorrections):
         """Shortcut: returns the FoLiA class of the domain annotation (will return only one if there are multiple!)"""        
         return self.annotation(DomainAnnotation,set).cls     
 
-    def overridetextdelimiter(self, retaintokenisation=False):
-        """May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use."""
+    def gettextdelimiter(self, retaintokenisation=False):
+        """Returns the text delimiter"""
         if self.space or retaintokenisation:
             return ' '
         else:
@@ -2349,7 +2359,7 @@ class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME,Attrib.N)
     ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Description)
-    TEXTDELIMITER = ""
+    TEXTDELIMITER = None
     PRINTABLE = True
 
 class AlignReference(AbstractElement):
@@ -2543,7 +2553,7 @@ class Correction(AbstractExtendedTokenAnnotation):
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
-    TEXTDELIMITER = ""
+    TEXTDELIMITER = None
     PRINTABLE = True
     
     def hasnew(self):
@@ -2577,16 +2587,24 @@ class Correction(AbstractExtendedTokenAnnotation):
                                
     
     
-    def text(self, cls = 'current', retaintokenisation=False):
+    def text(self, cls = 'current', retaintokenisation=False, previousdelimiter=""):
         if cls == 'current':
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
-                    return e.text(cls, retaintokenisation)
+                    return previousdelimiter + e.text(cls, retaintokenisation)
         elif cls == 'original':
             for e in self:
                 if isinstance(e, Original):
-                    return e.text(cls, retaintokenisation)
+                    return previousdelimiter + e.text(cls, retaintokenisation)
         raise NoSuchText
+
+    def gettextdelimiter(self, retaintokenisation=False):
+        """May return a customised text delimiter instead of the default for this class."""
+        for e in self:
+            if isinstance(e, New) or isinstance(e, Current):
+                d =  e.gettextdelimiter(retaintokenisation)                
+                return d 
+        return ""
 
     
     def new(self,index = None):
@@ -2910,8 +2928,8 @@ class SubjectivityAnnotation(AbstractTokenAnnotation):
 class Quote(AbstractStructureElement):
     """Quote: a structure element. For quotes/citations. May hold words or sentences."""
     REQUIRED_ATTRIBS = ()    
-    XMLTAG = 'quote'
-    TEXTDELIMITER = ''
+    XMLTAG = 'quote'   
+    
 
     #ACCEPTED DATA defined later below
     
@@ -2933,6 +2951,15 @@ class Quote(AbstractStructureElement):
         elif isinstance(child, Sentence):        
             child.auth = False #Sentences under quotes are non-authoritative
         return super(Quote, self).append(child, *args, **kwargs)
+       
+    def gettextdelimiter(self, retaintokenisation=False):
+        #no text delimite rof itself, recurse into children to inherit delimiter            
+        for child in reversed(self):
+            if isinstance(child, Sentence):
+                return "" #if a quote ends in a sentence, we don't want any delimiter
+            else:
+                return child.gettextdelimiter(retaintokenisation)                
+        return delimiter
         
         
 class Sentence(AbstractStructureElement):
@@ -4101,10 +4128,10 @@ class Document(object):
         """Returns the text of the entire document (returns a unicode instance)"""
         s = u""
         for c in self.data:
-            if s: s += "\n\n"
+            if s: s += "\n\n\n"
             try:
                 s += c.text('current',retaintokenisation)
-            except:
+            except NoSuchText:
                 continue
         return s
            
