@@ -4,7 +4,7 @@ FoLiA library
 
 This tutorial will introduce the FoLiA Python library, part of PyNLPl. The FoLiA library provides an Application Programming Interface for the reading, creation and manipulation of FoLiA XML documents.
 
-Prior to reading this document, it is highly recommended to first read the FoLiA documentation itself and familiarise yourself with the format and underlying paradigm.
+Prior to reading this document, it is highly recommended to first read the FoLiA documentation itself and familiarise yourself with the format and underlying paradigm. The FoLiA documentaiton can be found through http://ilk.uvt.nl/folia . 
 
 
 Reading FoLiA
@@ -36,7 +36,7 @@ You may want to simply print all (plain) text contained in the document, which i
 Alternatively, you can obtain a string representation of all text::
 
     text_u = unicode(doc) #unicode instance
-    text = str(doc) #UTF-8 encoded
+    text = str(doc) #UTF-8 encoded string
 
 For any subelement of the document, you can obtain its text in the same fashion.
 
