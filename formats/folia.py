@@ -61,7 +61,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
     
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMEDEVENT, GAP, ALIGNMENT, COMPLEXALIGNMENT = range(30)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMEDEVENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREF, SEMROLE = range(32)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -2815,14 +2815,23 @@ class CoreferenceLink(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
     ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment, ModalityFeature, TimeFeature,LevelFeature)
+    ANNOTATIONTYPE = AnnotationType.COREF
     XMLTAG = 'coreferencelink'
 
 class CoreferenceChain(AbstractSpanAnnotation):
     """Coreference chain. Consists of coreference links."""
     REQUIRED_ATTRIBS = ()
     ACCEPTED_DATA = (CoreferenceLink,Description)
+    ANNOTATIONTYPE = AnnotationType.COREF
     XMLTAG = 'coreferencechain'
     
+class SemanticRole(AbstractSpanAnnotation):
+    """Semantic Role"""
+    REQUIRED_ATTRIBS = (Attrib.CLASS)   
+    ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment)
+    ANNOTATIONTYPE = AnnotationType.SEMROLE
+    XMLTAG = 'semrole'
+
 
 class Morpheme(AbstractSubtokenAnnotation):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
@@ -2873,6 +2882,11 @@ class CoreferenceLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
     ACCEPTED_DATA = (Coreferencechain,Description)
     XMLTAG = 'coreferences'
+    
+class SemanticRolesLayer(AbstractAnnotationLayer):
+    """Syntax Layer: Annotation layer for SemnaticRole span annotation elements"""
+    ACCEPTED_DATA = (SemanticRole,Description)
+    XMLTAG = 'semroles'
         
 
 class HeadFeature(Feature):
