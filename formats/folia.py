@@ -33,8 +33,8 @@ import urllib
 import multiprocessing
 import threading
 
-FOLIAVERSION = '0.8.2'
-LIBVERSION = '0.8.2.25' #== FoLiA version + library revision
+FOLIAVERSION = '0.8.99' #0.9 pre
+LIBVERSION = '0.8.99.26' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -2761,12 +2761,17 @@ class Entity(AbstractSpanAnnotation):
     XMLTAG = 'entity'
 
 
-class DependencyHead(AbstractSpanAnnotation):
+
+
+class Headwords(AbstractSpanAnnotation): #generic head element
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = ()
     ACCEPTED_DATA = (WordReference,Description, Feature, Alignment)
-    ANNOTATIONTYPE = AnnotationType.DEPENDENCY
-    XMLTAG = 'hd'    
+    #ANNOTATIONTYPE = AnnotationType.DEPENDENCY
+    XMLTAG = 'hd'
+    
+DependencyHead = Headwords #alias, backwards compatibility with FoLiA 0.8
+
 
 class DependencyDependent(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
@@ -2788,6 +2793,35 @@ class Dependency(AbstractSpanAnnotation):
     def dependent(self):
         """Returns the dependent of the dependency relation. Instance of DependencyDependent"""
         return self.select(DependencyDependent)[0]
+
+
+class ModalityFeature(Feature):
+    """Modality feature, to be used with coreferences"""
+    SUBSET = 'modality' #associated subset    
+    XMLTAG = None
+
+class TimeFeature(Feature):
+    """Time feature, to be used with coreferences"""
+    SUBSET = 'time' #associated subset    
+    XMLTAG = None    
+
+class LevelFeature(Feature):
+    """Level feature, to be used with coreferences"""
+    SUBSET = 'level' #associated subset    
+    XMLTAG = None
+    
+class CoreferenceLink(AbstractSpanAnnotation):
+    """Coreference link. Used in coreferencechain."""
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
+    ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment, ModalityFeature, TimeFeature,LevelFeature)
+    XMLTAG = 'coreferencelink'
+
+class CoreferenceChain(AbstractSpanAnnotation):
+    """Coreference chain. Consists of coreference links."""
+    REQUIRED_ATTRIBS = ()
+    ACCEPTED_DATA = (CoreferenceLink,Description)
+    XMLTAG = 'coreferencechain'
     
 
 class Morpheme(AbstractSubtokenAnnotation):
@@ -2834,6 +2868,11 @@ class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
     """Subentities Layer: Annotation layer for Subentity subtoken annotation elements. For named entities within a single token."""
     ACCEPTED_DATA = (Subentity,)
     XMLTAG = 'subentities'
+
+class CoreferenceLayer(AbstractAnnotationLayer):
+    """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
+    ACCEPTED_DATA = (Coreferencechain,Description)
+    XMLTAG = 'coreferences'
         
 
 class HeadFeature(Feature):
@@ -3162,7 +3201,6 @@ class Paragraph(AbstractStructureElement):
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
     
-
     ACCEPTED_DATA = (Sentence,Description, Event, TextContent,Alignment)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
