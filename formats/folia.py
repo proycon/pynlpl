@@ -61,7 +61,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
     
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMEDEVENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREF, SEMROLE = range(32)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMESEGMENTATION, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREF, SEMROLE = range(32)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -2953,11 +2953,14 @@ class Event(AbstractStructureElement):
     XMLTAG = 'event'    
     OCCURRENCESPERSET = 0
 
-class TimedEvent(AbstractSpanAnnotation):
+
+class TimeSegment(AbstractSpanAnnotation):
     ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature)
-    ANNOTATIONTYPE = AnnotationType.TIMEDEVENT
-    XMLTAG = 'timedevent'
+    ANNOTATIONTYPE = AnnotationType.TIMESEGMENTATION
+    XMLTAG = 'timesegment'
     OCCURRENCESPERSET = 0
+    
+TimedEvent = TimeSegment #alias for FoLiA 0.8 compatibility
 
 class TimingLayer(AbstractAnnotationLayer):
     """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
