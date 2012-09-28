@@ -61,7 +61,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
     
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMESEGMENTATION, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREF, SEMROLE, METRIC = range(33)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREF, SEMROLE, METRIC = range(33)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -1380,17 +1380,6 @@ class Description(AbstractElement):
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)                
 
-class ValueFeature(Feature):
-    """Value feature, to be used within Metric"""
-    #XMLTAG = 'synset'
-    XMLTAG = None
-    SUBSET = 'value' #associated subset
-    
-class Metric(AbstractElement):
-    """Metric elements allow the annotatation of any kind of metric with any kind of annotation element. Allowing for example statistical measures to be added to elements as annotation,"""
-    XMLTAG = 'metric'
-    ANNOTATIONTYPE = AnnotationType.METRIC
-    ACCEPTED_DATA = (Feature, ValueFeature, Description)
             
 class AllowCorrections(object):
     def correct(self, **kwargs):
@@ -2020,6 +2009,8 @@ class TextContent(AbstractElement):
             E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
             return E.define( E.element(E.text(), E.optional( E.attribute(name='offset')), E.optional( E.attribute(name='class')),name=cls.XMLTAG ), name=cls.XMLTAG, ns=NSFOLIA)
 
+
+
 class Linebreak(AbstractStructureElement):
     """Line break element, signals a line break"""
     REQUIRED_ATTRIBS = ()
@@ -2298,6 +2289,18 @@ class Feature(AbstractElement):
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.element(E.attribute(name='subset'), E.attribute(name='class'),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
 
+
+class ValueFeature(Feature):
+    """Value feature, to be used within Metric"""
+    #XMLTAG = 'synset'
+    XMLTAG = None
+    SUBSET = 'value' #associated subset
+    
+class Metric(AbstractElement):
+    """Metric elements allow the annotatation of any kind of metric with any kind of annotation element. Allowing for example statistical measures to be added to elements as annotation,"""
+    XMLTAG = 'metric'
+    ANNOTATIONTYPE = AnnotationType.METRIC
+    ACCEPTED_DATA = (Feature, ValueFeature, Description)
 
 class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID): 
     """Abstract element, all subtoken annotation elements are derived from this class"""
@@ -2836,7 +2839,7 @@ class CoreferenceChain(AbstractSpanAnnotation):
     
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
-    REQUIRED_ATTRIBS = (Attrib.CLASS)   
+    REQUIRED_ATTRIBS = (Attrib.CLASS,)   
     ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment, Metric)
     ANNOTATIONTYPE = AnnotationType.SEMROLE
     XMLTAG = 'semrole'
@@ -2889,7 +2892,7 @@ class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
 
 class CoreferenceLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
-    ACCEPTED_DATA = (Coreferencechain,Description)
+    ACCEPTED_DATA = (CoreferenceChain,Description)
     XMLTAG = 'coreferences'
     
 class SemanticRolesLayer(AbstractAnnotationLayer):
@@ -2965,7 +2968,7 @@ class Event(AbstractStructureElement):
 
 class TimeSegment(AbstractSpanAnnotation):
     ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, Metric)
-    ANNOTATIONTYPE = AnnotationType.TIMESEGMENTATION
+    ANNOTATIONTYPE = AnnotationType.TIMESEGMENT
     XMLTAG = 'timesegment'
     OCCURRENCESPERSET = 0
     
