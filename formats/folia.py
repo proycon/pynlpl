@@ -61,7 +61,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
     
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMESEGMENTATION, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREF, SEMROLE = range(32)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMESEGMENTATION, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREF, SEMROLE, METRIC = range(33)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -1379,10 +1379,19 @@ class Description(AbstractElement):
         global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)                
+
+class ValueFeature(Feature):
+    """Value feature, to be used within Metric"""
+    #XMLTAG = 'synset'
+    XMLTAG = None
+    SUBSET = 'value' #associated subset
     
-    
-        
-    
+class Metric(AbstractElement):
+    """Metric elements allow the annotatation of any kind of metric with any kind of annotation element. Allowing for example statistical measures to be added to elements as annotation,"""
+    XMLTAG = 'metric'
+    ANNOTATIONTYPE = AnnotationType.METRIC
+    ACCEPTED_DATA = (Feature, ValueFeature, Description)
+            
 class AllowCorrections(object):
     def correct(self, **kwargs):
         """Apply a correction (TODO: documentation to be written still)"""
@@ -2358,7 +2367,7 @@ class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
         
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME,Attrib.N)
-    ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Description)
+    ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Description, Metric)
     TEXTDELIMITER = None
     PRINTABLE = True
 
@@ -2443,7 +2452,7 @@ class Alignment(AbstractElement):
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     XMLTAG = 'alignment'
     ANNOTATIONTYPE = AnnotationType.ALIGNMENT
-    ACCEPTED_DATA = (AlignReference, Description)
+    ACCEPTED_DATA = (AlignReference, Description, Metric)
     PRINTABLE = False
     
     def __init__(self, doc, *args, **kwargs):
@@ -2549,7 +2558,7 @@ class Current(AbstractCorrectionChild):
             
 class Correction(AbstractExtendedTokenAnnotation):    
     REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = (New,Original,Current, Suggestion, Description)
+    ACCEPTED_DATA = (New,Original,Current, Suggestion, Description, Metric)
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
@@ -2670,7 +2679,7 @@ class Correction(AbstractExtendedTokenAnnotation):
             ignorelist.append(Suggestion)
             return super(Correction,self).select(cls,set,recursive, ignorelist, node)
         
-Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction, Description)
+Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction, Description, Metric)
 
             
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
@@ -2683,7 +2692,7 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     PRINTABLE = False    
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractSubtokenAnnotationLayer, Alignment)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractSubtokenAnnotationLayer, Alignment, Metric)
 
 
 class AlternativeLayers(AbstractElement):
@@ -2744,19 +2753,19 @@ class SyntacticUnit(AbstractSpanAnnotation):
     ANNOTATIONTYPE = AnnotationType.SYNTAX
     XMLTAG = 'su'
     
-SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference, Description, Feature)
+SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference, Description, Feature, Metric)
 
 class Chunk(AbstractSpanAnnotation):
     """Chunk element, span annotation element to be used in ChunkingLayer"""
     REQUIRED_ATTRIBS = ()   
-    ACCEPTED_DATA = (WordReference, Description, Feature)
+    ACCEPTED_DATA = (WordReference, Description, Feature, Metric)
     ANNOTATIONTYPE = AnnotationType.CHUNKING
     XMLTAG = 'chunk'
 
 class Entity(AbstractSpanAnnotation):
     """Entity element, for named entities, span annotation element to be used in EntitiesLayer"""
     REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = (WordReference, Description, Feature)
+    ACCEPTED_DATA = (WordReference, Description, Feature, Metric)
     ANNOTATIONTYPE = AnnotationType.ENTITY
     XMLTAG = 'entity'
 
@@ -2766,7 +2775,7 @@ class Entity(AbstractSpanAnnotation):
 class Headwords(AbstractSpanAnnotation): #generic head element
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = ()
-    ACCEPTED_DATA = (WordReference,Description, Feature, Alignment)
+    ACCEPTED_DATA = (WordReference,Description, Feature, Alignment, Metric)
     #ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'hd'
     
@@ -2776,13 +2785,13 @@ DependencyHead = Headwords #alias, backwards compatibility with FoLiA 0.8
 class DependencyDependent(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = ()
-    ACCEPTED_DATA = (WordReference,Description, Feature, Alignment)
+    ACCEPTED_DATA = (WordReference,Description, Feature, Alignment, Metric)
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'dep'    
 
 class Dependency(AbstractSpanAnnotation):    
     REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = (Description, Feature,DependencyHead, DependencyDependent, Alignment)
+    ACCEPTED_DATA = (Description, Feature,DependencyHead, DependencyDependent, Alignment, Metric)
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'dependency'    
     
@@ -2814,34 +2823,34 @@ class CoreferenceLink(AbstractSpanAnnotation):
     """Coreference link. Used in coreferencechain."""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
-    ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment, ModalityFeature, TimeFeature,LevelFeature)
+    ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment, ModalityFeature, TimeFeature,LevelFeature, Metric)
     ANNOTATIONTYPE = AnnotationType.COREF
     XMLTAG = 'coreferencelink'
 
 class CoreferenceChain(AbstractSpanAnnotation):
     """Coreference chain. Consists of coreference links."""
     REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = (CoreferenceLink,Description)
+    ACCEPTED_DATA = (CoreferenceLink,Description, Metric)
     ANNOTATIONTYPE = AnnotationType.COREF
     XMLTAG = 'coreferencechain'
     
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
     REQUIRED_ATTRIBS = (Attrib.CLASS)   
-    ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment)
+    ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment, Metric)
     ANNOTATIONTYPE = AnnotationType.SEMROLE
     XMLTAG = 'semrole'
 
 
 class Morpheme(AbstractSubtokenAnnotation):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
-    ACCEPTED_DATA = (Feature,TextContent)
+    ACCEPTED_DATA = (Feature,TextContent, Metric)
     ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
     XMLTAG = 'morpheme'
 
 class Subentity(AbstractSubtokenAnnotation):
     """Subentity element, for named entities within a single token, subtoken annotation element to be used in SubentitiesLayer"""
-    ACCEPTED_DATA = (Feature,TextContent)
+    ACCEPTED_DATA = (Feature,TextContent, Metric)
     ANNOTATIONTYPE = AnnotationType.SUBENTITY
     XMLTAG = 'subentity'
     
@@ -2897,26 +2906,26 @@ class HeadFeature(Feature):
 class PosAnnotation(AbstractTokenAnnotation):
     """Part-of-Speech annotation:  a token annotation element"""
     ANNOTATIONTYPE = AnnotationType.POS
-    ACCEPTED_DATA = (Feature,HeadFeature,Description)
+    ACCEPTED_DATA = (Feature,HeadFeature,Description, Metric)
     XMLTAG = 'pos'
 
 class LemmaAnnotation(AbstractTokenAnnotation):
     """Lemma annotation:  a token annotation element"""
     ANNOTATIONTYPE = AnnotationType.LEMMA
-    ACCEPTED_DATA = (Feature,Description)
+    ACCEPTED_DATA = (Feature,Description, Metric)
     XMLTAG = 'lemma'
     
 class PhonAnnotation(AbstractTokenAnnotation):
     """Phonetic annotation:  a token annotation element"""
     ANNOTATIONTYPE = AnnotationType.PHON
-    ACCEPTED_DATA = (Feature,Description)
+    ACCEPTED_DATA = (Feature,Description, Metric)
     XMLTAG = 'phon'
 
 
 class DomainAnnotation(AbstractExtendedTokenAnnotation):
     """Domain annotation:  an extended token annotation element"""
     ANNOTATIONTYPE = AnnotationType.DOMAIN
-    ACCEPTED_DATA = (Feature,Description)
+    ACCEPTED_DATA = (Feature,Description, Metric)
     XMLTAG = 'domain'
 
 class SynsetFeature(Feature):
@@ -2948,14 +2957,14 @@ class StyleFeature(Feature):
     SUBSET = "style"
 
 class Event(AbstractStructureElement):    
-    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent)
+    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, Metric)
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'    
     OCCURRENCESPERSET = 0
 
 
 class TimeSegment(AbstractSpanAnnotation):
-    ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature)
+    ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, Metric)
     ANNOTATIONTYPE = AnnotationType.TIMESEGMENTATION
     XMLTAG = 'timesegment'
     OCCURRENCESPERSET = 0
@@ -2971,13 +2980,13 @@ class TimingLayer(AbstractAnnotationLayer):
 class SenseAnnotation(AbstractTokenAnnotation):
     """Sense annotation: a token annotation element"""
     ANNOTATIONTYPE = AnnotationType.SENSE
-    ACCEPTED_DATA = (Feature,SynsetFeature, Description)
+    ACCEPTED_DATA = (Feature,SynsetFeature, Description, Metric)
     XMLTAG = 'sense'
     
 class SubjectivityAnnotation(AbstractTokenAnnotation):
     """Subjectivity annotation: a token annotation element"""
     ANNOTATIONTYPE = AnnotationType.SUBJECTIVITY
-    ACCEPTED_DATA = (Feature, Description)
+    ACCEPTED_DATA = (Feature, Description, Metric)
     XMLTAG = 'subjectivity'
     
 
@@ -3021,7 +3030,7 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
     
-    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace, Event, Alignment)
+    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace, Event, Alignment, Metric)
     XMLTAG = 's'
     TEXTDELIMITER = ' '
     ANNOTATIONTYPE = AnnotationType.SENTENCE
@@ -3132,19 +3141,19 @@ class Sentence(AbstractStructureElement):
 
 
 
-Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description, Alignment)        
+Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description, Alignment, Metric)        
 
 
 class Caption(AbstractStructureElement):    
     """Element used for captions for figures or tables, contains sentences"""
-    ACCEPTED_DATA = (Sentence, Description, TextContent,Alignment)
+    ACCEPTED_DATA = (Sentence, Description, TextContent,Alignment, Metric)
     OCCURRENCES = 1
     XMLTAG = 'caption'
 
     
 class Label(AbstractStructureElement):    
     """Element used for labels. Mostly in within list item. Contains words."""
-    ACCEPTED_DATA = (Word, Description, TextContent,Alignment)
+    ACCEPTED_DATA = (Word, Description, TextContent,Alignment, Metric)
     XMLTAG = 'label'
     
 
@@ -3157,16 +3166,16 @@ class ListItem(AbstractStructureElement):
     
 class List(AbstractStructureElement):    
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""    
-    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent, Alignment)
+    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent, Alignment, Metric)
     XMLTAG = 'list'
     TEXTDELIMITER = '\n'
     ANNOTATIONTYPE = AnnotationType.LIST
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,Alignment)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,Alignment, Metric)
 
 class Figure(AbstractStructureElement):    
     """Element for the representation of a graphical figure. Structure element."""
-    ACCEPTED_DATA = (Sentence, Description, Caption, TextContent, Alignment)
+    ACCEPTED_DATA = (Sentence, Description, Caption, TextContent, Alignment, Metric)
     XMLTAG = 'figure'
     ANNOTATIONTYPE = AnnotationType.FIGURE
     
@@ -3209,7 +3218,7 @@ class Figure(AbstractStructureElement):
 class Paragraph(AbstractStructureElement):    
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace, List, Figure, Event, Alignment)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace, List, Figure, Event, Alignment, Metric)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n\n"
     ANNOTATIONTYPE = AnnotationType.PARAGRAPH
@@ -3218,7 +3227,7 @@ class Paragraph(AbstractStructureElement):
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
     
-    ACCEPTED_DATA = (Sentence,Description, Event, TextContent,Alignment)
+    ACCEPTED_DATA = (Sentence,Description, Event, TextContent,Alignment, Metric)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'          
