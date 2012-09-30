@@ -1252,22 +1252,25 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>'))
         
     def test011_subtokenannot(self):            
-        """Edit Check - Adding Subtoken annotation (morphological analysis)"""        
+        """Edit Check - Adding morphemes"""        
         w = self.doc['WR-P-E-J-0000000001.p.1.s.5.w.3']
         l = w.append( folia.MorphologyLayer )
-        l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='handschrift', offset=0) , folia.Feature(self.doc, subset='type',cls='stem'), folia.Feature(self.doc, subset='function',cls='lexical') ))
-        l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='en', offset=11),  folia.Feature(self.doc, subset='type',cls='suffix'),  folia.Feature(self.doc, subset='function',cls='plural')))
+        l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='handschrift', offset=0), folia.LemmaAnnotation(self.doc, cls='handschrift'), cls='stem',function='lexical'  ))
+        l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='en', offset=11), cls='suffix',function='inflexional' ))
+               
         
         self.assertEqual( len(l), 2) #two morphemes
         self.assertTrue( isinstance(l[0], folia.Morpheme ) ) 
         self.assertEqual( l[0].text(), 'handschrift' ) 
-        self.assertEqual( l[0].feat('type'), 'stem' ) 
+        self.assertEqual( l[0].cls , 'stem' ) 
         self.assertEqual( l[0].feat('function'), 'lexical' ) 
         self.assertEqual( l[1].text(), 'en' ) 
-        self.assertEqual( l[1].feat('type'), 'suffix' ) 
-        self.assertEqual( l[1].feat('function'), 'plural' )         
+        self.assertEqual( l[1].cls, 'suffix' ) 
+        self.assertEqual( l[1].feat('function'), 'inflexional' )         
     
-        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme><t offset="0">handschrift</t><feat subset="type" class="stem"/><feat subset="function" class="lexical"/></morpheme><morpheme><t offset="11">en</t><feat subset="type" class="suffix"/><feat subset="function" class="plural"/></morpheme></morphology></w>'))
+    
+    
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme function="lexical" class="stem"><t offset="0">handschrift</t><lemma class="handschrift"/></morpheme><morpheme function="inflexional" class="suffix"><t offset="11">en</t></morpheme></morphology></w>'))
 
     def test012_alignment(self):            
         """Edit Check - Adding Alignment"""
@@ -1281,7 +1284,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( a.resolve()[1], self.doc['WR-P-E-J-0000000001.p.1.s.6.w.2'] )
 
         self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.6.w.8"><t>ze</t><pos class="VNW(pers,pron,stan,red,3,mv)"/><lemma class="ze"/><alignment class="coreference"><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.1"/><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.2"/></alignment></w>'))
-    
+
     def test013_spanannot(self):            
         """Edit Check - Adding Span Annotatation (syntax)"""
         
