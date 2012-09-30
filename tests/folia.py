@@ -601,6 +601,18 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( doc['p.1.s.1.w.1'].pos() , 'NN(a,b,c)')
         self.assertEqual( doc['p.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('x') , ['a','b','c'] )        
         
+    def test038a_morphemeboundary(self): 
+        """Sanity check - Obtaining annotation should not descend into morphology layer"""        
+        self.assertRaises( folia.NoSuchAnnotation,  self.doc['WR-P-E-J-0000000001.sandbox.2.s.1.w.2'].annotation , folia.PosAnnotation)
+
+    def test038b_morphemeboundary(self): 
+        """Sanity check - Obtaining morphemes and token annotation under morphemes"""
+        
+        w = self.doc['WR-P-E-J-0000000001.sandbox.2.s.1.w.2']
+        l = list(w.morphemes()) #get all morphemes
+        self.assertEqual(len(l), 2)
+        m = w.morpheme(1) #get second morpheme       
+        self.assertEqual(m.annotation(folia.PosAnnotation).cls, 'n')
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""

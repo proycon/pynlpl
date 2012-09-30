@@ -1015,7 +1015,7 @@ class AbstractElement(object):
         return s
         
         
-    def select(self, Class, set=None, recursive=True,  ignorelist=['Original','Suggestion','Alternative'], node=None):
+    def select(self, Class, set=None, recursive=True,  ignorelist=['Original','Suggestion','Alternative',], node=None):
         """Select child elements of the specified class. 
         
         A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into. 
@@ -1024,7 +1024,7 @@ class AbstractElement(object):
             * ``Class``: The class to select; any python class subclassed off `'AbstractElement``
             * ``set``: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
             * ``recursive``: Select recursively? Descending into child elements? Boolean defaulting to True.
-            * ``ignorelist``: A list of Classes (subclassed off ``AbstractElement``) not to recurse into. It is common not to want to recurse into the following elements: ``folia.Alternative``, ``folia.Suggestion``, and ``folia.Original``. As elements contained in these are never *authorative*.
+            * ``ignorelist``: A list of Classes (subclassed off ``AbstractElement``) not to recurse into. It is common not to want to recurse into the following elements: ``folia.Alternative``, ``folia.Suggestion``, and ``folia.Original``. As elements contained in these are never *authorative*. 
             * ``node``: Reserved for internal usage, used in recursion.
             
         Returns:
@@ -1554,7 +1554,7 @@ class AllowTokenAnnotation(AllowCorrections):
         Raises:
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
-        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers'])
+        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
         if not l:
             raise NoSuchAnnotation()
         else:
@@ -1562,12 +1562,12 @@ class AllowTokenAnnotation(AllowCorrections):
     
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers'])
+        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
         return len(l)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.select(type,set,True,['Original','Suggestion','Alternative','AlternativeLayers'])
+        l = self.select(type,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
         if len(l) >= 1:
             return l[0]
         else:
@@ -2117,6 +2117,22 @@ class Word(AbstractStructureElement, AllowCorrections):
     def domain(self,set=None):
         """Shortcut: returns the FoLiA class of the domain annotation (will return only one if there are multiple!)"""        
         return self.annotation(DomainAnnotation,set).cls     
+
+    def morphemes(self,set=None):
+        """Generator yielding all morphemes (in a particular set if specified). For retrieving one specific morpheme by index, use morpheme() instead"""
+        for layer in self.select(MorphologyLayer):            
+            for m in layer.select(Morpheme, set):                
+                yield m
+                        
+    def morpheme(self,index, set=None):
+        """Returns a specific morpheme, the n'th morpheme (given the particular set if specified)."""
+        for layer in self.select(MorphologyLayer):            
+            for i, m in enumerate(layer.select(Morpheme, set)):                
+                if index == i:
+                    return m
+        raise NoSuchAnnotation
+
+
 
     def gettextdelimiter(self, retaintokenisation=False):
         """Returns the text delimiter"""
