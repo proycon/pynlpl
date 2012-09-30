@@ -33,8 +33,8 @@ import urllib
 import multiprocessing
 import threading
 
-FOLIAVERSION = '0.8.99' #0.9 pre
-LIBVERSION = '0.8.99.26' #== FoLiA version + library revision
+FOLIAVERSION = '0.9.0' #0.9 pre
+LIBVERSION = '0.9.0.27' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
