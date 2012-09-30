@@ -111,11 +111,11 @@ class Test2Sanity(unittest.TestCase):
         
     def test002_count_sentences(self):                                    
         """Sanity check - Sentences count"""        
-        self.assertEqual( len(self.doc.sentences()) , 12)        
+        self.assertEqual( len(self.doc.sentences()) , 13)        
     
     def test003_count_words(self):                                    
         """Sanity check - Word count"""        
-        self.assertEqual( len(self.doc.words()) , 157)
+        self.assertEqual( len(self.doc.words()) , 163)
     
     def test004_first_word(self):                                    
         """Sanity check - First word"""            
@@ -133,9 +133,9 @@ class Test2Sanity(unittest.TestCase):
         #grab last word
         w = self.doc.words(-1) # shortcut for doc.words()[0]         
         self.assertTrue( isinstance(w, folia.Word) )
-        self.assertEqual( w.id , 'sandbox.figure.1.caption.s.1.w.2' ) 
-        self.assertEqual( w.text() , "stamboom" )             
-        self.assertEqual( str(w) , "stamboom" )             
+        self.assertEqual( w.id , 'WR-P-E-J-0000000001.sandbox.2.s.1.w.6' ) 
+        self.assertEqual( w.text() , "." )             
+        self.assertEqual( str(w) , "." )             
         
     def test006_second_sentence(self):                                    
         """Sanity check - Sentence"""                                
@@ -257,7 +257,7 @@ class Test2Sanity(unittest.TestCase):
         def check(parent, indent = ''):  
             
             for child in parent:
-                if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):                    
+                if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and (isinstance(child, folia.Word) or isinstance(child, folia.Morpheme))): #words and morphemes are exempted in abstractspanannotation                    
                     #print indent + repr(child), child.id, child.cls
                     self.assertTrue( child.parent is parent)                
                     check(child, indent + '  ')                        
@@ -283,17 +283,12 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( gap.description(), 'Backmatter')
         
     def test018_subtokenannot(self):            
-        """Sanity Check - Subtoken annotation (morphological analysis)"""        
-        w= self.doc['WR-P-E-J-0000000001.p.1.s.3.w.5']
-        l = w.annotation(folia.MorphologyLayer)
-        self.assertEqual( len(l), 2) #two morphemes
-        self.assertTrue( isinstance(l[0], folia.Morpheme ) ) 
-        self.assertEqual( l[0].text(), 'handschrift' ) 
-        self.assertEqual( l[0].feat('type'), 'stem' ) 
-        self.assertEqual( l[0].feat('function'), 'lexical' ) 
-        self.assertEqual( l[1].text(), 'en' ) 
-        self.assertEqual( l[1].feat('type'), 'suffix' ) 
-        self.assertEqual( l[1].feat('function'), 'plural' ) 
+        """Sanity Check - Subtoken annotation (part of speech)"""        
+        w= self.doc['WR-P-E-J-0000000001.p.1.s.2.w.5']
+        p = w.annotation(folia.PosAnnotation)       
+        self.assertEqual( p.feat('role'), 'pv' ) 
+        self.assertEqual( p.feat('tense'), 'tgw' )
+        self.assertEqual( p.feat('form'), 'met-t' ) 
 
     def test019_alignment(self):            
         """Sanity Check - Alignment in same document"""        
@@ -380,6 +375,9 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( l[0].text(),  'een ander woord' )         
         self.assertEqual( l[1].cls, 'cough' )         
         self.assertEqual( l[2].text(),  'voor stamboom' )         
+        
+    def test020f_spanannotation(self):
+        """Sanity Check - Co-Reference"""
         
     def test021_previousword(self):        
         """Sanity Check - Obtaining previous word"""
@@ -603,6 +601,18 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( doc['p.1.s.1.w.1'].pos() , 'NN(a,b,c)')
         self.assertEqual( doc['p.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('x') , ['a','b','c'] )        
         
+    def test038a_morphemeboundary(self): 
+        """Sanity check - Obtaining annotation should not descend into morphology layer"""        
+        self.assertRaises( folia.NoSuchAnnotation,  self.doc['WR-P-E-J-0000000001.sandbox.2.s.1.w.2'].annotation , folia.PosAnnotation)
+
+    def test038b_morphemeboundary(self): 
+        """Sanity check - Obtaining morphemes and token annotation under morphemes"""
+        
+        w = self.doc['WR-P-E-J-0000000001.sandbox.2.s.1.w.2']
+        l = list(w.morphemes()) #get all morphemes
+        self.assertEqual(len(l), 2)
+        m = w.morpheme(1) #get second morpheme       
+        self.assertEqual(m.annotation(folia.PosAnnotation).cls, 'n')
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""
@@ -1254,27 +1264,39 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>'))
         
     def test011_subtokenannot(self):            
-        """Edit Check - Adding Subtoken annotation (morphological analysis)"""        
+        """Edit Check - Adding morphemes"""        
         w = self.doc['WR-P-E-J-0000000001.p.1.s.5.w.3']
         l = w.append( folia.MorphologyLayer )
-        l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='handschrift', offset=0) , folia.Feature(self.doc, subset='type',cls='stem'), folia.Feature(self.doc, subset='function',cls='lexical') ))
-        l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='en', offset=11),  folia.Feature(self.doc, subset='type',cls='suffix'),  folia.Feature(self.doc, subset='function',cls='plural')))
+        l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='handschrift', offset=0), folia.LemmaAnnotation(self.doc, cls='handschrift'), cls='stem',function='lexical'  ))
+        l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='en', offset=11), cls='suffix',function='inflexional' ))
+               
         
         self.assertEqual( len(l), 2) #two morphemes
         self.assertTrue( isinstance(l[0], folia.Morpheme ) ) 
         self.assertEqual( l[0].text(), 'handschrift' ) 
-        self.assertEqual( l[0].feat('type'), 'stem' ) 
+        self.assertEqual( l[0].cls , 'stem' ) 
         self.assertEqual( l[0].feat('function'), 'lexical' ) 
         self.assertEqual( l[1].text(), 'en' ) 
-        self.assertEqual( l[1].feat('type'), 'suffix' ) 
-        self.assertEqual( l[1].feat('function'), 'plural' )         
+        self.assertEqual( l[1].cls, 'suffix' ) 
+        self.assertEqual( l[1].feat('function'), 'inflexional' )         
     
-        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme><t offset="0">handschrift</t><feat subset="type" class="stem"/><feat subset="function" class="lexical"/></morpheme><morpheme><t offset="11">en</t><feat subset="type" class="suffix"/><feat subset="function" class="plural"/></morpheme></morphology></w>'))
+    
+    
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme function="lexical" class="stem"><t offset="0">handschrift</t><lemma class="handschrift"/></morpheme><morpheme function="inflexional" class="suffix"><t offset="11">en</t></morpheme></morphology></w>'))
 
     def test012_alignment(self):            
-        """Edit Check - Alignment"""        
-        raise NotImplementedError               
-    
+        """Edit Check - Adding Alignment"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.8']
+        
+        a = w.append( folia.Alignment, cls="coreference")
+        a.append( folia.AlignReference, id='WR-P-E-J-0000000001.p.1.s.6.w.1', type=folia.Word)
+        a.append( folia.AlignReference, id='WR-P-E-J-0000000001.p.1.s.6.w.2', type=folia.Word)
+        
+        self.assertEqual( a.resolve()[0], self.doc['WR-P-E-J-0000000001.p.1.s.6.w.1'] )
+        self.assertEqual( a.resolve()[1], self.doc['WR-P-E-J-0000000001.p.1.s.6.w.2'] )
+
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.6.w.8"><t>ze</t><pos class="VNW(pers,pron,stan,red,3,mv)"/><lemma class="ze"/><alignment class="coreference"><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.1"/><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.2"/></alignment></w>'))
+
     def test013_spanannot(self):            
         """Edit Check - Adding Span Annotatation (syntax)"""
         
@@ -1752,7 +1774,7 @@ class Test7XpathQuery(unittest.TestCase):
         for word in folia.Query('/tmp/foliatest.xml','//f:w'):            
             count += 1
             self.assertTrue( isinstance(word, folia.Word) )
-        self.assertEqual(count, 157)
+        self.assertEqual(count, 163)
         
     def test051_findwords_xpath(self):     
         """Xpath Querying - Collect all words (authoritative only)"""        
@@ -1760,7 +1782,7 @@ class Test7XpathQuery(unittest.TestCase):
         for word in folia.Query('/tmp/foliatest.xml','//f:w[not(ancestor-or-self::*/@auth)]'):            
             count += 1
             self.assertTrue( isinstance(word, folia.Word) )
-        self.assertEqual(count, 157)        
+        self.assertEqual(count, 163)        
 
 
 class Test8Validation(unittest.TestCase):    
