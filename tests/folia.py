@@ -1270,8 +1270,17 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme><t offset="0">handschrift</t><feat subset="type" class="stem"/><feat subset="function" class="lexical"/></morpheme><morpheme><t offset="11">en</t><feat subset="type" class="suffix"/><feat subset="function" class="plural"/></morpheme></morphology></w>'))
 
     def test012_alignment(self):            
-        """Edit Check - Alignment"""        
-        raise NotImplementedError               
+        """Edit Check - Adding Alignment"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.8']
+        
+        a = w.append( folia.Alignment, cls="coreference")
+        a.append( folia.AlignReference, id='WR-P-E-J-0000000001.p.1.s.6.w.1', type=folia.Word)
+        a.append( folia.AlignReference, id='WR-P-E-J-0000000001.p.1.s.6.w.2', type=folia.Word)
+        
+        self.assertEqual( a.resolve()[0], self.doc['WR-P-E-J-0000000001.p.1.s.6.w.1'] )
+        self.assertEqual( a.resolve()[1], self.doc['WR-P-E-J-0000000001.p.1.s.6.w.2'] )
+
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.6.w.8"><t>ze</t><pos class="VNW(pers,pron,stan,red,3,mv)"/><lemma class="ze"/><alignment class="coreference"><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.1"/><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.2"/></alignment></w>'))
     
     def test013_spanannot(self):            
         """Edit Check - Adding Span Annotatation (syntax)"""
