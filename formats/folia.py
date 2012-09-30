@@ -61,7 +61,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
     
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, SUBENTITY,EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREF, SEMROLE, METRIC = range(33)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC = range(32)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -2325,7 +2325,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         e = super(AbstractSpanAnnotation,self).xml(attribs, elements, True)
         for child in self:
-            if isinstance(child, Word):
+            if isinstance(child, Word) or isinstance(child, Morpheme):
                 #Include REFERENCES to word items instead of word items themselves
                 attribs['{' + NSFOLIA + '}id'] = child.id                    
                 if child.text:
@@ -2337,7 +2337,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
 
 
     def append(self, child, *args, **kwargs):
-        if isinstance(child, Word) and WordReference in self.ACCEPTED_DATA:
+        if (isinstance(child, Word) or isinstance(child, Morpheme))  and WordReference in self.ACCEPTED_DATA:
             #Accept Word instances instead of WordReference, references will be automagically used upon serialisation
             self.data.append(child)
             return child
@@ -2695,7 +2695,7 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     PRINTABLE = False    
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractSubtokenAnnotationLayer, Alignment, Metric)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractAnnotationLayer, AbstractSubtokenAnnotationLayer, Alignment, Metric)
 
 
 class AlternativeLayers(AbstractElement):
@@ -2709,10 +2709,10 @@ class AlternativeLayers(AbstractElement):
 
 
 class WordReference(AbstractElement):
-    """Word reference. Use to refer to words from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word objects will be used"""
+    """Word reference. Use to refer to words or morphemes from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word or Morpheme objects will be used"""
     REQUIRED_ATTRIBS = (Attrib.ID,)
     XMLTAG = 'wref'
-    ANNOTATIONTYPE = AnnotationType.TOKEN
+    #ANNOTATIONTYPE = AnnotationType.TOKEN
     
     def __init__(self, doc, *args, **kwargs):
         #Special constructor, not calling super constructor
@@ -2827,14 +2827,14 @@ class CoreferenceLink(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
     ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment, ModalityFeature, TimeFeature,LevelFeature, Metric)
-    ANNOTATIONTYPE = AnnotationType.COREF
+    ANNOTATIONTYPE = AnnotationType.COREFERENCE
     XMLTAG = 'coreferencelink'
 
 class CoreferenceChain(AbstractSpanAnnotation):
     """Coreference chain. Consists of coreference links."""
     REQUIRED_ATTRIBS = ()
     ACCEPTED_DATA = (CoreferenceLink,Description, Metric)
-    ANNOTATIONTYPE = AnnotationType.COREF
+    ANNOTATIONTYPE = AnnotationType.COREFERENCE
     XMLTAG = 'coreferencechain'
     
 class SemanticRole(AbstractSpanAnnotation):
@@ -2844,18 +2844,26 @@ class SemanticRole(AbstractSpanAnnotation):
     ANNOTATIONTYPE = AnnotationType.SEMROLE
     XMLTAG = 'semrole'
 
+class FunctionFeature(Feature):
+    """Function feature, to be used with morphemes"""
+    SUBSET = 'function' #associated subset    
+    XMLTAG = None
 
-class Morpheme(AbstractSubtokenAnnotation):
+class Morpheme(AbstractStructureElement):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
-    ACCEPTED_DATA = (Feature,TextContent, Metric)
+    REQUIRED_ATTRIBS = (),
+    OPTIONAL_ATTRIBS = Attrib.ALL
+    ACCEPTED_DATA = (FunctionFeature, Feature,TextContent, Metric, Alignment, AbstractTokenAnnotation, Description)
     ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
     XMLTAG = 'morpheme'
 
-class Subentity(AbstractSubtokenAnnotation):
-    """Subentity element, for named entities within a single token, subtoken annotation element to be used in SubentitiesLayer"""
-    ACCEPTED_DATA = (Feature,TextContent, Metric)
-    ANNOTATIONTYPE = AnnotationType.SUBENTITY
-    XMLTAG = 'subentity'
+
+
+#class Subentity(AbstractSubtokenAnnotation):
+#    """Subentity element, for named entities within a single token, subtoken annotation element to be used in SubentitiesLayer"""
+#    ACCEPTED_DATA = (Feature,TextContent, Metric)
+#    ANNOTATIONTYPE = AnnotationType.SUBENTITY
+#    XMLTAG = 'subentity'
     
 
         
@@ -2885,10 +2893,10 @@ class MorphologyLayer(AbstractSubtokenAnnotationLayer):
     ACCEPTED_DATA = (Morpheme,)
     XMLTAG = 'morphology'    
 
-class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
-    """Subentities Layer: Annotation layer for Subentity subtoken annotation elements. For named entities within a single token."""
-    ACCEPTED_DATA = (Subentity,)
-    XMLTAG = 'subentities'
+#class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
+#    """Subentities Layer: Annotation layer for Subentity subtoken annotation elements. For named entities within a single token."""
+#    ACCEPTED_DATA = (Subentity,)
+#    XMLTAG = 'subentities'
 
 class CoreferenceLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
@@ -4325,14 +4333,14 @@ class Division(AbstractStructureElement):
                 return e
         raise NoSuchAnnotation()
               
-Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
+Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
 
 class Text(AbstractStructureElement):
     """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
     
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, TextContent)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent)
     XMLTAG = 'text' 
     TEXTDELIMITER = "\n\n\n"        
 

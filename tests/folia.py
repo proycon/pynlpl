@@ -111,11 +111,11 @@ class Test2Sanity(unittest.TestCase):
         
     def test002_count_sentences(self):                                    
         """Sanity check - Sentences count"""        
-        self.assertEqual( len(self.doc.sentences()) , 12)        
+        self.assertEqual( len(self.doc.sentences()) , 13)        
     
     def test003_count_words(self):                                    
         """Sanity check - Word count"""        
-        self.assertEqual( len(self.doc.words()) , 157)
+        self.assertEqual( len(self.doc.words()) , 163)
     
     def test004_first_word(self):                                    
         """Sanity check - First word"""            
@@ -133,9 +133,9 @@ class Test2Sanity(unittest.TestCase):
         #grab last word
         w = self.doc.words(-1) # shortcut for doc.words()[0]         
         self.assertTrue( isinstance(w, folia.Word) )
-        self.assertEqual( w.id , 'sandbox.figure.1.caption.s.1.w.2' ) 
-        self.assertEqual( w.text() , "stamboom" )             
-        self.assertEqual( str(w) , "stamboom" )             
+        self.assertEqual( w.id , 'WR-P-E-J-0000000001.sandbox.2.s.1.w.6' ) 
+        self.assertEqual( w.text() , "." )             
+        self.assertEqual( str(w) , "." )             
         
     def test006_second_sentence(self):                                    
         """Sanity check - Sentence"""                                
@@ -257,7 +257,7 @@ class Test2Sanity(unittest.TestCase):
         def check(parent, indent = ''):  
             
             for child in parent:
-                if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and isinstance(child, folia.Word)):                    
+                if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and (isinstance(child, folia.Word) or isinstance(child, folia.Morpheme))): #words and morphemes are exempted in abstractspanannotation                    
                     #print indent + repr(child), child.id, child.cls
                     self.assertTrue( child.parent is parent)                
                     check(child, indent + '  ')                        
@@ -283,17 +283,12 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( gap.description(), 'Backmatter')
         
     def test018_subtokenannot(self):            
-        """Sanity Check - Subtoken annotation (morphological analysis)"""        
-        w= self.doc['WR-P-E-J-0000000001.p.1.s.3.w.5']
-        l = w.annotation(folia.MorphologyLayer)
-        self.assertEqual( len(l), 2) #two morphemes
-        self.assertTrue( isinstance(l[0], folia.Morpheme ) ) 
-        self.assertEqual( l[0].text(), 'handschrift' ) 
-        self.assertEqual( l[0].feat('type'), 'stem' ) 
-        self.assertEqual( l[0].feat('function'), 'lexical' ) 
-        self.assertEqual( l[1].text(), 'en' ) 
-        self.assertEqual( l[1].feat('type'), 'suffix' ) 
-        self.assertEqual( l[1].feat('function'), 'plural' ) 
+        """Sanity Check - Subtoken annotation (part of speech)"""        
+        w= self.doc['WR-P-E-J-0000000001.p.1.s.2.w.5']
+        p = w.annotation(folia.PosAnnotation)       
+        self.assertEqual( p.feat('role'), 'pv' ) 
+        self.assertEqual( p.feat('tense'), 'tgw' )
+        self.assertEqual( p.feat('form'), 'met-t' ) 
 
     def test019_alignment(self):            
         """Sanity Check - Alignment in same document"""        
@@ -380,6 +375,9 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( l[0].text(),  'een ander woord' )         
         self.assertEqual( l[1].cls, 'cough' )         
         self.assertEqual( l[2].text(),  'voor stamboom' )         
+        
+    def test020f_spanannotation(self):
+        """Sanity Check - Co-Reference"""
         
     def test021_previousword(self):        
         """Sanity Check - Obtaining previous word"""
@@ -1752,7 +1750,7 @@ class Test7XpathQuery(unittest.TestCase):
         for word in folia.Query('/tmp/foliatest.xml','//f:w'):            
             count += 1
             self.assertTrue( isinstance(word, folia.Word) )
-        self.assertEqual(count, 157)
+        self.assertEqual(count, 163)
         
     def test051_findwords_xpath(self):     
         """Xpath Querying - Collect all words (authoritative only)"""        
@@ -1760,7 +1758,7 @@ class Test7XpathQuery(unittest.TestCase):
         for word in folia.Query('/tmp/foliatest.xml','//f:w[not(ancestor-or-self::*/@auth)]'):            
             count += 1
             self.assertTrue( isinstance(word, folia.Word) )
-        self.assertEqual(count, 157)        
+        self.assertEqual(count, 163)        
 
 
 class Test8Validation(unittest.TestCase):    
