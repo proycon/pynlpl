@@ -371,13 +371,41 @@ class Test2Sanity(unittest.TestCase):
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
         l = s.annotation(folia.TimingLayer)
         
-        self.assertTrue( isinstance(l[0], folia.TimedEvent ) ) 
+        self.assertTrue( isinstance(l[0], folia.TimeSegment ) ) 
         self.assertEqual( l[0].text(),  'een ander woord' )         
         self.assertEqual( l[1].cls, 'cough' )         
         self.assertEqual( l[2].text(),  'voor stamboom' )         
         
     def test020f_spanannotation(self):
         """Sanity Check - Co-Reference"""
+        div = self.doc["WR-P-E-J-0000000001.div0.1"]
+        deplayer = div.annotation(folia.DependenciesLayer)
+        deps = list(deplayer.annotations(folia.Dependency))
+        
+        self.assertEqual( deps[0].cls,  'su' )
+        self.assertEqual( deps[1].cls,  'predc' )
+        self.assertEqual( deps[2].cls,  'det' )
+        self.assertEqual( deps[3].cls,  'mod' )
+        self.assertEqual( deps[4].cls,  'mod' )
+        self.assertEqual( deps[5].cls,  'obj1' )
+        
+        self.assertEqual( deps[2].head().wrefs(0), self.doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] )
+        self.assertEqual( deps[2].dependent().wrefs(0), self.doc['WR-P-E-J-0000000001.p.1.s.1.w.3'] )
+
+        
+    def test020g_spanannotation(self):
+        """Sanity Check - Semantic Role Labelling"""
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.7']
+        semrolelayer = s.annotation(folia.SemanticRolesLayer)
+        roles = list(semrolelayer.annotations(folia.SemanticRole))
+        
+        self.assertEqual( roles[0].cls,  'actor' )
+        self.assertEqual( roles[1].cls,  'patient' )
+        
+        self.assertEqual( roles[0].wrefs(0), self.doc['WR-P-E-J-0000000001.p.1.s.7.w.3'] )
+        self.assertEqual( roles[1].wrefs(0), self.doc['WR-P-E-J-0000000001.p.1.s.7.w.4'] )
+        self.assertEqual( roles[1].wrefs(1), self.doc['WR-P-E-J-0000000001.p.1.s.7.w.5'] )
+                     
         
     def test021_previousword(self):        
         """Sanity Check - Obtaining previous word"""
@@ -613,6 +641,14 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual(len(l), 2)
         m = w.morpheme(1) #get second morpheme       
         self.assertEqual(m.annotation(folia.PosAnnotation).cls, 'n')
+
+    def test039_findspan(self):
+        """Sanity Check - Find span"""
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.7']
+        semrolelayer = s.annotation(folia.SemanticRolesLayer)
+        roles = list(semrolelayer.annotations(folia.SemanticRole))
+        self.assertEqual(semrolelayer.findspan( self.doc['WR-P-E-J-0000000001.p.1.s.7.w.4'], self.doc['WR-P-E-J-0000000001.p.1.s.7.w.5']), roles[1] )
+        
         
     def test099_write(self):        
         """Sanity Check - Writing to file"""

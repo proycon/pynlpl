@@ -1519,27 +1519,6 @@ class AllowCorrections(object):
 class AllowTokenAnnotation(AllowCorrections):
     """Elements that allow token annotation (including extended annotation) must inherit from this class"""
     
-    
-    
-    def annotationsold(self, annotationtype=None): #obsolete
-        """Generator yielding all annotations of a certain type. Raises a Raises a NoSuchAnnotation exception if none was found."""
-        found = False 
-        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE        
-        for e in self:
-            try:
-                if annotationtype is None or e.ANNOTATIONTYPE == annotationtype:
-                    found = True
-                    yield e
-                if e.ANNOTATIONTYPE == AnnotationType.Correction:
-                    for e2 in e.new():
-                        yield e2
-                    for e2 in e.current():
-                        yield e2
-                    
-            except AttributeError:
-                continue
-        if not found:
-            raise NoSuchAnnotation()
             
     def annotations(self,Class,set=None):        
         """Obtain annotations. Very similar to ``select()`` but raises an error if the annotation was not found.
@@ -2361,6 +2340,29 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
             return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)    
             
 
+    def _helper_wrefs(self, targets):
+        """Internal helper function"""
+        for c in self:                
+            if isinstance(c,Word) or isinstance(c,Morpheme): #TODO: add phoneme when it becomes available
+                targets.append(c)
+            elif isinstance(c, AbstractSpanAnnotation): 
+                c._helper_wrefs(targets)
+
+    def wrefs(self, index = None):
+        """Returns a list of word references, these can be Words but also Morphemes or Phonemes.
+                
+        Arguments:
+            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
+        """                
+        targets =[]
+        self._helper_wrefs(targets)
+        if index is None:            
+            return targets
+        else:
+            return targets[index]
+
+    
+
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
     OPTIONAL_ATTRIBS = () 
@@ -2371,6 +2373,77 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
             self.set = kwargs['set']
             del kwargs['set']
         super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
+        
+
+    def annotations(self,Class,set=None):        
+        """Obtain annotations. Very similar to ``select()`` but raises an error if the annotation was not found.
+        
+        Arguments:
+            * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation)
+            * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
+            
+        Returns:
+            A list of elements
+            
+        Raises:
+            ``NoSuchAnnotation`` if the specified annotation does not exist.
+        """
+        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
+        if not l:
+            raise NoSuchAnnotation()
+        else:
+            return l
+    
+    def hasannotation(self,Class,set=None):
+        """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
+        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
+        return len(l)
+
+    def annotation(self, type, set=None):
+        """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
+        l = self.select(type,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
+        if len(l) >= 1:
+            return l[0]
+        else:
+            raise NoSuchAnnotation()            
+
+    def alternatives(self, Class=None, set=None):
+        """Obtain a list of alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
+        
+        Arguments:
+            * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation). Or set to None to select all alternatives regardless of what type they are.
+            * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
+            
+        Returns:
+            List of Alternative elements
+        """
+        l = []
+    
+        for e in self.select(AlternativeLayers,None, True, ['Original','Suggestion']):
+            if Class is None:
+                l.append(e)
+            elif len(e) >= 1: #child elements?
+                for e2 in e:
+                    try:
+                        if isinstance(e2, Class):
+                            try:
+                                if set is None or e2.set == set:
+                                    found = True
+                                    l.append(e) #not e2
+                                    break #yield an alternative only once (in case there are multiple matches)
+                            except AttributeError:
+                                continue
+                    except AttributeError:
+                        continue
+        return l        
+        
+    def findspan(self, *words):
+        """Returns the span element which spans over the specified words or morphemes"""
+
+        for span in self.select(AbstractSpanAnnotation,None,True):
+            if tuple(span.wrefs()) == words:
+               return span        
+        raise NoSuchAnnotation
         
 class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
     """Annotation layers for Subtoken Annotation are derived from this abstract base class"""        
@@ -2791,14 +2864,14 @@ class Entity(AbstractSpanAnnotation):
 
 
 
-class Headwords(AbstractSpanAnnotation): #generic head element
+class Headspan(AbstractSpanAnnotation): #generic head element
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = ()
     ACCEPTED_DATA = (WordReference,Description, Feature, Alignment, Metric)
     #ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'hd'
     
-DependencyHead = Headwords #alias, backwards compatibility with FoLiA 0.8
+DependencyHead = Headspan #alias, backwards compatibility with FoLiA 0.8
 
 
 class DependencyDependent(AbstractSpanAnnotation):
@@ -2810,7 +2883,7 @@ class DependencyDependent(AbstractSpanAnnotation):
 
 class Dependency(AbstractSpanAnnotation):    
     REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = (Description, Feature,DependencyHead, DependencyDependent, Alignment, Metric)
+    ACCEPTED_DATA = (Description, Feature,Headspan, DependencyDependent, Alignment, Metric)
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'dependency'    
     
@@ -2842,7 +2915,7 @@ class CoreferenceLink(AbstractSpanAnnotation):
     """Coreference link. Used in coreferencechain."""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
-    ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment, ModalityFeature, TimeFeature,LevelFeature, Metric)
+    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, ModalityFeature, TimeFeature,LevelFeature, Metric)
     ANNOTATIONTYPE = AnnotationType.COREFERENCE
     XMLTAG = 'coreferencelink'
 
@@ -2856,7 +2929,7 @@ class CoreferenceChain(AbstractSpanAnnotation):
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)   
-    ACCEPTED_DATA = (WordReference, Description, Headwords, Alignment, Metric)
+    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, Metric)
     ANNOTATIONTYPE = AnnotationType.SEMROLE
     XMLTAG = 'semrole'
 
