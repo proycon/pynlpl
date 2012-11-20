@@ -2396,10 +2396,25 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
         elif self.ANNOTATIONTYPE in doc.annotationdefaults and len(doc.annotationdefaults[self.ANNOTATIONTYPE]) == 1:
             self.set = doc.annotationdefaults[self.ANNOTATIONTYPE].keys()[0]
         else:
-            raise ValueError("No set specified or derivable for annotation layer")
+            self.set = False
+            # ok, let's not raise an error yet, may may still be able to derive a set from elements that are appended
             
         super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
         
+    def xml(self, attribs = None,elements = None, skipchildren = False):  
+        if self.set is False: 
+            raise ValueError("No set specified or derivable for annotation layer") 
+        super(AbstractAnnotationLayer, self).xml(attibs, elements, skipchildren)
+    
+    def append(self, child, *args, **kwargs):
+        if self.set is False:
+            if inspect.isclass(child):
+                if 'set' in kwargs: 
+                    self.set = kwargs['set']                    
+            elif isinstance(child, AbstractElement):        
+                if child.set:
+                    self.set = child.set
+        return super(AbstractAnnotationLayer, self).append(child, *args, **kwargs)
 
     def annotations(self,Class,set=None):        
         """Obtain annotations. Very similar to ``select()`` but raises an error if the annotation was not found.
