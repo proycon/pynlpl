@@ -1744,7 +1744,8 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
 
     def layers(self, annotationtype=None,set=None):
         """Returns a list of annotation layers found *directly* under this element, does not include alternative layers"""
-        return self.select(AbstractAnnotationLayer,set,False,['AlternativeLayers'])
+        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
+        return [ x for x in self.select(AbstractAnnotationLayer,set,False,['AlternativeLayers']) if annotationtype is None or x.ANNOTATIONTYPE == annotationtype ]     
             
     def __eq__(self, other):
         return super(AbstractStructureElement, self).__eq__(other)
