@@ -2471,16 +2471,16 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
                return span        
         raise NoSuchAnnotation
         
-class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
-    """Annotation layers for Subtoken Annotation are derived from this abstract base class"""        
-    OPTIONAL_ATTRIBS = ()
-    PRINTABLE = False
+# class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
+    # """Annotation layers for Subtoken Annotation are derived from this abstract base class"""        
+    # OPTIONAL_ATTRIBS = ()
+    # PRINTABLE = False
     
-    def __init__(self, doc, *args, **kwargs):
-        if 'set' in kwargs:
-            self.set = kwargs['set']
-            del kwargs['set']
-        super(AbstractSubtokenAnnotationLayer,self).__init__(doc, *args, **kwargs)
+    # def __init__(self, doc, *args, **kwargs):
+        # if 'set' in kwargs:
+            # self.set = kwargs['set']
+            # del kwargs['set']
+        # super(AbstractSubtokenAnnotationLayer,self).__init__(doc, *args, **kwargs)
                 
         
 class AbstractCorrectionChild(AbstractElement):
@@ -2810,7 +2810,7 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     PRINTABLE = False    
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractAnnotationLayer, AbstractSubtokenAnnotationLayer, Alignment, Metric)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractAnnotationLayer, Alignment, Metric)
 
 
 class AlternativeLayers(AbstractElement):
@@ -2987,26 +2987,31 @@ class SyntaxLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
     ACCEPTED_DATA = (SyntacticUnit,Description)
     XMLTAG = 'syntax'
+    ANNOTATIONTYPE = AnnotationType.SYNTAX
 
 class ChunkingLayer(AbstractAnnotationLayer):
     """Chunking Layer: Annotation layer for Chunk span annotation elements"""
     ACCEPTED_DATA = (Chunk,Description)    
     XMLTAG = 'chunking'
+    ANNOTATIONTYPE = AnnotationType.CHUNKING
 
 class EntitiesLayer(AbstractAnnotationLayer):
     """Entities Layer: Annotation layer for Entity span annotation elements. For named entities."""
     ACCEPTED_DATA = (Entity,Description)
     XMLTAG = 'entities'
+    ANNOTATIONTYPE = AnnotationType.ENTITY
     
 class DependenciesLayer(AbstractAnnotationLayer):
     """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
     ACCEPTED_DATA = (Dependency,Description)
     XMLTAG = 'dependencies'
+    ANNOTATIONTYPE = AnnotationType.DEPENDENCY
 
-class MorphologyLayer(AbstractSubtokenAnnotationLayer):
+class MorphologyLayer(AbstractAnnotationLayer):
     """Morphology Layer: Annotation layer for Morpheme subtoken annotation elements. For morphological analysis."""
     ACCEPTED_DATA = (Morpheme,)
     XMLTAG = 'morphology'    
+    ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
 
 #class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
 #    """Subentities Layer: Annotation layer for Subentity subtoken annotation elements. For named entities within a single token."""
@@ -3017,12 +3022,13 @@ class CoreferenceLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
     ACCEPTED_DATA = (CoreferenceChain,Description)
     XMLTAG = 'coreferences'
+    ANNOTATIONTYPE = AnnotationType.COREFERENCE
     
 class SemanticRolesLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SemnaticRole span annotation elements"""
     ACCEPTED_DATA = (SemanticRole,Description)
     XMLTAG = 'semroles'
-        
+    ANNOTATIONTYPE = AnnotationType.SEMROLE
 
 class HeadFeature(Feature):
     """Synset feature, to be used within PosAnnotation"""
