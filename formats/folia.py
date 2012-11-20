@@ -2394,7 +2394,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
             self.set = kwargs['set']
             del kwargs['set']        
         elif self.ANNOTATIONTYPE in doc.annotationdefaults and len(doc.annotationdefaults[self.ANNOTATIONTYPE]) == 1:
-            object.set = doc.annotationdefaults[self.ANNOTATIONTYPE].keys()[0]
+            self.set = doc.annotationdefaults[self.ANNOTATIONTYPE].keys()[0]
         else:
             raise ValueError("No set specified or derivable for annotation layer")
             
