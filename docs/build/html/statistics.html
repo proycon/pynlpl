@@ -55,8 +55,55 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-pynlpl.statistics">
-<span id="statistics-and-information-theory"></span><h1>Statistics and Information Theory<a class="headerlink" href="#module-pynlpl.statistics" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="statistics-and-information-theory">
+<h1>Statistics and Information Theory<a class="headerlink" href="#statistics-and-information-theory" title="Permalink to this headline">¶</a></h1>
+<p>This module contains classes and functions for statistics and information theory. It is imported as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pynlpl.statistics</span>
+</pre></div>
+</div>
+<div class="section" id="generic-functions">
+<h2>Generic functions<a class="headerlink" href="#generic-functions" title="Permalink to this headline">¶</a></h2>
+<p>Amongst others, the following generic statistical functions are available:</p>
+<div class="highlight-python"><pre>* ``mean(list)'' - Computes the mean of a given list of numbers</pre>
+</div>
+<ul class="simple">
+<li><a href="#id1"><span class="problematic" id="id2">``</span></a>median(list)&#8217;&#8217; - Computes the median of a given list of numbers</li>
+<li><a href="#id3"><span class="problematic" id="id4">``</span></a>stddev(list)&#8217;&#8217; - Computes the standard deviation of a given list of numbers</li>
+<li><a href="#id5"><span class="problematic" id="id6">``</span></a>normalize(list)&#8217;&#8217; - Normalizes a list of numbers so that the sum is 1.0 .</li>
+</ul>
+</div>
+<div class="section" id="frequency-lists-and-distributions">
+<h2>Frequency Lists and Distributions<a class="headerlink" href="#frequency-lists-and-distributions" title="Permalink to this headline">¶</a></h2>
+<p>One of the most basic and widespread tasks in NLP is the creation of a frequency list. Counting is established by simply appending lists to the frequencylist:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">freqlist</span> <span class="o">=</span>  <span class="n">pynlpl</span><span class="o">.</span><span class="n">statistics</span><span class="o">.</span><span class="n">FrequencyList</span><span class="p">()</span>
+<span class="n">freqlist</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s">&#39;to&#39;</span><span class="p">,</span><span class="s">&#39;be&#39;</span><span class="p">,</span><span class="s">&#39;or&#39;</span><span class="p">,</span><span class="s">&#39;not&#39;</span><span class="p">,</span><span class="s">&#39;to&#39;</span><span class="p">,</span><span class="s">&#39;be&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Take care not to append lists rather than strings unless you mean to create a frequency list over its characters rather than words. You may want to use the <tt class="docutils literal"><span class="pre">pynlpl.textprocessors.crudetokeniser</span></tt> first:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">freqlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pynlpl</span><span class="o">.</span><span class="n">textprocessors</span><span class="o">.</span><span class="n">crude_tokeniser</span><span class="p">(</span><span class="s">&quot;to be or not to be&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The count can also be incremented explicitly explicitly for a single item:</p>
+<blockquote>
+<div>freqlist.count(&#8216;shakespeare&#8217;)</div></blockquote>
+<p>The FrequencyList offers dictionary-like access. For example, the following statement will be true for the frequency list just created:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">freqlist</span><span class="p">[</span><span class="s">&#39;be&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>Normalised counts (pseudo-probabilities) can be obtained using the <tt class="docutils literal"><span class="pre">p()</span></tt> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">freqlist</span><span class="o">.</span><span class="n">p</span><span class="p">(</span><span class="s">&#39;be&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Normalised counts can also be obtained by instantiation a Distribution instance using the frequency list:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">dist</span> <span class="o">=</span> <span class="n">pynlpl</span><span class="o">.</span><span class="n">statistics</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span><span class="n">freqlist</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This too offers a dictionary-like interface, where values are by definition normalised. The advantage of a Distribution class is that it offers information-theoretic methods such as <tt class="docutils literal"><span class="pre">entropy()</span></tt>, <tt class="docutils literal"><span class="pre">maxentropy()</span></tt>, <tt class="docutils literal"><span class="pre">perplexity()</span></tt> and <tt class="docutils literal"><span class="pre">poslog()</span></tt>.</p>
+<p>A frequency list can be saved to file using the <tt class="docutils literal"><span class="pre">save(filename)</span></tt> method, and loaded back from file using the <tt class="docutils literal"><span class="pre">load(filename)</span></tt> method. The <tt class="docutils literal"><span class="pre">output()</span></tt> method is a generator yielding strings for each line of output, in ranked order.</p>
+</div>
+</div>
+<div class="section" id="module-pynlpl.statistics">
+<span id="api-reference"></span><h1>API Reference<a class="headerlink" href="#module-pynlpl.statistics" title="Permalink to this headline">¶</a></h1>
 <p>This is a Python library containing classes for Statistic and Information Theoretical computations. It also contains some code from Peter Norvig, AI: A Modern Appproach : <a class="reference external" href="http://aima.cs.berkeley.edu/python/utils.html">http://aima.cs.berkeley.edu/python/utils.html</a></p>
 <dl class="class">
 <dt id="pynlpl.statistics.Distribution">
@@ -356,6 +403,16 @@ Pass in the mean if you already know it.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Statistics and Information Theory</a><ul>
+<li><a class="reference internal" href="#generic-functions">Generic functions</a></li>
+<li><a class="reference internal" href="#frequency-lists-and-distributions">Frequency Lists and Distributions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-pynlpl.statistics">API Reference</a></li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="search.html"
                         title="previous chapter">Search Algorithms</a></p>

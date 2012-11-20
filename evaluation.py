@@ -483,7 +483,7 @@ class WPSParamSearch(object):
             for parameters,score in self.parametercombinations:
                 experiment = self.ExperimentClass(data, **dict(parameters))
                 experiment.run()
-                newparametercombinations.append( (parameters, experiment.score()) )
+                newparametercombinations.append( (parameters, experiment.scofe()) )
                 if self.delete:
                     experiment.delete()
         else:

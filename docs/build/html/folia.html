@@ -57,8 +57,8 @@
             
   <div class="section" id="folia-library">
 <h1>FoLiA library<a class="headerlink" href="#folia-library" title="Permalink to this headline">¶</a></h1>
-<p>This tutorial will introduce the FoLiA python library, part of PyNLPl. The FoLiA library provides an Application Programming Interface for the reading, creation and manipulation of FoLiA XML documents.</p>
-<p>Prior to reading this document, it is highly recommended to first read to FoLiA documentation itself and familiarise yourself with the format and underlying paradigm.</p>
+<p>This tutorial will introduce the FoLiA Python library, part of PyNLPl. The FoLiA library provides an Application Programming Interface for the reading, creation and manipulation of FoLiA XML documents.</p>
+<p>Prior to reading this document, it is highly recommended to first read the FoLiA documentation itself and familiarise yourself with the format and underlying paradigm. The FoLiA documentaiton can be found through <a class="reference external" href="http://ilk.uvt.nl/folia">http://ilk.uvt.nl/folia</a> .</p>
 <div class="section" id="reading-folia">
 <h2>Reading FoLiA<a class="headerlink" href="#reading-folia" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="loading-a-document">
@@ -82,7 +82,7 @@
 </div>
 <p>Alternatively, you can obtain a string representation of all text:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">text_u</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c">#unicode instance</span>
-<span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c">#UTF-8 encoded</span>
+<span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c">#UTF-8 encoded string</span>
 </pre></div>
 </div>
 <p>For any subelement of the document, you can obtain its text in the same fashion.</p>
@@ -319,6 +319,58 @@ layer.append(
 <tt class="descname">PRINTABLE</tt><em class="property"> = False</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractAnnotationLayer.PRINTABLE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="pynlpl.formats.folia.AbstractAnnotationLayer.alternatives">
+<tt class="descname">alternatives</tt><big>(</big><em>Class=None</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractAnnotationLayer.alternatives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain a list of alternatives, either all or only of a specific annotation type, and possibly restrained also by set.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">Class</span></tt> - The Class you want to retrieve (e.g. PosAnnotation). Or set to None to select all alternatives regardless of what type they are.</li>
+<li><tt class="docutils literal"><span class="pre">set</span></tt>   - The set you want to retrieve (defaults to None, which selects irregardless of set)</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd>List of Alternative elements</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.AbstractAnnotationLayer.annotation">
+<tt class="descname">annotation</tt><big>(</big><em>type</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractAnnotationLayer.annotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will return a <strong>single</strong> annotation (even if there are multiple). Raises a <tt class="docutils literal"><span class="pre">NoSuchAnnotation</span></tt> exception if none was found</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.AbstractAnnotationLayer.annotations">
+<tt class="descname">annotations</tt><big>(</big><em>Class</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractAnnotationLayer.annotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain annotations. Very similar to <tt class="docutils literal"><span class="pre">select()</span></tt> but raises an error if the annotation was not found.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">Class</span></tt> - The Class you want to retrieve (e.g. PosAnnotation)</li>
+<li><tt class="docutils literal"><span class="pre">set</span></tt>   - The set you want to retrieve (defaults to None, which selects irregardless of set)</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd>A list of elements</dd>
+<dt>Raises:</dt>
+<dd><tt class="docutils literal"><span class="pre">NoSuchAnnotation</span></tt> if the specified annotation does not exist.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.AbstractAnnotationLayer.findspan">
+<tt class="descname">findspan</tt><big>(</big><em>*words</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractAnnotationLayer.findspan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the span element which spans over the specified words or morphemes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.AbstractAnnotationLayer.hasannotation">
+<tt class="descname">hasannotation</tt><big>(</big><em>Class</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractAnnotationLayer.hasannotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an integer indicating whether such as annotation exists, and if so, how many. See <tt class="docutils literal"><span class="pre">annotations()</span></tt> for a description of the parameters.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -326,12 +378,12 @@ layer.append(
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">AbstractCorrectionChild</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractCorrectionChild" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="pynlpl.formats.folia.AbstractCorrectionChild.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractCorrectionChild.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractCorrectionChild.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.AbstractCorrectionChild.OPTIONAL_ATTRIBS">
-<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = (2, 3, 5)</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractCorrectionChild.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = (2, 3, 5, 4)</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractCorrectionChild.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -341,7 +393,7 @@ layer.append(
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.AbstractCorrectionChild.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = ''</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractCorrectionChild.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = None</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractCorrectionChild.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -354,7 +406,8 @@ layer.append(
 <dl class="class">
 <dt id="pynlpl.formats.folia.AbstractElement">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">AbstractElement</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
+<dd><p>This is the abstract base class from which all FoLiA elements are derived. This class should not be instantiated directly, but can useful if you want to check if a variable is an instance of any FoLiA element: isinstance(x, AbstractElement). It contains methods and variables also commonly inherited.</p>
+<dl class="attribute">
 <dt id="pynlpl.formats.folia.AbstractElement.ACCEPTED_DATA">
 <tt class="descname">ACCEPTED_DATA</tt><em class="property"> = ()</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -396,7 +449,7 @@ layer.append(
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.AbstractElement.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = ' '</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = None</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -415,7 +468,8 @@ layer.append(
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.ancestors">
 <tt class="descname">ancestors</tt><big>(</big><em>Class=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.ancestors" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generator yielding all ancestors of this element, effectively back-tracing its path to the root element.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.append">
@@ -485,6 +539,12 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 </dd></dl>
 
 <dl class="method">
+<dt id="pynlpl.formats.folia.AbstractElement.gettextdelimiter">
+<tt class="descname">gettextdelimiter</tt><big>(</big><em>retaintokenisation=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.gettextdelimiter" title="Permalink to this definition">¶</a></dt>
+<dd><p>May return a customised text delimiter instead of the default for this class.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.hastext">
 <tt class="descname">hastext</tt><big>(</big><em>cls='current'</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.hastext" title="Permalink to this definition">¶</a></dt>
 <dd><p>Does this element have text (of the specified class)</p>
@@ -536,12 +596,6 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 <dd><p>Alias for retrieving the original uncorrect text</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynlpl.formats.folia.AbstractElement.overridetextdelimiter">
-<tt class="descname">overridetextdelimiter</tt><big>(</big><em>retaintokenisation=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.overridetextdelimiter" title="Permalink to this definition">¶</a></dt>
-<dd><p>May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use.</p>
-</dd></dl>
-
 <dl class="classmethod">
 <dt id="pynlpl.formats.folia.AbstractElement.parsexml">
 <em class="property">classmethod </em><tt class="descname">parsexml</tt><big>(</big><em>Class</em>, <em>node</em>, <em>doc</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.parsexml" title="Permalink to this definition">¶</a></dt>
@@ -568,7 +622,8 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 <dl class="classmethod">
 <dt id="pynlpl.formats.folia.AbstractElement.relaxng">
 <em class="property">classmethod </em><tt class="descname">relaxng</tt><big>(</big><em>includechildren=True</em>, <em>extraattribs=None</em>, <em>extraelements=None</em>, <em>origclass=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.relaxng" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns a RelaxNG definition for this element (as an XML element (lxml.etree) rather than a string)</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.remove">
@@ -640,7 +695,7 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.text">
-<tt class="descname">text</tt><big>(</big><em>cls='current'</em>, <em>retaintokenisation=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.text" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">text</tt><big>(</big><em>cls='current'</em>, <em>retaintokenisation=False</em>, <em>previousdelimiter=''</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the text associated with this element (of the specified class), will always be a unicode instance.  
 If no text is directly associated with the element, it will be obtained from the children. If that doesn&#8217;t result
 in any text either, a NoSuchText exception will be raised.</p>
@@ -665,13 +720,13 @@ not found.</p>
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.xml">
 <tt class="descname">xml</tt><big>(</big><em>attribs=None</em>, <em>elements=None</em>, <em>skipchildren=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.xml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an XML Element for this element and all its children.</p>
+<dd><p>Serialises the FoLiA element to XML, bu returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.xmlstring">
 <tt class="descname">xmlstring</tt><big>(</big><em>pretty_print=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.xmlstring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a string with XML presentation for this element and all its children.</p>
+<dd><p>Serialises this FoLiA element to XML, returns a string with XML representation for this element and all its children.</p>
 </dd></dl>
 
 <dl class="method">
@@ -717,6 +772,19 @@ not found.</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="pynlpl.formats.folia.AbstractSpanAnnotation.wrefs">
+<tt class="descname">wrefs</tt><big>(</big><em>index=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractSpanAnnotation.wrefs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of word references, these can be Words but also Morphemes or Phonemes.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">index</span></tt>: If set to an integer, will retrieve and return the n&#8217;th element (starting at 0) instead of returning the list of all</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pynlpl.formats.folia.AbstractSpanAnnotation.xml">
 <tt class="descname">xml</tt><big>(</big><em>attribs=None</em>, <em>elements=None</em>, <em>skipchildren=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractSpanAnnotation.xml" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -726,7 +794,8 @@ not found.</p>
 <dl class="class">
 <dt id="pynlpl.formats.folia.AbstractStructureElement">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">AbstractStructureElement</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractStructureElement" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
+<dd><p>Abstract element, all structure elements inherit from this class. Never instantiated directly.</p>
+<dl class="attribute">
 <dt id="pynlpl.formats.folia.AbstractStructureElement.OCCURRENCESPERSET">
 <tt class="descname">OCCURRENCESPERSET</tt><em class="property"> = 0</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractStructureElement.OCCURRENCESPERSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -928,12 +997,12 @@ not found.</p>
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Alignment</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Alignment" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="pynlpl.formats.folia.Alignment.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.AlignReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Alignment.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.AlignReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Alignment.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Alignment.ANNOTATIONTYPE">
-<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 28</em><a class="headerlink" href="#pynlpl.formats.folia.Alignment.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 27</em><a class="headerlink" href="#pynlpl.formats.folia.Alignment.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -992,7 +1061,8 @@ not found.</p>
 <dl class="class">
 <dt id="pynlpl.formats.folia.AllowGenerateID">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">AllowGenerateID</tt><a class="headerlink" href="#pynlpl.formats.folia.AllowGenerateID" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Classes inherited from this class allow for automatic ID generation, using the convention of adding a period, the name of the element , another period, and a sequence number</p>
+<dl class="method">
 <dt id="pynlpl.formats.folia.AllowGenerateID.generate_id">
 <tt class="descname">generate_id</tt><big>(</big><em>cls</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AllowGenerateID.generate_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1041,12 +1111,6 @@ not found.</p>
 <dt>Raises:</dt>
 <dd><tt class="docutils literal"><span class="pre">NoSuchAnnotation</span></tt> if the specified annotation does not exist.</dd>
 </dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pynlpl.formats.folia.AllowTokenAnnotation.annotationsold">
-<tt class="descname">annotationsold</tt><big>(</big><em>annotationtype=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AllowTokenAnnotation.annotationsold" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generator yielding all annotations of a certain type. Raises a Raises a NoSuchAnnotation exception if none was found.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1139,7 +1203,7 @@ not found.</p>
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">AnnotationType</tt><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="pynlpl.formats.folia.AnnotationType.ALIGNMENT">
-<tt class="descname">ALIGNMENT</tt><em class="property"> = 28</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.ALIGNMENT" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ALIGNMENT</tt><em class="property"> = 27</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.ALIGNMENT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1154,7 +1218,12 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.AnnotationType.COMPLEXALIGNMENT">
-<tt class="descname">COMPLEXALIGNMENT</tt><em class="property"> = 29</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.COMPLEXALIGNMENT" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">COMPLEXALIGNMENT</tt><em class="property"> = 28</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.COMPLEXALIGNMENT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.AnnotationType.COREFERENCE">
+<tt class="descname">COREFERENCE</tt><em class="property"> = 29</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.COREFERENCE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1164,7 +1233,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.AnnotationType.DEPENDENCY">
-<tt class="descname">DEPENDENCY</tt><em class="property"> = 25</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.DEPENDENCY" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">DEPENDENCY</tt><em class="property"> = 24</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.DEPENDENCY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1189,7 +1258,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.AnnotationType.EVENT">
-<tt class="descname">EVENT</tt><em class="property"> = 24</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.EVENT" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">EVENT</tt><em class="property"> = 23</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.EVENT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1199,7 +1268,12 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.AnnotationType.GAP">
-<tt class="descname">GAP</tt><em class="property"> = 27</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.GAP" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">GAP</tt><em class="property"> = 26</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.GAP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.AnnotationType.LANG">
+<tt class="descname">LANG</tt><em class="property"> = 32</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.LANG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1215,6 +1289,11 @@ not found.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.AnnotationType.LIST">
 <tt class="descname">LIST</tt><em class="property"> = 4</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.LIST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.AnnotationType.METRIC">
+<tt class="descname">METRIC</tt><em class="property"> = 31</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.METRIC" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1238,6 +1317,11 @@ not found.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="pynlpl.formats.folia.AnnotationType.SEMROLE">
+<tt class="descname">SEMROLE</tt><em class="property"> = 30</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.SEMROLE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="pynlpl.formats.folia.AnnotationType.SENSE">
 <tt class="descname">SENSE</tt><em class="property"> = 12</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.SENSE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1245,11 +1329,6 @@ not found.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.AnnotationType.SENTENCE">
 <tt class="descname">SENTENCE</tt><em class="property"> = 8</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.SENTENCE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.AnnotationType.SUBENTITY">
-<tt class="descname">SUBENTITY</tt><em class="property"> = 23</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.SUBENTITY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1273,8 +1352,8 @@ not found.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="pynlpl.formats.folia.AnnotationType.TIMEDEVENT">
-<tt class="descname">TIMEDEVENT</tt><em class="property"> = 26</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.TIMEDEVENT" title="Permalink to this definition">¶</a></dt>
+<dt id="pynlpl.formats.folia.AnnotationType.TIMESEGMENT">
+<tt class="descname">TIMESEGMENT</tt><em class="property"> = 25</em><a class="headerlink" href="#pynlpl.formats.folia.AnnotationType.TIMESEGMENT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1371,7 +1450,7 @@ not found.</p>
 <dd><p>Element used for captions for figures or tables, contains sentences</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Caption.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Caption.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Caption.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1392,7 +1471,7 @@ not found.</p>
 <dd><p>Chunk element, span annotation element to be used in ChunkingLayer</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Chunk.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Chunk.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Chunk.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1479,20 +1558,93 @@ not found.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="pynlpl.formats.folia.CoreferenceChain">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CoreferenceChain</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coreference chain. Consists of coreference links.</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceChain.ACCEPTED_DATA">
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.CoreferenceLink'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceChain.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceChain.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 29</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceChain.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceChain.REQUIRED_ATTRIBS">
+<tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = ()</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceChain.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceChain.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = 'coreferencechain'</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceChain.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.formats.folia.CoreferenceLayer">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CoreferenceLayer</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Syntax Layer: Annotation layer for SyntacticUnit span annotation elements</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceLayer.ACCEPTED_DATA">
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.CoreferenceChain'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceLayer.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceLayer.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = 'coreferences'</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.formats.folia.CoreferenceLink">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CoreferenceLink</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceLink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coreference link. Used in coreferencechain.</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceLink.ACCEPTED_DATA">
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Headspan'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.ModalityFeature'&gt;, &lt;class 'pynlpl.formats.folia.TimeFeature'&gt;, &lt;class 'pynlpl.formats.folia.LevelFeature'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceLink.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceLink.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 29</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceLink.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceLink.OPTIONAL_ATTRIBS">
+<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = (2, 4, 5)</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceLink.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceLink.REQUIRED_ATTRIBS">
+<tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = ()</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceLink.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.CoreferenceLink.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = 'coreferencelink'</em><a class="headerlink" href="#pynlpl.formats.folia.CoreferenceLink.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pynlpl.formats.folia.Corpus">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x4504b90&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x3b87b90&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.CorpusFiles">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x4504b90&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x3b87b90&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields the filenames on each iteration.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.CorpusProcessor">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x4504d70&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x3b87d70&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes a corpus of various FoLiA documents using a parallel processing. Calls a user-defined function with the three-tuple (filename, args, kwargs) for each file in the corpus. The user-defined function is itself responsible for instantiating a FoLiA document! args and kwargs, as received by the custom function, are set through the run() method, which yields the result of the custom function on each iteration.</p>
 <dl class="method">
 <dt id="pynlpl.formats.folia.CorpusProcessor.execute">
@@ -1511,7 +1663,7 @@ not found.</p>
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Correction</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Correction" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="pynlpl.formats.folia.Correction.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.New'&gt;, &lt;class 'pynlpl.formats.folia.Original'&gt;, &lt;class 'pynlpl.formats.folia.Current'&gt;, &lt;class 'pynlpl.formats.folia.Suggestion'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Correction.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.New'&gt;, &lt;class 'pynlpl.formats.folia.Original'&gt;, &lt;class 'pynlpl.formats.folia.Current'&gt;, &lt;class 'pynlpl.formats.folia.Suggestion'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Correction.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1536,7 +1688,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Correction.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = ''</em><a class="headerlink" href="#pynlpl.formats.folia.Correction.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = None</em><a class="headerlink" href="#pynlpl.formats.folia.Correction.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1548,6 +1700,12 @@ not found.</p>
 <dt id="pynlpl.formats.folia.Correction.current">
 <tt class="descname">current</tt><big>(</big><em>index=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Correction.current" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.Correction.gettextdelimiter">
+<tt class="descname">gettextdelimiter</tt><big>(</big><em>retaintokenisation=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Correction.gettextdelimiter" title="Permalink to this definition">¶</a></dt>
+<dd><p>May return a customised text delimiter instead of the default for this class.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.Correction.hascurrent">
@@ -1592,7 +1750,7 @@ not found.</p>
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.Correction.text">
-<tt class="descname">text</tt><big>(</big><em>cls='current'</em>, <em>retaintokenisation=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Correction.text" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">text</tt><big>(</big><em>cls='current'</em>, <em>retaintokenisation=False</em>, <em>previousdelimiter=''</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Correction.text" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1662,12 +1820,12 @@ not found.</p>
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Dependency</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Dependency" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="pynlpl.formats.folia.Dependency.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.DependencyHead'&gt;, &lt;class 'pynlpl.formats.folia.DependencyDependent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Dependency.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Headspan'&gt;, &lt;class 'pynlpl.formats.folia.DependencyDependent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Dependency.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Dependency.ANNOTATIONTYPE">
-<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 25</em><a class="headerlink" href="#pynlpl.formats.folia.Dependency.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 24</em><a class="headerlink" href="#pynlpl.formats.folia.Dependency.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1699,12 +1857,12 @@ not found.</p>
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">DependencyDependent</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.DependencyDependent" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="pynlpl.formats.folia.DependencyDependent.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.DependencyDependent.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.DependencyDependent.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.DependencyDependent.ANNOTATIONTYPE">
-<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 25</em><a class="headerlink" href="#pynlpl.formats.folia.DependencyDependent.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 24</em><a class="headerlink" href="#pynlpl.formats.folia.DependencyDependent.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1724,34 +1882,10 @@ not found.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="attribute">
 <dt id="pynlpl.formats.folia.DependencyHead">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">DependencyHead</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.DependencyHead" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="pynlpl.formats.folia.DependencyHead.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.DependencyHead.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.DependencyHead.ANNOTATIONTYPE">
-<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 25</em><a class="headerlink" href="#pynlpl.formats.folia.DependencyHead.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.DependencyHead.OPTIONAL_ATTRIBS">
-<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = ()</em><a class="headerlink" href="#pynlpl.formats.folia.DependencyHead.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.DependencyHead.REQUIRED_ATTRIBS">
-<tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = ()</em><a class="headerlink" href="#pynlpl.formats.folia.DependencyHead.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.DependencyHead.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'hd'</em><a class="headerlink" href="#pynlpl.formats.folia.DependencyHead.XMLTAG" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">DependencyHead</tt><a class="headerlink" href="#pynlpl.formats.folia.DependencyHead" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#pynlpl.formats.folia.Headspan" title="pynlpl.formats.folia.Headspan"><tt class="xref py py-class docutils literal"><span class="pre">Headspan</span></tt></a></p>
 </dd></dl>
 
 <dl class="class">
@@ -1792,7 +1926,7 @@ other FoLiA element</p>
 <dd><p>Structure element representing some kind of division. Divisions may be nested at will, and may include almost all kinds of other structure elements.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Division.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Division'&gt;, &lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Head'&gt;, &lt;class 'pynlpl.formats.folia.Paragraph'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Linebreak'&gt;, &lt;class 'pynlpl.formats.folia.Whitespace'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Division.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Division'&gt;, &lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Head'&gt;, &lt;class 'pynlpl.formats.folia.Paragraph'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Linebreak'&gt;, &lt;class 'pynlpl.formats.folia.Whitespace'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Division.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1808,6 +1942,11 @@ other FoLiA element</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Division.REQUIRED_ATTRIBS">
 <tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = (0,)</em><a class="headerlink" href="#pynlpl.formats.folia.Division.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.Division.TEXTDELIMITER">
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n\n\n'</em><a class="headerlink" href="#pynlpl.formats.folia.Division.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1876,6 +2015,11 @@ Argument: Set the document&#8217;s date in metadata</p>
 <dl class="method">
 <dt id="pynlpl.formats.folia.Document.defaultannotatortype">
 <tt class="descname">defaultannotatortype</tt><big>(</big><em>annotationtype</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Document.defaultannotatortype" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.Document.defaultdatetime">
+<tt class="descname">defaultdatetime</tt><big>(</big><em>annotationtype</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Document.defaultdatetime" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -2033,7 +2177,7 @@ Argument: Set the document&#8217;s title in metadata</p>
 <dd><p>Domain annotation:  an extended token annotation element</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.DomainAnnotation.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.DomainAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.DomainAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2056,7 +2200,8 @@ Argument: Set the document&#8217;s title in metadata</p>
 <dl class="exception">
 <dt id="pynlpl.formats.folia.DuplicateIDError">
 <em class="property">exception </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">DuplicateIDError</tt><a class="headerlink" href="#pynlpl.formats.folia.DuplicateIDError" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Exception raised when an identifier that is already in use is assigned again to another element</p>
+</dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.EnddatetimeFeature">
@@ -2096,7 +2241,7 @@ Argument: Set the document&#8217;s title in metadata</p>
 <dd><p>Entity element, for named entities, span annotation element to be used in EntitiesLayer</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Entity.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Entity.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Entity.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2141,12 +2286,12 @@ Argument: Set the document&#8217;s title in metadata</p>
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Event</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Event" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="pynlpl.formats.folia.Event.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.AbstractStructureElement'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.ActorFeature'&gt;, &lt;class 'pynlpl.formats.folia.BegindatetimeFeature'&gt;, &lt;class 'pynlpl.formats.folia.EnddatetimeFeature'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Event.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.AbstractStructureElement'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.ActorFeature'&gt;, &lt;class 'pynlpl.formats.folia.BegindatetimeFeature'&gt;, &lt;class 'pynlpl.formats.folia.EnddatetimeFeature'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Event.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Event.ANNOTATIONTYPE">
-<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 24</em><a class="headerlink" href="#pynlpl.formats.folia.Event.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 23</em><a class="headerlink" href="#pynlpl.formats.folia.Event.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2199,7 +2344,7 @@ annotation element</p>
 <dd><p>Element for the representation of a graphical figure. Structure element.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Figure.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Caption'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Figure.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Caption'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Figure.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2230,6 +2375,22 @@ annotation element</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="pynlpl.formats.folia.FunctionFeature">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">FunctionFeature</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.FunctionFeature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function feature, to be used with morphemes</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.FunctionFeature.SUBSET">
+<tt class="descname">SUBSET</tt><em class="property"> = 'function'</em><a class="headerlink" href="#pynlpl.formats.folia.FunctionFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.FunctionFeature.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = None</em><a class="headerlink" href="#pynlpl.formats.folia.FunctionFeature.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pynlpl.formats.folia.Gap">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Gap</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Gap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gap element. Represents skipped portions of the text. Contains Content and Desc elements</p>
@@ -2240,7 +2401,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Gap.ANNOTATIONTYPE">
-<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 27</em><a class="headerlink" href="#pynlpl.formats.folia.Gap.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 26</em><a class="headerlink" href="#pynlpl.formats.folia.Gap.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2266,7 +2427,7 @@ annotation element</p>
 <dd><p>Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Head.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Head.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Head.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2303,12 +2464,37 @@ annotation element</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="pynlpl.formats.folia.Headspan">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Headspan</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Headspan" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="pynlpl.formats.folia.Headspan.ACCEPTED_DATA">
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Headspan.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.Headspan.OPTIONAL_ATTRIBS">
+<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = ()</em><a class="headerlink" href="#pynlpl.formats.folia.Headspan.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.Headspan.REQUIRED_ATTRIBS">
+<tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = ()</em><a class="headerlink" href="#pynlpl.formats.folia.Headspan.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.Headspan.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = 'hd'</em><a class="headerlink" href="#pynlpl.formats.folia.Headspan.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pynlpl.formats.folia.Label">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Label</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element used for labels. Mostly in within list item. Contains words.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Label.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Label.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Label.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2319,12 +2505,33 @@ annotation element</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="pynlpl.formats.folia.LangAnnotation">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">LangAnnotation</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.LangAnnotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Language annotation:  an extended token annotation element</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.LangAnnotation.ACCEPTED_DATA">
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.LangAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.LangAnnotation.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 32</em><a class="headerlink" href="#pynlpl.formats.folia.LangAnnotation.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.LangAnnotation.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = 'lang'</em><a class="headerlink" href="#pynlpl.formats.folia.LangAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pynlpl.formats.folia.LemmaAnnotation">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">LemmaAnnotation</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.LemmaAnnotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Lemma annotation:  a token annotation element</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.LemmaAnnotation.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.LemmaAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.LemmaAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2335,6 +2542,22 @@ annotation element</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.LemmaAnnotation.XMLTAG">
 <tt class="descname">XMLTAG</tt><em class="property"> = 'lemma'</em><a class="headerlink" href="#pynlpl.formats.folia.LemmaAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.formats.folia.LevelFeature">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">LevelFeature</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.LevelFeature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Level feature, to be used with coreferences</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.LevelFeature.SUBSET">
+<tt class="descname">SUBSET</tt><em class="property"> = 'level'</em><a class="headerlink" href="#pynlpl.formats.folia.LevelFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.LevelFeature.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = None</em><a class="headerlink" href="#pynlpl.formats.folia.LevelFeature.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2359,6 +2582,11 @@ annotation element</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="pynlpl.formats.folia.Linebreak.TEXTDELIMITER">
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n'</em><a class="headerlink" href="#pynlpl.formats.folia.Linebreak.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="pynlpl.formats.folia.Linebreak.XMLTAG">
 <tt class="descname">XMLTAG</tt><em class="property"> = 'br'</em><a class="headerlink" href="#pynlpl.formats.folia.Linebreak.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -2371,7 +2599,7 @@ annotation element</p>
 <dd><p>Element for enumeration/itemisation. Structure element. Contains ListItem elements.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.List.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.ListItem'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Caption'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.List.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.ListItem'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Caption'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.List.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2397,7 +2625,7 @@ annotation element</p>
 <dd><p>Single element in a List. Structure element. Contained within List element.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.ListItem.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Label'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.ListItem.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Label'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.ListItem.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2438,6 +2666,43 @@ annotation element</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="pynlpl.formats.folia.Metric">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Metric</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Metric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Metric elements allow the annotatation of any kind of metric with any kind of annotation element. Allowing for example statistical measures to be added to elements as annotation,</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.Metric.ACCEPTED_DATA">
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.ValueFeature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Metric.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.Metric.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 31</em><a class="headerlink" href="#pynlpl.formats.folia.Metric.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.Metric.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = 'metric'</em><a class="headerlink" href="#pynlpl.formats.folia.Metric.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.formats.folia.ModalityFeature">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">ModalityFeature</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.ModalityFeature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modality feature, to be used with coreferences</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.ModalityFeature.SUBSET">
+<tt class="descname">SUBSET</tt><em class="property"> = 'modality'</em><a class="headerlink" href="#pynlpl.formats.folia.ModalityFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.ModalityFeature.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = None</em><a class="headerlink" href="#pynlpl.formats.folia.ModalityFeature.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pynlpl.formats.folia.Mode">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Mode</tt><a class="headerlink" href="#pynlpl.formats.folia.Mode" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
@@ -2468,12 +2733,22 @@ annotation element</p>
 <dd><p>Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Morpheme.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Morpheme.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.FunctionFeature'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Morpheme.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Morpheme.ANNOTATIONTYPE">
 <tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 22</em><a class="headerlink" href="#pynlpl.formats.folia.Morpheme.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.Morpheme.OPTIONAL_ATTRIBS">
+<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = (0, 1, 2, 4, 3, 5)</em><a class="headerlink" href="#pynlpl.formats.folia.Morpheme.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.Morpheme.REQUIRED_ATTRIBS">
+<tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = ((),)</em><a class="headerlink" href="#pynlpl.formats.folia.Morpheme.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2552,19 +2827,21 @@ annotation element</p>
 <dl class="exception">
 <dt id="pynlpl.formats.folia.NoSuchAnnotation">
 <em class="property">exception </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">NoSuchAnnotation</tt><a class="headerlink" href="#pynlpl.formats.folia.NoSuchAnnotation" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Exception raised when the requested type of annotation does not exist for the selected element</p>
+</dd></dl>
 
 <dl class="exception">
 <dt id="pynlpl.formats.folia.NoSuchText">
 <em class="property">exception </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">NoSuchText</tt><a class="headerlink" href="#pynlpl.formats.folia.NoSuchText" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Exception raised when the requestion type of text content does not exist for the selected element</p>
+</dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.Original">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Original</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Original" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="pynlpl.formats.folia.Original.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Original.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Original.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2605,7 +2882,7 @@ annotation element</p>
 <dd><p>Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes).</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Paragraph.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Linebreak'&gt;, &lt;class 'pynlpl.formats.folia.Whitespace'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Paragraph.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Linebreak'&gt;, &lt;class 'pynlpl.formats.folia.Whitespace'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Paragraph.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2615,7 +2892,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Paragraph.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n'</em><a class="headerlink" href="#pynlpl.formats.folia.Paragraph.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n\n'</em><a class="headerlink" href="#pynlpl.formats.folia.Paragraph.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2647,33 +2924,12 @@ annotation element</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="pynlpl.formats.folia.PhonAnnotation">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">PhonAnnotation</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.PhonAnnotation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Phonetic annotation:  a token annotation element</p>
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.PhonAnnotation.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.PhonAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.PhonAnnotation.ANNOTATIONTYPE">
-<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 20</em><a class="headerlink" href="#pynlpl.formats.folia.PhonAnnotation.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.PhonAnnotation.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'phon'</em><a class="headerlink" href="#pynlpl.formats.folia.PhonAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="pynlpl.formats.folia.PosAnnotation">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">PosAnnotation</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.PosAnnotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Part-of-Speech annotation:  a token annotation element</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.PosAnnotation.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.HeadFeature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.PosAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.HeadFeature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.PosAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2700,17 +2956,12 @@ annotation element</p>
 <dd><p>Quote: a structure element. For quotes/citations. May hold words or sentences.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Quote.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Quote'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Quote.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Quote'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Quote.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Quote.REQUIRED_ATTRIBS">
 <tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = ()</em><a class="headerlink" href="#pynlpl.formats.folia.Quote.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.Quote.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = ' '</em><a class="headerlink" href="#pynlpl.formats.folia.Quote.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2721,6 +2972,11 @@ annotation element</p>
 <dl class="method">
 <dt id="pynlpl.formats.folia.Quote.append">
 <tt class="descname">append</tt><big>(</big><em>child</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Quote.append" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.Quote.gettextdelimiter">
+<tt class="descname">gettextdelimiter</tt><big>(</big><em>retaintokenisation=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Quote.gettextdelimiter" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -2742,12 +2998,54 @@ annotation element</p>
 <dd></dd></dl>
 
 <dl class="class">
+<dt id="pynlpl.formats.folia.SemanticRole">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">SemanticRole</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.SemanticRole" title="Permalink to this definition">¶</a></dt>
+<dd><p>Semantic Role</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.SemanticRole.ACCEPTED_DATA">
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Headspan'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.SemanticRole.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.SemanticRole.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 30</em><a class="headerlink" href="#pynlpl.formats.folia.SemanticRole.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.SemanticRole.REQUIRED_ATTRIBS">
+<tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = (1,)</em><a class="headerlink" href="#pynlpl.formats.folia.SemanticRole.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.SemanticRole.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = 'semrole'</em><a class="headerlink" href="#pynlpl.formats.folia.SemanticRole.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.formats.folia.SemanticRolesLayer">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">SemanticRolesLayer</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.SemanticRolesLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Syntax Layer: Annotation layer for SemnaticRole span annotation elements</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.SemanticRolesLayer.ACCEPTED_DATA">
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.SemanticRole'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.SemanticRolesLayer.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.SemanticRolesLayer.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = 'semroles'</em><a class="headerlink" href="#pynlpl.formats.folia.SemanticRolesLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pynlpl.formats.folia.SenseAnnotation">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">SenseAnnotation</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.SenseAnnotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sense annotation: a token annotation element</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.SenseAnnotation.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.SynsetFeature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.SenseAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.SynsetFeature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.SenseAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2768,7 +3066,7 @@ annotation element</p>
 <dd><p>Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Sentence.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.Quote'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Linebreak'&gt;, &lt;class 'pynlpl.formats.folia.Whitespace'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Sentence.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.Quote'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Linebreak'&gt;, &lt;class 'pynlpl.formats.folia.Whitespace'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Sentence.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2902,49 +3200,12 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="pynlpl.formats.folia.SubentitiesLayer">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">SubentitiesLayer</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.SubentitiesLayer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Subentities Layer: Annotation layer for Subentity subtoken annotation elements. For named entities within a single token.</p>
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.SubentitiesLayer.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Subentity'&gt;,)</em><a class="headerlink" href="#pynlpl.formats.folia.SubentitiesLayer.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.SubentitiesLayer.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'subentities'</em><a class="headerlink" href="#pynlpl.formats.folia.SubentitiesLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pynlpl.formats.folia.Subentity">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Subentity</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Subentity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Subentity element, for named entities within a single token, subtoken annotation element to be used in SubentitiesLayer</p>
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.Subentity.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Subentity.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.Subentity.ANNOTATIONTYPE">
-<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 23</em><a class="headerlink" href="#pynlpl.formats.folia.Subentity.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.Subentity.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'subentity'</em><a class="headerlink" href="#pynlpl.formats.folia.Subentity.XMLTAG" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="pynlpl.formats.folia.SubjectivityAnnotation">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">SubjectivityAnnotation</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.SubjectivityAnnotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subjectivity annotation: a token annotation element</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.SubjectivityAnnotation.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.SubjectivityAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.SubjectivityAnnotation.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3021,7 +3282,7 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 <dd><p>Syntactic Unit, span annotation element to be used in SyntaxLayer</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.SyntacticUnit.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.SyntacticUnit'&gt;, &lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.SyntacticUnit.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.SyntacticUnit'&gt;, &lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.SyntacticUnit.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3063,7 +3324,7 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 <dd><p>A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc..</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Text.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Division'&gt;, &lt;class 'pynlpl.formats.folia.Paragraph'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Text.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Division'&gt;, &lt;class 'pynlpl.formats.folia.Paragraph'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Text.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3078,7 +3339,7 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Text.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n\n'</em><a class="headerlink" href="#pynlpl.formats.folia.Text.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n\n\n'</em><a class="headerlink" href="#pynlpl.formats.folia.Text.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3209,28 +3470,50 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 </dd></dl>
 
 <dl class="class">
-<dt id="pynlpl.formats.folia.TimedEvent">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">TimedEvent</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.TimedEvent" title="Permalink to this definition">¶</a></dt>
+<dt id="pynlpl.formats.folia.TimeFeature">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">TimeFeature</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.TimeFeature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time feature, to be used with coreferences</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.TimeFeature.SUBSET">
+<tt class="descname">SUBSET</tt><em class="property"> = 'time'</em><a class="headerlink" href="#pynlpl.formats.folia.TimeFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.TimeFeature.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = None</em><a class="headerlink" href="#pynlpl.formats.folia.TimeFeature.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.formats.folia.TimeSegment">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">TimeSegment</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.TimeSegment" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
-<dt id="pynlpl.formats.folia.TimedEvent.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.ActorFeature'&gt;, &lt;class 'pynlpl.formats.folia.BegindatetimeFeature'&gt;, &lt;class 'pynlpl.formats.folia.EnddatetimeFeature'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.TimedEvent.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<dt id="pynlpl.formats.folia.TimeSegment.ACCEPTED_DATA">
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.WordReference'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Feature'&gt;, &lt;class 'pynlpl.formats.folia.ActorFeature'&gt;, &lt;class 'pynlpl.formats.folia.BegindatetimeFeature'&gt;, &lt;class 'pynlpl.formats.folia.EnddatetimeFeature'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.TimeSegment.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="pynlpl.formats.folia.TimedEvent.ANNOTATIONTYPE">
-<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 26</em><a class="headerlink" href="#pynlpl.formats.folia.TimedEvent.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dt id="pynlpl.formats.folia.TimeSegment.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 25</em><a class="headerlink" href="#pynlpl.formats.folia.TimeSegment.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="pynlpl.formats.folia.TimedEvent.OCCURRENCESPERSET">
-<tt class="descname">OCCURRENCESPERSET</tt><em class="property"> = 0</em><a class="headerlink" href="#pynlpl.formats.folia.TimedEvent.OCCURRENCESPERSET" title="Permalink to this definition">¶</a></dt>
+<dt id="pynlpl.formats.folia.TimeSegment.OCCURRENCESPERSET">
+<tt class="descname">OCCURRENCESPERSET</tt><em class="property"> = 0</em><a class="headerlink" href="#pynlpl.formats.folia.TimeSegment.OCCURRENCESPERSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="pynlpl.formats.folia.TimedEvent.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'timedevent'</em><a class="headerlink" href="#pynlpl.formats.folia.TimedEvent.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dt id="pynlpl.formats.folia.TimeSegment.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = 'timesegment'</em><a class="headerlink" href="#pynlpl.formats.folia.TimeSegment.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.TimedEvent">
+<tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">TimedEvent</tt><a class="headerlink" href="#pynlpl.formats.folia.TimedEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#pynlpl.formats.folia.TimeSegment" title="pynlpl.formats.folia.TimeSegment"><tt class="xref py py-class docutils literal"><span class="pre">TimeSegment</span></tt></a></p>
 </dd></dl>
 
 <dl class="class">
@@ -3239,7 +3522,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd><p>Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.TimingLayer.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.TimedEvent'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.TimingLayer.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.TimeSegment'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.TimingLayer.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3253,6 +3536,22 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dt id="pynlpl.formats.folia.UnresolvableTextContent">
 <em class="property">exception </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">UnresolvableTextContent</tt><a class="headerlink" href="#pynlpl.formats.folia.UnresolvableTextContent" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.formats.folia.ValueFeature">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">ValueFeature</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.ValueFeature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value feature, to be used within Metric</p>
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.ValueFeature.SUBSET">
+<tt class="descname">SUBSET</tt><em class="property"> = 'value'</em><a class="headerlink" href="#pynlpl.formats.folia.ValueFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.ValueFeature.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = None</em><a class="headerlink" href="#pynlpl.formats.folia.ValueFeature.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.Whitespace">
@@ -3274,6 +3573,11 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="pynlpl.formats.folia.Whitespace.TEXTDELIMITER">
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n\n'</em><a class="headerlink" href="#pynlpl.formats.folia.Whitespace.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="pynlpl.formats.folia.Whitespace.XMLTAG">
 <tt class="descname">XMLTAG</tt><em class="property"> = 'whitespace'</em><a class="headerlink" href="#pynlpl.formats.folia.Whitespace.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -3286,17 +3590,12 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd><p>Word (aka token) element. Holds a word/token and all its related token annotations.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Word.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alternative'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.AbstractSubtokenAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Word.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.Alternative'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.AbstractSubtokenAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Word.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Word.ANNOTATIONTYPE">
 <tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 1</em><a class="headerlink" href="#pynlpl.formats.folia.Word.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.Word.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = ' '</em><a class="headerlink" href="#pynlpl.formats.folia.Word.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3333,6 +3632,12 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="pynlpl.formats.folia.Word.gettextdelimiter">
+<tt class="descname">gettextdelimiter</tt><big>(</big><em>retaintokenisation=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.gettextdelimiter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the text delimiter</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pynlpl.formats.folia.Word.incorrection">
 <tt class="descname">incorrection</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.incorrection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is this word part of a correction? If it is, it returns the Correction element (evaluating to True), otherwise it returns None</p>
@@ -3351,15 +3656,21 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 </dd></dl>
 
 <dl class="method">
-<dt id="pynlpl.formats.folia.Word.next">
-<tt class="descname">next</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.next" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the next word in the sentence, or None if no next word was found. This method does not cross sentence boundaries.</p>
+<dt id="pynlpl.formats.folia.Word.morpheme">
+<tt class="descname">morpheme</tt><big>(</big><em>index</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.morpheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a specific morpheme, the n&#8217;th morpheme (given the particular set if specified).</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pynlpl.formats.folia.Word.overridetextdelimiter">
-<tt class="descname">overridetextdelimiter</tt><big>(</big><em>retaintokenisation=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.overridetextdelimiter" title="Permalink to this definition">¶</a></dt>
-<dd><p>May return a customised text delimiter that overrides the default text delimiter set by the parent. Defaults to None (do not override). Mostly for internal use.</p>
+<dt id="pynlpl.formats.folia.Word.morphemes">
+<tt class="descname">morphemes</tt><big>(</big><em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.morphemes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator yielding all morphemes (in a particular set if specified). For retrieving one specific morpheme by index, use morpheme() instead</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.Word.next">
+<tt class="descname">next</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the next word in the sentence, or None if no next word was found. This method does not cross sentence boundaries.</p>
 </dd></dl>
 
 <dl class="method">
@@ -3428,12 +3739,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dl class="class">
 <dt id="pynlpl.formats.folia.WordReference">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">WordReference</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.WordReference" title="Permalink to this definition">¶</a></dt>
-<dd><p>Word reference. Use to refer to words from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word objects will be used</p>
-<dl class="attribute">
-<dt id="pynlpl.formats.folia.WordReference.ANNOTATIONTYPE">
-<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 1</em><a class="headerlink" href="#pynlpl.formats.folia.WordReference.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<dd><p>Word reference. Use to refer to words or morphemes from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word or Morpheme objects will be used</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.WordReference.REQUIRED_ATTRIBS">
 <tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = (0,)</em><a class="headerlink" href="#pynlpl.formats.folia.WordReference.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
@@ -3459,8 +3765,13 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.c">
 <tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">c</tt><a class="headerlink" href="#pynlpl.formats.folia.c" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#pynlpl.formats.folia.PhonAnnotation" title="pynlpl.formats.folia.PhonAnnotation"><tt class="xref py py-class docutils literal"><span class="pre">PhonAnnotation</span></tt></a></p>
+<dd><p>alias of <a class="reference internal" href="#pynlpl.formats.folia.Alignment" title="pynlpl.formats.folia.Alignment"><tt class="xref py py-class docutils literal"><span class="pre">Alignment</span></tt></a></p>
 </dd></dl>
+
+<dl class="function">
+<dt id="pynlpl.formats.folia.isncname">
+<tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">isncname</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.isncname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="pynlpl.formats.folia.loadsetdefinition">
@@ -3476,7 +3787,8 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dl class="function">
 <dt id="pynlpl.formats.folia.parsecommonarguments">
 <tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">parsecommonarguments</tt><big>(</big><em>object</em>, <em>doc</em>, <em>annotationtype</em>, <em>required</em>, <em>allowed</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.parsecommonarguments" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Internal function, parses common FoLiA attributes and sets up the instance accordingly</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="pynlpl.formats.folia.relaxng">

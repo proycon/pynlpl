@@ -51,9 +51,36 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-textprocessors">
-<span id="text-processors"></span><h1>Text Processors<a class="headerlink" href="#module-textprocessors" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+  <div class="section" id="text-processors">
+<h1>Text Processors<a class="headerlink" href="#text-processors" title="Permalink to this headline">¶</a></h1>
+<p>This module contains classes and functions for text processing. It is imported as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pynlpl.textprocessors</span>
+</pre></div>
+</div>
+<div class="section" id="tokenisation">
+<h2>Tokenisation<a class="headerlink" href="#tokenisation" title="Permalink to this headline">¶</a></h2>
+<p>A very crude tokeniser is available in the form of the function <a href="#id1"><span class="problematic" id="id2">``</span></a>pynlpl.textprocessors.crude_tokeniser(string)&#8217;&#8216;. This will split punctuation characters from words and returns a list of tokens. It however has no regard for abbreviations and end-of-sentence detection, which is functionality a more sophisticated tokeniser can provide:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">tokens</span> <span class="o">=</span> <span class="n">pynlpl</span><span class="o">.</span><span class="n">textprocessors</span><span class="o">.</span><span class="n">crude_tokeniser</span><span class="p">(</span><span class="s">&quot;to be, or not to be.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will result in:</p>
+<blockquote>
+<div>tokens == [&#8216;to&#8217;,&#8217;be&#8217;,&#8217;,&#8217;,&#8217;or&#8217;,&#8217;not&#8217;,&#8217;to&#8217;,&#8217;be&#8217;,&#8217;.&#8217;]</div></blockquote>
+</div>
+<div class="section" id="n-gram-extraction">
+<h2>N-gram extraction<a class="headerlink" href="#n-gram-extraction" title="Permalink to this headline">¶</a></h2>
+<p>The extraction of n-grams is an elemental operation in Natural Language Processing. PyNLPl offers the <tt class="docutils literal"><span class="pre">Windower</span></tt> class to accomplish this task:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">tokens</span> <span class="o">=</span> <span class="n">pynlpl</span><span class="o">.</span><span class="n">textprocessors</span><span class="o">.</span><span class="n">crude_tokeniser</span><span class="p">(</span><span class="s">&quot;to be or not to be&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">trigram</span> <span class="ow">in</span> <span class="n">Windower</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">print</span> <span class="n">trigram</span>
+</pre></div>
+</div>
+<p>The input to the Windower should be a list of words and a value for n. In addition, the windower can output extra symbols at the beginning of the input sequence and at the end of it. By default, this behaviour is enabled and the input symbol is <tt class="docutils literal"><span class="pre">&lt;begin&gt;</span></tt>, whereas the output symbol is <tt class="docutils literal"><span class="pre">&lt;end&gt;</span></tt>. If this behaviour is unwanted you can suppress it by instantiating the Windower as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Windower</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The Windower is implemented as a Python generator and at each iteration yields a tuple of length n.</p>
+<span class="target" id="module-textprocessors"></span><dl class="class">
 <dt id="textprocessors.Classer">
 <em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Classer</tt><big>(</big><em>f</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#textprocessors.Classer" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Classer can encode and decode tokens to an integer representation. It is constructed using a frequency list.</p>
@@ -108,6 +135,11 @@
 </dd></dl>
 
 <dl class="class">
+<dt id="textprocessors.ReflowText">
+<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">ReflowText</tt><big>(</big><em>stream</em>, <em>filternontext=True</em><big>)</big><a class="headerlink" href="#textprocessors.ReflowText" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
 <dt id="textprocessors.Windower">
 <em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Windower</tt><big>(</big><em>tokens</em>, <em>n=1</em>, <em>beginmarker='&lt;begin&gt;'</em>, <em>endmarker='&lt;end&gt;'</em><big>)</big><a class="headerlink" href="#textprocessors.Windower" title="Permalink to this definition">¶</a></dt>
 <dd><p>Moves a sliding window over a list of tokens, returning all ngrams</p>
@@ -138,6 +170,7 @@
 </dd></dl>
 
 </div>
+</div>
 
 
           </div>
@@ -145,6 +178,15 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Text Processors</a><ul>
+<li><a class="reference internal" href="#tokenisation">Tokenisation</a></li>
+<li><a class="reference internal" href="#n-gram-extraction">N-gram extraction</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="statistics.html"
                         title="previous chapter">Statistics and Information Theory</a></p>

@@ -20,7 +20,7 @@ LXE=True
 from lxml.builder import E, ElementMaker
 from sys import stderr
 from StringIO import StringIO
-from copy import copy
+from copy import copy, deepcopy
 from pynlpl.formats.imdi import RELAXNG_IMDI
 from datetime import datetime
 #from dateutil.parser import parse as parse_datetime
@@ -588,16 +588,27 @@ class AbstractElement(object):
     def __str__(self):        
         return unicode(self).encode('utf-8')
 
-    def copy(self):
+    def copy(self, newdoc=None):
         """Make a deep copy"""
-        kwargs = {}    
-        if self.id:
-            kwargs['id'] = id
-        if self.set:
-            kwargs['set'] = set
-        raise NotImplementedError #TODO: IMPLEMENT
-                            
-        
+        c = deepcopy(self)
+        c.setparents()
+        c.setdoc(newdoc)
+        return c
+
+    def setparents(self):
+        """Correct all parent relations for elements within the scope, usually no need to call this directly, invoked implicitly by copy()"""
+        for c in self:
+            if isinstance(c, AbstractElement):
+                c.parent = self
+                c.setparents()
+                
+    def setdoc(self,newdoc):
+        """Set a different document, usually no need to call this directly, invoked implicitly by copy()"""
+        self.doc = newdoc
+        for c in self:
+            if isinstance(c, AbstractElement):
+                c.setdoc(newdoc)                    
+                    
     def hastext(self,cls='current'):
         """Does this element have text (of the specified class)"""
         try:
@@ -904,7 +915,7 @@ class AbstractElement(object):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):  
-        """Serialises the FoLiA element to XML, bu returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead."""
+        """Serialises the FoLiA element to XML, by returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead."""
         global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
         
@@ -1730,6 +1741,10 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative','AbstractAnnotationLayer'])
         else:
             return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative','AbstractAnnotationLayer'])[index]
+
+    def layers(self, annotationtype=None,set=None):
+        """Returns a list of annotation layers found *directly* under this element, does not include alternative layers"""
+        return self.select(AbstractAnnotationLayer,set,False,['AlternativeLayers'])
             
     def __eq__(self, other):
         return super(AbstractStructureElement, self).__eq__(other)
@@ -2371,7 +2386,12 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
     def __init__(self, doc, *args, **kwargs):
         if 'set' in kwargs:
             self.set = kwargs['set']
-            del kwargs['set']
+            del kwargs['set']        
+        elif self.ANNOTATIONTYPE in doc.annotationdefaults and len(doc.annotationdefaults[self.ANNOTATIONTYPE]) == 1:
+            object.set = doc.annotationdefaults[self.ANNOTATIONTYPE].keys()[0]
+        else:
+            raise ValueError("No set specified or derivable for annotation layer")
+            
         super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
         
 
