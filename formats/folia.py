@@ -2405,7 +2405,6 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
             if len(self.data) == 0: #just skip if there are no children
                 return ""
             else:
-                import pdb; pdb.set_trace()
                 raise ValueError("No set specified or derivable for annotation layer")                
         return super(AbstractAnnotationLayer, self).xml(attribs, elements, skipchildren)
     
