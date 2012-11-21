@@ -2828,7 +2828,7 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     PRINTABLE = False    
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, Description, AbstractAnnotationLayer, Alignment, Metric)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric)
 
 
 class AlternativeLayers(AbstractElement):
@@ -3186,7 +3186,7 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
     
-    ACCEPTED_DATA = (Word, Quote, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace, Event, Alignment, Metric)
+    ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, Description,  Linebreak, Whitespace, Event, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 's'
     TEXTDELIMITER = ' '
     ANNOTATIONTYPE = AnnotationType.SENTENCE
@@ -3297,19 +3297,19 @@ class Sentence(AbstractStructureElement):
 
 
 
-Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description, Alignment, Metric)        
+Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)        
 
 
 class Caption(AbstractStructureElement):    
     """Element used for captions for figures or tables, contains sentences"""
-    ACCEPTED_DATA = (Sentence, Description, TextContent,Alignment, Metric)
+    ACCEPTED_DATA = (Sentence, Description, TextContent,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     OCCURRENCES = 1
     XMLTAG = 'caption'
 
     
 class Label(AbstractStructureElement):    
     """Element used for labels. Mostly in within list item. Contains words."""
-    ACCEPTED_DATA = (Word, Description, TextContent,Alignment, Metric)
+    ACCEPTED_DATA = (Word, Description, TextContent,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 'label'
     
 
@@ -3322,16 +3322,16 @@ class ListItem(AbstractStructureElement):
     
 class List(AbstractStructureElement):    
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""    
-    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent, Alignment, Metric)
+    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent, Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 'list'
     TEXTDELIMITER = '\n'
     ANNOTATIONTYPE = AnnotationType.LIST
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,Alignment, Metric)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
 
 class Figure(AbstractStructureElement):    
     """Element for the representation of a graphical figure. Structure element."""
-    ACCEPTED_DATA = (Sentence, Description, Caption, TextContent, Alignment, Metric)
+    ACCEPTED_DATA = (Sentence, Description, Caption, TextContent, Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 'figure'
     ANNOTATIONTYPE = AnnotationType.FIGURE
     
@@ -3374,7 +3374,7 @@ class Figure(AbstractStructureElement):
 class Paragraph(AbstractStructureElement):    
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace, List, Figure, Event, Alignment, Metric)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent, Description, Linebreak, Whitespace, List, Figure, Event, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n\n"
     ANNOTATIONTYPE = AnnotationType.PARAGRAPH
@@ -3383,7 +3383,7 @@ class Paragraph(AbstractStructureElement):
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
     
-    ACCEPTED_DATA = (Sentence,Description, Event, TextContent,Alignment, Metric)
+    ACCEPTED_DATA = (Sentence,Description, Event, TextContent,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'          
@@ -4478,7 +4478,7 @@ class Division(AbstractStructureElement):
                 return e
         raise NoSuchAnnotation()
               
-Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace)
+Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer)
 
 class Text(AbstractStructureElement):
     """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
