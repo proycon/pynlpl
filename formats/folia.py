@@ -201,7 +201,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         elif kwargs['annotatortype'] == 'manual' or kwargs['annotatortype']  == AnnotatorType.MANUAL:
             object.annotatortype = AnnotatorType.MANUAL
         else:
-            raise ValueError("annotatortype must be 'auto' or 'manual'")                
+            raise ValueError("annotatortype must be 'auto' or 'manual', got "  + repr(kwargs['annotatortype']))                
         del kwargs['annotatortype']
     elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults[annotationtype] and 'annotatortype' in doc.annotationdefaults[annotationtype][object.set]:
         object.annotatortype = doc.annotationdefaults[annotationtype][object.set]['annotatortype']
@@ -218,7 +218,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             object.confidence = float(kwargs['confidence'])
             assert (object.confidence >= 0.0 and object.confidence <= 1.0)
         except:
-            raise ValueError("Confidence must be a floating point number between 0 and 1")
+            raise ValueError("Confidence must be a floating point number between 0 and 1, got " + repr(kwargs['confidence']) )
         del kwargs['confidence']    
     elif Attrib.CONFIDENCE in required:
         raise ValueError("Confidence is required for " + object.__class__.__name__)
