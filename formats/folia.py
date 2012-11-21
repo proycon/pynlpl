@@ -56,7 +56,7 @@ class AnnotatorType:
     
 
 class Attrib:
-    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME = range(6)
+    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY = range(7)
 
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
     
@@ -133,7 +133,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.id = None
 
     if 'set' in kwargs:
-        if not Attrib.CLASS in supported:
+        if not Attrib.CLASS in supported and not Attrib.SETONLY in supported:
             raise ValueError("Set is not supported")
         object.set = kwargs['set']
         del kwargs['set']
@@ -143,10 +143,10 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
                 doc.annotations.append( (annotationtype, object.set ) ) 
                 doc.annotationdefaults[annotationtype] = {object.set: {} }
             else:
-                raise ValueError("Set '" + object.set + "' is used but has no declaration!")            
+                raise ValueError("Set '" + o6bject.set + "' is used but has no declaration!")            
     elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
         object.set = doc.annotationdefaults[annotationtype].keys()[0]    
-    elif Attrib.CLASS in required:
+    elif Attrib.CLASS in required or Attrib.SETONLY in required:
         raise ValueError("Set is required for " + object.__class__.__name__)
     else:
         object.set = None        
@@ -2386,34 +2386,38 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
-    OPTIONAL_ATTRIBS = () 
+    OPTIONAL_ATTRIBS = (Attrib.SETONLY,) 
     PRINTABLE = False
     
     def __init__(self, doc, *args, **kwargs):
         if 'set' in kwargs:
-            self.set = kwargs['set']
-            del kwargs['set']        
+            self.set = kwargs['set']        
         elif self.ANNOTATIONTYPE in doc.annotationdefaults and len(doc.annotationdefaults[self.ANNOTATIONTYPE]) == 1:
             self.set = doc.annotationdefaults[self.ANNOTATIONTYPE].keys()[0]
-        else:
-            self.set = False
+        else:            
+            self.set = False            
             # ok, let's not raise an error yet, may may still be able to derive a set from elements that are appended
-            
-        super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)
+        super(AbstractAnnotationLayer,self).__init__(doc, *args, **kwargs)            
+
         
     def xml(self, attribs = None,elements = None, skipchildren = False):  
-        if self.set is False: 
-            raise ValueError("No set specified or derivable for annotation layer") 
+        if self.set is False or self.set is None: 
+            if len(self.data) == 0: #just skip if there are no children
+                return ""
+            else:
+                import pdb; pdb.set_trace()
+                raise ValueError("No set specified or derivable for annotation layer")                
         return super(AbstractAnnotationLayer, self).xml(attribs, elements, skipchildren)
     
     def append(self, child, *args, **kwargs):
-        if self.set is False:
+        if self.set is False or self.set is None:
             if inspect.isclass(child):
                 if 'set' in kwargs: 
                     self.set = kwargs['set']                    
             elif isinstance(child, AbstractElement):        
                 if child.set:
                     self.set = child.set
+            #print "DEBUG AFTER APPEND: set=", self.set
         return super(AbstractAnnotationLayer, self).append(child, *args, **kwargs)
 
     def annotations(self,Class,set=None):        
