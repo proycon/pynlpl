@@ -2828,7 +2828,6 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     PRINTABLE = False    
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric)
 
 
 class AlternativeLayers(AbstractElement):
@@ -2839,6 +2838,8 @@ class AlternativeLayers(AbstractElement):
     XMLTAG = 'altlayers'
     PRINTABLE = False    
     AUTH = False
+
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric)
 
 
 class WordReference(AbstractElement):
