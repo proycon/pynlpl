@@ -2404,7 +2404,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
     def xml(self, attribs = None,elements = None, skipchildren = False):  
         if self.set is False: 
             raise ValueError("No set specified or derivable for annotation layer") 
-        super(AbstractAnnotationLayer, self).xml(attribs, elements, skipchildren)
+        return super(AbstractAnnotationLayer, self).xml(attribs, elements, skipchildren)
     
     def append(self, child, *args, **kwargs):
         if self.set is False:
