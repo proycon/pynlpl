@@ -34,7 +34,7 @@ import multiprocessing
 import threading
 
 FOLIAVERSION = '0.9.0' #0.9 pre
-LIBVERSION = '0.9.0.28' #== FoLiA version + library revision
+LIBVERSION = '0.9.0.29' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -1150,9 +1150,9 @@ class AbstractElement(object):
                attribs.append( E.optional( E.attribute(name='annotator') ) ) 
                attribs.append( E.optional( E.attribute(name='annotatortype') ) ) 
             if Attrib.CONFIDENCE in cls.REQUIRED_ATTRIBS:
-               attribs.append(  E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence',ns=NSFOLIA) )
+               attribs.append(  E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') )
             elif Attrib.CONFIDENCE in cls.OPTIONAL_ATTRIBS:
-               attribs.append(  E.optional( E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence',ns=NSFOLIA) ) )
+               attribs.append(  E.optional( E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') ) )
             if Attrib.N in cls.REQUIRED_ATTRIBS:
                attribs.append( E.attribute( name='n') )
             elif Attrib.N in cls.OPTIONAL_ATTRIBS:
@@ -2822,7 +2822,7 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = Attrib.ALL
-    ACCEPTED_DATA = (AbstractTokenAnnotation, Correction)
+    ACCEPTED_DATA = [AbstractTokenAnnotation, Correction] #adding MorphlogyLayer later
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
     XMLTAG = 'alt'
     PRINTABLE = False    
@@ -3032,6 +3032,7 @@ class MorphologyLayer(AbstractAnnotationLayer):
     XMLTAG = 'morphology'    
     ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
 
+Alternative.ACCEPTED_DATA.append( MorphologyLayer) 
 #class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
 #    """Subentities Layer: Annotation layer for Subentity subtoken annotation elements. For named entities within a single token."""
 #    ACCEPTED_DATA = (Subentity,)
