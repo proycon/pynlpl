@@ -3115,7 +3115,7 @@ class StyleFeature(Feature):
     SUBSET = "style"
 
 class Event(AbstractStructureElement):    
-    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, Metric)
+    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, Metric,AbstractExtendedTokenAnnotation)
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'    
     OCCURRENCESPERSET = 0
@@ -3311,7 +3311,7 @@ class Caption(AbstractStructureElement):
     
 class Label(AbstractStructureElement):    
     """Element used for labels. Mostly in within list item. Contains words."""
-    ACCEPTED_DATA = (Word, Description, TextContent,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Word, Description, TextContent,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
     XMLTAG = 'label'
     
 
@@ -3324,12 +3324,12 @@ class ListItem(AbstractStructureElement):
     
 class List(AbstractStructureElement):    
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""    
-    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent, Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent, Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
     XMLTAG = 'list'
     TEXTDELIMITER = '\n'
     ANNOTATIONTYPE = AnnotationType.LIST
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
 
 class Figure(AbstractStructureElement):    
     """Element for the representation of a graphical figure. Structure element."""
@@ -3385,7 +3385,7 @@ class Paragraph(AbstractStructureElement):
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
     
-    ACCEPTED_DATA = (Sentence,Description, Event, TextContent,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Sentence,Description, Event, TextContent,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'          
