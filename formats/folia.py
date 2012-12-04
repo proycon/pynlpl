@@ -143,7 +143,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
                 doc.annotations.append( (annotationtype, object.set ) ) 
                 doc.annotationdefaults[annotationtype] = {object.set: {} }
             else:
-                raise ValueError("Set '" + object.set + "' is used but has no declaration!")            
+                raise ValueError("Set '" + object.set + "' is used for " + object.__class__.__name__ + ", but has no declaration!")            
     elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
         object.set = doc.annotationdefaults[annotationtype].keys()[0]    
     elif Attrib.CLASS in required or Attrib.SETONLY in required:
@@ -3142,6 +3142,7 @@ TimedEvent = TimeSegment #alias for FoLiA 0.8 compatibility
 
 class TimingLayer(AbstractAnnotationLayer):
     """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
+    ANNOTATIONTYPE = AnnotationType.TIMESEGMENT
     ACCEPTED_DATA = (TimedEvent,Description)
     XMLTAG = 'timing'
 
