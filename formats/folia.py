@@ -56,7 +56,7 @@ class AnnotatorType:
     
 
 class Attrib:
-    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY = range(7)
+    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY = range(7) #BEGINTIME, ENDTIME, SRC, SRCOFFSET, SPEAKER = range(12) #for later
 
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
     
@@ -255,7 +255,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         raise ValueError("Datetime is required")
     else:
         object.datetime = None        
-    
 
     if 'auth' in kwargs:
         object.auth = bool(kwargs['auth'])
@@ -2489,6 +2488,17 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
             if tuple(span.wrefs()) == words:
                return span        
         raise NoSuchAnnotation
+        
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None, origclass = None):
+        """Returns a RelaxNG definition for this element (as an XML element (lxml.etree) rather than a string)"""    
+    
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
+        if not extraattribs:
+            extraattribs = []
+        extraattribs.append(E.optional(E.attribute(E.text(), name='set')) )
+        super(AbstractAnnotationLayer,self).__init__(includechildren, extraattribs, extraelements, origclass)        
         
 # class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
     # """Annotation layers for Subtoken Annotation are derived from this abstract base class"""        
