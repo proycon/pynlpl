@@ -2498,7 +2498,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
         if not extraattribs:
             extraattribs = []
         extraattribs.append(E.optional(E.attribute(E.text(), name='set')) )
-        super(AbstractAnnotationLayer,self).__init__(includechildren, extraattribs, extraelements, origclass)        
+        return super(AbstractAnnotationLayer,self).__init__(includechildren, extraattribs, extraelements, origclass)        
         
 # class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
     # """Annotation layers for Subtoken Annotation are derived from this abstract base class"""        
