@@ -931,8 +931,9 @@ class AbstractElement(object):
         #Some attributes only need to be added if they are not the same as what's already set in the declaration    
         try:
             if self.set:
-                if len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys()[0] != self.set:
-                    attribs['{' + NSFOLIA + '}set'] = self.set        
+                if not self.ANNOTATIONTYPE in self.doc.annotationdefaults or len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys()[0] != self.set:
+                    if self.set != None:
+                        attribs['{' + NSFOLIA + '}set'] = self.set        
         except AttributeError:
             pass
         
@@ -2405,7 +2406,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
             if len(self.data) == 0: #just skip if there are no children
                 return ""
             else:
-                raise ValueError("No set specified or derivable for annotation layer")                
+                raise ValueError("No set specified or derivable for annotation layer " + self.__class__.__name__)                
         return super(AbstractAnnotationLayer, self).xml(attribs, elements, skipchildren)
     
     def append(self, child, *args, **kwargs):
