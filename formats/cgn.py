@@ -50,7 +50,8 @@ subsets = {
 }
 constraints = {
     'getal':['N','VNW'],
-    'pvagr':['WW'],
+    'npagr':['VNW','LID'],
+    'pvagr':['WW'],    
 }
 
 def parse_cgn_postag(rawtag, raisefeatureexceptions = False):
