@@ -167,7 +167,6 @@ class Tagger(object):
                         out += word + "\t" + lemma + "\t" + pos
                    else: 
                         if out: out += " "
-"
                         if '|' in word:
                             word = word.replace('|','_')
                         if '|' in lemma:
