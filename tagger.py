@@ -161,7 +161,7 @@ class Tagger(object):
                 for word, pos, lemma in zip(words,postags, lemmas):
                    if word is None: word = ""
                    if lemma is None: lemma = "?"
-                   if pos is None: pos = "?                    
+                   if pos is None: pos = "?"                    
                    if oneperline:
                         if out: out += "\n"
                         out += word + "\t" + lemma + "\t" + pos
