@@ -42,8 +42,9 @@ class Tagger(object):
                 raise Exception("Syntax: freeling:[host]:[port]")
             from pynlpl.clients.freeling import FreeLingClient
             self.mode = "freeling"
-            channel = args[1]
-            self.tagger = FreeLingClient(channel)            
+            host = args[1]
+            port = int(args[2])
+            self.tagger = FreeLingClient(host,port)            
         elif args[0] == "corenlp":
             if len(args) != 1:
                 raise Exception("Syntax: corenlp")
