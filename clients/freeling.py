@@ -31,10 +31,13 @@ class FreeLingClient:
     def process(self, sourcewords):
         """Process a list of words, passing it to the server and realigning the output with the original words"""
 
-        if isinstance( sourcewords, list ):
-            self.socket.sendall(u" ".join(sourcewords).encode(self.encoding) +'\r\n')
-        if isinstance( sourcewords, list ):
-            self.socket.sendall(sourcewords.encode(self.encoding) +'\r\n')
+        if isinstance( sourcewords, list ) or isinstance( sourcewords, tuple ):
+            sourcewords_s = u" ".join(sourcewords)            
+        else:
+            sourcewords_s = sourcewords
+            sourcewords = sourcewords.split(' ')
+        
+        self.socket.sendall(sourcewords_s.encode(self.encoding) +'\r\n')
 
         results = []
         done = False
