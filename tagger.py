@@ -177,7 +177,7 @@ class Tagger(object):
                 f_out.write("\n")
 
 def usage():
-    print >>sys.stderr, "tagger.py -c [conf] -f [filename]"
+    print >>sys.stderr, "tagger.py -c [conf] -f [input-filename] -o [output-filename]"
     
 
 if __name__ == "__main__":
@@ -187,18 +187,27 @@ if __name__ == "__main__":
         # print help information and exit:
         print str(err)
         usage()
-        sys.exit(2)           
+        sys.exit(2)   
+    
+    taggerconf = None
+    filename = None
+    outfilename = None        
+    oneperline = False
         
     for o, a in opts:
         if o == "-c":	
             taggerconf = a
         elif o == "-f":	
             filename = a
+        elif o == '-o':
+            outfilename =a
+        elif o == '-l':
+            oneperline = True
         else: 
             print >>sys.stderr,"Unknown option: ", o
             sys.exit(2)
     
-    taggerconf = None
+
     if not taggerconf:
         print >>sys.stderr, "ERROR: Specify a tagger configuration with -c"
         sys.exit(2)
@@ -206,6 +215,14 @@ if __name__ == "__main__":
         print >>sys.stderr, "ERROR: Specify a filename with -f"
         sys.exit(2)
     
+    f_out = sys.stdout
+    if outfilename: 
+        f_out = codecs.open(outfilename,'w','utf-8')
+    
+    f_in = codecs.open(filename,'r','utf-8')
+    
+    tagger = Tagger(*taggerconf.split(':'))
+    tagger.tag(f_in, f_out, oneperline)
     
     
       
