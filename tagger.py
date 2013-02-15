@@ -159,11 +159,15 @@ class Tagger(object):
                 words, postags, lemmas = self.process(words)
                 out = ""
                 for word, pos, lemma in zip(words,postags, lemmas):
+                   if word is None: word = ""
+                   if lemma is None: lemma = "?"
+                   if pos is None: pos = "?                    
                    if oneperline:
                         if out: out += "\n"
                         out += word + "\t" + lemma + "\t" + pos
                    else: 
                         if out: out += " "
+"
                         if '|' in word:
                             word = word.replace('|','_')
                         if '|' in lemma:
