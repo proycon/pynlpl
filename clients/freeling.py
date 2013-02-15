@@ -25,7 +25,11 @@ class FreeLingClient:
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.socket.settimeout(timeout)
         self.socket.connect( (host,int(port)) )
-        self.encoding = encoding        
+        self.encoding = encoding
+        self.socket.sendall('RESET_STATS\0')
+        r = self.socket.recv(self.BUFSIZE)
+        if not r.strip('\0') == 'FL-SERVER-READY':
+            raise Exception("Server not ready")
 
         
     def process(self, sourcewords):
@@ -37,7 +41,7 @@ class FreeLingClient:
             sourcewords_s = sourcewords
             sourcewords = sourcewords.split(' ')
         
-        self.socket.sendall(sourcewords_s.encode(self.encoding) +'\r\n')
+        self.socket.sendall(sourcewords_s.encode(self.encoding) +'\0')
 
         results = []
         done = False
@@ -45,7 +49,8 @@ class FreeLingClient:
             data = ""
             while not data or data[-1] != '\n':
                 moredata = self.socket.recv(self.BUFSIZE)
-                if not moredata: break
+                moredata = moredata.strip('\0')                
+                if not moredata or moredata == 'FL-SERVER-READY': break
                 data += moredata
                 data = unicode(data,self.encoding)
 
