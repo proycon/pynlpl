@@ -177,8 +177,7 @@ class Tagger(object):
                 f_out.write("\n")
 
 def usage():
-    print >>sys.stderr, "tagger.py -c [conf] -f [input-filename] -o [output-filename]"
-    
+    print >>sys.stderr, "tagger.py -c [conf] -f [input-filename] -o [output-filename]" 
 
 if __name__ == "__main__":
     try:
