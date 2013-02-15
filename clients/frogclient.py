@@ -17,6 +17,7 @@
 ###############################################################
 
 from socket import *
+from pynlpl.formats import folia
 
 class FrogClient:
     def __init__(self,host="localhost",port=12345, tadpole_encoding="utf-8", parser=False, timeout=120.0):
@@ -27,11 +28,13 @@ class FrogClient:
         self.socket.connect( (host,int(port)) )
         self.tadpole_encoding = tadpole_encoding
         self.parser = parser
+
+        
         
 
     def process(self,input_data, source_encoding="utf-8", return_unicode = True):
-        """Receives input_data in the form of a str or unicode object, passes this to the server, with proper consideration for the encodings, and returns the Tadpole output as a list of tuples: (word,pos,lemma,morphology), each of these is a proper unicode object unless return_unicode is set to False, in which case raw strings in the tadpole encoding will be returned."""
-        if isinstance(input_data, list):
+        """Receives input_data in the form of a str or unicode object, passes this to the server, with proper consideration for the encodings, and returns the Frog output as a list of tuples: (word,pos,lemma,morphology), each of these is a proper unicode object unless return_unicode is set to False, in which case raw strings will be returned."""
+        if isinstance(input_data, list) or isinstance(input_data, tuple):
             input_data = " ".join(input_data)
 
         input_data = input_data.strip(' \t\n')
