@@ -154,7 +154,10 @@ class Tagger(object):
             return words, pos, lemmas
     
      def tag(self, f_in, f_out,oneperline=False):
+        linenum = 0
         for line in f_in:
+            linenum += 1
+            print >>sys.stderr, " Tagger input @", linenum
             if line.strip():
                 words = line.strip().split(' ')
                 words, postags, lemmas = self.process(words)
