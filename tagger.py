@@ -202,6 +202,7 @@ if __name__ == "__main__":
     filename = None
     outfilename = None        
     oneperline = False
+    debug = False
         
     for o, a in opts:
         if o == "-c":	
@@ -212,6 +213,8 @@ if __name__ == "__main__":
             outfilename =a
         elif o == '-l':
             oneperline = True
+        elif o == '-D':
+            debug = True
         else: 
             print >>sys.stderr,"Unknown option: ", o
             sys.exit(2)
@@ -233,7 +236,7 @@ if __name__ == "__main__":
     f_in = codecs.open(filename,'r','utf-8')
     
     tagger = Tagger(*taggerconf.split(':'))
-    tagger.tag(f_in, f_out, oneperline)
+    tagger.tag(f_in, f_out, oneperline, debug)
     
     f_in.close()
     if outfilename:
