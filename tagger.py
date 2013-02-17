@@ -101,7 +101,7 @@ class Tagger(object):
             lemmas.append(lemma)
         yield newwords, postags, lemmas        
         
-     def process(self, words):
+     def process(self, words, debug):
         if self.mode == 'file':
             line = self.tagger.next()
             newwords = []
@@ -126,7 +126,7 @@ class Tagger(object):
         elif self.mode == "freeling":
             postags = []
             lemmas = []
-            for fields in self.tagger.process(words):
+            for fields in self.tagger.process(words, debug):
                 word, lemma,pos = fields[:3]
                 postags.append(pos)
                 lemmas.append(lemma)
