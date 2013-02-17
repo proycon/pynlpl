@@ -157,7 +157,7 @@ class Tagger(object):
             if line.strip():
                 words = line.strip().split(' ')
                 words, postags, lemmas = self.process(words)
-                out = ""
+                out = u""
                 for word, pos, lemma in zip(words,postags, lemmas):
                    if word is None: word = ""
                    if lemma is None: lemma = "?"
@@ -174,6 +174,8 @@ class Tagger(object):
                         if '|' in pos:
                             pos = pos.replace('|','_') 
                         out += word + "|" + lemma + "|" + pos
+                if not isinstance(out, unicode):
+                    out = unicode(out, 'utf-8')
                 f_out.write(out)
                 if oneperline:
                     f_out.write("\n\n")
