@@ -41,7 +41,7 @@ class FreeLingClient:
             sourcewords_s = sourcewords
             sourcewords = sourcewords.split(' ')
         
-        self.socket.sendall(sourcewords_s.encode(self.encoding) +'\0')
+        self.socket.sendall(sourcewords_s.encode(self.encoding) +'\n\0')
 
         results = []
         done = False
