@@ -20,6 +20,7 @@ import sys
 import codecs
 import json
 import getopt
+import locale
 
     
 class Tagger(object):    
@@ -220,10 +221,12 @@ if __name__ == "__main__":
         print >>sys.stderr, "ERROR: Specify a filename with -f"
         sys.exit(2)
     
-    f_out = sys.stdout
+        
     if outfilename: 
         f_out = codecs.open(outfilename,'w','utf-8')
-    
+    else:
+        f_out = codecs.getwriter(locale.getpreferredencoding())(sys.stdout);
+        
     f_in = codecs.open(filename,'r','utf-8')
     
     tagger = Tagger(*taggerconf.split(':'))
