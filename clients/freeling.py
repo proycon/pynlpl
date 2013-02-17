@@ -16,6 +16,7 @@
 
 
 import socket
+import sys
 
 class FreeLingClient:
     def __init__(self, host, port, encoding='utf-8', timeout=120.0):
