@@ -47,9 +47,9 @@ class FreeLingClient:
         done = False
         while not done:    
             data = ""
-            while not data or data[-1] != '\n':
+            while not data or data[-1] != '\0':
                 moredata = self.socket.recv(self.BUFSIZE)
-                moredata = moredata.strip('\0')                
+                moredata = moredata.strip('\0')               
                 if not moredata or moredata == 'FL-SERVER-READY': break
                 data += moredata
                 data = unicode(data,self.encoding)
