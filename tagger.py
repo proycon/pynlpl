@@ -180,9 +180,9 @@ class Tagger(object):
                         out += word + "|" + lemma + "|" + pos
                 if not isinstance(out, unicode):
                     out = unicode(out, 'utf-8')
-                f_out.write(out)
+                f_out.write(out + "\n")
                 if oneperline:
-                    f_out.write("\n\n")
+                    f_out.write("\n")
             else:
                 f_out.write("\n")
 
