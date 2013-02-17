@@ -32,7 +32,7 @@ class FreeLingClient:
             raise Exception("Server not ready")
 
         
-    def process(self, sourcewords):
+    def process(self, sourcewords, debug=False):
         """Process a list of words, passing it to the server and realigning the output with the original words"""
 
         if isinstance( sourcewords, list ) or isinstance( sourcewords, tuple ):
@@ -42,18 +42,19 @@ class FreeLingClient:
             sourcewords = sourcewords.split(' ')
         
         self.socket.sendall(sourcewords_s.encode(self.encoding) +'\n\0')
-
+        if debug: print >>sys.stderr,"Sent:",sourcewords_s.encode(self.encoding)
+        
         results = []
         done = False
         while not done:    
             data = ""
             while not data or data[-1] != '\0':
                 moredata = self.socket.recv(self.BUFSIZE)
-                if not moredata.strip('\0') or moredata.strip('\0') == 'FL-SERVER-READY': break
+                if not moredata.strip('\n\0') or moredata.strip('\n\0') == 'FL-SERVER-READY': break
                 data += moredata
             
             data = unicode(data,self.encoding)
-
+            if debug: print >>sys.stderr,"Received:",data.encode('utf-8') 
 
             for i, line in enumerate(data.strip(' \t\r\n').split('\n')):
                 if not line.strip():

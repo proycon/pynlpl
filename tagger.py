@@ -153,14 +153,14 @@ class Tagger(object):
                     pos.append('?')
             return words, pos, lemmas
     
-     def tag(self, f_in, f_out,oneperline=False):
+     def tag(self, f_in, f_out,oneperline=False, debug=False):
         linenum = 0
         for line in f_in:
             linenum += 1
-            print >>sys.stderr, " Tagger input @", linenum
+            print >>sys.stderr, " Tagger input @" + str(linenum)
             if line.strip():
                 words = line.strip().split(' ')
-                words, postags, lemmas = self.process(words)
+                words, postags, lemmas = self.process(words, debug)
                 out = u""
                 for word, pos, lemma in zip(words,postags, lemmas):
                    if word is None: word = ""
@@ -235,6 +235,9 @@ if __name__ == "__main__":
     tagger = Tagger(*taggerconf.split(':'))
     tagger.tag(f_in, f_out, oneperline)
     
+    f_in.close()
+    if outfilename:
+        f_out.close()
     
       
             
