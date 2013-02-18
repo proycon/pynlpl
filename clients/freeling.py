@@ -42,7 +42,7 @@ class FreeLingClient:
             sourcewords_s = sourcewords
             sourcewords = sourcewords.split(' ')
         
-        self.socket.sendall(sourcewords_s.encode(self.encoding) +'\0')
+        self.socket.sendall(sourcewords_s.encode(self.encoding) +'\n\0')
         if debug: print >>sys.stderr,"Sent:",sourcewords_s.encode(self.encoding)
         
         results = []
@@ -51,9 +51,14 @@ class FreeLingClient:
             data = ""
             while not data:
                 buffer = self.socket.recv(self.BUFSIZE)
-                if debug: print >>sys.stderr,"Buffer:",buffer.encode('utf-8')                    
-                if not buffer or not buffer.strip('\n\0') == 'FL-SERVER-READY': break
-                data += buffer
+                if debug: print >>sys.stderr,"Buffer: ["+repr(buffer)+"]"
+                if buffer[-1] == '\0':
+			data += buffer[:-1]
+			done = True
+			break
+		else:
+			data += buffer
+
             
             data = unicode(data,self.encoding)
             if debug: print >>sys.stderr,"Received:",data.encode('utf-8') 
