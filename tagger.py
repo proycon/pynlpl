@@ -142,7 +142,7 @@ class Tagger(object):
                     lemmas.append(worddata['Lemma'])
                     postags.append(worddata['PartOfSpeech'])
             return words, postags, lemmas
-        elif self.mode == 'tablelookup':
+        elif self.mode == 'lookup':
             postags = []
             lemmas = []
             for word in words:
@@ -152,6 +152,8 @@ class Tagger(object):
                     lemmas.append(word)
                     pos.append('?')
             return words, pos, lemmas
+        else:
+            raise Exception("Unknown mode")
     
      def tag(self, f_in, f_out,oneperline=False, debug=False):
         linenum = 0
