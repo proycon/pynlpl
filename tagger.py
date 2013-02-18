@@ -151,7 +151,7 @@ class Tagger(object):
                 except KeyError: 
                     lemmas.append(word)
                     postags.append('?')
-            return words, pos, lemmas
+            return words, postags, lemmas
         else:
             raise Exception("Unknown mode")
     
