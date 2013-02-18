@@ -110,10 +110,14 @@ class Tagger(object):
             postags = []
             lemmas = []    
             for item in line.split(' '):                            
-                word,lemma,pos = item.split('|')
-                newwords.append(word)
-                postags.append(pos)
-                lemmas.append(lemma)
+                if item.strip():
+                    try:
+                        word,lemma,pos = item.split('|')
+                    except:
+                        raise Exception("Unable to parse word|lemma|pos in " + item)
+                    newwords.append(word)
+                    postags.append(pos)
+                    lemmas.append(lemma)
             return newwords, postags, lemmas
         elif self.mode == "frog":
             newwords = []
