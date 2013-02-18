@@ -109,7 +109,7 @@ class Tagger(object):
             newwords = []
             postags = []
             lemmas = []    
-            for item in line:            
+            for item in line.split(' '):                            
                 word,lemma,pos = item.split('|')
                 newwords.append(word)
                 postags.append(pos)
