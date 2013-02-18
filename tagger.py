@@ -28,8 +28,8 @@ class Tagger(object):
         global WSDDIR
         self.tagger = None
         if args[0] == "file":
-            if len(args) != 3:
-                raise Exception("Syntax: frog:[filename]")
+            if len(args) != 2:
+                raise Exception("Syntax: file:[filename]")
             self.tagger = codecs.open(args[1],'r','utf-8') 
         elif args[0] == "frog":
             if len(args) != 3:
