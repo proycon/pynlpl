@@ -2,8 +2,7 @@
 #  PyNLPl - FreeLing Library
 #       by Maarten van Gompel (proycon)
 #       http://ilk.uvt.nl/~mvgompel
-#       Induction for Linguistic Knowledge Research Group
-#       Universiteit van Tilburg
+#       Radboud University Nijmegen
 #       
 #       Licensed under GPLv3
 # 
@@ -11,6 +10,9 @@
 # a FreeLing server. Allowing on-the-fly lemmatisation and
 # PoS-tagging. It is recommended to pass your data on a 
 # sentence-by-sentence basis to FreeLingClient.process()
+#
+# Make sure to start Freeling (analyzer)  with the --server 
+# and --flush flags !!!!!
 #
 ###############################################################
 
