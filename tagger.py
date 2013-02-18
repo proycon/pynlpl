@@ -186,38 +186,100 @@ class Tagger(object):
         else:
             raise Exception("Unknown mode")
     
-     def tag(self, f_in, f_out,oneperline=False, debug=False):
+    
+     
+    
+     def treetagger_tag(self, f_in, f_out,oneperline=False, debug=False):
+        
+        def flush(sentences):
+            if sentences:
+                print >>sys.stderr, " Processing " + str(len(sentences)) + " lines"                
+                for sentence in sentences:
+                    out = ""
+                    p = subprocess.Popen([self.tagger], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    (results, err) = p.communicate(u"\n".join(sentences).encode('utf-8'))
+                    for line in results.split('\n'):
+                        line = line.strip()
+                        if line:
+                            fields = line.split('\t')
+                            word = fields[0]
+                            pos = fields[1]
+                            lemma = fields[2]
+                            if oneperline:
+                                if out: out += "\n"
+                                out += word + "\t" + lemma + "\t" + pos
+                            else: 
+                                if out: out += " "
+                                if '|' in word:
+                                    word = word.replace('|','_')
+                                if '|' in lemma:
+                                    lemma = lemma.replace('|','_') 
+                                if '|' in pos:
+                                    pos = pos.replace('|','_') 
+                            out += word + "|" + lemma + "|" + pos
+                            if pos[0] == '$':
+                                out = unicode(out, 'utf-8')
+                                f_out.write(out + "\n")        
+                                if oneperline: f_out.write("\n")
+                                out = ""
+                            
+                if out:
+                   out = unicode(out, 'utf-8')
+                   f_out.write(out + "\n")   
+                   if oneperline: f_out.write("\n")
+                
+
+        #buffered tagging
+        sentences = []
         linenum = 0
-        for line in f_in:
-            linenum += 1
-            print >>sys.stderr, " Tagger input @" + str(linenum)
-            if line.strip():
-                words = line.strip().split(' ')
-                words, postags, lemmas = self.process(words, debug)
-                out = u""
-                for word, pos, lemma in zip(words,postags, lemmas):
-                   if word is None: word = ""
-                   if lemma is None: lemma = "?"
-                   if pos is None: pos = "?"                    
-                   if oneperline:
-                        if out: out += "\n"
-                        out += word + "\t" + lemma + "\t" + pos
-                   else: 
-                        if out: out += " "
-                        if '|' in word:
-                            word = word.replace('|','_')
-                        if '|' in lemma:
-                            lemma = lemma.replace('|','_') 
-                        if '|' in pos:
-                            pos = pos.replace('|','_') 
-                        out += word + "|" + lemma + "|" + pos
-                if not isinstance(out, unicode):
-                    out = unicode(out, 'utf-8')
-                f_out.write(out + "\n")
-                if oneperline:
+        
+        for line in f_in:                        
+            print >>sys.stderr, " Buffering input @" + str(linenum)
+            if not line.strip() or '.' in line[:-1] or '?' in line[:-1] or '!' in line[:-1] or (line[-1] != '.' and line[-1] != '?' and line[-1] != '!'): 
+                flush(sentences)
+                sentences = []
+                if not line.strip():
                     f_out.write("\n")
-            else:
-                f_out.write("\n")
+                    if oneperline: f_out.write("\n") 
+            sentences.append(line.strip())
+        flush(sentences)
+                        
+    
+     def tag(self, f_in, f_out,oneperline=False, debug=False):
+        if self.mode == 'treetagger':
+            self.treetagger_tag(f_in, f_out,oneperline=False, debug=False) 
+        else:
+            linenum = 0
+            for line in f_in:
+                linenum += 1
+                print >>sys.stderr, " Tagger input @" + str(linenum)
+                if line.strip():
+                    words = line.strip().split(' ')
+                    words, postags, lemmas = self.process(words, debug)
+                    out = u""
+                    for word, pos, lemma in zip(words,postags, lemmas):
+                       if word is None: word = ""
+                       if lemma is None: lemma = "?"
+                       if pos is None: pos = "?"                    
+                       if oneperline:
+                            if out: out += "\n"
+                            out += word + "\t" + lemma + "\t" + pos
+                       else: 
+                            if out: out += " "
+                            if '|' in word:
+                                word = word.replace('|','_')
+                            if '|' in lemma:
+                                lemma = lemma.replace('|','_') 
+                            if '|' in pos:
+                                pos = pos.replace('|','_') 
+                            out += word + "|" + lemma + "|" + pos
+                    if not isinstance(out, unicode):
+                        out = unicode(out, 'utf-8')
+                    f_out.write(out + "\n")
+                    if oneperline:
+                        f_out.write("\n")
+                else:
+                    f_out.write("\n")
 
 def usage():
     print >>sys.stderr, "tagger.py -c [conf] -f [input-filename] -o [output-filename]" 
