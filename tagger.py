@@ -21,7 +21,7 @@ import codecs
 import json
 import getopt
 import locale
-
+import subprocess
     
 class Tagger(object):    
      def __init__(self, *args):        
@@ -52,7 +52,12 @@ class Tagger(object):
             import corenlp
             self.mode = "corenlp"
             print >>sys.stderr, "Initialising Stanford Core NLP"
-            self.tagger = corenlp.StanfordCoreNLP()                        
+            self.tagger = corenlp.StanfordCoreNLP()
+        elif args[0] == 'treetagger':                        
+            if not len(args) == 2:
+                raise Exception("Syntax: treetagger:[treetagger-bin]")
+            self.tagger = args[1]            
+            self.mode = "treetagger"
         elif args[0] == "durmlex":
             if not len(args) == 2:
                 raise Exception("Syntax: durmlex:[filename]")
@@ -83,7 +88,7 @@ class Tagger(object):
                 pos = fields[2][0].lower()
                 self.tagger[wordform] = (lemma, pos)
                 print >>sys.stderr, "Loaded ", len(self.tagger), " wordforms"
-            f.close()
+            f.close()        
         else:
             raise Exception("Invalid mode: " + args[0])
         
@@ -154,6 +159,30 @@ class Tagger(object):
                     lemmas.append(word)
                     postags.append('?')
             return words, postags, lemmas
+        elif self.mode == 'treetagger':
+            s = u' '.join(words)
+            if isinstance(s, unicode):
+                s = s.encode('utf-8')
+            
+            p = subprocess.Popen([self.tagger], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)            
+            (out, err) = p.communicate(s)
+
+            newwords = []
+            postags = []
+            lemmas = []
+            for line in out.split('\n'):
+                line = line.strip()
+                if line:
+                    fields = line.split('\t')
+                    newwords.append( unicode(fields[0],'utf-8') )
+                    postags.append( unicode(fields[1],'utf-8') )
+                    lemmas.append( unicode(fields[2],'utf-8') )
+                                        
+            if p.returncode != 0:
+                print >>sys.stderr, err
+                raise OSError('TreeTagger failed')
+        
+            return newwords, postags, lemmas
         else:
             raise Exception("Unknown mode")
     
