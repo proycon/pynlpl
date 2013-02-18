@@ -103,6 +103,11 @@ class Tagger(object):
             lemmas.append(lemma)
         yield newwords, postags, lemmas        
         
+     def reset(self):
+        if self.mode == 'file':
+            self.tagger.seek(0)
+        
+        
      def process(self, words, debug=False):
         if self.mode == 'file':
             line = self.tagger.next()
