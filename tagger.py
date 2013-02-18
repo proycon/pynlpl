@@ -234,14 +234,16 @@ class Tagger(object):
         linenum = 0
         
         for line in f_in:                        
+            linenum += 1
             print >>sys.stderr, " Buffering input @" + str(linenum)
-            if not line.strip() or '.' in line[:-1] or '?' in line[:-1] or '!' in line[:-1] or (line[-1] != '.' and line[-1] != '?' and line[-1] != '!'): 
+            line = line.strip()
+            if not line or ('.' in line[:-1] or '?' in line[:-1] or '!' in line[:-1]) or (line[-1] != '.' and line[-1] != '?' and line[-1] != '!'): 
                 flush(sentences)
                 sentences = []
                 if not line.strip():
                     f_out.write("\n")
                     if oneperline: f_out.write("\n") 
-            sentences.append(line.strip())
+            sentences.append(line)
         flush(sentences)
                         
     
