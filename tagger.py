@@ -150,7 +150,7 @@ class Tagger(object):
                     lemma, pos = self.tagger[word.lower()]
                 except KeyError: 
                     lemmas.append(word)
-                    pos.append('?')
+                    postags.append('?')
             return words, pos, lemmas
         else:
             raise Exception("Unknown mode")
