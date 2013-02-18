@@ -50,7 +50,8 @@ class FreeLingClient:
         while not done:    
             data = ""
             while not data:
-                buffer = self.socket.recv(self.BUFSIZE)                
+                buffer = self.socket.recv(self.BUFSIZE)
+                if debug: print >>sys.stderr,"Buffer:",buffer.encode('utf-8')                    
                 if not buffer or not buffer.strip('\n\0') == 'FL-SERVER-READY': break
                 data += buffer
             
