@@ -148,6 +148,8 @@ class Tagger(object):
             for word in words:
                 try:
                     lemma, pos = self.tagger[word.lower()]
+                    lemmas.append(lemma)
+                    postags.append(pos)
                 except KeyError: 
                     lemmas.append(word)
                     postags.append('?')
