@@ -17,7 +17,6 @@
 ###############################################################
 
 from socket import *
-from pynlpl.formats import folia
 
 class FrogClient:
     def __init__(self,host="localhost",port=12345, tadpole_encoding="utf-8", parser=False, timeout=120.0):
