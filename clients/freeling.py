@@ -24,7 +24,7 @@ class FreeLingClient:
     def __init__(self, host, port, encoding='utf-8', timeout=120.0):
         """Initialise the client, set channel to the path and filename where the server's .in and .out pipes are (without extension)"""
         self.encoding = encoding
-        self.BUFSIZE = 4096
+        self.BUFSIZE = 10240
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.socket.settimeout(timeout)
         self.socket.connect( (host,int(port)) )
