@@ -25,7 +25,100 @@
 
 import bz2
 from itertools import izip
+import copy
+import codecs
 
+class GizaSentenceAlignment(object):
+    
+    def __init__(self, sourceline, targetline, index):    
+        self.index = index
+        self.alignment = []
+        if sourceline:
+            self.source = self._parsesource(sourceline)
+        else: 
+            self.source = []
+        self.target = targetline
+                
+    def _parsesource(self, line):
+        cleanline = ""
+        
+        inalignment = False
+        begin = 0
+        sourceindex = 0
+        
+        for i in range(0,len(line)):
+            if line[i] == ' ' or i == len(line) - 1:
+                if i == len(line) - 1:
+                    offset = 1
+                else:
+                    offset = 0
+                
+                word = line[begin:begin+i+offset]
+                if word == '})':
+                    inalignment = False
+                    begin = i + 1
+                    continue
+                elif word == "({":
+                    inalignment = True
+                    begin = i + 1
+                    continue
+                if not word.strip() and word != 'NULL':
+                    if not inalignment:
+                        sourceindex += 1
+                        if not cleanline: cleanline += " "
+                        cleanline += word
+                    else:
+                        targetindex = int(word)
+                        self.alignment.append( (sourceindex, targetindex) )
+                begin = i + 1
+        
+        return cleanline
+        
+        
+    def intersect(self,other):
+        intersection = copy.copy(self)
+        intersection.alignment = []
+        
+        for sourceindex, targetindex in self.alignment:
+            for targetindex2, sourceindex2 in other.alignment:
+                if targetindex2 == targetindex and sourceindex2 == sourceindex:
+                    intersection.alignment.append( (sourceindex, targetindex) )
+        return intersection            
+    
+class GizaModel(object):
+    def __init__(self, filename, encoding= 'utf-8'):
+        self.f = codecs.open(filename,'r',encoding)        
+        self.nextlinebuffer = None
+        
+        
+    def __iter__(self):
+        self.f.seek(0)
+        nextlinebuffer = self.f.next()  
+        sentenceindex = 0
+    
+        done = False
+        while not done:
+            sentenceindex += 1
+            line = nextlinebuffer
+            if line[0] != '#': 
+                raise Exception("Error parsing GIZA++ Alignment at sentence " +  str(sentenceindex) + ", expected new fragment, found: " + repr(line))
+        
+            targetline = self.f.next()
+            sourceline = self.f.next()
+        
+            yield GizaSentenceAlignment(sourceline, targetline, sentenceindex)
+        
+            try:
+                nextlinebuffer = self.f.next()
+            except StopIteration:      
+                done = True
+               
+
+    def __del__(self):
+        if self.f: self.f.close()
+        
+
+#------------------ OLD -------------------
 
 def parseAlignment(tokens): #by Sander Canisius
     assert tokens.pop(0) == "NULL"
