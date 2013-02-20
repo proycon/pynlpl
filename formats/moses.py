@@ -22,7 +22,7 @@ from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 
 class PhraseTable:
-    def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 5, align2_column = 4):
+    def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 5, align2_column = 4, max_sourcen = 0):
         """Load a phrase table from file into memory (memory intensive!)"""
         self.phrasetable = {}
         if filename.split(".")[-1] == "bz2":
@@ -65,7 +65,8 @@ class PhraseTable:
                 source = segments[0] #tuple(segments[0].split(" "))
                 target = segments[1] #tuple(segments[1].split(" "))
 
-            self.append(source, target,Pst,Pts,null_alignments)
+            if max_sourcen == 0 or (len(source.split(' ')) <= max_sourcen):
+                self.append(source, target,Pst,Pts,null_alignments)
                         
         f.close()        
 
