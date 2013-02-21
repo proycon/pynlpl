@@ -73,7 +73,7 @@ class GizaSentenceAlignment(object):
                 begin = i + 1
         
         return cleanline
-        
+    
         
     def intersect(self,other):
         intersection = copy.copy(self)
@@ -83,7 +83,26 @@ class GizaSentenceAlignment(object):
             for targetindex2, sourceindex2 in other.alignment:
                 if targetindex2 == targetindex and sourceindex2 == sourceindex:
                     intersection.alignment.append( (sourceindex, targetindex) )
+                    
         return intersection            
+    
+    def getalignedtarget(self, index):
+        targetindices = []
+        target = None
+        for sourceindex, targetindex in self.alignment:
+            if sourceindex == index:
+                targetindices.append()
+        if len(targetindices) > 1:
+            consecutive = True
+            for i in range(1,len(targetindices)):
+                if abs(targetindices[i] - targetindices[i-1]) != 1:  
+                    consecutive  = False
+                    break
+            if consecutive:
+                target = ' '.join(self.target.split(' ')[min(targetindices):max(targetindices)+1])
+        elif targetindices:
+            target = self.target.split(' ')[targetindices[0]]
+        return target
     
 class GizaModel(object):
     def __init__(self, filename, encoding= 'utf-8'):
