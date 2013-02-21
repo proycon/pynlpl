@@ -98,6 +98,7 @@ class GizaSentenceAlignment(object):
     def getalignedtarget(self, index):
         targetindices = []
         target = None
+        foundindex = -1
         for sourceindex, targetindex in self.alignment:
             if sourceindex == index:
                 targetindices.append(sourceindex)
@@ -108,10 +109,13 @@ class GizaSentenceAlignment(object):
                     consecutive  = False
                     break
             if consecutive:
+                foundindex = (min(targetindices), max(targetindices))
                 target = ' '.join(self.target[min(targetindices):max(targetindices)+1])
         elif targetindices:
-            target = self.target[targetindices[0]]
-        return target
+            foundindex = targetindices[0]
+            target = self.target[foundindex]
+            
+        return target, foundindex
     
 class GizaModel(object):
     def __init__(self, filename, encoding= 'utf-8'):
