@@ -86,6 +86,14 @@ class GizaSentenceAlignment(object):
                     
         return intersection            
     
+    def __repr__(self):
+        s = self.source + " ||| "
+        s += self.target + " ||| "
+        for S,T in sorted(self.alignment): 
+            s += self.source[S] + "->" + self.target[T]
+        return s
+
+    
     def getalignedtarget(self, index):
         targetindices = []
         target = None
