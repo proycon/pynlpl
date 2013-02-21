@@ -34,10 +34,10 @@ class GizaSentenceAlignment(object):
         self.index = index
         self.alignment = []
         if sourceline:
-            self.source = self._parsesource(sourceline)
+            self.source = self._parsesource(sourceline.strip())
         else: 
             self.source = []
-        self.target = targetline
+        self.target = targetline.strip().split(' ')
                 
     def _parsesource(self, line):
         cleanline = ""
@@ -53,7 +53,7 @@ class GizaSentenceAlignment(object):
                 else:
                     offset = 0
                 
-                word = line[begin:begin+i+offset]
+                word = line[begin:i+offset]
                 if word == '})':
                     inalignment = False
                     begin = i + 1
@@ -62,20 +62,21 @@ class GizaSentenceAlignment(object):
                     inalignment = True
                     begin = i + 1
                     continue
-                if not word.strip() and word != 'NULL':
+                if word.strip() and word != 'NULL':
                     if not inalignment:
                         sourceindex += 1
-                        if not cleanline: cleanline += " "
+                        if cleanline: cleanline += " "
                         cleanline += word
                     else:
                         targetindex = int(word)
-                        self.alignment.append( (sourceindex, targetindex) )
+                        self.alignment.append( (sourceindex-1, targetindex-1) )
                 begin = i + 1
         
-        return cleanline
+        return cleanline.split(' ')
     
         
     def intersect(self,other):
+        assert other.target == self.source
         intersection = copy.copy(self)
         intersection.alignment = []
         
@@ -87,10 +88,10 @@ class GizaSentenceAlignment(object):
         return intersection            
     
     def __repr__(self):
-        s = self.source + " ||| "
-        s += self.target + " ||| "
+        s = " ".join(self.source).encode('utf-8') + " ||| "
+        s += " ".join(self.target).encode('utf-8') + " ||| "
         for S,T in sorted(self.alignment): 
-            s += self.source[S] + "->" + self.target[T]
+            s += self.source[S].encode('utf-8') + "->" + self.target[T].encode('utf-8') + " ; "
         return s
 
     
@@ -107,9 +108,9 @@ class GizaSentenceAlignment(object):
                     consecutive  = False
                     break
             if consecutive:
-                target = ' '.join(self.target.split(' ')[min(targetindices):max(targetindices)+1])
+                target = ' '.join(self.target[min(targetindices):max(targetindices)+1])
         elif targetindices:
-            target = self.target.split(' ')[targetindices[0]]
+            target = self.target[targetindices[0]]
         return target
     
 class GizaModel(object):
