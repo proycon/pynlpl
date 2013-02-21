@@ -91,7 +91,7 @@ class GizaSentenceAlignment(object):
         target = None
         for sourceindex, targetindex in self.alignment:
             if sourceindex == index:
-                targetindices.append()
+                targetindices.append(sourceindex)
         if len(targetindices) > 1:
             consecutive = True
             for i in range(1,len(targetindices)):
