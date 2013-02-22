@@ -78,7 +78,7 @@ class GizaSentenceAlignment(object):
         
     def intersect(self,other):
         if other.target != self.source:
-            print >>stderr,"Mismatch between self.source and other.target: " + repr(self.source) + " -- vs -- " + repr(other.targetwords)
+            print >>stderr,"Mismatch between self.source and other.target: " + repr(self.source) + " -- vs -- " + repr(other.target)
             return None
             
         intersection = copy.copy(self)
