@@ -27,6 +27,7 @@ import bz2
 from itertools import izip
 import copy
 import codecs
+from sys import stderr
 
 class GizaSentenceAlignment(object):
     
@@ -76,7 +77,10 @@ class GizaSentenceAlignment(object):
     
         
     def intersect(self,other):
-        assert other.target == self.source
+        if other.target != self.source:
+            print >>stderr,"Mismatch between self.source and other.target: " + repr(self.source) + " -- vs -- " + repr(other.targetwords)
+            return None
+            
         intersection = copy.copy(self)
         intersection.alignment = []
         
