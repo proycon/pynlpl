@@ -31,7 +31,7 @@ class FrogClient:
         
         
 
-    def process(self,input_data, source_encoding="utf-8", return_unicode = True):
+    def process(self,input_data, source_encoding="utf-8", return_unicode = True, oldfrog=False):
         """Receives input_data in the form of a str or unicode object, passes this to the server, with proper consideration for the encodings, and returns the Frog output as a list of tuples: (word,pos,lemma,morphology), each of these is a proper unicode object unless return_unicode is set to False, in which case raw strings will be returned."""
         if isinstance(input_data, list) or isinstance(input_data, tuple):
             input_data = " ".join(input_data)
@@ -43,7 +43,9 @@ class FrogClient:
         #print "SEND: ",input_data #DEBUG
         if not isinstance(input_data, unicode):
             input_data = unicode(input_data, source_encoding) #decode (or preferably do this in an earlier stage)
-        self.socket.sendall(input_data.encode(self.tadpole_encoding) +'\r\n') #send to socket in desired encoding
+        s = input_data.encode(self.tadpole_encoding) +'\r\n'
+        if not oldfrog: s + 'EOT\r\n'
+        self.socket.sendall(s) #send to socket in desired encoding
         tp_output = []
 
         done = False
