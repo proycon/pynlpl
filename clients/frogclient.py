@@ -44,7 +44,7 @@ class FrogClient:
         if not isinstance(input_data, unicode):
             input_data = unicode(input_data, source_encoding) #decode (or preferably do this in an earlier stage)
         s = input_data.encode(self.tadpole_encoding) +'\r\n'
-        if not oldfrog: s + 'EOT\r\n'
+        if not oldfrog: s += 'EOT\r\n'
         self.socket.sendall(s) #send to socket in desired encoding
         tp_output = []
 
