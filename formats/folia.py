@@ -33,8 +33,8 @@ import urllib
 import multiprocessing
 import threading
 
-FOLIAVERSION = '0.9.0' #0.9 pre
-LIBVERSION = '0.9.0.29' #== FoLiA version + library revision
+FOLIAVERSION = '0.9.1'
+LIBVERSION = '0.9.1.30' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -61,7 +61,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
     
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG = range(33)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING = range(34)
     
     #Alternative is a special one, not declared and not used except for ID generation
                   
@@ -844,6 +844,7 @@ class AbstractElement(object):
                 
         child.postappend()
         return child        
+
             
     @classmethod
     def findreplacables(Class, parent, set=None,**kwargs):
@@ -2009,7 +2010,16 @@ class TextContent(AbstractElement):
             E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
             return E.define( E.element(E.text(), E.optional( E.attribute(name='offset')), E.optional( E.attribute(name='class')),name=cls.XMLTAG ), name=cls.XMLTAG, ns=NSFOLIA)
 
-
+class String(AbstractElement):
+   """String"""
+   ACCEPTED_DATA = (TextContent,Alignment,Description, Metric, Correction)
+   XMLTAG = 'str'
+   REQUIRED_ATTRIBS = ()
+   OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
+   ANNOTATIONTYPE = AnnotationType.STRING
+   OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
+   OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
+   
 
 class Linebreak(AbstractStructureElement):
     """Line break element, signals a line break"""
@@ -3260,7 +3270,7 @@ class Sentence(AbstractStructureElement):
     def correctwords(self, originalwords, newwords, **kwargs):
         """Generic correction method for words. You most likely want to use the helper functions
            splitword() , mergewords(), deleteword(), insertword() instead"""
-        for w in originalwords:            
+        for w in originalwords:           
             if not isinstance(w, Word):
                 raise Exception("Original word is not a Word instance: " + str(type(w)))    
             elif w.sentence() != self:
