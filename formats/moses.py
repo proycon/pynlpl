@@ -65,7 +65,7 @@ class PhraseTable:
                 source = segments[0] #tuple(segments[0].split(" "))
                 target = segments[1] #tuple(segments[1].split(" "))
 
-            if max_sourcen == 0 or (len(source.split(' ')) <= max_sourcen):
+            if max_sourcen == 0 or (len(source.split(' ')) <= max_sourcen):                      
                 self.append(source, target,Pst,Pts,null_alignments)
                         
         f.close()        

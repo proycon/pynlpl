@@ -222,8 +222,6 @@ def strip_accents(s, encoding= 'utf-8'):
     else:
        return unicodedata.normalize('NFKD', unicode(s,encoding)).encode('ASCII', 'ignore')
 
-
-
 def swap(tokens, maxdist=2):
     """Perform a swap operation on a sequence of tokens, exhaustively swapping all tokens up to the maximum specified distance. This is a subset of all permutations."""
     assert maxdist >= 2
