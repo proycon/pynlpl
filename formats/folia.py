@@ -38,7 +38,7 @@ if sys.version < '3':
     from StringIO import StringIO
     from urllib import urlopen
 else:
-    from io import StringIO
+    from io import StringIO,  BytesIO
     from urllib.request import urlopen
     
 from copy import copy, deepcopy
@@ -50,7 +50,7 @@ import inspect
 import glob
 import os
 import re
-
+import io
 import multiprocessing
 import threading
 
@@ -168,7 +168,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             else:
                 raise ValueError("Set '" + object.set + "' is used for " + object.__class__.__name__ + ", but has no declaration!")            
     elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
-        object.set = doc.annotationdefaults[annotationtype].keys()[0]    
+        object.set = list(doc.annotationdefaults[annotationtype].keys())[0]    
     elif Attrib.CLASS in required or Attrib.SETONLY in required:
         raise ValueError("Set is required for " + object.__class__.__name__)
     else:
@@ -356,16 +356,46 @@ def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-t
     else:
       values["microsecond"] = values["microsecond"][1:]
       values["microsecond"] += "0" * (6 - len(values["microsecond"]))
-    values = dict((k, int(v)) for k, v in values.iteritems()
-                  if not k.startswith("tz"))
+    values = dict((k, int(v)) for k, v in values.items() if not k.startswith("tz"))
     try:
-        
       return datetime(**values) # , tz
     except ValueError:
       pass
   return None
 
 
+def xmltreefromstring(s, bypassleak=False):
+       #Internal method, deals with different Python versions, unicode strings versus bytes, and with the leak bug in lxml        
+       if sys.version < '3':
+            #Python 2
+            if isinstance(s,str):                    
+                if bypassleak: 
+                    s = unicode(s,'utf-8')
+                    s = s.replace(' xml:id=', ' id=')    
+                s = s.encode('utf-8')
+            elif isinstance(s,unicode):
+                if bypassleak: s = s.replace(' xml:id=', ' id=')
+                s = s.encode('utf-8')                    
+            else:
+                raise Exception("Expected string, got " + type(kwargs['string']))
+            return ElementTree.parse(StringIO(s))
+       else:
+            #Python 3
+            if isinstance(s,bytes):
+                if bypassleak: 
+                    s = str(s,'utf-8')
+                    s = s.replace(' xml:id=', ' id=')
+                s = s.encode('utf-8')                       
+            elif isinstance(s,str):
+                if bypassleak: s = s.replace(' xml:id=', ' id=')                    
+                s = s.encode('utf-8')
+            return ElementTree.parse(BytesIO(s))
+
+def makeelement(E, tagname, **kwargs): 
+    if sys.version < '3':
+        return E._makeelement(tagname.encode('utf-8'), **{ k.encode('utf-8'): v.encode('utf-8') for k,v in kwargs.items() } )
+    else:
+        return E._makeelement(tagname,**kwargs)
         
         
 class AbstractElement(object):
@@ -957,7 +987,7 @@ class AbstractElement(object):
         #Some attributes only need to be added if they are not the same as what's already set in the declaration    
         try:
             if self.set:
-                if not self.ANNOTATIONTYPE in self.doc.annotationdefaults or len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys()[0] != self.set:
+                if not self.ANNOTATIONTYPE in self.doc.annotationdefaults or len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or list(self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys())[0] != self.set:
                     if self.set != None:
                         attribs['{' + NSFOLIA + '}set'] = self.set        
         except AttributeError:
@@ -1016,8 +1046,9 @@ class AbstractElement(object):
                         attribs[c2.SUBSET] = c2.cls
                         omitchildren.append(c2) #and skip them as elements                        
                         break #only one
-                        
-        e  = E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
+        
+        e  = makeelement(E, '{' + NSFOLIA + '}' + self.XMLTAG, **attribs)                
+                
         
             
         if not skipchildren and self.data:
@@ -1043,9 +1074,16 @@ class AbstractElement(object):
         return e
 
     def xmlstring(self, pretty_print=False):
-        """Serialises this FoLiA element to XML, returns a string with XML representation for this element and all its children."""
+        """Serialises this FoLiA element to XML, returns a (unicode) string with XML representation for this element and all its children."""
         global LXE
         s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')
+        if sys.version < '3':
+            if isinstance(s, str):
+                s = unicode(s,'utf-8')
+        else:
+            if isinstance(s,bytes):
+                s = str(s,'utf-8')
+                
         if self.doc and self.doc.bypassleak:
             s = s.replace('XMLid=','xml:id=')                        
         s = s.replace('ns0:','') #ugly patch to get rid of namespace prefix
@@ -2317,7 +2355,7 @@ class Feature(AbstractElement):
         if self.subset != self.SUBSET:
             attribs['{' + NSFOLIA + '}subset'] = self.subset 
         attribs['{' + NSFOLIA + '}class'] =  self.cls
-        return E._makeelement('{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
+        return makeelement(E,'{' + NSFOLIA + '}' + self.XMLTAG, **attribs)        
 
     @classmethod
     def relaxng(cls, includechildren=True, extraattribs = None, extraelements=None):
@@ -2413,7 +2451,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
         if 'set' in kwargs:
             self.set = kwargs['set']        
         elif self.ANNOTATIONTYPE in doc.annotationdefaults and len(doc.annotationdefaults[self.ANNOTATIONTYPE]) == 1:
-            self.set = doc.annotationdefaults[self.ANNOTATIONTYPE].keys()[0]
+            self.set = list(doc.annotationdefaults[self.ANNOTATIONTYPE].keys())[0]
         else:            
             self.set = False            
             # ok, let's not raise an error yet, may may still be able to derive a set from elements that are appended
@@ -3681,25 +3719,27 @@ class Document(object):
             if not self.bypassleak: 
                 self.load(self.filename)                                                
             else:
-                f = io.open(self.filename,'r',encoding='utf-8')
+                f = io.open(self.filename,'r',encoding='utf-8') 
                 contents = f.read()
                 f.close()
-                contents = contents.replace(' xml:id=', ' id=')
-                self.tree = ElementTree.parse(StringIO(contents))
+                #contents is bytes (utf-8 bytes)
+                self.tree = xmltreefromstring(contents,self.bypassleak)
                 self.parsexml(self.tree.getroot())              
         elif 'string' in kwargs:
-            s = kwargs['string']
-            if self.bypassleak: 
-                s = s.replace(' xml:id=', ' id=')
-            self.tree = ElementTree.parse(StringIO(s))
+            self.tree = xmltreefromstring(kwargs['string'],self.bypassleak)
+            del kwargs['string'] 
             self.parsexml(self.tree.getroot())
             if self.mode != Mode.XPATH:
                 #XML Tree is now obsolete (only needed when partially loaded for xpath queries)
-                self.tree = None    
+                self.tree = None         
         elif 'tree' in kwargs:
             self.parsexml(kwargs['tree'])
         else:
             raise Exception("No ID, filename or tree specified")        
+                           
+        if self.mode != Mode.XPATH:
+            #XML Tree is now obsolete (only needed when partially loaded for xpath queries), free memory
+            self.tree = None
                     
     #def __del__(self):
     #    del self.index
@@ -3738,17 +3778,17 @@ class Document(object):
             
     def findwords(self, *args, **kwargs):
         if 'leftcontext' in kwargs:
-            leftcontext = kwargs['leftcontext']
+            leftcontext = int(kwargs['leftcontext'])
             del kwargs['leftcontext']
         else:
             leftcontext = 0
         if 'rightcontext' in kwargs:
-            rightcontext =  kwargs['rightcontext']            
+            rightcontext =  int(kwargs['rightcontext'])            
             del kwargs['rightcontext']
         else:
             rightcontext = 0
         if 'maxgapsize' in kwargs:
-            maxgapsize = kwargs['maxgapsize']
+            maxgapsize = int(kwargs['maxgapsize'])
             del kwargs['maxgapsize']
         else:
             maxgapsize = 10
@@ -3760,10 +3800,10 @@ class Document(object):
         
         #shortcut for when no Pattern is passed, make one on the fly
         if len(args) == 1 and not isinstance(args[0], Pattern):
-            if not isinstance(args[0], list) and not  isinstance(args[0], tuple):
+            if not isinstance(args[0], list) and not isinstance(args[0], tuple):
                 args[0] = [args[0]] 
             args[0] = Pattern(*args[0])
-                
+
         
         
         unsetwildcards = False
@@ -3806,8 +3846,8 @@ class Document(object):
                         if pattern.variablesize():
                             patterns += list(pattern.resolve(size,distribution))
                         else:
-                            patterns.append( pattern )
-                    for match in self.findwords(*patterns, **{'leftcontext':leftcontext,'rightcontext':rightcontext}):
+                            patterns.append( pattern )                      
+                    for match in self.findwords(*patterns, **{'leftcontext':leftcontext,'rightcontext':rightcontext}):                           
                         yield match
                                             
         else:                
@@ -3848,8 +3888,8 @@ class Document(object):
                         else:
                             match[i] = False
                     
-                        
-                for buffer, matches in zip(buffers, match):
+                                        
+                for buffer, matches in list(zip(buffers, match)):
                     if matches:
                         buffer.append(word) #add the word
                         if len(buffer) == len(pattern.sequence):
@@ -3964,7 +4004,7 @@ class Document(object):
                 elif value:
                     attribs['{' + NSFOLIA + '}' + key] = value
             if label:
-                l.append( E._makeelement('{' + NSFOLIA + '}' + label.lower() + '-annotation', **attribs) )
+                l.append( makeelement(E,'{' + NSFOLIA + '}' + label.lower() + '-annotation', **attribs) )
             else:
                 raise Exception("Invalid annotation type")            
         return l
@@ -4021,7 +4061,7 @@ class Document(object):
             if self.metadatafile:
                 return [] #external
             elif self.metadata:
-                return [ElementTree.parse(StringIO(self.metadata)).getroot()] #inline
+                return [xmltreefromstring(self.metadata).getroot()] #inline
             else:
                 return []
         elif self.metadatatype == MetaDataType.CMDI: #CMDI, by definition external
@@ -4140,7 +4180,7 @@ class Document(object):
     def defaultset(self, annotationtype):
         if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         try:
-            return self.annotationdefaults[annotationtype].keys()[0]
+            return list(self.annotationdefaults[annotationtype].keys())[0]
         except IndexError:
             raise NoDefaultError
         
@@ -4298,7 +4338,7 @@ class Document(object):
         if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)):
             node = node.getroot()
         elif isstring(node):
-            node = ElementTree.parse(StringIO(u(node))).getroot()                         
+            node = xmltreefromstring(node).getroot()                         
             
         if node.tag == '{' + NSFOLIA + '}FoLiA':
             if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found FoLiA document",file=stderr)
@@ -4411,6 +4451,13 @@ class Document(object):
            
     def xmlstring(self):
         s = ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
+        if sys.version < '3':
+            if isinstance(s, str):
+                s = unicode(s,'utf-8')
+        else:
+            if isinstance(s,bytes):
+                s = str(s,'utf-8')
+        
         if self.bypassleak:
             return s.replace('XMLid=','xml:id=')            
         else:
@@ -4814,9 +4861,9 @@ class SetDefinition(AbstractDefinition):
 def loadsetdefinition(filename):
     global NSFOLIA
     if filename[0:7] == 'http://':
-        f = urlopen(filename)
+        f = urlopen(filename)        
         try:
-            tree = ElementTree.parse(StringIO("\n".join(f.readlines())))
+            tree = xmltreefromstring("\n".join(f.readlines()))
         except IOError:
             raise DeepValidationError("Unable to download " + set)
         f.close()
@@ -4916,7 +4963,10 @@ class Reader(object):
             data = f.read()
             data = data.replace(' xml:id="',' id="')
             f.close()
-            f = StringIO(data)
+            if sys.version < '3':
+                f = StringIO(data.encode('utf-8'))
+            else:
+                f = BytesIO(data.encode('utf-8'))
         
         doc = None           
         metadata = False   

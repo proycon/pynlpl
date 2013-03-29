@@ -12,16 +12,32 @@
 #
 #----------------------------------------------------------------
 
+
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from pynlpl.common import u, isstring
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
+
 import sys
 import os
 import unittest
-import codecs
-sys.path.append(sys.path[0] + '/../../')
-os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
+import io
+
 
 FOLIAPATH = '../../FoLiA/'
-
-from StringIO import StringIO
+if sys.version < '3':
+    from StringIO import StringIO
+else:
+    from io import StringIO, BytesIO
 from datetime import datetime
 import lxml.objectify
 from pynlpl.formats import folia
@@ -48,12 +64,12 @@ def xmlcheck(xml,expect):
     #xml = lxml.etree.tostring(obj2)        
     #passed = (expect == xml)
     if not passed:
-        print >>sys.stderr,"XML fragments don't match:"
-        print >>sys.stderr,"--------------------------REFERENCE-------------------------------------"
-        print expect
-        print >>sys.stderr,"--------------------------ACTUAL RESULT---------------------------------"
-        print xml
-        print >>sys.stderr,"------------------------------------------------------------------------"
+        print("XML fragments don't match:",file=stderr)
+        print("--------------------------REFERENCE-------------------------------------",file=stderr)
+        print(expect,file=stderr)
+        print("--------------------------ACTUAL RESULT---------------------------------",file=stderr)
+        print(xml,file=stderr)
+        print("------------------------------------------------------------------------",file=stderr)
     return passed
 
 
@@ -63,7 +79,7 @@ class Test1Read(unittest.TestCase):
         """Reading from file"""
         global FOLIAEXAMPLE
         #write example to file
-        f = codecs.open('/tmp/foliatest.xml','w','utf-8')
+        f = io.open('/tmp/foliatest.xml','w',encoding='utf-8')
         f.write(FOLIAEXAMPLE)    
         f.close()
         
@@ -76,21 +92,31 @@ class Test1Read(unittest.TestCase):
         
                 
     def test2_readfromstring(self):        
-        """Reading from string"""        
+        """Reading from string (unicode)"""        
         global FOLIAEXAMPLE
         doc = folia.Document(string=FOLIAEXAMPLE)
         self.assertTrue(isinstance(doc,folia.Document))
+
+    def test2_readfromstring(self):        
+        """Reading from string (bytes)"""        
+        global FOLIAEXAMPLE
+        doc = folia.Document(string=FOLIAEXAMPLE.encode('utf-8'))
+        self.assertTrue(isinstance(doc,folia.Document))
         
     def test3_readfromstring(self):        
-        """Reading from pre-parsed XML tree"""        
+        """Reading from pre-parsed XML tree (as unicode(Py2)/str(Py3) obj)"""        
         global FOLIAEXAMPLE
-        doc = folia.Document(tree=ElementTree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
+        if sys.version < '3':
+            doc = folia.Document(tree=ElementTree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
+        else:
+            doc = folia.Document(tree=ElementTree.parse(BytesIO(FOLIAEXAMPLE.encode('utf-8'))))            
         self.assertTrue(isinstance(doc,folia.Document))
+        
 
     def test4_readdcoi(self):        
         """Reading D-Coi file"""
         global DCOIEXAMPLE
-        doc = folia.Document(string=DCOIEXAMPLE.encode('iso-8859-15'))
+        doc = folia.Document(string=DCOIEXAMPLE)
         #doc = folia.Document(tree=lxml.etree.parse(StringIO(DCOIEXAMPLE.encode('iso-8859-15'))))
         self.assertTrue(isinstance(doc,folia.Document))
         self.assertEqual(len(doc.words()),1465)
@@ -124,8 +150,9 @@ class Test2Sanity(unittest.TestCase):
         self.assertTrue( isinstance(w, folia.Word) )
         self.assertEqual( w.id , 'WR-P-E-J-0000000001.head.1.s.1.w.1' )         
         self.assertEqual( w.text() , "Stemma" ) 
-        self.assertEqual( str(w) , "Stemma" ) 
-        self.assertEqual( unicode(w) , u"Stemma" ) 
+        self.assertEqual( str(w) , "Stemma" ) #should be unicode object also in Py2! 
+        if sys.version < '3':
+            self.assertEqual( unicode(w) , "Stemma" ) 
         
         
     def test005_last_word(self):                                    
@@ -278,7 +305,7 @@ class Test2Sanity(unittest.TestCase):
     def test017_gap(self):            
         """Sanity Check - Gap"""
         gap = self.doc["WR-P-E-J-0000000001.gap.1"]
-        self.assertEqual( gap.content().strip()[:11], u'De tekst is')
+        self.assertEqual( gap.content().strip()[:11], 'De tekst is')
         self.assertEqual( gap.cls, 'backmatter')
         self.assertEqual( gap.description(), 'Backmatter')
         
@@ -657,7 +684,7 @@ class Test2Sanity(unittest.TestCase):
     def test100a_sanity(self):                       
         """Sanity Check - A - Checking output file against input (should be equal)"""
         global FOLIAEXAMPLE
-        f = codecs.open('/tmp/foliatest.xml','w','utf-8')
+        f = io.open('/tmp/foliatest.xml','w',encoding='utf-8')
         f.write(FOLIAEXAMPLE)    
         f.close()                
         self.doc.save('/tmp/foliatest100.xml')        
@@ -666,7 +693,7 @@ class Test2Sanity(unittest.TestCase):
     def test100b_sanity_xmldiff(self):                       
         """Sanity Check - B - Checking output file against input using xmldiff (should be equal)"""
         global FOLIAEXAMPLE
-        f = codecs.open('/tmp/foliatest.xml','w','utf-8')
+        f = io.open('/tmp/foliatest.xml','w',encoding='utf-8')
         f.write(FOLIAEXAMPLE)    
         f.close()                  
         #use xmldiff to compare the two:
@@ -1627,7 +1654,7 @@ class Test5Correction(unittest.TestCase):
         def test005_reusecorrection(self):     
             """Correction - Re-using a correction with only suggestions"""
             global FOLIAEXAMPLE
-            self.doc = folia.Document(string=FOLIAEXAMPLE.encode('utf-8'))
+            self.doc = folia.Document(string=FOLIAEXAMPLE)
             
             w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
             w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
@@ -1654,7 +1681,7 @@ class Test5Correction(unittest.TestCase):
 class Test6Query(unittest.TestCase):
     def setUp(self):
         global FOLIAEXAMPLE
-        self.doc = folia.Document(string=FOLIAEXAMPLE.encode('utf-8'))
+        self.doc = folia.Document(string=FOLIAEXAMPLE)
     
     def test001_findwords_simple(self):     
         """Querying - Find words (simple)"""
@@ -1831,12 +1858,12 @@ class Test8Validation(unittest.TestCase):
         folia.validate('/tmp/foliasavetest.xml')
 
 
-f = codecs.open(FOLIAPATH + '/test/example.xml', 'r','utf-8')
+f = io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8')
 FOLIAEXAMPLE = f.read() 
 f.close()
 
 
-DCOIEXAMPLE=u"""<?xml version="1.0" encoding="iso-8859-15"?>
+DCOIEXAMPLE="""<?xml version="1.0" encoding="iso-8859-15"?>
 <DCOI xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" xmlns="http://lands.let.ru.nl/projects/d-coi/ns/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:d-coi="http://lands.let.ru.nl/projects/d-coi/ns/1.0" xsi:schemaLocation="http://lands.let.ru.nl/projects/d-coi/ns/1.0 dcoi.xsd" xml:id="WR-P-E-J-0000125009">
   <imdi:METATRANSCRIPT xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" Date="2009-01-27" Type="SESSION" Version="1">
     <imdi:Session>
