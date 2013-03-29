@@ -47,7 +47,8 @@ def Enum(*names):
          assert self.EnumType is other.EnumType, "Only values from the same enum are comparable"
          return cmp(self.__value, other.__value)
       def __invert__(self):      return constants[maximum - self.__value]
-      def __nonzero__(self):     return bool(self.__value)
+      def __bool__(self):     return bool(self.__value)
+      def __nonzero__(self):     return bool(self.__value) #Python 2.x
       def __repr__(self):        return str(names[self.__value])
 
    maximum = len(names) - 1
@@ -76,7 +77,8 @@ def u(s, encoding = 'utf-8', errors='strict'):
         else:
             return str(s,encoding,errors=errors)
     
-
+def isstring(s): #Is this a proper string?
+    return isinstance(s, str) or (version < '3' and isinstance(s, unicode))
 
 def log(msg, **kwargs):
     """Generic log method. Will prepend timestamp.

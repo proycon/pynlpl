@@ -18,7 +18,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
-from pynlpl.common import u
+from pynlpl.common import u, isstring
 import sys
 if sys.version < '3':
     from codecs import getwriter
@@ -584,8 +584,11 @@ class AbstractElement(object):
         """Returns the number of child elements under the current element"""
         return len(self.data)
         
-    def __nonzero__(self):
-        return True #any instance evaluates to True in boolean tests!! (important to distinguish from uninstantianted None values!)
+    def __nonzero__(self): #Python 2.x
+        return True 
+    
+    def __bool__(self):
+        return True
         
     def __iter__(self):
         """Iterate over all children of this element"""
@@ -785,7 +788,7 @@ class AbstractElement(object):
         
         
         #Do the actual appending        
-        if not Class and (isinstance(child,str) or ((sys.version < '3') and isinstance(child,unicode))) and TextContent in self.ACCEPTED_DATA:
+        if not Class and isstring(child) and TextContent in self.ACCEPTED_DATA:
             #you can pass strings directly (just for convenience), will be made into textcontent automatically.
             child = TextContent(self.doc, child )            
             self.data.append(child)                    
@@ -1366,7 +1369,7 @@ class Description(AbstractElement):
         if 'value' in kwargs:
             if kwargs['value'] is None:
                 self.value = ""
-            elif isinstance(kwargs['value'], str) or (sys.version < '3' and  isinstance(kwargs['value'], unicode)):
+            elif isstring(kwargs['value']):
                 self.value = u(kwargs['value'])
             else:
                 if sys.version < '3':                    
@@ -1378,7 +1381,10 @@ class Description(AbstractElement):
             raise Exception("Description expects value= parameter")
         super(Description,self).__init__(doc, *args, **kwargs)
     
-    def __nonzero__(self):
+    def __nonzero__(self): #Python 2.x
+        return bool(self.value) 
+    
+    def __bool__(self):
         return bool(self.value)
         
     def __unicode__(self):
@@ -1826,17 +1832,14 @@ class TextContent(AbstractElement):
         
         
         if not 'value' in kwargs:
-            if args and (isinstance(args[0], unicode) or isinstance(args[0], str)):
+            if args and isstring(args[0]):
                 kwargs['value'] = args[0]
                 args = args[1:]
             else:
                 raise Exception("TextContent expects value= parameter")
             
-        
-        if isinstance(kwargs['value'], unicode):
-            self.value = kwargs['value']   
-            del kwargs['value'] 
-        elif isinstance(kwargs['value'], str):
+                
+        if isstring(kwargs['value']):
             self.value = u(kwargs['value'])        
             del kwargs['value']
         elif not kwargs['value']:
@@ -1912,7 +1915,7 @@ class TextContent(AbstractElement):
     def __eq__(self, other):
         if isinstance(other, TextContent):
             return self.value == other.value
-        elif isinstance(other, str) or (sys.version < '3' and isinstance(other, unicode)):
+        elif isstring(other):
             return self.value == u(other)
         else:
             return False
@@ -3306,8 +3309,8 @@ class Sentence(AbstractStructureElement):
         
     def splitword(self, originalword, *newwords, **kwargs):
         """TODO: Write documentation"""
-        if isinstance(originalword, str) or isinstance(originalword, unicode):
-            originalword = self.doc[originalword]
+        if isstring(originalword):
+            originalword = self.doc[u(originalword)]
         return self.correctwords([originalword], newwords, **kwargs)
             
             
@@ -3318,15 +3321,15 @@ class Sentence(AbstractStructureElement):
             
     def deleteword(self, word, **kwargs):
         """TODO: Write documentation"""
-        if isinstance(word, str) or isinstance(word, unicode):
-            word = self.doc[word]   
+        if isstring(word):
+            word = self.doc[u(word)]   
         return self.correctwords([word], [], **kwargs)
                 
         
     def insertword(self, newword, prevword, **kwargs):
         if prevword:
-            if isinstance(prevword, str) or isinstance(prevword, unicode):
-                prevword = self.doc[prevword]            
+            if isstring(prevword):
+                prevword = self.doc[u(prevword)]            
             if not prevword in self or not isinstance(prevword, Word):
                 raise Exception("Previous word not found or not instance of Word!")
             if not isinstance(newword, Word):
@@ -3433,9 +3436,10 @@ class Head(AbstractStructureElement):
 class Query(object):
     """An XPath query on one or more FoLiA documents"""
     def __init__(self, files, expression):
-        if isinstance(files, str) or isinstance(files, unicode):
-            self.files = [files]
+        if isstring(files):
+            self.files = [u(files)]
         else:
+            assert hasattr(files,'__iter__')
             self.files = files
         self.expression = expression
         
@@ -3455,7 +3459,7 @@ class RegExp(object):
         
 class Pattern(object):
     def __init__(self, *args, **kwargs):
-        if not all( ( (x is True or isinstance(x,RegExp) or isinstance(x, str) or isinstance(x, unicode) or isinstance(x, list) or isinstance(x, tuple)) for x in args )):
+        if not all( ( (x is True or isinstance(x,RegExp) or isstring(x) or isinstance(x, list) or isinstance(x, tuple)) for x in args )):
             raise TypeError
         self.sequence = args
         
@@ -3478,10 +3482,13 @@ class Pattern(object):
             raise Exception("Unknown keyword parameter: " + key)            
             
         if not self.casesensitive:
-            if all( ( isinstance(x, str) or isinstance(x, unicode) for x in self.sequence) ):
-                self.sequence = [ x.lower() for x in self.sequence ]
+            if all( ( isstring(x) for x in self.sequence) ):
+                self.sequence = [ u(x).lower() for x in self.sequence ]
 
-    def __nonzero__(self):
+    def __nonzero__(self): #Python 2.x
+        return True 
+    
+    def __bool__(self):
         return True
         
     def __len__(self):
@@ -3872,8 +3879,11 @@ class Document(object):
     def __len__(self):
         return len(self.data)
         
-    def __nonzero__(self):
-        return True #documents always evaluate to True!
+    def __nonzero__(self): #Python 2.x
+        return True 
+    
+    def __bool__(self):
+        return True
     
     def __iter__(self):
         for text in self.data:
@@ -4283,8 +4293,8 @@ class Document(object):
         
         if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)):
             node = node.getroot()
-        elif isinstance(node, str) or isinstance(node, unicode):
-            node = ElementTree.parse(StringIO(node)).getroot()                         
+        elif isstring(node):
+            node = ElementTree.parse(StringIO(u(node))).getroot()                         
             
         if node.tag == '{' + NSFOLIA + '}FoLiA':
             if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found FoLiA document",file=stderr)
@@ -4433,10 +4443,8 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
     XMLTAG = 'content'
     
     def __init__(self,doc, *args, **kwargs):
-        if 'value' in kwargs:
-            if isinstance(kwargs['value'], unicode):
-                self.value = kwargs['value']
-            elif isinstance(kwargs['value'], str):
+        if 'value' in kwargs:            
+            if isstring(kwargs['value']):
                 self.value = u(kwargs['value'])
             elif kwargs['value'] is None:
                 self.value = ""
@@ -4448,6 +4456,9 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
         super(Content,self).__init__(doc, *args, **kwargs)
     
     def __nonzero__(self):
+        return bool(self.value)
+    
+    def __bool__(self):
         return bool(self.value)
         
     def __unicode__(self):
