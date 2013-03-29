@@ -19,7 +19,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
-#from pynlpl.common import u
+from pynlpl.common import isstring
 import sys
 if sys.version < '3':
     from codecs import getwriter
@@ -33,11 +33,17 @@ import unicodedata
 import string
 import io
 import array
+import re
 from itertools import permutations
 from pynlpl.statistics import FrequencyList
 from pynlpl.datatypes import intarraytobytearray, bytearraytoint, containsnullbyte
 
-            
+WHITESPACE = [" ", "\t", "\n", "\r","\v","\f"]
+EOSMARKERS = ('.','?','!','。',';','؟','｡','？','！','।','։','՞','።','᙮','។','៕')
+REGEXP_URL = re.compile(r"(?:https?):(?:(?://)|(?:\\\\))+(?:[\w\d:#@%/;$()~_?\+-=\\\.&](?:#!)?)*")
+REGEXP_MAIL = re.compile(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+(?:\.[a-zA-Z]+)+") #email
+TOKENIZERRULES = (REGEXP_URL, REGEXP_MAIL)
+
             
 class Windower(object):
     """Moves a sliding window over a list of tokens, returning all ngrams"""
@@ -190,31 +196,121 @@ def calculate_overlap(haystack, needle, allowpartial=True):
                 solutions.append( (needle, 0) )
 
     return solutions
+
+
+
             
+class Tokenizer(object):    
+    """A tokenizer and sentence splitter, which acts on a file/stream-like object and when iterating over the object it yields
+    a lists of tokens (in case the sentence splitter is active (default)), or a token (if the sentence splitter is deactivated)."""
+    
+    def __init__(self, stream, splitsentences=True, onesentenceperline=False, regexps=TOKENIZERRULES):
+        self.stream = stream
+        self.regexps = regexps
+        self.splitsentences=splitsentences
+        self.onesentenceperline = onesentenceperline
+        
+    def __iter__(self):
+        for line in self.stream:
+            line = line.strip()
+            if line:
+                if buffer: buffer += "\n"
+                buffer += line
+                        
+            if (self.onesentenceperline or not line) and buffer: 
+                if self.splitsentences:
+                    yield split_sentences(tokenize(buffer))
+                else:            
+                    for token in tokenize(buffer, self.regexps):
+                        yield token
+    
+        if buffer:        
+            if self.splitsentences:
+                yield split_sentences(tokenize(buffer))
+            else:            
+                for token in tokenize(buffer, self.regexps):
+                    yield token
+    
+            
+                            
+    
+def tokenize(text, regexps=TOKENIZERRULES):
+    """Tokenizes a string and returns a list of tokens"""
+    for i,regexp in list(enumerate(regexps)):
+        if isstring(regexp):
+            regexps[i] = re.compile(regexp)
+    
+    tokens = []
+    begin = 0
+    for i, c in enumerate(text):
+        if begin > i: 
+            continue
+        elif i == begin:
+            m = False
+            for regexp in regexps:
+                m = regexp.findall(text[i:i+300])
+                if m:
+                    print("DEBUG: found ",m[0])
+                    tokens.append(m[0])
+                    begin = i + len(m[0])
+                    break
+            if m: continue
+        
+        if c in string.punctuation or c in WHITESPACE:
+            prev = text[i-1] if i > 0 else ""
+            next = text[i+1] if i < len(text)-1 else ""
+            
+            if (c == '.' or c == ',') and prev.isdigit() and next.isdigit():
+                #punctuation in between numbers, keep as one token
+                pass
+            elif (c == "'" or c == "`") and prev.isalpha() and next.isalpha():
+                #quote in between chars, keep...
+                pass    
+            elif c not in WHITESPACE and next == c: #group clusters of identical punctuation together
+                continue
+            elif c == '\r' and prev == '\n':
+                #ignore
+                begin = i+1
+                continue
+            else:
+                token = text[begin:i]
+                if token: tokens.append(token)
+                    
+                if c not in WHITESPACE:
+                    tokens.append(c) #anything but spaces and newlines (i.e. punctuation) counts as a token too
+                begin = i + 1 #set the begin cursor
+    
+    if begin <= len(text) - 1:
+        token = text[begin:]
+        tokens.append(token)                    
+
+    return tokens
+                    
 
 def crude_tokenizer(line):    
-    return tokenise(line) #backwards-compatibility
+    """Replaced by tokenize()"""
+    return tokenize(line) #backwards-compatibility, not so crude anymore
 
-def tokenize(line):
-    return tokenise(line)
+def tokenise(line): #for the British
+    return tokenize(line)
 
-def tokenise(line):
-    """A simple tokeniser"""
-    tokens = []
-    buffer = ''
-    for c in line.strip():
-        if c == ' ' or c in string.punctuation:
-            if buffer:
-                tokens.append(buffer)
-                buffer = ''
-            if c in string.punctuation:
-                tokens.append(c)
-        else:
-            buffer += c          
-    if buffer: 
-        tokens.append(buffer)  
-    return tokens
-    
+def is_end_of_sentence(tokens,i ):
+    # is this an end-of-sentence marker? ... and is this either 
+    # the last token or the next token is NOT an end of sentence 
+    # marker as well? (to deal with ellipsis etc)
+    return tokens[i] in EOSMARKERS and (i == len(tokens) - 1 or not tokens[i+1] in EOSMARKERS)
+
+def split_sentences(tokens):
+    """Split sentences (based on tokenised data), returns sentences as a list of lists of tokens, each sentence is a list of tokens"""
+    begin = 0
+    for i, token in enumerate(tokens):
+        if is_end_of_sentence(tokens, i): 
+            yield tokens[begin:i+1]
+            begin = i+1
+    if begin <= len(tokens)-1:    
+        yield tokens[begin:]
+
+
 
 def strip_accents(s, encoding= 'utf-8'):
     """Strip characters with diacritics and return a flat ascii representation"""
@@ -244,6 +340,19 @@ def swap(tokens, maxdist=2):
         if maxdist == len(tokens):
             break
         
+
+def find_keyword_in_context(tokens, keyword, contextsize=1):
+    """Find a keyword in a particular sequence of tokens, and return the local context. Contextsize is the number of words to the left and right. The keyword may have multiple word, in which case it should to passed as a tuple or list"""
+    if isinstance(keyword,tuple) and isinstance(keyword,list):
+        l = len(keyword)
+    else:
+        keyword = (keyword,)
+        l = 1
+    n = l + contextsize*2
+    focuspos = contextsize + 1
+    for ngram in Windower(tokens,n,None,None): 
+        if ngram[focuspos:focuspos+l] == keyword:
+            yield ngram[:focuspos], ngram[focuspos:focuspos+l],ngram[focuspos+l+1:]
 
 
 class Classer(object):

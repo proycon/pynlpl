@@ -52,11 +52,41 @@ class WindowerTest(unittest.TestCase):
         self.assertEqual(result,[('<begin>', '<begin>', 'hi'), ('<begin>', 'hi', '<end>'), ('hi', '<end>', '<end>')])
 
 
-class CrudeTokenizerTest(unittest.TestCase):
+
+        
+class TokenizerTest(unittest.TestCase):
     def test_tokenize(self):
-        """Crude tokeniser"""
+        """Tokeniser - One sentence"""
+        self.assertEqual(tokenise("This is a test."),"This is a test .".split(" "))    
+    
+    def test_tokenize_sentences(self):
+        """Tokeniser - Multiple sentences"""
+        self.assertEqual(tokenise("This, is the first sentence! This is the second sentence."),"This , is the first sentence ! This is the second sentence .".split(" "))     
+    
+    def test_tokenize_noeos(self):
+        """Tokeniser - Missing EOS Marker"""
+        self.assertEqual(tokenise("This is a test"),"This is a test".split(" "))
+    
+    def test_tokenize_url(self):
+        """Tokeniser - URL"""
         global text
-        self.assertEqual(tokenise("This is a test."),text)
+        self.assertEqual(tokenise("I go to http://www.google.com when I need to find something."),"I go to http://www.google.com when I need to find something .".split(" "))        
+
+    def test_tokenize_mail(self):
+        """Tokeniser - Mail"""
+        global text
+        self.assertEqual(tokenise("Write me at proycon@anaproy.nl."),"Write me at proycon@anaproy.nl .".split(" "))        
+
+    def test_tokenize_numeric(self):
+        """Tokeniser - numeric"""
+        global text
+        self.assertEqual(tokenise("I won € 300,000.00!"),"I won € 300,000.00 !".split(" "))        
+
+    def test_tokenize_quotes(self):
+        """Tokeniser - quotes"""
+        global text
+        self.assertEqual(tokenise("Hij zegt: \"Wat een lief baby'tje is dat!\""),"Hij zegt : \" Wat een lief baby'tje is dat ! \"".split(" "))     
+
 
 class StripAccentTest(unittest.TestCase):
     def test_strip_accents(self):
