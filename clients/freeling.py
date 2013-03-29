@@ -16,11 +16,16 @@
 #
 ###############################################################
 
-
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import    
+from pynlpl.common import u
+    
 import socket
 import sys
 
-class FreeLingClient:
+class FreeLingClient(object):
     def __init__(self, host, port, encoding='utf-8', timeout=120.0):
         """Initialise the client, set channel to the path and filename where the server's .in and .out pipes are (without extension)"""
         self.encoding = encoding
@@ -45,25 +50,25 @@ class FreeLingClient:
             sourcewords = sourcewords.split(' ')
         
         self.socket.sendall(sourcewords_s.encode(self.encoding) +'\n\0')
-        if debug: print >>sys.stderr,"Sent:",sourcewords_s.encode(self.encoding)
+        if debug: print("Sent:",sourcewords_s.encode(self.encoding),file=sys.stderr)
         
         results = []
         done = False
         while not done:    
-            data = ""
+            data = b""
             while not data:
                 buffer = self.socket.recv(self.BUFSIZE)
-                if debug: print >>sys.stderr,"Buffer: ["+repr(buffer)+"]"
+                if debug: print("Buffer: ["+repr(buffer)+"]",file=sys.stderr)
                 if buffer[-1] == '\0':
-			data += buffer[:-1]
-			done = True
-			break
-		else:
-			data += buffer
+                    data += buffer[:-1]
+                    done = True
+                    break
+                else:
+                    data += buffer
 
             
-            data = unicode(data,self.encoding)
-            if debug: print >>sys.stderr,"Received:",data.encode('utf-8') 
+            data = u(data,self.encoding)
+            if debug: print("Received:",data,file=sys.stderr) 
 
             for i, line in enumerate(data.strip(' \t\0\r\n').split('\n')):
                 if not line.strip():

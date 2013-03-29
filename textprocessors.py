@@ -31,7 +31,7 @@ from itertools import permutations
 import sys
             
             
-class Windower:
+class Windower(object):
     """Moves a sliding window over a list of tokens, returning all ngrams"""
 
     def __init__(self, tokens, n=1, beginmarker = "<begin>", endmarker = "<end>"):

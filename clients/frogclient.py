@@ -16,47 +16,52 @@
 #
 ###############################################################
 
-from socket import *
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import    
+from pynlpl.common import u
+
+import socket
 
 class FrogClient:
-    def __init__(self,host="localhost",port=12345, tadpole_encoding="utf-8", parser=False, timeout=120.0):
+    def __init__(self,host="localhost",port=12345, server_encoding="utf-8", parser=False, timeout=120.0):
         """Create a client connecting to a Frog or Tadpole server."""
         self.BUFSIZE = 4096
-        self.socket = socket(AF_INET,SOCK_STREAM)
+        self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.socket.settimeout(timeout)
         self.socket.connect( (host,int(port)) )
-        self.tadpole_encoding = tadpole_encoding
+        self.server_encoding = server_encoding
         self.parser = parser
 
         
         
 
     def process(self,input_data, source_encoding="utf-8", return_unicode = True, oldfrog=False):
-        """Receives input_data in the form of a str or unicode object, passes this to the server, with proper consideration for the encodings, and returns the Frog output as a list of tuples: (word,pos,lemma,morphology), each of these is a proper unicode object unless return_unicode is set to False, in which case raw strings will be returned."""
+        """Receives input_data in the form of a str or unicode object, passes this to the server, with proper consideration for the encodings, and returns the Frog output as a list of tuples: (word,pos,lemma,morphology), each of these is a proper unicode object unless return_unicode is set to False, in which case raw strings will be returned. Return_unicode is no longer optional, it is fixed to True, parameter is still there only for backwards-compatibility."""
         if isinstance(input_data, list) or isinstance(input_data, tuple):
             input_data = " ".join(input_data)
 
-        input_data = input_data.strip(' \t\n')
+        
 
-        #buffer = ""
-
-        #print "SEND: ",input_data #DEBUG
-        if not isinstance(input_data, unicode):
-            input_data = unicode(input_data, source_encoding) #decode (or preferably do this in an earlier stage)
-        s = input_data.encode(self.tadpole_encoding) +'\r\n'
-        if not oldfrog: s += 'EOT\r\n'
+        input_data = u(input_data, source_encoding) #decode (or preferably do this in an earlier stage)
+        input_data = input_data.strip(' \t\n')    
+            
+        s = input_data.encode(self.server_encoding) +b'\r\n'
+        if not oldfrog: s += b'EOT\r\n'
         self.socket.sendall(s) #send to socket in desired encoding
-        tp_output = []
+        output = []
 
         done = False
         while not done:    
-            data = data = ""
-            while not data or data[-1] != '\n':
+            data = b""
+            while not data or data[-1] != b'\n':
                 moredata = self.socket.recv(self.BUFSIZE)
                 if not moredata: break
                 data += moredata
-            if return_unicode:
-                data = unicode(data,self.tadpole_encoding)
+                
+            
+            data = u(data,self.server_encoding)
 
 
             for line in data.strip(' \t\r\n').split('\n'):
@@ -66,11 +71,11 @@ class FrogClient:
                 elif line:
                     line = line.split('\t') #split on tab
                     if len(line) > 4 and line[0].isdigit(): #first column is token number
-                        if line[0] == '1' and tp_output:
+                        if line[0] == '1' and output:
                             if self.parser:
-                                tp_output.append( (None,None,None,None, None, None) )
+                                output.append( (None,None,None,None, None, None) )
                             else:
-                                tp_output.append( (None,None,None,None) )  
+                                output.append( (None,None,None,None) )  
                         fields = line[1:]
                         parse1=parse2=""
                         if len(fields) == 7:
@@ -93,11 +98,11 @@ class FrogClient:
                             raise Exception("Can't process response line from Frog: ", repr(line), " got unexpected number of fields ", str(len(fields) + 1))
 
                         if self.parser:
-                            tp_output.append( (word,lemma,morph,pos,parse1,parse2) )
+                            output.append( (word,lemma,morph,pos,parse1,parse2) )
                         else:
-                            tp_output.append( (word,lemma,morph,pos) )
+                            output.append( (word,lemma,morph,pos) )
                         
-        return tp_output
+        return output
     
     def process_aligned(self,input_data, source_encoding="utf-8", return_unicode = True):
         output = self.process(input_data, source_encoding, return_unicode)

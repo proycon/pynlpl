@@ -32,7 +32,7 @@ from collections import Counter
 
 
 
-class FrequencyList:
+class FrequencyList(object):
     """A frequency list (implemented using dictionaries)"""
 
     def __init__(self, tokens = None, casesensitive = True, dovalidation = True):
@@ -216,7 +216,7 @@ class FrequencyList:
     
         
 
-class Distribution:
+class Distribution(object):
     """A distribution can be created over a FrequencyList or a plain dictionary with numeric values. It will be normalized automatically. This implemtation uses dictionaries/hashing"""
 
     def __init__(self, data, base = 2):

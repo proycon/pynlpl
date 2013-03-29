@@ -348,7 +348,7 @@ class AbstractExperiment(object):
         """Return a sample of the input data"""
         raise Exception("Not implemented yet, make sure to overload the sample() method")
 
-class ExperimentPool:
+class ExperimentPool(object):
     def __init__(self, size):
         self.size = size
         self.queue = []

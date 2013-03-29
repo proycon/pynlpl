@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 ###############################################################
@@ -21,12 +20,21 @@
 ###############################################################
 
 
-
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import    
+    
 
 import sys
 import httplib2                    # version 0.6.0+
-import urlparse                    # renamed to urllib.parse in Python 3.0
-import httplib, urllib, base64
+if sys.version < '3':
+    import urlparse
+    import httplib                    
+else:
+    from urllib import parse as urlparse # renamed to urllib.parse in Python 3.0
+    import http.client as httplib #renamed in Python 3 
+import urllib, base64
 from sys import stderr 
 #import pickle
 
@@ -35,7 +43,7 @@ printf = lambda x: sys.stdout.write(x+ "\n")
 from lxml import etree
 
 
-class CornettoClient:
+class CornettoClient(object):
     def __init__(self, user='gast',password='gast',host='debvisdic.let.vu.nl', port=9002, path = '/doc', scheme='https',debug=False):
         self.host = host
         self.port = port
@@ -193,15 +201,15 @@ class CornettoClient:
         if self.debug:
             printf( "items: %d" % items )
 
-        for dict in dict_list:
+        for d in dict_list:
             if self.debug:
-                printf( dict )
+                printf( d )
 
-            seq_nr = dict[ "seq_nr" ]   # sense number
-            value  = dict[ "value" ]    # lexical unit identifier
-            form   = dict[ "form" ]     # lemma
-            label  = dict[ "label" ]    # label to be shown
-            pos  = dict[ "pos" ]    # label to be shown
+            seq_nr = d[ "seq_nr" ]   # sense number
+            value  = d[ "value" ]    # lexical unit identifier
+            form   = d[ "form" ]     # lemma
+            label  = d[ "label" ]    # label to be shown
+            pos  = d[ "pos" ]    # label to be shown
 
             if self.debug:
                 printf( "seq_nr: %s" % seq_nr )

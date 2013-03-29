@@ -26,7 +26,7 @@ import bisect
 import array
 
 
-class Queue: #from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
+class Queue(object): #from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
     """Queue is an abstract class/interface. There are three types:
         Python List: A Last In First Out Queue (no Queue object necessary).
         FIFOQueue(): A First In First Out Queue.
