@@ -13,6 +13,10 @@
 #
 #----------------------------------------------------------------
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import    
 
 import srilmcc
 from pynlpl.textprocessors import Windower
@@ -38,8 +42,6 @@ class SRILM:
         return self.model.exists( key )
 
     def logscore(self, ngram):
-        n = len(ngram)
-
         #Bug work-around
         #if "" in ngram or "_" in ngram or "__" in ngram:
         #    print >> sys.stderr, "WARNING: Invalid word in n-gram! Ignoring", ngram 

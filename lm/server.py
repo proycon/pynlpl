@@ -11,6 +11,8 @@
 #
 #----------------------------------------------------------------
 
+#No Python 3 support for twisted yet...
+
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 

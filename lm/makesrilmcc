@@ -27,7 +27,7 @@ export SRILMLIBS=$SRILM/lib/i686
 if [ -z $1 ]; then
     PYTHONVERSION=$2
 else
-    PYTHONVERSION="2.5"
+    PYTHONVERSION="2.7"
 fi
 g++ -fPIC -shared -I/usr/include/python$PYTHONVERSION -lpython$PYTHONVERSION -I$SRILM/src -I$SRILM/include -lboost_python srilm.cc $SRILMLIBS/liboolm.a $SRILMLIBS/libdstruct.a $SRILMLIBS/libmisc.a -o srilmcc.so
 

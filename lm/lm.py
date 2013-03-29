@@ -8,20 +8,27 @@
 #
 #----------------------------------------------------------------
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import    
+#from pynlpl.common import u
+
 from pynlpl.statistics import FrequencyList, product
 from pynlpl.textprocessors import Windower
-import codecs
+import io
 from sys import stderr
 
 
 class SimpleLanguageModel:
     """This is a very simple unsmoothed language model"""
+    
     def __init__(self, n=2, casesensitive = True, beginmarker = "<begin>", endmarker = "<end>"):
         self.casesensitive = casesensitive
         self.freqlistN = FrequencyList(None, self.casesensitive)
         self.freqlistNm1 = FrequencyList(None, self.casesensitive)
-
-        assert n >= 2
+        
+        assert isinstance(n,int) and n >= 2
         self.n = n
         self.beginmarker = beginmarker
         self.endmarker = endmarker
@@ -45,7 +52,7 @@ class SimpleLanguageModel:
     def load(self, filename):
         self.freqlistN = FrequencyList(None, self.casesensitive)
         self.freqlistNm1 = FrequencyList(None, self.casesensitive)
-        f = codecs.open(filename,'r','utf-8')
+        f = io.open(filename,'r',encoding='utf-8')
         mode = False
         for line in f.readlines():
             line = line.strip()
@@ -80,13 +87,13 @@ class SimpleLanguageModel:
                             type, count = line.split("\t")
                             self.freqlistN.count(type.split(' '),int(count))
                         except:
-                            print >>stderr,"Warning, could not parse line whilst loading frequency list: ", line
+                            print("Warning, could not parse line whilst loading frequency list: ", line,file=stderr)
                 elif mode == 3:
                         try:
                             type, count = line.split("\t")
                             self.freqlistNm1.count(type.split(' '),int(count))
                         except:
-                            print >>stderr,"Warning, could not parse line whilst loading frequency list: ", line
+                            print("Warning, could not parse line whilst loading frequency list: ", line,file=stderr)
 
         if self.beginmarker:
             self._begingram = [self.beginmarker] * (self.n-1)
@@ -95,7 +102,7 @@ class SimpleLanguageModel:
 
 
     def save(self, filename):
-        f = codecs.open(filename,'w','utf-8')
+        f = io.open(filename,'w',encoding='utf-8')
         f.write("[simplelanguagemodel]\n")
         f.write("n="+str(self.n)+"\n")
         f.write("sentences="+str(self.sentences)+"\n")
