@@ -33,7 +33,7 @@ LXE=True
 #import xml.etree.cElementTree as ElementTree
 #LXE = False
 
-from lxml.builder import E, ElementMaker
+from lxml.builder import ElementMaker
 if sys.version < '3':
     from StringIO import StringIO
     from urllib import urlopen
