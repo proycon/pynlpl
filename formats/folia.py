@@ -34,7 +34,6 @@ LXE=True
 #LXE = False
 
 from lxml.builder import E, ElementMaker
-from sys import stderr
 if sys.version < '3':
     from StringIO import StringIO
     from urllib import urlopen
