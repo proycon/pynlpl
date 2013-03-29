@@ -109,7 +109,7 @@ class ReflowText(object):
         self.filternontext = filternontext
         
     def __iter__(self):
-        eosmarkers = ('.',':','?','!','"',"'",u"„",u"”",u"’")
+        eosmarkers = ('.',':','?','!','"',"'","„","”","’")
         emptyline = 0
         buffer = ""
         for line in self.stream:

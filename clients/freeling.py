@@ -44,7 +44,7 @@ class FreeLingClient(object):
         """Process a list of words, passing it to the server and realigning the output with the original words"""
 
         if isinstance( sourcewords, list ) or isinstance( sourcewords, tuple ):
-            sourcewords_s = u" ".join(sourcewords)            
+            sourcewords_s = " ".join(sourcewords)            
         else:
             sourcewords_s = sourcewords
             sourcewords = sourcewords.split(' ')

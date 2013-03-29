@@ -57,6 +57,8 @@ import threading
 FOLIAVERSION = '0.9.1'
 LIBVERSION = '0.9.1.31' #== FoLiA version + library revision
 
+#0.9.1.31 is the first version with Python 3 support
+
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 
@@ -1842,7 +1844,7 @@ class TextContent(AbstractElement):
             self.value = u(kwargs['value'])        
             del kwargs['value']
         elif not kwargs['value']:
-            self.value = u""
+            self.value = ""
             del kwargs['value']
         else:
             raise Exception("Invalid value: " + repr(kwargs['value']))
@@ -4395,7 +4397,7 @@ class Document(object):
 
     def text(self, retaintokenisation=False):
         """Returns the text of the entire document (returns a unicode instance)"""
-        s = u""
+        s = ""
         for c in self.data:
             if s: s += "\n\n\n"
             try:

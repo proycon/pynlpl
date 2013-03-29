@@ -21,7 +21,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
-from pynlpl.common import u
+from pynlpl.common import u, isstring
 import sys
 if sys.version < '3':
     from codecs import getwriter
@@ -181,10 +181,10 @@ class FrequencyList(object):
         for type, count in self:
             if isinstance(type,tuple) or isinstance(type,list):
                 if addnormalised:
-                    yield u" ".join((u(x) for x in type)) + delimiter + str(count) + delimiter + str(count/self.total)
+                    yield " ".join((u(x) for x in type)) + delimiter + str(count) + delimiter + str(count/self.total)
                 else:
-                    yield u" ".join((u(x) for x in type)) + delimiter + str(count)
-            elif isinstance(type,str) or (sys.version < '3' and isinstance(type,unicode)):
+                    yield " ".join((u(x) for x in type)) + delimiter + str(count)
+            elif isstring(type):
                 if addnormalised:
                     yield type + delimiter + str(count) + delimiter + str(count/self.total)
                 else:

@@ -178,12 +178,11 @@ class Tagger(object):
                     postags.append('?')
             return words, postags, lemmas
         elif self.mode == 'treetagger':
-            s = u' '.join(words)
-            if isinstance(s, unicode):
-                s = s.encode('utf-8')
+            s = " ".join(words)
+            s = u(s)
             
             p = subprocess.Popen([self.tagger], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)            
-            (out, err) = p.communicate(s)
+            (out, err) = p.communicate(s.encode('utf-8'))
 
             newwords = []
             postags = []
@@ -215,7 +214,7 @@ class Tagger(object):
                 for sentence in sentences:
                     out = ""
                     p = subprocess.Popen([self.tagger], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    (results, err) = p.communicate(u"\n".join(sentences).encode('utf-8'))
+                    (results, err) = p.communicate("\n".join(sentences).encode('utf-8'))
                     for line in results.split('\n'):
                         line = line.strip()
                         if line:
@@ -276,7 +275,7 @@ class Tagger(object):
                 if line.strip():
                     words = line.strip().split(' ')
                     words, postags, lemmas = self.process(words, debug)
-                    out = u""
+                    out = ""
                     for word, pos, lemma in zip(words,postags, lemmas):
                        if word is None: word = ""
                        if lemma is None: lemma = "?"
