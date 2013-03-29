@@ -15,12 +15,24 @@
 #
 ###############################################################
 
-
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from pynlpl.common import u
 import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
+
+import io
 import codecs
 import json
 import getopt
-import locale
 import subprocess
     
 class Tagger(object):    
@@ -49,7 +61,7 @@ class Tagger(object):
             if len(args) != 1:
                 raise Exception("Syntax: corenlp")
             import corenlp
-            print >>sys.stderr, "Initialising Stanford Core NLP"
+            print("Initialising Stanford Core NLP",file=stderr)
             self.tagger = corenlp.StanfordCoreNLP()
         elif args[0] == 'treetagger':                        
             if not len(args) == 2:
@@ -58,7 +70,7 @@ class Tagger(object):
         elif args[0] == "durmlex":
             if not len(args) == 2:
                 raise Exception("Syntax: durmlex:[filename]")
-            print >>sys.stderr, "Reading durm lexicon: ", args[1]
+            print("Reading durm lexicon: ", args[1],file=stderr)
             self.mode = "lookup"
             self.tagger = {}
             f = codecs.open(args[1],'r','utf-8')
@@ -68,11 +80,11 @@ class Tagger(object):
                 lemma = fields[4].split('.')[0]
                 self.tagger[wordform] = (lemma, 'n')
             f.close()
-            print >>sys.stderr, "Loaded ", len(self.tagger), " wordforms"
+            print("Loaded ", len(self.tagger), " wordforms",file=stderr)
         elif args[0] == "oldlex":
             if not len(args) == 2:
                 raise Exception("Syntax: oldlex:[filename]")
-            print >>sys.stderr, "Reading OLDLexique: ", args[1]
+            print("Reading OLDLexique: ", args[1],file=stderr)
             self.mode = "lookup"
             self.tagger = {}
             f = codecs.open(args[1],'r','utf-8')
@@ -84,7 +96,7 @@ class Tagger(object):
                     lemma == fields[0]
                 pos = fields[2][0].lower()
                 self.tagger[wordform] = (lemma, pos)
-                print >>sys.stderr, "Loaded ", len(self.tagger), " wordforms"
+                print("Loaded ", len(self.tagger), " wordforms",file=stderr)
             f.close()        
         else:
             raise Exception("Invalid mode: " + args[0])
@@ -185,7 +197,7 @@ class Tagger(object):
                     lemmas.append( unicode(fields[2],'utf-8') )
                                         
             if p.returncode != 0:
-                print >>sys.stderr, err
+                print(err,file=stderr)
                 raise OSError('TreeTagger failed')
         
             return newwords, postags, lemmas
@@ -199,7 +211,7 @@ class Tagger(object):
         
         def flush(sentences):
             if sentences:
-                print >>sys.stderr, " Processing " + str(len(sentences)) + " lines"                
+                print("Processing " + str(len(sentences)) + " lines",file=stderr)                
                 for sentence in sentences:
                     out = ""
                     p = subprocess.Popen([self.tagger], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -224,13 +236,13 @@ class Tagger(object):
                                     pos = pos.replace('|','_') 
                             out += word + "|" + lemma + "|" + pos
                             if pos[0] == '$':
-                                out = unicode(out, 'utf-8')
+                                out = u(out)
                                 f_out.write(out + "\n")        
                                 if oneperline: f_out.write("\n")
                                 out = ""
                             
                 if out:
-                   out = unicode(out, 'utf-8')
+                   out = u(out)
                    f_out.write(out + "\n")   
                    if oneperline: f_out.write("\n")
                 
@@ -241,7 +253,7 @@ class Tagger(object):
         
         for line in f_in:                        
             linenum += 1
-            print >>sys.stderr, " Buffering input @" + str(linenum)
+            print(" Buffering input @" + str(linenum),file=stderr)
             line = line.strip()
             if not line or ('.' in line[:-1] or '?' in line[:-1] or '!' in line[:-1]) or (line[-1] != '.' and line[-1] != '?' and line[-1] != '!'): 
                 flush(sentences)
@@ -260,7 +272,7 @@ class Tagger(object):
             linenum = 0
             for line in f_in:
                 linenum += 1
-                print >>sys.stderr, " Tagger input @" + str(linenum)
+                print(" Tagger input @" + str(linenum),file=stderr)
                 if line.strip():
                     words = line.strip().split(' ')
                     words, postags, lemmas = self.process(words, debug)
@@ -290,14 +302,14 @@ class Tagger(object):
                     f_out.write("\n")
 
 def usage():
-    print >>sys.stderr, "tagger.py -c [conf] -f [input-filename] -o [output-filename]" 
+    print("tagger.py -c [conf] -f [input-filename] -o [output-filename]",file=stderr) 
 
 if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:], "f:c:o:D")
-    except getopt.GetoptError, err:
+    except getopt.GetoptError as err:
         # print help information and exit:
-        print str(err)
+        print(str(err),file=stderr)
         usage()
         sys.exit(2)   
     
@@ -324,19 +336,19 @@ if __name__ == "__main__":
     
 
     if not taggerconf:
-        print >>sys.stderr, "ERROR: Specify a tagger configuration with -c"
+        print("ERROR: Specify a tagger configuration with -c",file=stderr)
         sys.exit(2)
     if not filename:
-        print >>sys.stderr, "ERROR: Specify a filename with -f"
+        print("ERROR: Specify a filename with -f",file=stderr)
         sys.exit(2)
     
         
     if outfilename: 
-        f_out = codecs.open(outfilename,'w','utf-8')
+        f_out = io.open(outfilename,'w',encoding='utf-8')
     else:
-        f_out = codecs.getwriter(locale.getpreferredencoding())(sys.stdout);
+        f_out = stdout;
         
-    f_in = codecs.open(filename,'r','utf-8')
+    f_in = io.open(filename,'r',encoding='utf-8')
     
     tagger = Tagger(*taggerconf.split(':'))
     tagger.tag(f_in, f_out, oneperline, debug)

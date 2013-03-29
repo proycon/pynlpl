@@ -1,9 +1,6 @@
 #-*- coding:utf-8 -*-
 
 ###############################################################
-#  Modified by Ruben Izquierdo
-#  We need also to store the TIMBL distance to the nearest neighboor  
-#
 # PyNLPl - DutchSemCor
 #       by Maarten van Gompel (proycon)
 #       http://ilk.uvt.nl/~mvgompel
@@ -11,16 +8,32 @@
 #       Universiteit van Tilburg
 #       
 #       Licensed under GPLv3
+#
+#  Modified by Ruben Izquierdo
+#  We need also to store the TIMBL distance to the nearest neighboor  
 # 
 # Collection of formats for the DutchSemCor project
 #
 ###############################################################
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import  
+from pynlpl.common import u
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
 
 from pynlpl.formats.timbl import TimblOutput
 from pynlpl.statistics import Distribution
-import codecs
-from sys import stderr
+import io
+
 
 class WSDSystemOutput(object):
     def __init__(self, filename = None):
@@ -79,7 +92,7 @@ class WSDSystemOutput(object):
         return self.data[word_id]
 
     def load(self, filename):
-        f = codecs.open(filename,'r','utf-8')
+        f = io.open(filename,'r',encoding='utf-8')
         for line in f:
             fields = line.strip().split(" ")
             word_id = fields[0]
@@ -104,7 +117,7 @@ class WSDSystemOutput(object):
         f.close()
 
     def save(self, filename):
-        f = codecs.open(filename,'w','utf-8')
+        f = io.open(filename,'w',encoding='utf-8')
         for word_id, senses,distance in self:
             f.write(word_id)
             for sense, confidence in senses:
@@ -117,11 +130,11 @@ class WSDSystemOutput(object):
 
     def out(self, filename):
         for word_id, senses,distance in self:
-            print word_id,distance,
+            print(word_id,distance,end="")
             for sense, confidence in senses:
                 if confidence == None: confidence = "?"
-                print " " + sense + " " + str(confidence),
-            print
+                print(" " + sense + " " + str(confidence),end="")
+            print()
 
     def senses(self, bestonly=False):
         """Returns a list of all predicted senses"""
@@ -135,24 +148,24 @@ class WSDSystemOutput(object):
 
 
     def loadfromtimbl(self, filename):
-        timbloutput = TimblOutput(codecs.open(filename,'r','utf-8'))
+        timbloutput = TimblOutput(io.open(filename,'r',encoding='utf-8'))
         for i, (features, referenceclass, predictedclass, distribution, distance) in enumerate(timbloutput):
             if distance != None:
                 #distance='+vdi'+str(distance)
                 distance=float(distance)
             if len(features) == 0:
-                print >>stderr, "WARNING: Empty feature vector in " + filename + " (line " + str(i+1) + ") skipping!!"
+                print("WARNING: Empty feature vector in " + filename + " (line " + str(i+1) + ") skipping!!",file=stderr)
                 continue
             word_id = features[0] #note: this is an assumption that must be adhered to!
             if distribution:
                 self.append(word_id, distribution,distance)
 
     def fromTimblToWsdout(self,fileTimbl,fileWsdout):
-        timbloutput = TimblOutput(codecs.open(fileTimbl,'r','utf-8'))
-        wsdoutfile = codecs.open(fileWsdout,'w','utf-8')
+        timbloutput = TimblOutput(io.open(fileTimbl,'r',encoding='utf-8'))
+        wsdoutfile = io.open(fileWsdout,'w',encoding='utf-8')
         for i, (features, referenceclass, predictedclass, distribution, distance) in enumerate(timbloutput):
             if len(features) == 0:
-                print >>stderr, "WARNING: Empty feature vector in " + fileTimbl + " (line " + str(i+1) + ") skipping!!"
+                print("WARNING: Empty feature vector in " + fileTimbl + " (line " + str(i+1) + ") skipping!!",file=stderr)
                 continue
             word_id = features[0] #note: this is an assumption that must be adhered to!
             if distribution:
@@ -169,7 +182,7 @@ class DataSet(object): #for testsets/trainingsets
     def __init__(self, filename):
         self.sense = {} #word_id => (sense_id, lemma,pos)
         self.targetwords = {} #(lemma,pos) => [sense_id]
-        f = codecs.open(filename,'r','utf-8')
+        f = io.open(filename,'r',encoding='utf-8')
         for line in f:
             if len(line) > 0 and line[0] != '#':
                 fields = line.strip('\n').split('\t')
@@ -197,10 +210,7 @@ class DataSet(object): #for testsets/trainingsets
         return self.sense[self._sanitize(word_id)][2]
 
     def _sanitize(self, word_id):
-        if isinstance(word_id, unicode):
-            return word_id
-        else:
-            return unicode(word_id,'utf-8')
+        return u(word_id)
 
     def __contains__(self, word_id):
         return (self._sanitize(word_id) in self.sense)

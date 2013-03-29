@@ -20,6 +20,14 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 #from pynlpl.common import u
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
 
 import unicodedata
 import string
@@ -28,7 +36,6 @@ import array
 from statistics import FrequencyList
 from datatypes import intarraytobytearray, bytearraytoint, containsnullbyte
 from itertools import permutations
-import sys
             
             
 class Windower(object):
@@ -283,7 +290,7 @@ class Classer(object):
                 if self.filesupport:
                     while containsnullbyte(self.newestclass): 
                         self.newestclass += 1
-                print(self.newestclass, word,file=sys.stderr)
+                print(self.newestclass, word,file=stderr)
                 if self.decoder:
                     self.class2word[self.newestclass] = word  
                 if self.encoder:

@@ -17,6 +17,14 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 from pynlpl.common import u
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
 import io
 
 
@@ -29,7 +37,7 @@ import random
 import copy
 import datetime
 import os.path
-import sys
+
 
 
 class ProcessFailed(Exception):
@@ -321,7 +329,7 @@ class AbstractExperiment(object):
                 else:
                     cmd += ' ' + key + str(value)
         if printcommand:
-            print("STARTING COMMAND: " + cmd.encode('utf-8'))
+            print("STARTING COMMAND: " + cmd.encode('utf-8'),file=stderr)
 
         self.begintime = datetime.datetime.now()
         if not cwd:
@@ -375,7 +383,7 @@ class ExperimentPool(object):
                 if experiment.done():
                     done.append( experiment )
             except ProcessFailed:
-                print("ERROR: One experiment in the pool failed: " + repr(experiment.inputdata) + repr(experiment.parameters), file=sys.stderr)
+                print("ERROR: One experiment in the pool failed: " + repr(experiment.inputdata) + repr(experiment.parameters), file=stderr)
                 if haltonerror:
                     raise
                 else:

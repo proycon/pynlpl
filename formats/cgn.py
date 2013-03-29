@@ -14,9 +14,22 @@
 #
 ###############################################################
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import  
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
+    
 from pynlpl.formats import folia
 from pynlpl.common import Enum
-import sys
+
 
 class InvalidTagException(Exception):
     pass
@@ -81,7 +94,7 @@ def parse_cgn_postag(rawtag, raisefeatureexceptions = False):
                         tag.append( folia.Feature, subset=subset,cls=rawfeature)
                         break
                 if not found:
-                    print >>sys.stderr, "\t\tUnknown feature value: " + rawfeature + " in " + rawtag
+                    print("\t\tUnknown feature value: " + rawfeature + " in " + rawtag, file=stderr)
                     if raisefeatureexceptions:
                         raise InvalidFeatureException("Unknown feature value: " + rawfeature + " in " + rawtag)
                     else:    

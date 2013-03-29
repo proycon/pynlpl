@@ -13,11 +13,19 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import    
 #from pynlpl.common import u
-
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
+    
 from pynlpl.statistics import FrequencyList, product
 from pynlpl.textprocessors import Windower
 import io
-from sys import stderr
+
 
 
 class SimpleLanguageModel:

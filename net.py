@@ -17,15 +17,23 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 from pynlpl.common import u
-
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
 from twisted.internet import protocol, reactor # will fail on Python 3 for now
 from twisted.protocols import basic
 import shlex
-import sys
+
+
 
 class GWSNetProtocol(basic.LineReceiver):        
     def connectionMade(self):
-        print("Client connected", file=sys.stderr)
+        print("Client connected", file=stderr)
         self.factory.connections += 1
         if self.factory.connections != 1:
             self.transport.loseConnection()            
@@ -33,7 +41,7 @@ class GWSNetProtocol(basic.LineReceiver):
             self.sendLine("READY")
             
     def lineReceived(self, line):
-        print("Client in: " + line,file=sys.stderr)
+        print("Client in: " + line,file=stderr)
         self.factory.processprotocol.transport.write(line +'\n')        
         self.factory.processprotocol.currentclient = self 
         
@@ -68,16 +76,16 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         pass
     
     def outReceived(self, data):
-        print("Process out " + data,file=sys.stderr)
+        print("Process out " + data,file=stderr)
         for line in data.strip().split('\n'):
             line = self.filterout(line.strip())
             if self.currentclient and line:        
                 self.currentclient.sendLine(line)                
         
     def errReceived(self, data):
-        print("Process err " + data,file=sys.stderr)
+        print("Process err " + data,file=stderr)
         if self.printstderr and data:    
-            print(data.strip(),file=sys.stderr)
+            print(data.strip(),file=stderr)
         for line in data.strip().split('\n'):                
             line = self.filtererr(line.strip())
             if self.sendstderr and self.currentclient and line:        
@@ -85,11 +93,11 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         
             
     def processExited(self, reason):
-        print("Process exited",file=sys.stderr)
+        print("Process exited",file=stderr)
            
     
     def processEnded(self, reason):
-        print("Process ended",file=sys.stderr)
+        print("Process ended",file=stderr)
         if self.currentclient:
             self.currentclient.transport.loseConnection()
         reactor.stop()

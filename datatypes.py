@@ -22,6 +22,7 @@ from __future__ import division
 from __future__ import absolute_import
 from pynlpl.common import u
 
+import random
 import bisect
 import array
 
@@ -273,10 +274,10 @@ class Tree(object):
             raise
             
     def __str__(self):
-        return str(value)
+        return str(self.value)
     
     def __unicode__(self): #Python 2.x
-        return u(value)
+        return u(self.value)
     
 
 
@@ -324,7 +325,7 @@ class Trie(object):
         if not self.children: self.children = {}
         subtrie.value = key
         subtrie.parent = self
-        self.children[key] = value 
+        self.children[key] = subtrie 
             
     def append(self, sequence):
         if not sequence: 
@@ -403,7 +404,6 @@ class Trie(object):
 def containsnullbyte(i):
     assert isinstance(i,int)
     while True:
-        r = i % 256
         if i % 256 == 0:
             return True
         if i >= 256:

@@ -11,20 +11,22 @@
 #
 #----------------------------------------------------------------
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import    
 
-import codecs
+
+import io
 import re
 import glob
 import os.path
 import sys
 
-#try:
-from lxml import etree as ElementTree #try lxml
-#except ImportError:
-#    from xml.etree.ElementTree import ElementTree #fall back to ElementTree
+from lxml import etree as ElementTree
 
 from StringIO import StringIO
-from time import time
+
 
 namespaces = {
     'dcoi': "http://lands.let.ru.nl/projects/d-coi/ns/1.0",
@@ -33,13 +35,13 @@ namespaces = {
     'xml':"http://www.w3.org/XML/1998/namespace"
 }
 
-class CorpusDocument:
+class CorpusDocument(object):
     """This class represent one document/text of the Corpus (read-only)"""
 
     def __init__(self, filename, encoding = 'iso-8859-15'):
         self.filename = filename
         self.id = os.path.basename(filename).split(".")[0]
-        self.f = codecs.open(filename,'r', encoding)
+        self.f = io.open(filename,'r', encoding=encoding)
         self.metadata = {}
 
     def _parseimdi(self,line):
@@ -81,7 +83,6 @@ class CorpusDocument:
         """Iterate over all sentences (sentence_id, sentence) in the document, sentence is a list of 4-tuples (word,id,pos,lemma)"""
         prevp = 0
         prevs = 0
-        prevw = 0
         sentence = [];
         sentence_id = ""
         for word, id, pos, lemma in iter(self):
@@ -100,7 +101,6 @@ class CorpusDocument:
                     sentence_id = doc_id + '.s.' + str(s)
             sentence.append( (word,id,pos,lemma) )     
             prevs = s
-            prevw = w
         if sentence:
             yield sentence_id, sentence 
             
@@ -133,7 +133,7 @@ class Corpus:
                     try:
                         yield CorpusDocument(f)
                     except:
-                        print >>sys.stderr, "Error, unable to parse " + f
+                        print("Error, unable to parse " + f,file=sys.stderr)
                         if not self.ignoreerrors:
                             raise
         for d in glob.glob(self.corpusdir+"/*"):
@@ -143,7 +143,7 @@ class Corpus:
                         try:
                             yield CorpusDocument(f)
                         except:
-                            print >>sys.stderr, "Error, unable to parse " + f
+                            print("Error, unable to parse " + f,file=sys.stderr)
                             if not self.ignoreerrors:
                                 raise
 
@@ -177,7 +177,7 @@ class CorpusX(Corpus):
                     try:
                         yield CorpusDocumentX(f)
                     except:
-                        print >>sys.stderr, "Error, unable to parse " + f
+                        print("Error, unable to parse " + f,file=sys.stderr)
                         if not self.ignoreerrors:
                             raise 
         for d in glob.glob(self.corpusdir+"/*"):
@@ -187,7 +187,7 @@ class CorpusX(Corpus):
                         try:
                             yield CorpusDocumentX(f)
                         except:
-                            print >>sys.stderr, "Error, unable to parse " + f
+                            print("Error, unable to parse " + f,file=sys.stderr)
                             if not self.ignoreerrors:
                                 raise
                                

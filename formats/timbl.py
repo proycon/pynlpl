@@ -15,11 +15,23 @@
 ###############################################################    
 
 
-from sys import stderr
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import  
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout 
+
 from pynlpl.statistics import Distribution
 
 
-class TimblOutput:
+class TimblOutput(object):
     """A class for reading Timbl classifier output, supports the +v+db option and ignores comments starting with #"""
 
     def __init__(self, stream, delimiter = ' ', ignorecolumns = [], ignorevalues = []):
@@ -85,13 +97,13 @@ class TimblOutput:
                 score = float(instance[i+1].rstrip(","))
                 dist[label] = score
             except:
-                print >>stderr, "ERROR: pynlpl.input.timbl.TimblOutput -- Could not fetch score for class '" + label + "', expected float, but found '"+instance[i+1].rstrip(",")+"'. Instance= " + " ".join(instance)+ ".. Attempting to compensate..."
+                print("ERROR: pynlpl.input.timbl.TimblOutput -- Could not fetch score for class '" + label + "', expected float, but found '"+instance[i+1].rstrip(",")+"'. Instance= " + " ".join(instance)+ ".. Attempting to compensate...",file=stderr)
                 i = i - 1
             i += 2
 
             
         if not dist:
-            print >>stderr, "ERROR: pynlpl.input.timbl.TimblOutput --  Did not find class distribution for ", instance
+            print("ERROR: pynlpl.input.timbl.TimblOutput --  Did not find class distribution for ", instance,file=stderr)
 
         return Distribution(dist)
 

@@ -12,9 +12,14 @@
 #
 ###############################################################
 
-import codecs
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import    
 
-class Taggerdata:
+import io
+
+class Taggerdata(object):
     def __init__(self,filename, encoding = 'utf-8', mode ='r'):
         self.filename = filename
         self.encoding = encoding
@@ -120,7 +125,7 @@ class Taggerdata:
         return alignment   
 
     def reset(self):
-        self.f = codecs.open(self.filename,self.mode, self.encoding)
+        self.f = io.open(self.filename,self.mode, encoding=self.encoding)
 
 
     def write(self, sentence):

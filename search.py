@@ -17,8 +17,14 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 #from pynlpl.common import u
-
-from sys import stderr
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
 from pynlpl.datatypes import FIFOQueue, PriorityQueue
 from collections import deque
 from bisect import bisect_left

@@ -22,12 +22,19 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 from pynlpl.common import u
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
 import io
 
 import math
 import random
 import operator
-import sys
 from collections import Counter
 
 
@@ -449,15 +456,15 @@ class HiddenMarkovModel(MarkovChain):
         self.observablenodes.update(distribution.keys())        
 
     def print_dptable(self, V):
-        print("    ",end="")
-        for i in range(len(V)): print("%7s" % ("%d" % i),end="")
-        print()
+        print("    ",end="",file=stdout)
+        for i in range(len(V)): print("%7s" % ("%d" % i),end="",file=stdout)
+        print(file=stdout)
      
         for y in V[0].keys():
-            print("%.5s: " % y, end="")
+            print("%.5s: " % y, end="",file=stdout)
             for t in range(len(V)):
-                print("%.7s" % ("%f" % V[t][y]),end="")
-            print()
+                print("%.7s" % ("%f" % V[t][y]),end="",file=stdout)
+            print(file=stdout)
      
     #Adapted from: http://en.wikipedia.org/wiki/Viterbi_algorithm 
     def viterbi(self,observations, doprint=False):

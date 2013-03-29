@@ -22,11 +22,16 @@
 #
 ###############################################################
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import  
+#from pynlpl.common import u
+
 
 import bz2
-from itertools import izip
 import copy
-import codecs
+import io
 from sys import stderr
 
 class GizaSentenceAlignment(object):
@@ -78,7 +83,7 @@ class GizaSentenceAlignment(object):
         
     def intersect(self,other):
         if other.target != self.source:
-            print >>stderr,"Mismatch between self.source and other.target: " + repr(self.source) + " -- vs -- " + repr(other.target)
+            print("Mismatch between self.source and other.target: " + repr(self.source) + " -- vs -- " + repr(other.target),file=stderr)
             return None
             
         intersection = copy.copy(self)
@@ -92,10 +97,10 @@ class GizaSentenceAlignment(object):
         return intersection            
     
     def __repr__(self):
-        s = " ".join(self.source).encode('utf-8') + " ||| "
-        s += " ".join(self.target).encode('utf-8') + " ||| "
+        s = " ".join(self.source)+ " ||| "
+        s += " ".join(self.target) + " ||| "
         for S,T in sorted(self.alignment): 
-            s += self.source[S].encode('utf-8') + "->" + self.target[T].encode('utf-8') + " ; "
+            s += self.source[S] + "->" + self.target[T] + " ; "
         return s
 
     
@@ -123,7 +128,7 @@ class GizaSentenceAlignment(object):
     
 class GizaModel(object):
     def __init__(self, filename, encoding= 'utf-8'):
-        self.f = codecs.open(filename,'r',encoding)        
+        self.f = io.open(filename,'r',encoding)        
         self.nextlinebuffer = None
         
         
@@ -206,7 +211,7 @@ class WordAlignment:
                     alignment[pos - 1] = i
 
             if self.encoding: 
-                yield [ unicode(w,self.encoding) for w in src ], [ unicode(w,self.encoding) for w in trg ], alignment
+                yield [ u(w,self.encoding) for w in src ], [ u(w,self.encoding) for w in trg ], alignment
             else:
                 yield src, trg, alignment
 
@@ -278,7 +283,7 @@ class IntersectionAlignment:
         self.encoding = encoding
 
     def __iter__(self):
-        for (src, trg, alignment), (revsrc, revtrg, revalignment) in izip(self.s2t,self.t2s):
+        for (src, trg, alignment), (revsrc, revtrg, revalignment) in zip(self.s2t,self.t2s): #will take unnecessary memory in Python 2.x, optimal in Python 3
             if src != revsrc or trg != revtrg:
                 raise Exception("Files are not identical!")
             else:                

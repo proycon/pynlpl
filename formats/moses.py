@@ -14,27 +14,43 @@
 #
 ###############################################################    
 
+
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import    
+
+from pynlpl.common import u
+
 import sys
 import bz2
 import datetime
 import socket
-from twisted.internet import protocol, reactor
-from twisted.protocols import basic
+import io
 
-class PhraseTable:
+try:
+    from twisted.internet import protocol, reactor #No Python 3 support yet :(
+    from twisted.protocols import basic
+    twistedimported = True
+except:
+    print("WARNING: Twisted could not be imported",file=sys.stderr)
+    twistedimported = False
+
+
+class PhraseTable(object):
     def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 5, align2_column = 4, max_sourcen = 0):
         """Load a phrase table from file into memory (memory intensive!)"""
         self.phrasetable = {}
         if filename.split(".")[-1] == "bz2":
             f = bz2.BZ2File(filename,'r')        
         else:
-            f = open(filename,'r')
+            f = io.open(filename,'r','utf-8')
         linenum = 0
         while True:
             if not quiet:
                 linenum += 1
                 if (linenum % 100000) == 0:
-                    print >> sys.stderr, "Loading phrase-table: @%d" % linenum, "\t(" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ")"
+                    print("Loading phrase-table: @%d" % linenum, "\t(" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ")",file=sys.stderr)
             line = f.readline()
             if not line: 
                 break
@@ -117,24 +133,24 @@ class PhraseTable:
         #else:
         #    raise KeyError
 
+if twistedimported:
+    class PTProtocol(basic.LineReceiver):
+        def lineReceived(self, phrase):
+            try:
+                for target,Pst,Pts,null_alignments in self.factory.phrasetable[phrase]:
+                    self.sendLine(target+"\t"+str(Pst)+"\t"+str(Pts)+"\t"+str(null_alignments))
+            except KeyError:
+                self.sendLine("NOTFOUND")
 
-class PTProtocol(basic.LineReceiver):
-    def lineReceived(self, phrase):
-        try:
-            for target,Pst,Pts,null_alignments in self.factory.phrasetable[phrase]:
-                self.sendLine(target+"\t"+str(Pst)+"\t"+str(Pts)+"\t"+str(null_alignments))
-        except KeyError:
-            self.sendLine("NOTFOUND")
+    class PTFactory(protocol.ServerFactory):
+        protocol = PTProtocol
+        def __init__(self, phrasetable):
+            self.phrasetable = phrasetable
 
-class PTFactory(protocol.ServerFactory):
-    protocol = PTProtocol
-    def __init__(self, phrasetable):
-        self.phrasetable = phrasetable
-
-class PhraseTableServer:
-    def __init__(self, phrasetable, port=65432):
-        reactor.listenTCP(port, PTFactory(phrasetable))
-        reactor.run()
+    class PhraseTableServer(object):
+        def __init__(self, phrasetable, port=65432):
+            reactor.listenTCP(port, PTFactory(phrasetable))
+            reactor.run()
         
 
 
@@ -154,12 +170,13 @@ class PhraseTableClient(object):
         if phrase != self.lastquery:
             self.socket.send(phrase+ "\r\n")
                     
-        
-            data = ""
+            data = b""
             while not data or data[-1] != '\n':
                 data += self.socket.recv(self.BUFSIZE)
         else:
             data = self.lastresponse
+
+        data = u(data)
 
         for line in data.split('\n'):
             line = line.strip('\r\n')
@@ -178,13 +195,14 @@ class PhraseTableClient(object):
         return solutions
     
     def __contains__(self, phrase):
-        self.socket.send(phrase+ "\r\n")\
+        self.socket.send(phrase.encode('utf-8')+ b"\r\n")\
         
-        solutions = []
         
-        data = ""
+        data = b""
         while not data or data[-1] != '\n':
             data += self.socket.recv(self.BUFSIZE)
+
+        data = u(data)
 
         for line in data.split('\n'):
             line = line.strip('\r\n')

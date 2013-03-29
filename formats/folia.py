@@ -1,7 +1,10 @@
 #---------------------------------------------------------------
 # PyNLPl - FoLiA Format Module
-#   by Maarten van Gompel, ILK, Universiteit van Tilburg
-#   http://ilk.uvt.nl/~mvgompel
+#   by Maarten van Gompel
+#   Centre for Language Studies
+#   Radboud University Nijmegen
+#   http://proycon.github.com/folia
+#   http://www.github.com/proycon/pynlpl
 #   proycon AT anaproy DOT nl
 #
 #   Module for reading, editing and writing FoLiA XML
@@ -11,6 +14,19 @@
 #----------------------------------------------------------------
 
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from pynlpl.common import u
+import sys
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
 
 from lxml import etree as ElementTree
 LXE=True
@@ -19,7 +35,13 @@ LXE=True
 
 from lxml.builder import E, ElementMaker
 from sys import stderr
-from StringIO import StringIO
+if sys.version < '3':
+    from StringIO import StringIO
+    from urllib import urlopen
+else:
+    from io import StringIO
+    from urllib.request import urlopen
+    
 from copy import copy, deepcopy
 from pynlpl.formats.imdi import RELAXNG_IMDI
 from datetime import datetime
@@ -29,12 +51,12 @@ import inspect
 import glob
 import os
 import re
-import urllib
+
 import multiprocessing
 import threading
 
 FOLIAVERSION = '0.9.1'
-LIBVERSION = '0.9.1.30' #== FoLiA version + library revision
+LIBVERSION = '0.9.1.31' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
@@ -281,24 +303,24 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         del kwargs['uncorrectedtext']
         
     if doc and doc.debug >= 2:
-        print >>stderr, "   @id           = ", repr(object.id)
-        print >>stderr, "   @set          = ", repr(object.set)
-        print >>stderr, "   @class        = ", repr(object.cls)
-        print >>stderr, "   @annotator    = ", repr(object.annotator)
-        print >>stderr, "   @annotatortype= ", repr(object.annotatortype)
-        print >>stderr, "   @confidence   = ", repr(object.confidence)
-        print >>stderr, "   @n            = ", repr(object.n)
-        print >>stderr, "   @datetime     = ", repr(object.datetime)
+        print("   @id           = ", repr(object.id),file=stderr)
+        print("   @set          = ", repr(object.set),file=stderr)
+        print("   @class        = ", repr(object.cls),file=stderr)
+        print("   @annotator    = ", repr(object.annotator),file=stderr)
+        print("   @annotatortype= ", repr(object.annotatortype),file=stderr)
+        print("   @confidence   = ", repr(object.confidence),file=stderr)
+        print("   @n            = ", repr(object.n),file=stderr)
+        print("   @datetime     = ", repr(object.datetime),file=stderr)
 
 
         
     #set index
     if object.id and doc:
         if object.id in doc.index:
-            if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Duplicate ID not permitted:" + object.id
+            if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Duplicate ID not permitted:" + object.id,file=stderr)
             raise DuplicateIDError("Duplicate ID not permitted: " + object.id)
         else:
-            if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + object.id
+            if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Adding to index: " + object.id,file=stderr)
             doc.index[object.id] = object
         
     #Parse feature attributes (shortcut for feature specification for some elements)
@@ -518,41 +540,41 @@ class AbstractElement(object):
         return not (self == other)
             
     def __eq__(self, other):
-        if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - " + repr(self) + " vs " + repr(other)
+        if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - " + repr(self) + " vs " + repr(other),file=stderr)
         
         #Check if we are of the same time
         if type(self) != type(other):
-            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Type mismatch: " + str(type(self)) + " vs " + str(type(other))
+            if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Type mismatch: " + str(type(self)) + " vs " + str(type(other)),file=stderr)
             return False
             
         #Check FoLiA attributes
         if self.id != other.id:
-            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - ID mismatch: " + str(self.id) + " vs " + str(other.id)
+            if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - ID mismatch: " + str(self.id) + " vs " + str(other.id),file=stderr)
             return False            
         if self.set != other.set:
-            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Set mismatch: " + str(self.set) + " vs " + str(other.set)
+            if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Set mismatch: " + str(self.set) + " vs " + str(other.set),file=stderr)
             return False
         if self.cls != other.cls:
-            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Class mismatch: " + repr(self.cls) + " vs " + repr(other.cls)
+            if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Class mismatch: " + repr(self.cls) + " vs " + repr(other.cls),file=stderr)
             return False            
         if self.annotator != other.annotator:
-            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Annotator mismatch: " + repr(self.annotator) + " vs " + repr(other.annotator)
+            if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Annotator mismatch: " + repr(self.annotator) + " vs " + repr(other.annotator),file=stderr)
             return False            
         if self.annotatortype != other.annotatortype:
-            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Annotator mismatch: " + repr(self.annotatortype) + " vs " + repr(other.annotatortype)
+            if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Annotator mismatch: " + repr(self.annotatortype) + " vs " + repr(other.annotatortype),file=stderr)
             return False                                     
                 
         #Check if we have same amount of children:
         mychildren = list(self)
         yourchildren = list(other)
         if len(mychildren) != len(yourchildren):
-            if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Unequal amount of children"
+            if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Unequal amount of children",file=stderr)
             return False
                     
         #Now check equality of children        
         for mychild, yourchild in zip(mychildren, yourchildren):
             if mychild != yourchild:
-                if self.doc and self.doc.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Child mismatch: " + repr(mychild) + " vs " + repr(yourchild) + " (in " + repr(self) + ", id: " + str(self.id) + ")"
+                if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Child mismatch: " + repr(mychild) + " vs " + repr(yourchild) + " (in " + repr(self) + ", id: " + str(self.id) + ")",file=stderr)
                 return False
 
         #looks like we made it! \o/
@@ -580,12 +602,12 @@ class AbstractElement(object):
         except KeyError:
             raise
 
-    def __unicode__(self):
+    def __unicode__(self): #Python 2 only
         """Alias for text()"""
         return self.text()
                                 
     def __str__(self):        
-        return unicode(self).encode('utf-8')
+        return self.text()
 
     def copy(self, newdoc=None):
         """Make a deep copy"""
@@ -763,7 +785,7 @@ class AbstractElement(object):
         
         
         #Do the actual appending        
-        if not Class and (isinstance(child,str) or isinstance(child,unicode)) and TextContent in self.ACCEPTED_DATA:
+        if not Class and (isinstance(child,str) or ((sys.version < '3') and isinstance(child,unicode))) and TextContent in self.ACCEPTED_DATA:
             #you can pass strings directly (just for convenience), will be made into textcontent automatically.
             child = TextContent(self.doc, child )            
             self.data.append(child)                    
@@ -829,7 +851,7 @@ class AbstractElement(object):
             raise Exception("Too many arguments specified. Only possible when first argument is a class and not an instance")
         
         #Do the actual appending        
-        if not Class and (isinstance(child,str) or isinstance(child,unicode)) and TextContent in self.ACCEPTED_DATA:
+        if not Class and (isinstance(child,str) or (sys.version < '3' and isinstance(child,unicode))) and TextContent in self.ACCEPTED_DATA:
             #you can pass strings directly (just for convenience), will be made into textcontent automatically.
             child = TextContent(self.doc, child )
             self.data.insert(index, child)
@@ -1242,19 +1264,19 @@ class AbstractElement(object):
         text = None
         for subnode in node:
             if subnode.tag[:nslen] == '{' + NSFOLIA + '}':
-                if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:]
+                if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:],file=stderr)
                 args.append(doc.parsexml(subnode, Class) )                
             elif subnode.tag[:nslendcoi] == '{' + NSDCOI + '}':
                 #Dcoi support
                 if Class is Text and subnode.tag[nslendcoi:] == 'body':
                     for subsubnode in subnode:            
-                        if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslendcoi:]
+                        if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslendcoi:],file=stderr)
                         args.append(doc.parsexml(subsubnode, Class) ) 
                 else:
-                    if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslendcoi:]
+                    if doc.debug >= 1: print( "[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslendcoi:],file=stderr)
                     args.append(doc.parsexml(subnode, Class) ) 
             elif doc.debug >= 1:
-                print >>stderr, "[PyNLPl FoLiA DEBUG] Ignoring subnode outside of FoLiA namespace: " + subnode.tag
+                print("[PyNLPl FoLiA DEBUG] Ignoring subnode outside of FoLiA namespace: " + subnode.tag,file=stderr)
                     
 
         
@@ -1300,7 +1322,7 @@ class AbstractElement(object):
             if not AnnotationType.TOKEN in doc.annotationdefaults:                    
                 doc.declare(AnnotationType.TOKEN, set='http://ilk.uvt.nl/folia/sets/ilktok.foliaset')
                                                             
-        if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:]
+        if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found " + node.tag[nslen:],file=stderr)
         instance = Class(doc, *args, **kwargs)
         #if id:
         #    if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + id
@@ -1333,27 +1355,24 @@ class AbstractElement(object):
             del self.doc.index[child.id]
 
 class Description(AbstractElement):
-    """Description is an element that can be used to associate a description with almost any
-    other FoLiA element"""
+    """Description is an element that can be used to associate a description with almost any other FoLiA element"""
     XMLTAG = 'desc'
     OCCURRENCES = 1
     
     def __init__(self,doc, *args, **kwargs):
         """Required keyword arguments:
-        
                 * ``value=``: The text content for the description (``str`` or ``unicode``)  
-        
-        """
-        
+        """        
         if 'value' in kwargs:
-            if isinstance(kwargs['value'], unicode):
-                self.value = kwargs['value']
-            elif isinstance(kwargs['value'], str):
-                self.value = unicode(kwargs['value'],'utf-8')
-            elif kwargs['value'] is None:
-                self.value = u""
+            if kwargs['value'] is None:
+                self.value = ""
+            elif isinstance(kwargs['value'], str) or (sys.version < '3' and  isinstance(kwargs['value'], unicode)):
+                self.value = u(kwargs['value'])
             else:
-                raise Exception("value= parameter must be unicode or str instance, got " + str(type(kwargs['value'])))
+                if sys.version < '3':                    
+                    raise Exception("value= parameter must be unicode or str instance, got " + str(type(kwargs['value'])))
+                else:
+                    raise Exception("value= parameter must be str instance, got " + str(type(kwargs['value'])))
             del kwargs['value']
         else:
             raise Exception("Description expects value= parameter")
@@ -1366,8 +1385,7 @@ class Description(AbstractElement):
         return self.value
         
     def __str__(self):
-        return self.value.encode('utf-8')  
-    
+        return self.value    
     
     
     def xml(self, attribs = None,elements = None, skipchildren = False):   
@@ -1819,7 +1837,7 @@ class TextContent(AbstractElement):
             self.value = kwargs['value']   
             del kwargs['value'] 
         elif isinstance(kwargs['value'], str):
-            self.value = unicode(kwargs['value'],'utf-8')        
+            self.value = u(kwargs['value'])        
             del kwargs['value']
         elif not kwargs['value']:
             self.value = u""
@@ -1889,15 +1907,13 @@ class TextContent(AbstractElement):
         return self.value
         
     def __str__(self):
-        return self.value.encode('utf-8')
+        return self.value
         
     def __eq__(self, other):
         if isinstance(other, TextContent):
             return self.value == other.value
-        elif isinstance(other, unicode):
-            return self.value == other
-        elif isinstance(other, str):
-            return self.value == unicode(other,'utf-8')
+        elif isinstance(other, str) or (sys.version < '3' and isinstance(other, unicode)):
+            return self.value == u(other)
         else:
             return False
         
@@ -1925,11 +1941,10 @@ class TextContent(AbstractElement):
         depth = 0
         e = self
         while True:
-            print e.__class__
             if e.parent:         
                 e = e.parent
             else:
-                print "no parent, breaking"
+                #no parent, breaking
                 return False
                 
             if isinstance(e,AbstractStructureElement) or isinstance(e,AbstractSubtokenAnnotation):
@@ -2820,9 +2835,12 @@ class Correction(AbstractExtendedTokenAnnotation):
               
             
     def __unicode__(self):
+        return str(self)
+
+    def __str__(self):
         for e in self:
             if isinstance(e, New) or isinstance(e, Current):
-                return unicode(e)
+                return str(e)
         
     
     def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
@@ -2890,11 +2908,11 @@ class WordReference(AbstractElement):
         assert Class is WordReference or issubclass(Class, WordReference)
         #special handling for word references
         id = node.attrib['id']
-        if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found word reference"
+        if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found word reference",file=stderr)
         try:
             return doc[id]
         except KeyError:
-            if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] ...Unresolvable!"
+            if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] ...Unresolvable!",file=stderr)
             return WordReference(doc, id=id)    
 
     @classmethod
@@ -3652,7 +3670,7 @@ class Document(object):
             if not self.bypassleak: 
                 self.load(self.filename)                                                
             else:
-                f = open(self.filename)
+                f = io.open(self.filename,'r',encoding='utf-8')
                 contents = f.read()
                 f.close()
                 contents = contents.replace(' xml:id=', ' id=')
@@ -3660,8 +3678,6 @@ class Document(object):
                 self.parsexml(self.tree.getroot())              
         elif 'string' in kwargs:
             s = kwargs['string']
-            if isinstance(s, unicode):
-                s = s.encode('utf-8')
             if self.bypassleak: 
                 s = s.replace(' xml:id=', ' id=')
             self.tree = ElementTree.parse(StringIO(s))
@@ -3842,7 +3858,7 @@ class Document(object):
             filename = self.filename
         if not filename:
             raise Exception("No filename specified")
-        f = open(filename,'w')
+        f = io.open(filename,'w',encoding='utf-8')
         f.write(self.xmlstring())
         f.close()
 
@@ -4002,7 +4018,7 @@ class Document(object):
      
     def parsexmldeclarations(self, node):
         if self.debug >= 1: 
-            print >>stderr, "[PyNLPl FoLiA DEBUG] Processing Annotation Declarations"
+            print("[PyNLPl FoLiA DEBUG] Processing Annotation Declarations",file=stderr)
         self.declareprocessed = True
         for subnode in node:
             if subnode.tag[:25] == '{' + NSFOLIA + '}' and subnode.tag[-11:] == '-annotation':
@@ -4068,7 +4084,7 @@ class Document(object):
                     self.annotationdefaults[type][set] = defaults
                 
                 if self.debug >= 1: 
-                    print >>stderr, "[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults)
+                    print("[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults),file=stderr)
                     
 
         
@@ -4271,7 +4287,7 @@ class Document(object):
             node = ElementTree.parse(StringIO(node)).getroot()                         
             
         if node.tag == '{' + NSFOLIA + '}FoLiA':
-            if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found FoLiA document"
+            if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found FoLiA document",file=stderr)
             try:
                 self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
             except KeyError:
@@ -4288,10 +4304,10 @@ class Document(object):
                 if subnode.tag == '{' + NSFOLIA + '}metadata':
                     self.parsemetadata(subnode)
                 elif subnode.tag == '{' + NSFOLIA + '}text' and self.mode == Mode.MEMORY:
-                    if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
+                    if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found Text",file=stderr)
                     self.data.append( self.parsexml(subnode) )
         elif node.tag == '{' + NSDCOI + '}DCOI':
-            if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found DCOI document"
+            if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found DCOI document",file=stderr)
             self.autodeclare = True
             try:
                 self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
@@ -4305,7 +4321,7 @@ class Document(object):
                     self.metadatatype = MetaDataType.IMDI
                     self.setimdi(subnode)
                 elif subnode.tag == '{' + NSDCOI + '}text':
-                    if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Text"
+                    if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found Text",file=stderr)
                     self.data.append( self.parsexml(subnode) )
         elif node.tag[:nslen] == '{' + NSFOLIA + '}':
             #generic handling (FoLiA)
@@ -4390,13 +4406,17 @@ class Document(object):
     def __unicode__(self):
         """Returns the text of the entire document"""
         return self.text()
+    
+    def __str__(self):    
+        """Returns the text of the entire document"""
+        return self.text()
 
     def __ne__(self, other):
         return not (self == other)
 
     def __eq__(self, other):
         if len(self.data) != len(other.data):
-            if self.debug: print >>stderr, "[PyNLPl FoLiA DEBUG] Equality check - Documents have unequal amount of children"
+            if self.debug: print("[PyNLPl FoLiA DEBUG] Equality check - Documents have unequal amount of children",file=stderr)
             return False
         for e,e2 in zip(self.data,other.data):
             if e != e2:            
@@ -4404,9 +4424,7 @@ class Document(object):
         return True
         
         
-    def __str__(self):    
-        """Returns the text of the entire document (UTF-8 encoded)"""
-        return unicode(self).encode('utf-8')
+
         
         
 
@@ -4419,9 +4437,9 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
             if isinstance(kwargs['value'], unicode):
                 self.value = kwargs['value']
             elif isinstance(kwargs['value'], str):
-                self.value = unicode(kwargs['value'],'utf-8')
+                self.value = u(kwargs['value'])
             elif kwargs['value'] is None:
-                self.value = u""
+                self.value = ""
             else:
                 raise Exception("value= parameter must be unicode or str instance")
             del kwargs['value']
@@ -4436,7 +4454,7 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
         return self.value
         
     def __str__(self):
-        return self.value.encode('utf-8')  
+        return self.value
 
     def xml(self, attribs = None,elements = None, skipchildren = False):   
         global NSFOLIA
@@ -4535,7 +4553,7 @@ class Corpus:
                     try:
                         yield Document(file=f, **self.kwargs )
                     except Exception as e:
-                        print >>stderr, "Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e)
+                        print("Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                         if not self.ignoreerrors:
                             raise
         for d in glob.glob(self.corpusdir+"/*"):
@@ -4545,7 +4563,7 @@ class Corpus:
                         try:
                             yield Document(file=f, **self.kwargs)
                         except Exception as e:
-                            print >>stderr, "Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e)
+                            print("Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                             if not self.ignoreerrors:
                                 raise
     
@@ -4560,7 +4578,7 @@ class CorpusFiles(Corpus):
                     try:
                         yield f
                     except Exception as e:
-                        print >>stderr, "Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e)
+                        print("Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                         if not self.ignoreerrors:
                             raise
         for d in glob.glob(self.corpusdir+"/*"):
@@ -4570,7 +4588,7 @@ class CorpusFiles(Corpus):
                         try:
                             yield f
                         except Exception as e:
-                            print >>stderr, "Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e)
+                            print("Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                             if not self.ignoreerrors:
                                 raise
 
@@ -4781,7 +4799,7 @@ class SetDefinition(AbstractDefinition):
 def loadsetdefinition(filename):
     global NSFOLIA
     if filename[0:7] == 'http://':
-        f = urllib.urlopen(filename)
+        f = urlopen(filename)
         try:
             tree = ElementTree.parse(StringIO("\n".join(f.readlines())))
         except IOError:
@@ -4842,7 +4860,7 @@ def relaxng(filename=None):
     #for e in relaxng_imdi():
     #    grammar.append(e)
     if filename:
-        f = open(filename,'w')
+        f = io.open(filename,'w',encoding='utf-8')
         if LXE:
             f.write( ElementTree.tostring(relaxng(),pretty_print=True).replace("</define>","</define>\n\n") )
         else:
@@ -4878,7 +4896,7 @@ class Reader(object):
         """Iterating over a Reader instance will cause the FoLiA document to be read. This is a generator yielding instances of the object you specified"""
         
         global NSFOLIA        
-        f = open(self.filename,'r')    
+        f = io.open(self.filename,'r',encoding='utf-8')    
         if self.bypassleak:
             data = f.read()
             data = data.replace(' xml:id="',' id="')
