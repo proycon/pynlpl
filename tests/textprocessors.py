@@ -12,14 +12,16 @@
 #
 #----------------------------------------------------------------
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+
 import sys
 import os
 import unittest
 
-sys.path.append(sys.path[0] + '/../../')
-os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
-
-from pynlpl.textprocessors import Windower, crude_tokenizer, strip_accents, calculate_overlap
+from pynlpl.textprocessors import Windower, tokenise, strip_accents, calculate_overlap
 
 text = "This is a test .".split(" ")
 
@@ -54,12 +56,12 @@ class CrudeTokenizerTest(unittest.TestCase):
     def test_tokenize(self):
         """Crude tokeniser"""
         global text
-        self.assertEqual(crude_tokenizer("This is a test."),text)
+        self.assertEqual(tokenise("This is a test."),text)
 
 class StripAccentTest(unittest.TestCase):
     def test_strip_accents(self):
-        """Strip Accents"""
-        self.assertEqual(strip_accents(u"áàâãāĝŭçñßt"),"aaaaagucnt")
+        """Strip Accents"""        
+        self.assertEqual(strip_accents("áàâãāĝŭçñßt"),"aaaaagucnt")
 
 class OverlapTest(unittest.TestCase):
     def test_overlap_subset(self):

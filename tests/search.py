@@ -64,7 +64,6 @@ class InformedReorderSearchState(ReorderSearchState):
             totaldistortion += tokendistortion
         return totaldistortion
 
-
     def expand(self):
         #Operator: Swap two consecutive pairs
         l = len(self.tokens)

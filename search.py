@@ -55,6 +55,14 @@ class AbstractSearchState(object):
         """Implement an equality test in the derived method, based only on the state's content (not its path etc!)"""
         raise Exception("Classes derived from AbstractSearchState must define an __eq__() method!")
 
+    def __lt__(self, other):
+        assert isinstance(other, AbstractSearchState)
+        return self.score() < other.score()
+
+    def __gt__(self, other):
+        assert isinstance(other, AbstractSearchState)
+        return self.score() > other.score()
+
     
     def __hash__(self):
         """Return a unique hash for this state, based on its ID"""
@@ -106,9 +114,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         self.traversed = 0 #Count of number of nodes visited
         self.solutions = 0 #Counts the number of solutions
         self.debug = 0
-        if not hasattr(self,'fringe'):
-            self.fringe = []  #this is just here for pylint to stop complaining
-            raise Exception("No fringe initialised") #subclasses should have assigned one already!!!
+
         for key, value in kwargs.items():
             if key == 'graph':
                 self.usememory = value #search space is a graph? memory required to keep visited states
@@ -374,7 +380,7 @@ class BeamSearch(AbstractSearch):
                         pass
 
 
-                if not self.usememory or (self.usememory and not hash(state) in self.visited):
+                if not self.usememory or (self.usememory and not hash(state) in self._visited):
                     
                     self.traversed += 1
                     #Evaluate state
@@ -425,7 +431,7 @@ class BeamSearch(AbstractSearch):
                     if self.debug:
                         print("\t[pynlpl debug] Expanded " + str(statecount) + " states, " + str(offers) + " offered to successor pool",file=stderr)
                     if self.keeptraversal: self._traversal.append(state)
-                    if self.usememory: self.visited[hash(state)] = True
+                    if self.usememory: self._visited[hash(state)] = True
                     self.prune(state) #calls prune method (does nothing by default in this search!!!)
 
                 else:

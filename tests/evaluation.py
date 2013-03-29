@@ -11,13 +11,16 @@
 #
 #-------------------------------------------------------------
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from pynlpl.common import u
+
 import sys
 import os
 import unittest
 import random
-
-sys.path.append(sys.path[0] + '/../../')
-os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
 from pynlpl.evaluation import AbstractExperiment, WPSParamSearch, ExperimentPool, ClassEvaluation
 
@@ -43,8 +46,8 @@ class ParamExperiment(AbstractExperiment):
 
 class PoolExperiment(AbstractExperiment):
     def start(self):
-        self.runcommand('sleep',None,None,None,str(self.parameters['duration']))
-        print "STARTING: sleep " + str(self.parameters['duration'])
+        self.startcommand('sleep',None,None,None,str(self.parameters['duration']))
+        print("STARTING: sleep " + str(self.parameters['duration']))
 
 
 class WPSTest(unittest.TestCase):
@@ -61,10 +64,11 @@ class ExperimentPoolTest(unittest.TestCase):
     def test_pool(self):
         pool = ExperimentPool(4)
         for i in range(0,15):
-            pool.append( PoolExperiment(None, duration=random.randint(1,60)) )
+            pool.append( PoolExperiment(None, duration=random.randint(1,6)) )
         for experiment in pool.run():
-            print "DONE: sleep " + str(experiment.parameters['duration'])
-        self.assertEqual(1, False) 
+            print("DONE: sleep " + str(experiment.parameters['duration']))
+        
+        self.assertTrue(True) #if we got here, no exceptions were raised and it's okay 
         
 class ClassEvaluationTest2(unittest.TestCase):
     def setUp(self):
@@ -74,9 +78,9 @@ class ClassEvaluationTest2(unittest.TestCase):
        
     def test001(self):
         e = ClassEvaluation(self.goals, self.observations)
-        print
-        print e
-        print e.confusionmatrix()
+        print()
+        print(e)
+        print(e.confusionmatrix())
     
     
 class ClassEvaluationTest(unittest.TestCase):
@@ -90,8 +94,8 @@ class ClassEvaluationTest(unittest.TestCase):
         e = ClassEvaluation(self.goals, self.observations)
         
         print
-        print e
-        print e.confusionmatrix()
+        print(e)
+        print(e.confusionmatrix())
     
                 
         self.assertEqual(e.tp['cat'], 5)

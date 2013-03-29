@@ -33,9 +33,10 @@ import unicodedata
 import string
 import io
 import array
-from statistics import FrequencyList
-from datatypes import intarraytobytearray, bytearraytoint, containsnullbyte
 from itertools import permutations
+from pynlpl.statistics import FrequencyList
+from pynlpl.datatypes import intarraytobytearray, bytearraytoint, containsnullbyte
+
             
             
 class Windower(object):
@@ -206,9 +207,12 @@ def tokenise(line):
             if buffer:
                 tokens.append(buffer)
                 buffer = ''
+            if c in string.punctuation:
+                tokens.append(c)
         else:
             buffer += c          
-    if buffer: tokens.append(buffer)  
+    if buffer: 
+        tokens.append(buffer)  
     return tokens
     
 
@@ -221,7 +225,7 @@ def strip_accents(s, encoding= 'utf-8'):
            return unicodedata.normalize('NFKD', unicode(s,encoding)).encode('ASCII', 'ignore')
     else:
         if isinstance(s,bytes): s = str(s,encoding)
-        return unicodedata.normalize('NFKD', s).encode('ASCII', 'ignore')
+        return str(unicodedata.normalize('NFKD', s).encode('ASCII', 'ignore'),'ascii')
 
 def swap(tokens, maxdist=2):
     """Perform a swap operation on a sequence of tokens, exhaustively swapping all tokens up to the maximum specified distance. This is a subset of all permutations."""

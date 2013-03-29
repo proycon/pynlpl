@@ -329,7 +329,7 @@ class AbstractExperiment(object):
                 else:
                     cmd += ' ' + key + str(value)
         if printcommand:
-            print("STARTING COMMAND: " + cmd.encode('utf-8'),file=stderr)
+            print("STARTING COMMAND: " + cmd, file=stderr)
 
         self.begintime = datetime.datetime.now()
         if not cwd:
@@ -350,7 +350,7 @@ class AbstractExperiment(object):
 
 
     def delete(self):
-        raise Exception("Not implemented yet, make sure to overload the delete() method")
+        pass
 
     def sample(self, size):
         """Return a sample of the input data"""
@@ -437,7 +437,10 @@ class WPSParamSearch(object):
             self.constraintfunc = lambda x: True
             
         #compute all parameter combinations:
-        verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope.items() ]
+        if isinstance(parameterscope, dict):
+            verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope.items() ]
+        else:       
+            verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope ]
         self.parametercombinations = [ (x,0) for x in itertools.product(*verboseparameterscope) if self.constraintfunc(dict(x)) ] #generator
 
     def _combine(self,name, values): #TODO: can't we do this inline in a list comprehension?
@@ -472,7 +475,7 @@ class WPSParamSearch(object):
             for parameters,score in self.parametercombinations:
                 experiment = self.ExperimentClass(data, **dict(parameters))
                 experiment.run()
-                newparametercombinations.append( (parameters, experiment.scofe()) )
+                newparametercombinations.append( (parameters, experiment.score()) )
                 if self.delete:
                     experiment.delete()
         else:

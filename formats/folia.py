@@ -2029,15 +2029,6 @@ class TextContent(AbstractElement):
             E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})            
             return E.define( E.element(E.text(), E.optional( E.attribute(name='offset')), E.optional( E.attribute(name='class')),name=cls.XMLTAG ), name=cls.XMLTAG, ns=NSFOLIA)
 
-class String(AbstractElement):
-   """String"""
-   ACCEPTED_DATA = (TextContent,Alignment,Description, Metric, Correction)
-   XMLTAG = 'str'
-   REQUIRED_ATTRIBS = ()
-   OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
-   ANNOTATIONTYPE = AnnotationType.STRING
-   OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
-   OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
    
 
 class Linebreak(AbstractStructureElement):
@@ -2667,6 +2658,8 @@ class Alignment(AbstractElement):
         return l
         
 
+
+
 class ErrorDetection(AbstractExtendedTokenAnnotation):
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
     XMLTAG = 'errordetection'
@@ -2860,6 +2853,16 @@ class Correction(AbstractExtendedTokenAnnotation):
         
 Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction, Description, Metric)
 
+
+class String(AbstractElement):
+   """String"""
+   ACCEPTED_DATA = (TextContent,Alignment,Description, Metric, Correction)
+   XMLTAG = 'str'
+   REQUIRED_ATTRIBS = ()
+   OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
+   ANNOTATIONTYPE = AnnotationType.STRING
+   OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
+   OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
             
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
@@ -5001,7 +5004,7 @@ def validate(filename,schema=None,deep=False):
         doc = Document(tree=doc, deepvalidation=True)
 
 XML2CLASS = {}
-for c in vars().values():
+for c in list(vars().values()):
     try:
         if c.XMLTAG:
             XML2CLASS[c.XMLTAG] = c

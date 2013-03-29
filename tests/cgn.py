@@ -12,14 +12,22 @@
 #
 #----------------------------------------------------------------
 
+
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+
 import sys
 import os
 import unittest
-import codecs
-sys.path.append(sys.path[0] + '/../../')
-os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
-from StringIO import StringIO
+
+if sys.version < '3':
+    from StringIO import StringIO
+else:
+    from io import StringIO
+    
 import lxml.etree
 from pynlpl.formats import cgn
 

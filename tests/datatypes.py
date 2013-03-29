@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from pynlpl.common import u
+
 import os
 import sys
 import unittest
 
-sys.path.append(sys.path[0] + '/../../')
-os.environ['PYTHONPATH'] = sys.path[0] + '/../../'
 
 from pynlpl.datatypes import PriorityQueue
 
