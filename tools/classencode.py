@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import  
+
 from pynlpl.textprocessors import Classer
 from pynlpl.statistics import FrequencyList
 import sys
@@ -12,7 +18,7 @@ f = open(filename)
 freqlist = FrequencyList()
 for i, line in enumerate(f):            
     if (i % 10000 == 0): 
-        print >>sys.stderr, "\tLine " + str(i+1)
+        print("\tLine " + str(i+1),file=sys.stderr)
     line = ['<s>'] + line.strip().split(' ') + ['</s>']
     
     freqlist.append(line)

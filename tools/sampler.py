@@ -16,13 +16,14 @@
 #
 ###############################################################   
 
+
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import  
+
 import getopt
 import sys
-import os
-
-if __name__ == "__main__":
-    sys.path.append(sys.path[0] + '/../..')
-    os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
 
 from pynlpl.evaluation import filesampler
 
@@ -33,9 +34,9 @@ def usage():
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "ht:d:", ["help"])
-except getopt.GetoptError, err:
+except getopt.GetoptError as err:
     # print help information and exit:
-    print str(err)
+    print(str(err))
     usage()
     sys.exit(2)
 
@@ -49,7 +50,7 @@ for o, a in opts:
             try:
                 testsetsize = float(a)
             except:
-                print >>sys.stderr,"ERROR: Invalid testsize"
+                print("ERROR: Invalid testsize",file=sys.stderr)
                 sys.exit(2)
     elif o == "-d":
         try:
@@ -58,21 +59,21 @@ for o, a in opts:
             try:
                 devsetsize = float(a)
             except:
-                print >>sys.stderr,"ERROR: Invalid devsetsize"
+                print("ERROR: Invalid devsetsize",file=sys.stderr)
                 sys.exit(2)
     elif o == "-h":
         usage()
         sys.exit(0)
     else:
-        print >>sys.stderr,"ERROR: No such option: ",o
+        print("ERROR: No such option: ",o,file=sys.stderr)
         sys.exit(2)
 
 if testsetsize == 0:
-    print >>sys.stderr,"ERROR: Specify at least a testset size!"
+    print("ERROR: Specify at least a testset size!",file=sys.stderr)
     usage()
     sys.exit(2)
 elif len(args) == 0:
-    print >>sys.stderr,"ERROR: Specify at least one file!"
+    print("ERROR: Specify at least one file!",file=sys.stderr)
     usage()
     sys.exit(2)
 

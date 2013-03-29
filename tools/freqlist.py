@@ -12,30 +12,31 @@
 #
 ###############################################################   
 
+
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import  
+
 import getopt
 import sys
-import os
 import codecs
-
-if __name__ == "__main__":
-    sys.path.append(sys.path[0] + '/../..')
-    os.environ['PYTHONPATH'] = sys.path[0] + '/../..'
 
 from pynlpl.statistics import FrequencyList, Distribution
 from pynlpl.textprocessors import Windower, crude_tokenizer
 
 def usage():
-    print >>sys.stderr,"freqlist.py -n 1  file1 (file2) etc.."
-    print >>sys.stderr,"\t-n number   n-gram size (default: 1)"
-    print >>sys.stderr,"\t-i          case-insensitve"
-    print >>sys.stderr,"\t-e encoding (default: utf-8)"
+    print("freqlist.py -n 1  file1 (file2) etc..",file=sys.stderr)
+    print("\t-n number   n-gram size (default: 1)",file=sys.stderr)
+    print("\t-i          case-insensitve",file=sys.stderr)
+    print("\t-e encoding (default: utf-8)",file=sys.stderr)
 
 
 try:
     opts, files = getopt.getopt(sys.argv[1:], "hn:ie:", ["help"])
-except getopt.GetoptError, err:
+except getopt.GetoptError as err:
     # print help information and exit:
-    print str(err)
+    print(str(err),file=sys.stderr)
     usage()
     sys.exit(2)
 
@@ -52,7 +53,7 @@ for o, a in opts:
     elif o == "-e":
         encoding = a
     else:
-        print >>sys.stderr, "ERROR: Unknown option:",o
+        print("ERROR: Unknown option:",o,file=sys.stderr)
         sys.exit(1)
 
 if not files:
@@ -75,11 +76,11 @@ for type, count in freqlist:
     if isinstance(type,tuple) or isinstance(type,list):
         type = " ".join(type)
     s =  type + "\t" + str(count) + "\t" + str(dist[type]) + "\t" + str(dist.information(type))
-    print s.encode('utf-8')
+    print(s)
 
-print >>sys.stderr, "Tokens:           ", freqlist.tokens()
-print >>sys.stderr, "Types:            ", len(freqlist)
-print >>sys.stderr, "Type-token ratio: ", freqlist.typetokenratio()
-print >>sys.stderr, "Entropy:          ", dist.entropy()
+print("Tokens:           ", freqlist.tokens(),file=sys.stderr)
+print("Types:            ", len(freqlist),file=sys.stderr)
+print("Type-token ratio: ", freqlist.typetokenratio(),file=sys.stderr)
+print("Entropy:          ", dist.entropy(),file=sys.stderr)
 
 
