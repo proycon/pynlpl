@@ -12,6 +12,14 @@
 #
 ###############################################################    
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from pynlpl.common import u
+import io
+
+
 from pynlpl.statistics import FrequencyList
 from collections import defaultdict
 import subprocess
@@ -21,20 +29,8 @@ import random
 import copy
 import datetime
 import os.path
-from sys import version_info,stderr
+import sys
 
-if version_info[0] == 2 and version_info[1] < 6: #python2.5 doesn't have itertools.product
-    def itertools_product(*args, **kwds): 
-        # product('ABCD', 'xyargdelimiter') --> Ax Ay Bx By Cx Cy Dx Dy
-        # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
-        pools = map(tuple, args) * kwds.get('repeat', 1)
-        result = [[]]
-        for pool in pools:
-            result = [x+[y] for x in result for y in pool]
-        for prod in result:
-            yield tuple(prod)
-else:
-    itertools_product = itertools.product
 
 class ProcessFailed(Exception):
     pass
@@ -118,16 +114,16 @@ class ClassEvaluation(object):
         if not self.computed: self.compute()
         if cls:
             if self.tp[cls] + self.fp[cls] > 0:
-                return self.tp[cls] / float(self.tp[cls] + self.fp[cls])
+                return self.tp[cls] / (self.tp[cls] + self.fp[cls])
             else:
                 #return float('nan')
                 return 0
         else:
             if len(self.observations) > 0:
                 if macro:
-                    return sum( ( self.precision(x) for x in set(self.goals) ) ) / float(len(set(self.classes)))
+                    return sum( ( self.precision(x) for x in set(self.goals) ) ) / len(set(self.classes))
                 else:                    
-                    return sum( ( self.precision(x) for x in self.goals ) ) / float(len(self.goals))
+                    return sum( ( self.precision(x) for x in self.goals ) ) / len(self.goals)
             else: 
                 #return float('nan')
                 return 0
@@ -136,16 +132,16 @@ class ClassEvaluation(object):
         if not self.computed: self.compute()
         if cls:
             if self.tp[cls] + self.fn[cls] > 0:
-                return self.tp[cls] / float(self.tp[cls] + self.fn[cls])
+                return self.tp[cls] / (self.tp[cls] + self.fn[cls])
             else:
                 #return float('nan')
                 return 0
         else:
             if len(self.observations) > 0:
                 if macro:
-                    return sum( ( self.recall(x) for x in set(self.goals) ) ) / float(len(set(self.classes)))
+                    return sum( ( self.recall(x) for x in set(self.goals) ) ) / len(set(self.classes))
                 else:
-                    return sum( ( self.recall(x) for x in self.goals ) ) / float(len(self.goals))
+                    return sum( ( self.recall(x) for x in self.goals ) ) / len(self.goals)
             else:
                 #return float('nan')
                 return 0
@@ -154,16 +150,16 @@ class ClassEvaluation(object):
         if not self.computed: self.compute()
         if cls:
             if self.tn[cls] + self.fp[cls] > 0:
-                return self.tn[cls] / float(self.tn[cls] + self.fp[cls])
+                return self.tn[cls] / (self.tn[cls] + self.fp[cls])
             else:
                 #return float('nan')
                 return 0
         else:
             if len(self.observations) > 0:
                 if macro:
-                    return sum( ( self.specificity(x) for x in set(self.goals) ) ) / float(len(set(self.classes)))
+                    return sum( ( self.specificity(x) for x in set(self.goals) ) ) / len(set(self.classes))
                 else:                
-                    return sum( ( self.specificity(x) for x in self.goals ) ) / float(len(self.goals))
+                    return sum( ( self.specificity(x) for x in self.goals ) ) / len(self.goals)
             else:
                 #return float('nan')
                 return 0
@@ -172,13 +168,13 @@ class ClassEvaluation(object):
         if not self.computed: self.compute()
         if cls:
             if self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls] > 0:
-                return (self.tp[cls]+self.tn[cls]) / float(self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls])
+                return (self.tp[cls]+self.tn[cls]) / (self.tp[cls] + self.tn[cls] + self.fp[cls] + self.fn[cls])
             else:
                 #return float('nan')
                 return 0
         else:
             if len(self.observations) > 0:
-                return sum( ( self.tp[x] for x in self.tp ) ) / float(len(self.observations))
+                return sum( ( self.tp[x] for x in self.tp ) ) / len(self.observations)
             else:
                 #return float('nan')
                 return 0
@@ -196,9 +192,9 @@ class ClassEvaluation(object):
         else:
             if len(self.observations) > 0:
                 if macro:
-                    return sum( ( self.fscore(x,beta) for x in set(self.goals) ) ) / float(len(set(self.classes)))                    
+                    return sum( ( self.fscore(x,beta) for x in set(self.goals) ) ) / len(set(self.classes))                    
                 else:
-                    return sum( ( self.fscore(x,beta) for x in self.goals ) ) / float(len(self.goals))
+                    return sum( ( self.fscore(x,beta) for x in self.goals ) ) / len(self.goals)
             else:
                 #return float('nan')
                 return 0
@@ -253,17 +249,12 @@ class ClassEvaluation(object):
         if not self.computed: self.compute()
         o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
         for cls in sorted(set(self.classes)):
-            if isinstance(cls, unicode): cls = cls.encode(self.encoding)
+            cls = u(cls)
             o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
         return o + "\n" + self.outputmetrics()
 
-    def __unicode__(self):
-        if not self.computed: self.compute()
-        o =  "%-15s TP\tFP\tTN\tFN\tAccuracy\tPrecision\tRecall(TPR)\tSpecificity(TNR)\tF-score\n" % ("")
-        for cls in sorted(set(self.classes)):
-            if not isinstance(cls, unicode): cls = unicode(cls, self.encoding)
-            o += "%-15s %d\t%d\t%d\t%d\t%4f\t%4f\t%4f\t%4f\t%4f\n" % (cls, self.tp[cls], self.fp[cls], self.tn[cls], self.fn[cls], self.accuracy(cls), self.precision(cls), self.recall(cls),self.specificity(cls),  self.fscore(cls) )
-        return o + "\n" + self.outputmetrics()
+    def __unicode__(self): #Python 2.x
+        return str(self)
 
 
 class AbstractExperiment(object):
@@ -311,22 +302,12 @@ class AbstractExperiment(object):
             raise Exception("Not implemented yet, make sure to overload the run() method!")
 
     def startcommand(self, command, cwd, stdout, stderr, *arguments, **parameters):
-        def tounicode(s):
-            if isinstance(s,unicode):
-                return s
-            elif isinstance(s,str):
-                return unicode(s,'utf-8')
-            elif isinstance(s,int) or isinstance(s,float):
-                return str(s)                        
-            else:
-                return unicode(s)
-        
         argdelimiter=' '
         printcommand = True
 
         cmd = command
         if arguments:
-            cmd += ' ' + " ".join([ tounicode(x) for x in arguments])
+            cmd += ' ' + " ".join([ u(x) for x in arguments])
         if parameters:
             for key, value in parameters.items():
                 if key == 'argdelimiter':
@@ -340,7 +321,7 @@ class AbstractExperiment(object):
                 else:
                     cmd += ' ' + key + str(value)
         if printcommand:
-            print "STARTING COMMAND: " + cmd.encode('utf-8')
+            print("STARTING COMMAND: " + cmd.encode('utf-8'))
 
         self.begintime = datetime.datetime.now()
         if not cwd:
@@ -394,7 +375,7 @@ class ExperimentPool:
                 if experiment.done():
                     done.append( experiment )
             except ProcessFailed:
-                print >>stderr, "ERROR: One experiment in the pool failed: " + repr(experiment.inputdata) + repr(experiment.parameters)
+                print("ERROR: One experiment in the pool failed: " + repr(experiment.inputdata) + repr(experiment.parameters), file=sys.stderr)
                 if haltonerror:
                     raise
                 else:
@@ -449,7 +430,7 @@ class WPSParamSearch(object):
             
         #compute all parameter combinations:
         verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope.items() ]
-        self.parametercombinations = [ (x,0) for x in itertools_product(*verboseparameterscope) if self.constraintfunc(dict(x)) ] #generator
+        self.parametercombinations = [ (x,0) for x in itertools.product(*verboseparameterscope) if self.constraintfunc(dict(x)) ] #generator
 
     def _combine(self,name, values): #TODO: can't we do this inline in a list comprehension?
         l = []
@@ -525,7 +506,7 @@ class ParamSearch(WPSParamSearch):
              yield parametercombination, score
                     
         
-def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outputdir = ''):
+def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outputdir = '', encoding='utf-8'):
         """Extract a training set, test set and optimally a development set from one file, or multiple *interdependent* files (such as a parallel corpus). It is assumed each line contains one instance (such as a word or sentence for example)."""
 
         if not isinstance(files, list):
@@ -533,7 +514,7 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outp
 
         total = 0
         for filename in files:
-            f = open(filename,'r')
+            f = io.open(filename,'r', encoding=encoding)
             count = 0
             for line in f:
                 count += 1
@@ -541,7 +522,7 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outp
             if total == 0:
                 total = count
             elif total != count:
-                assert Exception("Size mismatch, when multiple files are specified they must contain the exact same amount of lines!")
+                raise Exception("Size mismatch, when multiple files are specified they must contain the exact same amount of lines!")
 
         #support for relative values:
         if testsetsize < 1:
@@ -551,7 +532,7 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outp
             
 
         if testsetsize >= total or devsetsize >= total or testsetsize + devsetsize >= total:
-            assert Exception("Test set and/or development set too large! No samples left for training set!")
+            raise Exception("Test set and/or development set too large! No samples left for training set!")
 
 
         trainset = {}
@@ -576,20 +557,20 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outp
 
         for filename in files:
             if not outputdir:
-                ftrain = open(filename + '.train','w')
+                ftrain = io.open(filename + '.train','w',encoding=encoding)
             else:
-                ftrain = open(outputdir + '/' +  os.path.basename(filename) + '.train','w')
+                ftrain = io.open(outputdir + '/' +  os.path.basename(filename) + '.train','w',encoding=encoding)
             if not outputdir:
-                ftest = open(filename + '.test','w')
+                ftest = io.open(filename + '.test','w',encoding=encoding)
             else:
-                ftest = open(outputdir + '/' + os.path.basename(filename) + '.test','w')
+                ftest = io.open(outputdir + '/' + os.path.basename(filename) + '.test','w',encoding=encoding)
             if devsetsize > 0:
                 if not outputdir:
-                    fdev = open(filename + '.dev','w')
+                    fdev = io.open(filename + '.dev','w',encoding=encoding)
                 else:
-                    fdev = open(outputdir + '/' +  os.path.basename(filename) + '.dev','w')
+                    fdev = io.open(outputdir + '/' +  os.path.basename(filename) + '.dev','w',encoding=encoding)
 
-            f = open(filename,'r')
+            f = io.open(filename,'r',encoding=encoding)
             for linenum, line in enumerate(f):
                 if linenum+1 in trainset:
                     ftrain.write(line)

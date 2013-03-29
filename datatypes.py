@@ -1,7 +1,9 @@
 #---------------------------------------------------------------
 # PyNLPl - Data Types
-#   by Maarten van Gompel, ILK, Universiteit van Tilburg
-#   http://ilk.uvt.nl/~mvgompel
+#   by Maarten van Gompel
+#   Centre for Language Studies
+#   Radboud University Nijmegen
+#   http://www.github.com/proycon/pynlpl
 #   proycon AT anaproy DOT nl
 #
 #   Based in large part on MIT licensed code from
@@ -14,9 +16,15 @@
 
 """This library contains various extra data types, based to a certain extend on MIT-licensed code from Peter Norvig, AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html"""
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from pynlpl.common import u
 
 import bisect
 import array
+
 
 class Queue: #from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
     """Queue is an abstract class/interface. There are three types:
@@ -56,7 +64,7 @@ class FIFOQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.cs.be
         """Retrieve the next element in line, this will remove it from the queue"""
         e = self.data[self.start]
         self.start += 1
-        if self.start > 5 and self.start > len(self.data)/2:
+        if self.start > 5 and self.start > len(self.data)//2:
             self.data = self.data[self.start:]
             self.start = 0
         return e
@@ -240,14 +248,16 @@ class Tree(object):
         else:
             return len(self.children)
             
-    def __nonzero__(self):
+    def __bool__(self):
         return True
         
     def __iter__(self):
+        """Iterate over all items in the tree"""
         for c in self.children:
             return c
             
     def append(self, item):
+        """Add an item to the Tree"""
         if not isinstance(item, Tree):
             return ValueError("Can only append items of type Tree")
         if not self.children: self.children = []
@@ -255,6 +265,8 @@ class Tree(object):
         self.children.append(item)
 
     def __getitem__(self, index):
+        """Retrieve a specific item, by index, from the Tree"""
+        assert isinstance(index,int)
         try:
             return self.children[index]
         except:
@@ -262,6 +274,9 @@ class Tree(object):
             
     def __str__(self):
         return str(value)
+    
+    def __unicode__(self): #Python 2.x
+        return u(value)
     
 
 
@@ -281,6 +296,7 @@ class Trie(object):
         return not self.children
         
     def root(self):
+        """Returns True if this is the root of the Trie"""
         return not self.parent
                 
     def __len__(self):
@@ -289,7 +305,7 @@ class Trie(object):
         else:
             return len(self.children)
             
-    def __nonzero__(self):
+    def __bool__(self):
         return True
         
     def __iter__(self):
@@ -348,12 +364,14 @@ class Trie(object):
             return 1
             
     def path(self):
+        """Returns the path to the current node"""
         if self.parent:
             return (self,) + self.parent.path()
         else:
             return (self,)
             
     def depth(self):
+        """Returns the depth of the current node"""
         if self.parent:
             return 1 + self.parent.depth()
         else:
@@ -383,12 +401,13 @@ class Trie(object):
     
 
 def containsnullbyte(i):
-     while True:
+    assert isinstance(i,int)
+    while True:
         r = i % 256
         if i % 256 == 0:
             return True
         if i >= 256:
-            i = i / 256
+            i = i // 256
         else:
             return False
     
@@ -403,7 +422,7 @@ def inttobytearray(i,bigendian=False, nonullbyte=False):
             raise ValueError("Null byte encountered")
         a.append(r)
         if i >= 256:
-            i = i / 256
+            i = i // 256
         else:
             break
     if bigendian: a.reverse()

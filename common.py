@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
-###############################################################
-#  PyNLPl - Common Library
-#       by Maarten van Gompel (proycon)
-#       http://ilk.uvt.nl/~mvgompel
-#       Induction for Linguistic Knowledge Research Group
-#       Universiteit van Tilburg
+###############################################################9
+# PyNLPl - Common functions
+#   by Maarten van Gompel
+#   Centre for Language Studies
+#   Radboud University Nijmegen
+#   http://www.github.com/proycon/pynlpl
+#   proycon AT anaproy DOT nl
 #       
 #       Licensed under GPLv3
 # 
@@ -14,8 +15,13 @@
 #
 ###############################################################
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+
 import datetime
-from sys import stderr
+from sys import stderr, version
 
 ## From http://code.activestate.com/recipes/413486/ (r7)
 def Enum(*names):
@@ -55,6 +61,22 @@ def Enum(*names):
    return EnumType
 
 
+def u(s, encoding = 'utf-8', errors='strict'):
+    #ensure s is properly unicode.. wrapper for python 2.6/2.7,
+    if version < '3':
+        #ensure the object is unicode
+        if isinstance(s, unicode):
+            return s
+        else:
+            return unicode(s, encoding,errors=errors)
+    else:
+        #will work on byte arrays
+        if isinstance(s, str):
+            return s
+        else:
+            return str(s,encoding,errors=errors)
+    
+
 
 def log(msg, **kwargs):
     """Generic log method. Will prepend timestamp.
@@ -80,10 +102,7 @@ def log(msg, **kwargs):
     if 'indent' in kwargs:
         s += ("\t" * int(kwargs['indent']))
         
-    if isinstance(msg, unicode):
-        s += msg.encode('utf-8')
-    else:
-        s += unicode(msg,'utf-8', errors='ignore').encode('utf-8')
+    s += u(msg)
             
     if s[-1] != '\n':
         s += '\n'

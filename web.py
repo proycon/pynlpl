@@ -1,3 +1,6 @@
+import sys
+if sys.version == '3':
+    raise ImportError("Pattern does not yet support Python 3")
 from pattern.web import Google, Bing, plaintext
 
 

@@ -1,9 +1,10 @@
 ###############################################################
 #  PyNLPp - Statistics & Information Theory Library
-#       by Maarten van Gompel (proycon)
-#       http://ilk.uvt.nl/~mvgompel
-#       Induction for Linguistic Knowledge Research Group
-#       Universiteit van Tilburg
+#   by Maarten van Gompel
+#   Centre for Language Studies
+#   Radboud University Nijmegen
+#   http://www.github.com/proycon/pynlpl
+#   proycon AT anaproy DOT nl
 #       
 #       Also contains MIT licensed code from
 #        AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
@@ -16,10 +17,18 @@
 
 """This is a Python library containing classes for Statistic and Information Theoretical computations. It also contains some code from Peter Norvig, AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html"""
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from pynlpl.common import u
+import io
+
 import math
-import codecs
 import random
 import operator
+import sys
+from collections import Counter
 
 
 
@@ -27,7 +36,7 @@ class FrequencyList:
     """A frequency list (implemented using dictionaries)"""
 
     def __init__(self, tokens = None, casesensitive = True, dovalidation = True):
-        self._count = {}
+        self._count = Counter()
         self._ranked = {}
         self.total = 0 #number of tokens
         self.casesensitive = casesensitive
@@ -37,9 +46,9 @@ class FrequencyList:
     
     def load(self, filename):
         """Load a frequency list from file (in the format produced by the save method)"""
-        f = codecs.open(filename,'r','utf-8')
-        for line in self.readline():            
-            data = line.split("\t")
+        f = io.open(filename,'r',encoding='utf-8')
+        for line in f:            
+            data = line.strip().split("\t")
             type, count = data[:2]            
             self.count(type,count)
         f.close()
@@ -47,7 +56,7 @@ class FrequencyList:
 
     def save(self, filename, addnormalised=False):
         """Save a frequency list to file, can be loaded later using the load method"""
-        f = codecs.open(filename,'w','utf-8')
+        f = io.open(filename,'w',encoding='utf-8')
         for line in self.output("\t", addnormalised):
             f.write(line + '\n')
         f.close()
@@ -87,7 +96,7 @@ class FrequencyList:
         return self.total
 
     def _rank(self):
-        if not self._ranked: self._ranked = sorted(self._count.items(),key=lambda x: x[1], reverse=True )
+        if not self._ranked: self._ranked = self._count.most_common()
 
     def __iter__(self):
         """Iterate over the frequency lists, in order (frequent to rare). This is a generator that yields (type, count) pairs. The first time you iterate over the FrequencyList, the ranking will be computed. For subsequent calls it will be available immediately, unless the frequency list changed in the meantime."""
@@ -152,7 +161,8 @@ class FrequencyList:
 
     def __add__(self, otherfreqlist):
         """Multiple frequency lists can be added together"""
-        product = FrequencyList(None, )
+        assert isinstance(otherfreqlist,FrequencyList)
+        product = FrequencyList(None,)
         for type, count in self.items():
             product.count(type,count)        
         for type, count in otherfreqlist.items():
@@ -164,34 +174,31 @@ class FrequencyList:
         for type, count in self:
             if isinstance(type,tuple) or isinstance(type,list):
                 if addnormalised:
-                    yield u" ".join((unicode(x) for x in type)) + delimiter + str(count) + delimiter + str(count/float(self.total))
+                    yield u" ".join((u(x) for x in type)) + delimiter + str(count) + delimiter + str(count/self.total)
                 else:
-                    yield u" ".join((unicode(x) for x in type)) + delimiter + str(count)
-            elif isinstance(type,str) or isinstance(type,unicode):
+                    yield u" ".join((u(x) for x in type)) + delimiter + str(count)
+            elif isinstance(type,str) or (sys.version < '3' and isinstance(type,unicode)):
                 if addnormalised:
-                    yield type + delimiter + str(count) + delimiter + str(count/float(self.total))
+                    yield type + delimiter + str(count) + delimiter + str(count/self.total)
                 else:
                     yield type + delimiter + str(count)
             else:
                 if addnormalised:
-                    yield str(type) + delimiter + str(count) + delimiter + str(count/float(self.total))
+                    yield str(type) + delimiter + str(count) + delimiter + str(count/self.total)
                 else:
                     yield str(type) + delimiter + str(count)
 
     def __repr__(self):
         return repr(self._count)
         
-        
-    def __unicode__(self):
-        return u"\n".join(self.output())   
-        
+    def __unicode__(self): #Python 2
+        return str(self)   
         
     def __str__(self):
         return "\n".join(self.output())        
         
     def values(self):
         return self._count.values()
-
 
     def dict(self):
         return self._count
@@ -217,7 +224,7 @@ class Distribution:
         self._dist = {}
         if isinstance(data, FrequencyList):
             for type, count in data.items():
-                self._dist[type] = count / float(data.total)
+                self._dist[type] = count / data.total
         elif isinstance(data, dict) or isinstance(data, list):
             if isinstance(data, list):
                 self._dist = {}
@@ -225,7 +232,7 @@ class Distribution:
                     self._dist[key] = float(value)
             else:
                 self._dist = data 
-            total = float(sum(self._dist.values()))
+            total = sum(self._dist.values())
             if total < 0.999 or total > 1.000:
                 #normalize again
                 for key, value in self._dist.items():
@@ -301,19 +308,18 @@ class Distribution:
         for type, prob in self:   
             if freqlist:
                 if isinstance(type,list) or isinstance(type, tuple):
-                    yield u" ".join(type) + delimiter + str(freqlist[type]) + delimiter + str(prob)
+                    yield " ".join(type) + delimiter + str(freqlist[type]) + delimiter + str(prob)
                 else:
                     yield type + delimiter + str(freqlist[type]) + delimiter + str(prob)
             else:
                 if isinstance(type,list) or isinstance(type, tuple):
-                    yield u" ".join(type) + delimiter + str(prob)
+                    yield " ".join(type) + delimiter + str(prob)
                 else:
                     yield type + delimiter + str(prob)
                 
 
     def __unicode__(self):
-        return u"\n".join(self.output())
-
+        return str(self)
 
     def __str__(self):
         return "\n".join(self.output())
@@ -443,15 +449,15 @@ class HiddenMarkovModel(MarkovChain):
         self.observablenodes.update(distribution.keys())        
 
     def print_dptable(self, V):
-        print "    ",
-        for i in range(len(V)): print "%7s" % ("%d" % i),
-        print
+        print("    ",end="")
+        for i in range(len(V)): print("%7s" % ("%d" % i),end="")
+        print()
      
         for y in V[0].keys():
-            print "%.5s: " % y,
+            print("%.5s: " % y, end="")
             for t in range(len(V)):
-                print "%.7s" % ("%f" % V[t][y]),
-            print
+                print("%.7s" % ("%f" % V[t][y]),end="")
+            print()
      
     #Adapted from: http://en.wikipedia.org/wiki/Viterbi_algorithm 
     def viterbi(self,observations, doprint=False):
@@ -567,7 +573,7 @@ def median(values):  #from AI: A Modern Appproach
 
 def mean(values):  #from AI: A Modern Appproach 
     """Return the arithmetic average of the values."""
-    return sum(values) / float(len(values))
+    return sum(values) / len(values)
 
 def stddev(values, meanval=None):  #from AI: A Modern Appproach 
     """The standard deviation of a set of values.

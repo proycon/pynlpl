@@ -1,7 +1,9 @@
 #---------------------------------------------------------------
 # PyNLPl - Search Algorithms
-#   by Maarten van Gompel, ILK, Universiteit van Tilburg
-#   http://ilk.uvt.nl/~mvgompel
+#   by Maarten van Gompel
+#   Centre for Language Studies
+#   Radboud University Nijmegen
+#   http://www.github.com/proycon/pynlpl
 #   proycon AT anaproy DOT nl
 #
 #   Licensed under GPLv3
@@ -9,6 +11,12 @@
 #----------------------------------------------------------------
 
 """This module contains various search algorithms."""
+
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+#from pynlpl.common import u
 
 from sys import stderr
 from pynlpl.datatypes import FIFOQueue, PriorityQueue
@@ -88,9 +96,13 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         self.minimize = False #minimize rather than maximize the score function? default: no
         self.keeptraversal = False
         self.goalstates = None
+        self.exhaustive = False #only some subclasses use this
         self.traversed = 0 #Count of number of nodes visited
         self.solutions = 0 #Counts the number of solutions
         self.debug = 0
+        if not hasattr(self,'fringe'):
+            self.fringe = []  #this is just here for pylint to stop complaining
+            raise Exception("No fringe initialised") #subclasses should have assigned one already!!!
         for key, value in kwargs.items():
             if key == 'graph':
                 self.usememory = value #search space is a graph? memory required to keep visited states
@@ -111,16 +123,18 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                     self.goalstates = value
                 else:
                     self.goalstates = [value]
+            elif key == 'exhaustive':
+                self.exhaustive = True
             elif key == 'debug':
                 self.debug = value
-        self.visited = {}
-        self.traversal = []
+        self._visited = {}
+        self._traversal = []
         self.incomplete = False
         self.traversed = 0
 
     def reset(self):
-        self.visited = {}
-        self.traversal = []
+        self._visited = {}
+        self._traversal = []
         self.incomplete = False
         self.traversed = 0 #Count of all visited nodes
         self.solutions = 0 #Counts the number of solutions found     
@@ -128,7 +142,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
     def traversal(self):
         """Returns all visited states (only when keeptraversal=True), note that this is not equal to the path, but contains all states that were checked!"""
         if self.keeptraversal:
-            return self.traversal
+            return self._traversal
         else:
             raise Exception("No traversal available, algorithm not started with keeptraversal=True!")
     
@@ -139,7 +153,7 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
 
     def visited(self, state):
         if self.usememory:
-            return (hash(state) in self.visited)
+            return (hash(state) in self._visited)
         else:
             raise Exception("No memory kept, algorithm not started with graph=True!")
         
@@ -148,32 +162,32 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
         n = 0
         while len(self.fringe) > 0:
             n += 1
-            if self.debug: print >>stderr,"\t[pynlpl debug] *************** ITERATION #" + str(n) + " ****************"
-            if self.debug: print >>stderr,"\t[pynlpl debug] FRINGE: ", self.fringe
+            if self.debug: print("\t[pynlpl debug] *************** ITERATION #" + str(n) + " ****************",file=stderr)
+            if self.debug: print("\t[pynlpl debug] FRINGE: ", self.fringe,file=stderr)
             state = self.poll(self.fringe)()
             if self.debug:
                 try:
-                    print >>stderr,"\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),
+                    print("\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),end="",file=stderr)
                 except AttributeError:
-                    print >>stderr,"\t[pynlpl debug] CURRENT STATE: " + str(state),
+                    print("\t[pynlpl debug] CURRENT STATE: " + str(state),end="",file=stderr)
                     
-                print >>stderr," hash="+str(hash(state))
+                print(" hash="+str(hash(state)),file=stderr)
                 try:
-                    print >>stderr," score="+str(state.score())
+                    print(" score="+str(state.score()),file=stderr)
                 except:
                     pass
  
 
             #If node not visited before (or no memory kept):
-            if not self.usememory or (self.usememory and not hash(state) in self.visited):
+            if not self.usememory or (self.usememory and not hash(state) in self._visited):
                 
                 #Evaluate the current state
                 self.traversed += 1
                 if state.test(self.goalstates):
-                    if self.debug: print >>stderr,"\t[pynlpl debug] Valid goalstate, yielding"
+                    if self.debug: print("\t[pynlpl debug] Valid goalstate, yielding",file=stderr)
                     yield state
                 elif self.debug:
-                    print >>stderr,"\t[pynlpl debug] (no goalstate, not yielding)"
+                    print("\t[pynlpl debug] (no goalstate, not yielding)",file=stderr)
                 
                 #Expand the specified state and add to the fringe
 
@@ -183,27 +197,27 @@ class AbstractSearch(object): #not a real search, just a base class for DFS and 
                 for i, s in enumerate(state.expand()):
                     statecount += 1
                     if self.debug >= 2:
-                        print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Expanded state #" + str(i+1) + ", adding to fringe: " + str(s),
+                        print("\t[pynlpl debug] (Iteration #" + str(n) +") Expanded state #" + str(i+1) + ", adding to fringe: " + str(s),end="",file=stderr)
                         try:
-                            print >>stderr,s.score()
+                            print(s.score(),file=stderr)
                         except:
-                            print >>stderr,"ERROR SCORING!"
+                            print("ERROR SCORING!",file=stderr)
                             pass
                     if not self.maxdepth or s.depth() <= self.maxdepth:
                         self.fringe.append(s)
                     else:
-                        if self.debug: print >>stderr,"\t[pynlpl debug] (Iteration #" + str(n) +") Not adding to fringe, maxdepth exceeded"
+                        if self.debug: print("\t[pynlpl debug] (Iteration #" + str(n) +") Not adding to fringe, maxdepth exceeded",file=stderr)
                         self.incomplete = True
                 if self.debug:
-                    print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, offered to fringe"
-                if self.keeptraversal: self.keeptraversal.append(state)
-                if self.usememory: self.visited[hash(state)] = True
+                    print("\t[pynlpl debug] Expanded " + str(statecount) + " states, offered to fringe",file=stderr)
+                if self.keeptraversal: self._traversal.append(state)
+                if self.usememory: self._visited[hash(state)] = True
                 self.prune(state) #calls prune method
             else:
                 if self.debug:
-                    print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again...(hash="+str(hash(state))+")"
+                    print("\t[pynlpl debug] State already visited before, not expanding again...(hash="+str(hash(state))+")",file=stderr)
         if self.debug:
-            print >>stderr,"\t[pynlpl debug] Search complete: " + str(self.solutions) + " solution(s), " + str(self.traversed) + " states traversed in " + str(n) + " rounds"
+            print("\t[pynlpl debug] Search complete: " + str(self.solutions) + " solution(s), " + str(self.traversed) + " states traversed in " + str(n) + " rounds",file=stderr)
     
     def searchfirst(self):
         """Returns the very first result (regardless of it being the best or not!)"""
@@ -330,7 +344,7 @@ class BeamSearch(AbstractSearch):
         i = 0
         while len(self.fringe) > 0:
             i +=1 
-            if self.debug: print >>stderr,"\t[pynlpl debug] *************** STARTING ROUND #" + str(i) + " ****************"
+            if self.debug: print("\t[pynlpl debug] *************** STARTING ROUND #" + str(i) + " ****************",file=stderr)
             
             b = 0
             #Create a new empty fixed-length priority queue (this implies there will be pruning if more items are offered than it can hold!)
@@ -338,18 +352,18 @@ class BeamSearch(AbstractSearch):
             
             while len(self.fringe) > 0:
                 b += 1
-                if self.debug: print >>stderr,"\t[pynlpl debug] *************** ROUND #" + str(i) + " BEAM# " + str(b) + " ****************"
+                if self.debug: print("\t[pynlpl debug] *************** ROUND #" + str(i) + " BEAM# " + str(b) + " ****************",file=stderr)
                 #if self.debug: print >>stderr,"\t[pynlpl debug] FRINGE: ", self.fringe
 
                 state = self.poll(self.fringe)()
                 if self.debug:
                     try:
-                        print >>stderr,"\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),
+                        print("\t[pynlpl debug] CURRENT STATE (depth " + str(state.depth()) + "): " + str(state),end="",file=stderr)
                     except AttributeError:
-                        print >>stderr,"\t[pynlpl debug] CURRENT STATE: " + str(state),
-                    print >>stderr," hash="+str(hash(state))
+                        print("\t[pynlpl debug] CURRENT STATE: " + str(state),end="",file=stderr)
+                    print(" hash="+str(hash(state)),file=stderr)
                     try:
-                        print >>stderr," score="+str(state.score())
+                        print(" score="+str(state.score()),file=stderr)
                     except:
                         pass
 
@@ -359,11 +373,11 @@ class BeamSearch(AbstractSearch):
                     self.traversed += 1
                     #Evaluate state
                     if state.test(self.goalstates):
-                        if self.debug: print >>stderr,"\t[pynlpl debug] Valid goalstate, yielding"
+                        if self.debug: print("\t[pynlpl debug] Valid goalstate, yielding",file=stderr)
                         self.solutions += 1 #counts the number of solutions
                         yield state
                     elif self.debug:
-                        print >>stderr,"\t[pynlpl debug] (no goalstate, not yielding)"
+                        print("\t[pynlpl debug] (no goalstate, not yielding)",file=stderr)
 
                     if self.eager:
                         score = state.score()                    
@@ -374,11 +388,11 @@ class BeamSearch(AbstractSearch):
                     for j, s in enumerate(state.expand()):
                         statecount += 1
                         if self.debug >= 2:
-                            print >>stderr,"\t[pynlpl debug] (Round #" + str(i) +" Beam #" + str(b) + ") Expanded state #" + str(j+1) + ", offering to successor pool: " + str(s),
+                            print("\t[pynlpl debug] (Round #" + str(i) +" Beam #" + str(b) + ") Expanded state #" + str(j+1) + ", offering to successor pool: " + str(s),end="",file=stderr)
                             try:
-                                print >>stderr,s.score(),
+                                print(s.score(),end="",file=stderr)
                             except:
-                                print >>stderr,"ERROR SCORING!",
+                                print("ERROR SCORING!",end="",file=stderr)
                                 pass
                         if not self.maxdepth or s.depth() <= self.maxdepth:
                             if not self.eager:
@@ -394,23 +408,23 @@ class BeamSearch(AbstractSearch):
                                     accepted = False
                             if self.debug >= 2:
                                 if accepted:
-                                    print >>stderr," ACCEPTED"
+                                    print(" ACCEPTED",file=stderr)
                                 else:
-                                    print >>stderr," REJECTED"
+                                    print(" REJECTED",file=stderr)
                         else:                            
                             if self.debug >= 2:
-                                print >>stderr," REJECTED, MAXDEPTH EXCEEDED."
+                                print(" REJECTED, MAXDEPTH EXCEEDED.",file=stderr)
                             elif self.debug:
-                                print >>stderr,"\t[pynlpl debug] (Round #" + str(n) +") Not offered to successor pool, maxdepth exceeded"
+                                print("\t[pynlpl debug] Not offered to successor pool, maxdepth exceeded",file=stderr)
                     if self.debug:
-                        print >>stderr,"\t[pynlpl debug] Expanded " + str(statecount) + " states, " + str(offers) + " offered to successor pool"
-                    if self.keeptraversal: self.keeptraversal.append(state)
+                        print("\t[pynlpl debug] Expanded " + str(statecount) + " states, " + str(offers) + " offered to successor pool",file=stderr)
+                    if self.keeptraversal: self._traversal.append(state)
                     if self.usememory: self.visited[hash(state)] = True
                     self.prune(state) #calls prune method (does nothing by default in this search!!!)
 
                 else:
                     if self.debug:
-                        print >>stderr,"\t[pynlpl debug] State already visited before, not expanding again... (hash=" + str(hash(state))  +")"
+                        print("\t[pynlpl debug] State already visited before, not expanding again... (hash=" + str(hash(state))  +")",file=stderr)
             #AFTER EXPANDING ALL NODES IN THE FRINGE/BEAM:
             
             #set fringe for next round
@@ -418,13 +432,12 @@ class BeamSearch(AbstractSearch):
 
             #Pruning is implicit, successors was a fixed-size priority queue
             if self.debug: 
-                l = len(self.fringe)
-                print >>stderr,"\t[pynlpl debug] (Round #" + str(i) + ") Implicitly pruned with beamsize " + str(self.beamsize) + "...",
+                print("\t[pynlpl debug] (Round #" + str(i) + ") Implicitly pruned with beamsize " + str(self.beamsize) + "...",file=stderr)
             #self.fringe.prune(self.beamsize)
-            if self.debug: print >>stderr," (" + str(offers) + " to " + str(len(self.fringe)) + " items)"
+            if self.debug: print(" (" + str(offers) + " to " + str(len(self.fringe)) + " items)",file=stderr)
         
         if self.debug:
-            print >>stderr,"\t[pynlpl debug] Search complete: " + str(self.solutions) + " solution(s), " + str(self.traversed) + " states traversed in " + str(i) + " rounds with " + str(b) + "  beams"            
+            print("\t[pynlpl debug] Search complete: " + str(self.solutions) + " solution(s), " + str(self.traversed) + " states traversed in " + str(i) + " rounds with " + str(b) + "  beams",file=stderr)            
         
         
         
@@ -443,10 +456,10 @@ class EarlyEagerBeamSearch(AbstractSearch):
     def prune(self, state):
         if self.debug: 
             l = len(self.fringe)
-            print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
+            print("\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",end="",file=stderr)
         self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.prune(self.beamsize)
-        if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
+        if self.debug: print(" (" + str(l) + " to " + str(len(self.fringe)) + " items)",file=stderr)
 
 
 class BeamedBestFirstSearch(BeamSearch):
@@ -455,20 +468,20 @@ class BeamedBestFirstSearch(BeamSearch):
     def prune(self, state):
         if self.debug: 
             l = len(self.fringe)
-            print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
+            print("\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",end="",file=stderr)
         self.fringe.prune(self.beamsize)
-        if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
+        if self.debug: print(" (" + str(l) + " to " + str(len(self.fringe)) + " items)",file=stderr)
 
 class StochasticBeamSearch(BeamSearch):
     
     def prune(self, state):
         if self.debug: 
             l = len(self.fringe)
-            print >>stderr,"\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",
+            print("\t[pynlpl debug] pruning with beamsize " + str(self.beamsize) + "...",end="",file=stderr)
         if not self.exhaustive:
             self.fringe.prunebyscore(state.score(), retainequalscore=True)
         self.fringe.stochasticprune(self.beamsize)
-        if self.debug: print >>stderr," (" + str(l) + " to " + str(len(self.fringe)) + " items)"
+        if self.debug: print(" (" + str(l) + " to " + str(len(self.fringe)) + " items)",file=stderr)
             
 
 class HillClimbingSearch(AbstractSearch): #TODO: TEST

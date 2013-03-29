@@ -2,22 +2,30 @@
 
 #---------------------------------------------------------------
 # PyNLPl - Network utilities
-#   by Maarten van Gompel, ILK, Universiteit van Tilburg
-#   http://ilk.uvt.nl/~mvgompel
+#   by Maarten van Gompel
+#   Centre for Language Studies
+#   Radboud University Nijmegen
+#   http://www.github.com/proycon/pynlpl
 #   proycon AT anaproy DOT nl
 #
 #   Generic Server for Language Models
 #
 #----------------------------------------------------------------
 
-from twisted.internet import protocol, reactor
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from pynlpl.common import u
+
+from twisted.internet import protocol, reactor # will fail on Python 3 for now
 from twisted.protocols import basic
 import shlex
 import sys
 
 class GWSNetProtocol(basic.LineReceiver):        
     def connectionMade(self):
-        print >>sys.stderr, "Client connected"
+        print("Client connected", file=sys.stderr)
         self.factory.connections += 1
         if self.factory.connections != 1:
             self.transport.loseConnection()            
@@ -25,7 +33,7 @@ class GWSNetProtocol(basic.LineReceiver):
             self.sendLine("READY")
             
     def lineReceived(self, line):
-        print >>sys.stderr, "Client in: " + line
+        print("Client in: " + line,file=sys.stderr)
         self.factory.processprotocol.transport.write(line +'\n')        
         self.factory.processprotocol.currentclient = self 
         
@@ -60,16 +68,16 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         pass
     
     def outReceived(self, data):
-        print >>sys.stderr, "Process out " + data
+        print("Process out " + data,file=sys.stderr)
         for line in data.strip().split('\n'):
             line = self.filterout(line.strip())
             if self.currentclient and line:        
                 self.currentclient.sendLine(line)                
         
     def errReceived(self, data):
-        print >>sys.stderr, "Process err " + data
+        print("Process err " + data,file=sys.stderr)
         if self.printstderr and data:    
-            print >>sys.stderr, data.strip()
+            print(data.strip(),file=sys.stderr)
         for line in data.strip().split('\n'):                
             line = self.filtererr(line.strip())
             if self.sendstderr and self.currentclient and line:        
@@ -77,11 +85,11 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         
             
     def processExited(self, reason):
-        print >>sys.stderr, "Process exited"
+        print("Process exited",file=sys.stderr)
            
     
     def processEnded(self, reason):
-        print >>sys.stderr, "Process ended"
+        print("Process ended",file=sys.stderr)
         if self.currentclient:
             self.currentclient.transport.loseConnection()
         reactor.stop()

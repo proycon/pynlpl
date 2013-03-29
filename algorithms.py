@@ -1,4 +1,20 @@
 
+###############################################################9
+# PyNLPl - Algorithms
+#   by Maarten van Gompel
+#   Centre for Language Studies
+#   Radboud University Nijmegen
+#   http://www.github.com/proycon/pynlpl
+#   proycon AT anaproy DOT nl
+#       
+#       Licensed under GPLv3
+#
+###############################################################
+
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import    
     
 def sum_to_n(n, size, limit=None): #from http://stackoverflow.com/questions/2065553/python-get-all-numbers-that-add-up-to-a-number
     """Produce all lists of `size` positive integers in decreasing order
