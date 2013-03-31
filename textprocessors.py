@@ -40,7 +40,7 @@ from pynlpl.datatypes import intarraytobytearray, bytearraytoint, containsnullby
 
 WHITESPACE = [" ", "\t", "\n", "\r","\v","\f"]
 EOSMARKERS = ('.','?','!','。',';','؟','｡','？','！','।','։','՞','።','᙮','។','៕')
-REGEXP_URL = re.compile(r"(?:https?):(?:(?://)|(?:\\\\))+(?:[\w\d:#@%/;$()~_?\+-=\\\.&](?:#!)?)*")
+REGEXP_URL = re.compile(r"^(?:(?:https?):(?:(?://)|(?:\\\\))|www\.)(?:[\w\d:#@%/;$()~_?\+-=\\\.&](?:#!)?)*")
 REGEXP_MAIL = re.compile(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+(?:\.[a-zA-Z]+)+") #email
 TOKENIZERRULES = (REGEXP_URL, REGEXP_MAIL)
 
@@ -250,7 +250,6 @@ def tokenize(text, regexps=TOKENIZERRULES):
             for regexp in regexps:
                 m = regexp.findall(text[i:i+300])
                 if m:
-                    print("DEBUG: found ",m[0])
                     tokens.append(m[0])
                     begin = i + len(m[0])
                     break
