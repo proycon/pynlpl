@@ -38,6 +38,7 @@ from itertools import permutations
 from pynlpl.statistics import FrequencyList
 from pynlpl.datatypes import intarraytobytearray, bytearraytoint, containsnullbyte
 
+
 WHITESPACE = [" ", "\t", "\n", "\r","\v","\f"]
 EOSMARKERS = ('.','?','!','。',';','؟','｡','？','！','।','։','՞','።','᙮','។','៕')
 REGEXP_URL = re.compile(r"^(?:(?:https?):(?:(?://)|(?:\\\\))|www\.)(?:[\w\d:#@%/;$()~_?\+-=\\\.&](?:#!)?)*")
@@ -46,9 +47,44 @@ TOKENIZERRULES = (REGEXP_URL, REGEXP_MAIL)
 
             
 class Windower(object):
-    """Moves a sliding window over a list of tokens, returning all ngrams"""
+    """Moves a sliding window over a list of tokens, upon iteration in yields all n-grams of specified size in a tuple.
+
+    Example without markers:
+    
+    >>> for ngram in Windower("This is a test .",3, None, None):
+    ...     print(" ".join(ngram))
+    This is a
+    is a test
+    a test .
+    
+    Example with default markers:
+        
+    >>> for ngram in Windower("This is a test .",3):    
+    ...     print(" ".join(ngram))
+    <begin> <begin> This
+    <begin> This is
+    This is a
+    is a test
+    a test .
+    test . <end>
+    . <end> <end>
+    """
 
     def __init__(self, tokens, n=1, beginmarker = "<begin>", endmarker = "<end>"):
+        """
+        Constructor for Windower
+        
+        :param tokens: The tokens to iterate over. Should be an itereable. Strings will be split on spaces automatically.
+        :type tokens: iterable
+        :param n: The size of the n-grams to extract
+        :type n: integer
+        :param beginmarker: The marker for the beginning of the sentence, defaults to "<begin>". Set to None if no markers are desired.
+        :type beginmarker: string or None
+        :param endmarker: The marker for the end of the sentence, defaults to "<end>". Set to None if no markers are desired.
+        :type endmarker: string or None      
+        """        
+        
+        
         if isinstance(tokens, str) or (sys.version < '3' and isinstance(tokens, unicode)):
             self.tokens = tuple(tokens.split())
         else:
@@ -58,7 +94,35 @@ class Windower(object):
         self.beginmarker = beginmarker
         self.endmarker = endmarker
 
+    def __len__(self):
+        """Returns the number of n-grams in the data (quick computation without iteration)
+
+        Without markers:
+            
+        >>> len(Windower("This is a test .",3, None, None))                   
+        3
+        
+        >>> len(Windower("This is a test .",2, None, None))
+        4
+        
+        >>> len(Windower("This is a test .",1, None, None))                   
+        5
+                
+        With default markers:
+        
+        >>> len(Windower("This is a test .",3))                
+        7
+        
+        """        
+
+        c = (len(self.tokens) - self.n) + 1
+        if self.beginmarker: c += self.n-1
+        if self.endmarker: c += self.n-1        
+        return c
+
+
     def __iter__(self):
+        """Yields an n-gram (tuple) at each iteration"""
         l = len(self.tokens)
 
         if self.beginmarker:
@@ -202,9 +266,23 @@ def calculate_overlap(haystack, needle, allowpartial=True):
             
 class Tokenizer(object):    
     """A tokenizer and sentence splitter, which acts on a file/stream-like object and when iterating over the object it yields
-    a lists of tokens (in case the sentence splitter is active (default)), or a token (if the sentence splitter is deactivated)."""
+    a lists of tokens (in case the sentence splitter is active (default)), or a token (if the sentence splitter is deactivated).
+    """
     
     def __init__(self, stream, splitsentences=True, onesentenceperline=False, regexps=TOKENIZERRULES):
+        """
+        Constructor for Tokenizer
+        
+        :param stream: An iterable or file-object containing the data to tokenize
+        :type stream: iterable or file-like object
+        :param splitsentences: Enable sentence splitter? (default=_True_)
+        :type splitsentences: bool
+        :param onesentenceperline: Assume input has one sentence per line? (default=_False_)
+        :type onesentenceperline: bool
+        :param regexps: Regular expressions to use as tokeniser rules in tokenisation (default=_pynlpl.textprocessors.TOKENIZERRULES_) 
+        :type regexps:  Tuple/list of regular expressions to use in tokenisation     
+        """
+                      
         self.stream = stream
         self.regexps = regexps
         self.splitsentences=splitsentences
@@ -235,7 +313,27 @@ class Tokenizer(object):
                             
     
 def tokenize(text, regexps=TOKENIZERRULES):
-    """Tokenizes a string and returns a list of tokens"""
+    """Tokenizes a string and returns a list of tokens
+    
+    :param text: The text to tokenise
+    :type text: string 
+    :param regexps: Regular expressions to use as tokeniser rules in tokenisation (default=_pynlpl.textprocessors.TOKENIZERRULES_) 
+    :type regexps:  Tuple/list of regular expressions to use in tokenisation
+    :rtype: Returns a list of tokens 
+
+    Examples:
+       
+    >>> for token in tokenize("This is a test."):
+    ...    print(token)
+    This
+    is
+    a
+    test
+    .
+          
+       
+    """
+    
     for i,regexp in list(enumerate(regexps)):
         if isstring(regexp):
             regexps[i] = re.compile(regexp)
@@ -286,12 +384,13 @@ def tokenize(text, regexps=TOKENIZERRULES):
     return tokens
                     
 
-def crude_tokenizer(line):    
-    """Replaced by tokenize()"""
-    return tokenize(line) #backwards-compatibility, not so crude anymore
+def crude_tokenizer(text):    
+    """Replaced by tokenize(). Alias"""
+    return tokenize(text) #backwards-compatibility, not so crude anymore
 
-def tokenise(line): #for the British
-    return tokenize(line)
+def tokenise(text, regexps=TOKENIZERRULES): #for the British
+    """Alias for the British"""
+    return tokenize(text)
 
 def is_end_of_sentence(tokens,i ):
     # is this an end-of-sentence marker? ... and is this either 
@@ -506,5 +605,7 @@ class Classer(object):
             
 
     
-    
+if __name__ == "__main__":    
+    import doctest
+    doctest.testmod()
         
