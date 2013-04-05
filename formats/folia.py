@@ -394,8 +394,14 @@ def xmltreefromstring(s, bypassleak=False):
             return ElementTree.parse(BytesIO(s))
 
 def makeelement(E, tagname, **kwargs): 
-    if sys.version < '3':
-        return E._makeelement(tagname.encode('utf-8'), **{ k.encode('utf-8'): v.encode('utf-8') for k,v in kwargs.items() } )
+    if sys.version < '3':        
+        try:
+            return E._makeelement(tagname.encode('utf-8'), **{ k.encode('utf-8'): v.encode('utf-8') for k,v in kwargs.items() } )
+        except Exception as e:
+            print(e,file=stderr)
+            print("tagname=",tagname,file=stderr)
+            print("kwargs=",kwargs,file=stderr)
+            raise e
     else:
         return E._makeelement(tagname,**kwargs)
         
@@ -4964,7 +4970,7 @@ class Reader(object):
     
     
     def __init__(self, filename, target, bypassleak=False):                
-        """Read a FoLiA document in a streaming fashion. You select a specific target element and all occurrence of this element, including all there contents (so all elements within), will be returned. 
+        """Read a FoLiA document in a streaming fashion. You select a specific target element and all occurrences of this element, including all  contents (so all elements within), will be returned. 
         
         Arguments:
             
