@@ -118,7 +118,10 @@ class FrequencyList(object):
 
     def __getitem__(self, type):
         if self.dovalidation: type = self._validate(type)
-        return self._count[type]
+        try:
+            return self._count[type]
+        except KeyError:
+            return 0
 
     def __setitem__(self, type, value):
         """alias for count, but can only be called once"""
