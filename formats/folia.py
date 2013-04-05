@@ -53,9 +53,11 @@ import re
 import io
 import multiprocessing
 import threading
+import bz2
+import gzip
 
 FOLIAVERSION = '0.9.1'
-LIBVERSION = '0.9.1.31' #== FoLiA version + library revision
+LIBVERSION = '0.9.1.32' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -179,7 +181,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         if not Attrib.CLASS in supported:
             raise ValueError("Class is not supported for " + object.__class__.__name__)
         object.cls = kwargs['class']
-        del kwargs['class']  
+        del kwargs['class']
     elif 'cls' in kwargs:
         if not Attrib.CLASS in supported:
             raise ValueError("Class is not supported on " + object.__class__.__name__)
@@ -3716,15 +3718,31 @@ class Document(object):
             self.id = kwargs['id']
         elif 'file' in kwargs:
             self.filename = kwargs['file']
-            if not self.bypassleak: 
-                self.load(self.filename)                                                
-            else:
-                f = io.open(self.filename,'r',encoding='utf-8') 
+            if self.filename[-4:].lower() == '.bz2':
+                f = bz2.BZ2File(self.filename)
                 contents = f.read()
                 f.close()
-                #contents is bytes (utf-8 bytes)
                 self.tree = xmltreefromstring(contents,self.bypassleak)
-                self.parsexml(self.tree.getroot())              
+                del contents
+                self.parsexml(self.tree.getroot())
+            elif self.filename[-3:].lower() == '.gz':                
+                f = gzip.GzipFile(self.filename)
+                contents = f.read()
+                f.close()
+                self.tree = xmltreefromstring(contents,self.bypassleak)
+                del contents
+                self.parsexml(self.tree.getroot())                
+            else:
+                if not self.bypassleak: 
+                    self.load(self.filename)                                                
+                else:
+                    f = io.open(self.filename,'r',encoding='utf-8') 
+                    contents = f.read()
+                    f.close()
+                    #contents is bytes (utf-8 bytes)
+                    self.tree = xmltreefromstring(contents,self.bypassleak)
+                    del contents
+                    self.parsexml(self.tree.getroot())              
         elif 'string' in kwargs:
             self.tree = xmltreefromstring(kwargs['string'],self.bypassleak)
             del kwargs['string'] 
@@ -3909,9 +3927,18 @@ class Document(object):
             filename = self.filename
         if not filename:
             raise Exception("No filename specified")
-        f = io.open(filename,'w',encoding='utf-8')
-        f.write(self.xmlstring())
-        f.close()
+        if filename[-4:].lower() == '.bz2':
+            f = bz2.BZ2File(filename,'wb')
+            f.write(self.xmlstring().encode('utf-8'))
+            f.close()
+        elif filename[-3:].lower() == '.gz':
+            f = gzip.GzipFile(filename,'wb')
+            f.write(self.xmlstring().encode('utf-8'))
+            f.close()
+        else:
+            f = io.open(filename,'w',encoding='utf-8')
+            f.write(self.xmlstring())
+            f.close()
 
     def setcmdi(self,filename):
         self.metadatatype = MetaDataType.CMDI

@@ -31,6 +31,8 @@ import sys
 import os
 import unittest
 import io
+import gzip
+import bz2
 
 
 FOLIAPATH = '../../FoLiA/'
@@ -84,6 +86,37 @@ class Test1Read(unittest.TestCase):
         f.close()
         
         doc = folia.Document(file='/tmp/foliatest.xml')
+        self.assertTrue(isinstance(doc,folia.Document))
+        
+        #sanity check: reading from file must yield the exact same data as reading from string
+        doc2 = folia.Document(string=FOLIAEXAMPLE)
+        self.assertEqual( doc, doc2)
+
+    def test1a_readfromfile(self):        
+        """Reading from GZ file"""
+        global FOLIAEXAMPLE
+        #write example to file
+        f = gzip.GzipFile('/tmp/foliatest.xml.gz','w')
+        f.write(FOLIAEXAMPLE.encode('utf-8'))    
+        f.close()
+        
+        doc = folia.Document(file='/tmp/foliatest.xml.gz')
+        self.assertTrue(isinstance(doc,folia.Document))
+        
+        #sanity check: reading from file must yield the exact same data as reading from string
+        doc2 = folia.Document(string=FOLIAEXAMPLE)
+        self.assertEqual( doc, doc2)
+
+
+    def test1b_readfromfile(self):        
+        """Reading from BZ2 file"""
+        global FOLIAEXAMPLE
+        #write example to file
+        f = bz2.BZ2File('/tmp/foliatest.xml.bz2','w')
+        f.write(FOLIAEXAMPLE.encode('utf-8'))    
+        f.close()
+        
+        doc = folia.Document(file='/tmp/foliatest.xml.bz2')
         self.assertTrue(isinstance(doc,folia.Document))
         
         #sanity check: reading from file must yield the exact same data as reading from string
@@ -680,6 +713,14 @@ class Test2Sanity(unittest.TestCase):
     def test099_write(self):        
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
+    
+    def test099b_write(self):        
+        """Sanity Check - Writing to GZ file"""
+        self.doc.save('/tmp/foliasavetest.xml.gz')
+        
+    def test099c_write(self):        
+        """Sanity Check - Writing to BZ2 file"""
+        self.doc.save('/tmp/foliasavetest.xml.bz2')        
 
     def test100a_sanity(self):                       
         """Sanity Check - A - Checking output file against input (should be equal)"""
