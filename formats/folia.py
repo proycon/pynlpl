@@ -57,7 +57,7 @@ import bz2
 import gzip
 
 FOLIAVERSION = '0.9.1'
-LIBVERSION = '0.9.1.32' #== FoLiA version + library revision
+LIBVERSION = '0.9.1.33' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -399,8 +399,11 @@ def makeelement(E, tagname, **kwargs):
             return E._makeelement(tagname.encode('utf-8'), **{ k.encode('utf-8'): v.encode('utf-8') for k,v in kwargs.items() } )
         except ValueError as e:
             try:
-                return E._makeelement(tagname,**kwargs)
-            except:
+                #older versions of lxml may misbehave, compensate:
+                e =  E._makeelement(tagname)
+                for k,v in kwargs.items():
+                    e.attrib[k.encode('utf-8')] = v 
+            except ValueError as e2:
                 print(e,file=stderr)
                 print("tagname=",tagname,file=stderr)
                 print("kwargs=",kwargs,file=stderr)
