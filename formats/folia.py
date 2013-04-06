@@ -400,7 +400,7 @@ def makeelement(E, tagname, **kwargs):
         except ValueError as e:
             try:
                 #older versions of lxml may misbehave, compensate:
-                e =  E._makeelement(tagname)
+                e =  E._makeelement(tagname.encode('utf-8'))
                 for k,v in kwargs.items():
                     e.attrib[k.encode('utf-8')] = v 
             except ValueError as e2:
