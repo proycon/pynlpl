@@ -402,7 +402,8 @@ def makeelement(E, tagname, **kwargs):
                 #older versions of lxml may misbehave, compensate:
                 e =  E._makeelement(tagname.encode('utf-8'))
                 for k,v in kwargs.items():
-                    e.attrib[k.encode('utf-8')] = v 
+                    e.attrib[k.encode('utf-8')] = v
+                return e 
             except ValueError as e2:
                 print(e,file=stderr)
                 print("tagname=",tagname,file=stderr)
