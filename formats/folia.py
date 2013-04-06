@@ -397,11 +397,14 @@ def makeelement(E, tagname, **kwargs):
     if sys.version < '3':        
         try:
             return E._makeelement(tagname.encode('utf-8'), **{ k.encode('utf-8'): v.encode('utf-8') for k,v in kwargs.items() } )
-        except Exception as e:
-            print(e,file=stderr)
-            print("tagname=",tagname,file=stderr)
-            print("kwargs=",kwargs,file=stderr)
-            raise e
+        except ValueError as e:
+            try:
+                return E._makeelement(tagname,**kwargs)
+            except:
+                print(e,file=stderr)
+                print("tagname=",tagname,file=stderr)
+                print("kwargs=",kwargs,file=stderr)
+                raise e
     else:
         return E._makeelement(tagname,**kwargs)
         
