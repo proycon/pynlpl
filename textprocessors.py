@@ -7,9 +7,9 @@
 #   Radboud University Nijmegen
 #   http://www.github.com/proycon/pynlpl
 #   proycon AT anaproy DOT nl
-#       
+#
 #       Licensed under GPLv3
-# 
+#
 # This is a Python library containing text processors
 #
 ###############################################################
@@ -45,21 +45,21 @@ REGEXP_URL = re.compile(r"^(?:(?:https?):(?:(?://)|(?:\\\\))|www\.)(?:[\w\d:#@%/
 REGEXP_MAIL = re.compile(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+(?:\.[a-zA-Z]+)+") #email
 TOKENIZERRULES = (REGEXP_URL, REGEXP_MAIL)
 
-            
+
 class Windower(object):
     """Moves a sliding window over a list of tokens, upon iteration in yields all n-grams of specified size in a tuple.
 
     Example without markers:
-    
+
     >>> for ngram in Windower("This is a test .",3, None, None):
     ...     print(" ".join(ngram))
     This is a
     is a test
     a test .
-    
+
     Example with default markers:
-        
-    >>> for ngram in Windower("This is a test .",3):    
+
+    >>> for ngram in Windower("This is a test .",3):
     ...     print(" ".join(ngram))
     <begin> <begin> This
     <begin> This is
@@ -73,7 +73,7 @@ class Windower(object):
     def __init__(self, tokens, n=1, beginmarker = "<begin>", endmarker = "<end>"):
         """
         Constructor for Windower
-        
+
         :param tokens: The tokens to iterate over. Should be an itereable. Strings will be split on spaces automatically.
         :type tokens: iterable
         :param n: The size of the n-grams to extract
@@ -81,10 +81,10 @@ class Windower(object):
         :param beginmarker: The marker for the beginning of the sentence, defaults to "<begin>". Set to None if no markers are desired.
         :type beginmarker: string or None
         :param endmarker: The marker for the end of the sentence, defaults to "<end>". Set to None if no markers are desired.
-        :type endmarker: string or None      
-        """        
-        
-        
+        :type endmarker: string or None
+        """
+
+
         if isinstance(tokens, str) or (sys.version < '3' and isinstance(tokens, unicode)):
             self.tokens = tuple(tokens.split())
         else:
@@ -98,26 +98,26 @@ class Windower(object):
         """Returns the number of n-grams in the data (quick computation without iteration)
 
         Without markers:
-            
-        >>> len(Windower("This is a test .",3, None, None))                   
+
+        >>> len(Windower("This is a test .",3, None, None))
         3
-        
+
         >>> len(Windower("This is a test .",2, None, None))
         4
-        
-        >>> len(Windower("This is a test .",1, None, None))                   
+
+        >>> len(Windower("This is a test .",1, None, None))
         5
-                
+
         With default markers:
-        
-        >>> len(Windower("This is a test .",3))                
+
+        >>> len(Windower("This is a test .",3))
         7
-        
-        """        
+
+        """
 
         c = (len(self.tokens) - self.n) + 1
         if self.beginmarker: c += self.n-1
-        if self.endmarker: c += self.n-1        
+        if self.endmarker: c += self.n-1
         return c
 
 
@@ -141,9 +141,9 @@ class Windower(object):
                 else:
                    yield tuple(((begin * -1) * beginmarker  ) + self.tokens + ((end - l) * endmarker ))
             elif begin < 0:
-                if not self.beginmarker: 
-                   continue   
-                else: 
+                if not self.beginmarker:
+                   continue
+                else:
                    yield tuple(((begin * -1) * beginmarker ) + self.tokens[0:end])
             elif end > l:
                 if not self.endmarker:
@@ -153,7 +153,7 @@ class Windower(object):
 
 class MultiWindower(object):
     "Extract n-grams of various configurations from a sequence"
-    
+
     def __init__(self,tokens, min_n = 1, max_n = 9, beginmarker=None, endmarker=None):
         if isinstance(tokens, str) or (sys.version < '3' and isinstance(tokens, unicode)):
             self.tokens = tuple(tokens.split())
@@ -164,27 +164,27 @@ class MultiWindower(object):
         self.min_n = min_n
         self.max_n = max_n
         self.beginmarker = beginmarker
-        self.endmarker = endmarker        
-        
+        self.endmarker = endmarker
+
     def __iter__(self):
         for n in range(self.min_n, self.max_n + 1):
             for ngram in Windower(self.tokens,n, self.beginmarker, self.endmarker):
-                yield ngram        
+                yield ngram
 
 
 class ReflowText(object):
     """Attempts to re-flow a text that has arbitrary line endings in it. Also undoes hyphenisation"""
-    
+
     def __init__(self, stream, filternontext=True):
         self.stream = stream
         self.filternontext = filternontext
-        
+
     def __iter__(self):
         eosmarkers = ('.',':','?','!','"',"'","„","”","’")
         emptyline = 0
         buffer = ""
         for line in self.stream:
-            
+
             line = line.strip()
             if line:
                 if emptyline:
@@ -193,8 +193,8 @@ class ReflowText(object):
                         yield ""
                         emptyline = 0
                         buffer = ""
-                    
-                if buffer: buffer += ' '                
+
+                if buffer: buffer += ' '
                 if (line[-1] in eosmarkers):
                     buffer += line
                     yield buffer
@@ -203,44 +203,44 @@ class ReflowText(object):
                 elif len(line) > 2 and line[-1] == '-' and line[-2].isalpha():
                     #undo hyphenisation
                     buffer += line[:-1]
-                else:    
+                else:
                     if self.filternontext:
                         hastext = False
                         for c in line:
                             if c.isalpha():
                                 hastext = True
                                 break
-                    else:                                
+                    else:
                         hastext = True
-                        
+
                     if hastext:
                         buffer += line
-            else:                    
+            else:
                 emptyline += 1
-              
+
             #print "BUFFER=[" + buffer.encode('utf-8') + "] emptyline=" + str(emptyline)
-            
+
         if buffer:
             yield buffer
-            
+
 
 
 def calculate_overlap(haystack, needle, allowpartial=True):
-    """Calculate the overlap between two sequences. Yields (overlap, placement) tuples (multiple because there may be multiple overlaps!). The former is the part of the sequence that overlaps, and the latter is -1 if the overlap is on the left side, 0 if it is a subset, 1 if it overlaps on the right side, 2 if its an identical match"""    
+    """Calculate the overlap between two sequences. Yields (overlap, placement) tuples (multiple because there may be multiple overlaps!). The former is the part of the sequence that overlaps, and the latter is -1 if the overlap is on the left side, 0 if it is a subset, 1 if it overlaps on the right side, 2 if its an identical match"""
     needle = tuple(needle)
     haystack = tuple(haystack)
     solutions = []
-    
-    #equality check    
+
+    #equality check
     if needle == haystack:
         return [(needle, 2)]
 
-    if allowpartial: 
+    if allowpartial:
         minl =1
     else:
         minl = len(needle)
-        
-    for l in range(minl,min(len(needle), len(haystack))+1):    
+
+    for l in range(minl,min(len(needle), len(haystack))+1):
         #print "LEFT-DEBUG", l,":", needle[-l:], " vs ", haystack[:l]
         #print "RIGHT-DEBUG", l,":", needle[:l], " vs ", haystack[-l:]
         #Search for overlap left (including partial overlap!)
@@ -263,66 +263,66 @@ def calculate_overlap(haystack, needle, allowpartial=True):
 
 
 
-            
-class Tokenizer(object):    
+
+class Tokenizer(object):
     """A tokenizer and sentence splitter, which acts on a file/stream-like object and when iterating over the object it yields
     a lists of tokens (in case the sentence splitter is active (default)), or a token (if the sentence splitter is deactivated).
     """
-    
+
     def __init__(self, stream, splitsentences=True, onesentenceperline=False, regexps=TOKENIZERRULES):
         """
         Constructor for Tokenizer
-        
+
         :param stream: An iterable or file-object containing the data to tokenize
         :type stream: iterable or file-like object
         :param splitsentences: Enable sentence splitter? (default=_True_)
         :type splitsentences: bool
         :param onesentenceperline: Assume input has one sentence per line? (default=_False_)
         :type onesentenceperline: bool
-        :param regexps: Regular expressions to use as tokeniser rules in tokenisation (default=_pynlpl.textprocessors.TOKENIZERRULES_) 
-        :type regexps:  Tuple/list of regular expressions to use in tokenisation     
+        :param regexps: Regular expressions to use as tokeniser rules in tokenisation (default=_pynlpl.textprocessors.TOKENIZERRULES_)
+        :type regexps:  Tuple/list of regular expressions to use in tokenisation
         """
-                      
+
         self.stream = stream
         self.regexps = regexps
         self.splitsentences=splitsentences
         self.onesentenceperline = onesentenceperline
-        
+
     def __iter__(self):
         for line in self.stream:
             line = line.strip()
             if line:
                 if buffer: buffer += "\n"
                 buffer += line
-                        
-            if (self.onesentenceperline or not line) and buffer: 
+
+            if (self.onesentenceperline or not line) and buffer:
                 if self.splitsentences:
                     yield split_sentences(tokenize(buffer))
-                else:            
+                else:
                     for token in tokenize(buffer, self.regexps):
                         yield token
-    
-        if buffer:        
+
+        if buffer:
             if self.splitsentences:
                 yield split_sentences(tokenize(buffer))
-            else:            
+            else:
                 for token in tokenize(buffer, self.regexps):
                     yield token
-    
-            
-                            
-    
+
+
+
+
 def tokenize(text, regexps=TOKENIZERRULES):
     """Tokenizes a string and returns a list of tokens
-    
+
     :param text: The text to tokenise
-    :type text: string 
-    :param regexps: Regular expressions to use as tokeniser rules in tokenisation (default=_pynlpl.textprocessors.TOKENIZERRULES_) 
+    :type text: string
+    :param regexps: Regular expressions to use as tokeniser rules in tokenisation (default=_pynlpl.textprocessors.TOKENIZERRULES_)
     :type regexps:  Tuple/list of regular expressions to use in tokenisation
-    :rtype: Returns a list of tokens 
+    :rtype: Returns a list of tokens
 
     Examples:
-       
+
     >>> for token in tokenize("This is a test."):
     ...    print(token)
     This
@@ -330,18 +330,18 @@ def tokenize(text, regexps=TOKENIZERRULES):
     a
     test
     .
-          
-       
+
+
     """
-    
+
     for i,regexp in list(enumerate(regexps)):
         if isstring(regexp):
             regexps[i] = re.compile(regexp)
-    
+
     tokens = []
     begin = 0
     for i, c in enumerate(text):
-        if begin > i: 
+        if begin > i:
             continue
         elif i == begin:
             m = False
@@ -352,17 +352,17 @@ def tokenize(text, regexps=TOKENIZERRULES):
                     begin = i + len(m[0])
                     break
             if m: continue
-        
+
         if c in string.punctuation or c in WHITESPACE:
             prev = text[i-1] if i > 0 else ""
             next = text[i+1] if i < len(text)-1 else ""
-            
+
             if (c == '.' or c == ',') and prev.isdigit() and next.isdigit():
                 #punctuation in between numbers, keep as one token
                 pass
             elif (c == "'" or c == "`") and prev.isalpha() and next.isalpha():
                 #quote in between chars, keep...
-                pass    
+                pass
             elif c not in WHITESPACE and next == c: #group clusters of identical punctuation together
                 continue
             elif c == '\r' and prev == '\n':
@@ -372,19 +372,19 @@ def tokenize(text, regexps=TOKENIZERRULES):
             else:
                 token = text[begin:i]
                 if token: tokens.append(token)
-                    
+
                 if c not in WHITESPACE:
                     tokens.append(c) #anything but spaces and newlines (i.e. punctuation) counts as a token too
                 begin = i + 1 #set the begin cursor
-    
+
     if begin <= len(text) - 1:
         token = text[begin:]
-        tokens.append(token)                    
+        tokens.append(token)
 
     return tokens
-                    
 
-def crude_tokenizer(text):    
+
+def crude_tokenizer(text):
     """Replaced by tokenize(). Alias"""
     return tokenize(text) #backwards-compatibility, not so crude anymore
 
@@ -393,8 +393,8 @@ def tokenise(text, regexps=TOKENIZERRULES): #for the British
     return tokenize(text)
 
 def is_end_of_sentence(tokens,i ):
-    # is this an end-of-sentence marker? ... and is this either 
-    # the last token or the next token is NOT an end of sentence 
+    # is this an end-of-sentence marker? ... and is this either
+    # the last token or the next token is NOT an end of sentence
     # marker as well? (to deal with ellipsis etc)
     return tokens[i] in EOSMARKERS and (i == len(tokens) - 1 or not tokens[i+1] in EOSMARKERS)
 
@@ -402,10 +402,10 @@ def split_sentences(tokens):
     """Split sentences (based on tokenised data), returns sentences as a list of lists of tokens, each sentence is a list of tokens"""
     begin = 0
     for i, token in enumerate(tokens):
-        if is_end_of_sentence(tokens, i): 
+        if is_end_of_sentence(tokens, i):
             yield tokens[begin:i+1]
             begin = i+1
-    if begin <= len(tokens)-1:    
+    if begin <= len(tokens)-1:
         yield tokens[begin:]
 
 
@@ -437,7 +437,7 @@ def swap(tokens, maxdist=2):
                 yield newtokens
         if maxdist == len(tokens):
             break
-        
+
 
 def find_keyword_in_context(tokens, keyword, contextsize=1):
     """Find a keyword in a particular sequence of tokens, and return the local context. Contextsize is the number of words to the left and right. The keyword may have multiple word, in which case it should to passed as a tuple or list"""
@@ -448,101 +448,101 @@ def find_keyword_in_context(tokens, keyword, contextsize=1):
         l = 1
     n = l + contextsize*2
     focuspos = contextsize + 1
-    for ngram in Windower(tokens,n,None,None): 
+    for ngram in Windower(tokens,n,None,None):
         if ngram[focuspos:focuspos+l] == keyword:
             yield ngram[:focuspos], ngram[focuspos:focuspos+l],ngram[focuspos+l+1:]
 
 
 class Classer(object):
     """The Classer can encode and decode tokens to an integer representation. It is constructed using a frequency list."""
-    
+
     def __init__(self, f, **kwargs):
         """Pass either a filename of a plain text data file or a pre-computed frequency list.
-        
+
         Keyword arguments:
             decoder = True/False   Enable decoder? Default: True
             encoder = True/False   Enable encoder? Default: True
             encoding = (str)       The encoding of your data (None for encoding-agnostic, default)
         """
-        
+
         if 'decoder' in kwargs:
             self.decoder = bool(kwargs['decoder'])
         else:
             self.decoder = True
-        
+
         if 'encoder' in kwargs:
             self.encoder = bool(kwargs['encoder'])
         else:
             self.encoder = True
 
         self.newestclass = 0
-            
+
         if self.decoder:
-            self.class2word = {} 
-        if self.encoder:    
+            self.class2word = {}
+        if self.encoder:
             self.word2class = {}
 
         if 'encoding' in kwargs and kwargs['encoding']:
             self.encoding = kwargs['encoding']
         else:
             self.encoding = None
-            
+
         if 'filesupport' in kwargs:
             self.filesupport = bool(kwargs['filesupport'])
         else:
             self.filesupport = False
-            
+
         if self.filesupport:
             self.newestclass = 1 #0 and 1 are reserved for space and newline
-                    
-        if isinstance(f, FrequencyList):                        
+
+        if isinstance(f, FrequencyList):
             for word, _ in f:
                 self.newestclass += 1
                 if self.filesupport:
-                    while containsnullbyte(self.newestclass): 
+                    while containsnullbyte(self.newestclass):
                         self.newestclass += 1
                 print(self.newestclass, word,file=stderr)
                 if self.decoder:
-                    self.class2word[self.newestclass] = word  
+                    self.class2word[self.newestclass] = word
                 if self.encoder:
                     self.word2class[word] = self.newestclass
             if not self.decoder:
                 del self.class2word
         elif isinstance(f, str) or (sys.version < '3' and isinstance(f,unicode)):
-            f = io.open(f,'r',encoding='utf-8')      
+            f = io.open(f,'r',encoding='utf-8')
             for line in f:
                 cls, word = line.strip().split('\t',2)
                 if self.decoder: self.class2word[int(cls)] = word
                 if self.encoder: self.word2class[word] = int(cls)
             f.close()
-        else: 
+        else:
             raise Exception("Expected FrequencyList or filename, got " + str(type(f)))
-        
-        
+
+
 
     def save(self, filename):
         """Save to a class file"""
         if not self.decoder: raise Exception("Decoder not enabled!")
         if self.encoding:
-            f = io.open(filename,'w',encoding=self.encoding)   
+            f = io.open(filename,'w',encoding=self.encoding)
         else:
             f = io.open(filename,'w',encoding='utf-8')
         for cls, word in sorted(self.class2word.items()):
             if cls:
                 f.write( str(cls) + '\t' + word + '\n')
         f.close()
-                    
+
     def decode(self, x):
         """Encode a class integer, return string token"""
         try:
             return self.class2word[x]
         except:
-            if not self.decoder: 
+            if not self.decoder:
                 raise Exception("Decoder not enabled!")
             else:
                 raise
-            
-    def encode(self, x):        
+
+    def encode(self, x):
         """Encode a string token, return class integer"""
         try:
             return self.word2class[x]
@@ -551,35 +551,35 @@ class Classer(object):
                 raise Exception("Encoder not enabled!")
             else:
                 raise
-                        
+
     def decodeseq(self, sequence):
         """Decode a sequence, converting class integers to strings"""
         return tuple( self.decode(x) for x in sequence  )
-        
+
     def encodeseq(self, sequence):
         """Encode a sequence of string tokens to class integers"""
         return tuple( self.encode(x) for x in sequence  )
-        
+
     def __len__(self):
         try:
             return len(self.class2word)
         except:
             return len(self.word2class)
-        
+
     def encodefile(self, fromfile, tofile):
         """Encode a file, converting word tokens to class integers"""
         assert self.filesupport
-        ffrom = io.open(fromfile,'rb')  
+        ffrom = io.open(fromfile,'rb')
         fto = io.open(tofile,'wb')
         for line in ffrom:
             a = intarraytobytearray( self.encodeseq( line.strip().split(' ') ))
             a.append(0) #delimiter
             a.append(1) #newline
             a.append(0) #delimiter
-            a.tofile(fto)            
+            a.tofile(fto)
         fto.close()
         ffrom.close()
-        
+
     def decodefile(self, filename):
         """Decode a file, converting class integers to token strings"""
         f = io.open(filename,'rb')
@@ -601,11 +601,11 @@ class Classer(object):
             else:
                 buffer.append(ord(b))
         f.close()
-        
-            
 
-    
-if __name__ == "__main__":    
+
+
+
+if __name__ == "__main__":
     import doctest
     doctest.testmod()
-        
+

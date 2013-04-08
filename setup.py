@@ -9,17 +9,17 @@ import sys
 from setuptools import setup, find_packages
 
 os.chdir(os.path.dirname(sys.argv[0]))
-if not os.path.exists('pynlpl'):   
+if not os.path.exists('pynlpl'):
     print("Preparing build",file=sys.stderr)
-    if os.path.exists('build'): 
+    if os.path.exists('build'):
         os.system('rm -Rf build')
-    os.mkdir('build')   
+    os.mkdir('build')
     os.chdir('build')
     if not os.path.exists('pynlpl'): os.mkdir('pynlpl')
     os.system('cp -Rpdf ../* pynlpl/ 2> /dev/null')
     os.system('mv -f pynlpl/setup.py pynlpl/setup.cfg .')
-    os.system('cp -f pynlpl/README .') 
-    
+    os.system('cp -f pynlpl/README .')
+
     #Do not include unfininished WIP modules:
     os.system('rm -f pynlpl/formats/colibri.py pynlpl/formats/alpino.py pynlpl/foliaprocessing.py pynlpl/grammar.py')
 
@@ -28,7 +28,7 @@ def read(fname):
 
 setup(
     name = "PyNLPl",
-    version = "0.6.1.1",
+    version = "0.6.1.2",
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
     description = ("PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl can be used for example the computation of n-grams, frequency lists and distributions, language models. There are also more complex data types, such as Priority Queues, and search algorithms, such as Beam Search."),
@@ -42,7 +42,7 @@ setup(
         "Topic :: Text Processing :: Linguistic",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",    
+        "Programming Language :: Python :: 3",
         "Operating System :: POSIX",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
