@@ -2393,6 +2393,8 @@ class Metric(AbstractElement):
     """Metric elements allow the annotatation of any kind of metric with any kind of annotation element. Allowing for example statistical measures to be added to elements as annotation,"""
     XMLTAG = 'metric'
     ANNOTATIONTYPE = AnnotationType.METRIC
+    REQUIRED_ATTRIB = (Attrib.CLASS,)
+    OPTIONAL_ATTRIBS = Attrib.ALL
     ACCEPTED_DATA = (Feature, ValueFeature, Description)
 
 class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID):
@@ -4633,7 +4635,7 @@ class Text(AbstractStructureElement):
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent, Metric)
     XMLTAG = 'text'
     TEXTDELIMITER = "\n\n\n"
 
