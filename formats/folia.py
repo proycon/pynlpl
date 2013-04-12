@@ -374,7 +374,7 @@ def xmltreefromstring(s, bypassleak=False):
                 if bypassleak:
                     s = unicode(s,'utf-8')
                     s = s.replace(' xml:id=', ' id=')
-                s = s.encode('utf-8')
+                    s = s.encode('utf-8')
             elif isinstance(s,unicode):
                 if bypassleak: s = s.replace(' xml:id=', ' id=')
                 s = s.encode('utf-8')
@@ -387,7 +387,7 @@ def xmltreefromstring(s, bypassleak=False):
                 if bypassleak:
                     s = str(s,'utf-8')
                     s = s.replace(' xml:id=', ' id=')
-                s = s.encode('utf-8')
+                    s = s.encode('utf-8')
             elif isinstance(s,str):
                 if bypassleak: s = s.replace(' xml:id=', ' id=')
                 s = s.encode('utf-8')
