@@ -10,7 +10,7 @@
 # This is a Python library with classes and functions for evaluation
 # and experiments .
 #
-###############################################################    
+###############################################################
 
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -29,8 +29,8 @@ import io
 
 
 from pynlpl.statistics import FrequencyList
-from sklearn.metrics import auc
 from collections import defaultdict
+import numpy as np
 import subprocess
 import itertools
 import time
@@ -40,6 +40,66 @@ import datetime
 import os.path
 
 
+def auc(x, y, reorder=False): #from sklearn, http://scikit-learn.org, licensed under BSD License
+    """Compute Area Under the Curve (AUC) using the trapezoidal rule
+
+    This is a general fuction, given points on a curve.  For computing the area
+    under the ROC-curve, see :func:`auc_score`.
+
+    Parameters
+    ----------
+    x : array, shape = [n]
+        x coordinates.
+
+    y : array, shape = [n]
+        y coordinates.
+
+    reorder : boolean, optional (default=False)
+        If True, assume that the curve is ascending in the case of ties, as for
+        an ROC curve. If the curve is non-ascending, the result will be wrong.
+
+    Returns
+    -------
+    auc : float
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearn import metrics
+    >>> y = np.array([1, 1, 2, 2])
+    >>> pred = np.array([0.1, 0.4, 0.35, 0.8])
+    >>> fpr, tpr, thresholds = metrics.roc_curve(y, pred, pos_label=2)
+    >>> metrics.auc(fpr, tpr)
+    0.75
+
+    See also
+    --------
+    auc_score : Computes the area under the ROC curve
+
+    """
+    # XXX: Consider using  ``scipy.integrate`` instead, or moving to
+    # ``utils.extmath``
+    if not isinstance(x, np.ndarray): x = np.array(x)
+    if not isinstance(x, np.ndarray): y = np.array(y)
+    if x.shape[0] < 2:
+        raise ValueError('At least 2 points are needed to compute'
+                         ' area under curve, but x.shape = %s' % x.shape)
+
+    if reorder:
+        # reorder the data points according to the x axis and using y to
+        # break ties
+        x, y = np.array(sorted(points for points in zip(x, y))).T
+        h = np.diff(x)
+    else:
+        h = np.diff(x)
+        if np.any(h < 0):
+            h *= -1
+            assert not np.any(h < 0), ("Reordering is not turned on, and "
+                                       "The x array is not increasing: %s" % x)
+
+    area = np.sum(h * (y[1:] + y[:-1])) / 2.0
+    return area
+
 
 class ProcessFailed(Exception):
     pass
@@ -47,7 +107,7 @@ class ProcessFailed(Exception):
 
 class ConfusionMatrix(FrequencyList):
     """Confusion Matrix"""
-    
+
     def __str__(self):
         """Print Confusion Matrix in table form"""
         o = "== Confusion Matrix == (hor: goals, vert: observations)\n\n"
@@ -80,12 +140,12 @@ class ConfusionMatrix(FrequencyList):
                 linemask += " %" + str(l) + "d"
                 try:
                     count = self._count[(keyH, keyV)]
-                except: 
+                except:
                     count = 0
                 cells.append(count)
             linemask += "\n"
             o += linemask % tuple(cells)
-        
+
         return o
 
 
@@ -96,9 +156,9 @@ class ClassEvaluation(object):
         assert len(observations) == len(goals)
         self.observations = copy.copy(observations)
         self.goals = copy.copy(goals)
-        
+
         self.classes = set(self.observations + self.goals)
-        
+
         self.tp = defaultdict(int)
         self.fp = defaultdict(int)
         self.tn = defaultdict(int)
@@ -106,9 +166,9 @@ class ClassEvaluation(object):
         self.missing = missing
 
         self.encoding = encoding
-        
+
         self.computed = False
- 
+
         if self.observations:
             self.compute()
 
@@ -131,9 +191,9 @@ class ClassEvaluation(object):
             if len(self.observations) > 0:
                 if macro:
                     return sum( ( self.precision(x) for x in set(self.goals) ) ) / len(set(self.classes))
-                else:                    
+                else:
                     return sum( ( self.precision(x) for x in self.goals ) ) / len(self.goals)
-            else: 
+            else:
                 #return float('nan')
                 return 0
 
@@ -167,7 +227,7 @@ class ClassEvaluation(object):
             if len(self.observations) > 0:
                 if macro:
                     return sum( ( self.specificity(x) for x in set(self.goals) ) ) / len(set(self.classes))
-                else:                
+                else:
                     return sum( ( self.specificity(x) for x in self.goals ) ) / len(self.goals)
             else:
                 #return float('nan')
@@ -187,7 +247,7 @@ class ClassEvaluation(object):
             else:
                 #return float('nan')
                 return 0
-        
+
     def fscore(self, cls=None, beta=1, macro=False):
         if not self.computed: self.compute()
         if cls:
@@ -201,14 +261,14 @@ class ClassEvaluation(object):
         else:
             if len(self.observations) > 0:
                 if macro:
-                    return sum( ( self.fscore(x,beta) for x in set(self.goals) ) ) / len(set(self.classes))                    
+                    return sum( ( self.fscore(x,beta) for x in set(self.goals) ) ) / len(set(self.classes))
                 else:
                     return sum( ( self.fscore(x,beta) for x in self.goals ) ) / len(self.goals)
             else:
                 #return float('nan')
                 return 0
 
-    def tp_rate(self, cls=None, macro=False): 
+    def tp_rate(self, cls=None, macro=False):
         if not self.computed: self.compute()
         if cls:
             if self.tp[cls] > 0:
@@ -224,8 +284,8 @@ class ClassEvaluation(object):
             else:
                 #return float('nan')
                 return 0
-            
-    def fp_rate(self, cls=None, macro=False): 
+
+    def fp_rate(self, cls=None, macro=False):
         if not self.computed: self.compute()
         if cls:
             if self.fp[cls] > 0:
@@ -241,7 +301,7 @@ class ClassEvaluation(object):
             else:
                 #return float('nan')
                 return 0
-       
+
     def auc(self, cls=None, macro=False):
         if not self.computed: self.compute()
         if cls:
@@ -251,7 +311,7 @@ class ClassEvaluation(object):
         else:
             if len(self.observations) > 0:
                 if macro:
-                    return sum( ( self.auc(x) for x in set(self.goals) ) ) / len(set(self.classes))                    
+                    return sum( ( self.auc(x) for x in set(self.goals) ) ) / len(set(self.classes))
                 else:
                     return sum( ( self.auc(x) for x in self.goals ) ) / len(self.goals)
             else:
@@ -268,8 +328,8 @@ class ClassEvaluation(object):
         self.tn = defaultdict(int)
         self.fn = defaultdict(int)
         for cls, count in self.missing.items():
-            self.fn[cls] = count 
-        
+            self.fn[cls] = count
+
         for goal, observation in self:
             if goal == observation:
                 self.tp[observation] += 1
@@ -281,7 +341,7 @@ class ClassEvaluation(object):
         l = len(self.goals) + sum(self.missing.values())
         for o in self.classes:
             self.tn[o] = l - self.tp[o] - self.fp[o] - self.fn[o]
-            
+
         self.computed = True
 
 
@@ -446,7 +506,7 @@ class ExperimentPool(object):
         while True:
             #check how many processes are done
             done = self.poll(haltonerror)
-                
+
             for experiment in done:
                 yield experiment
             #start new processes
@@ -459,7 +519,7 @@ class ExperimentPool(object):
 
 class WPSParamSearch(object):
     """ParamSearch with support for Wrapped Progressive Sampling"""
-    
+
     def __init__(self, experimentclass, inputdata, size, parameterscope, poolsize=1, sizefunc=None, prunefunc=None, constraintfunc = None, delete=True): #parameterscope: {'parameter':[values]}
         self.ExperimentClass = experimentclass
         self.inputdata = inputdata
@@ -476,20 +536,20 @@ class WPSParamSearch(object):
                 self.sizefunc = lambda i, maxsize: round((maxsize/100.0)*i*i)
 
         #prunefunc should return a number between 0 and 1, indicating how much is pruned. (for example: 0.75 prunes three/fourth of all combinations, retaining only 25%)
-        if prunefunc != None:    
+        if prunefunc != None:
             self.prunefunc = prunefunc
         else:
             self.prunefunc = lambda i: 0.5
-            
+
         if constraintfunc != None:
             self.constraintfunc = constraintfunc
         else:
             self.constraintfunc = lambda x: True
-            
+
         #compute all parameter combinations:
         if isinstance(parameterscope, dict):
             verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope.items() ]
-        else:       
+        else:
             verboseparameterscope = [ self._combine(x,y) for x,y in parameterscope ]
         self.parametercombinations = [ (x,0) for x in itertools.product(*verboseparameterscope) if self.constraintfunc(dict(x)) ] #generator
 
@@ -509,14 +569,14 @@ class WPSParamSearch(object):
     def test(self,i=None):
         #sample size elements from inputdata
         if i is None or self.maxsize == -1:
-            data = self.inputdata      
-        else:            
+            data = self.inputdata
+        else:
             size = int(self.sizefunc(i, self.maxsize))
             if size > self.maxsize:
                 return []
-        
+
             data = self.ExperimentClass.sample(self.inputdata, size)
-        
+
 
         #run on ALL available parameter combinations and retrieve score
         newparametercombinations = []
@@ -536,8 +596,8 @@ class WPSParamSearch(object):
             for experiment in pool.run(False):
                 newparametercombinations.append( (experiment.parameters, experiment.score()) )
                 if self.delete:
-                    experiment.delete()        
-        
+                    experiment.delete()
+
         return newparametercombinations
 
 
@@ -547,7 +607,7 @@ class WPSParamSearch(object):
             i += 1
 
             newparametercombinations = self.test(i)
-            
+
             #prune the combinations, keeping only the best
             prune = int(round(self.prunefunc(i) * len(newparametercombinations)))
             self.parametercombinations = sorted(newparametercombinations, key=lambda v: v[1])[prune:]
@@ -561,12 +621,12 @@ class ParamSearch(WPSParamSearch):
     def __init__(self, experimentclass, inputdata, parameterscope, poolsize=1, constraintfunc = None, delete=True): #parameterscope: {'parameter':[values]}
         prunefunc = lambda x: 0
         super(ParamSearch, self).__init__(experimentclass, inputdata, -1, parameterscope, poolsize, None,prunefunc, constraintfunc, delete)
-    
+
     def __iter__(self):
          for parametercombination, score in sorted(self.test(), key=lambda v: v[1]):
              yield parametercombination, score
-                    
-        
+
+
 def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outputdir = '', encoding='utf-8'):
         """Extract a training set, test set and optimally a development set from one file, or multiple *interdependent* files (such as a parallel corpus). It is assumed each line contains one instance (such as a word or sentence for example)."""
 
@@ -590,7 +650,7 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outp
             testsetsize = int(total * testsetsize)
         if devsetsize < 1 and devsetsize > 0:
             devsetsize = int(total * devsetsize)
-            
+
 
         if testsetsize >= total or devsetsize >= total or testsetsize + devsetsize >= total:
             raise Exception("Test set and/or development set too large! No samples left for training set!")
@@ -604,13 +664,13 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outp
         for i in random.sample(trainset.keys(), testsetsize):
             testset[i] = True
             del trainset[i]
-        
+
         if devsetsize > 0:
             for i in random.sample(trainset.keys(), devsetsize):
                 devset[i] = True
                 del trainset[i]
-                
-        if trainsetsize > 0:                
+
+        if trainsetsize > 0:
             newtrainset = {}
             for i in random.sample(trainset.keys(), trainsetsize):
                 newtrainset[i] = True
