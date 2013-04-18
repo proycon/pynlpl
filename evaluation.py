@@ -29,6 +29,7 @@ import io
 
 
 from pynlpl.statistics import FrequencyList
+from sklearn.metrics import auc
 from collections import defaultdict
 import subprocess
 import itertools
@@ -207,6 +208,55 @@ class ClassEvaluation(object):
                 #return float('nan')
                 return 0
 
+    def tp_rate(self, cls=None, macro=False): 
+        if not self.computed: self.compute()
+        if cls:
+            if self.tp[cls] > 0:
+                return self.tp[cls] / (self.tp[cls] + self.fn[cls])
+            else:
+                return 0
+        else:
+            if len(self.observations) > 0:
+                if macro:
+                    return sum( ( self.tp_rate(x) for x in set(self.goals) ) ) / len(set(self.classes))
+                else:
+                    return sum( ( self.tp_rate(x) for x in self.goals ) ) / len(self.goals)
+            else:
+                #return float('nan')
+                return 0
+            
+    def fp_rate(self, cls=None, macro=False): 
+        if not self.computed: self.compute()
+        if cls:
+            if self.fp[cls] > 0:
+                return self.fp[cls] / (self.tn[cls] + self.fp[cls])
+            else:
+                return 0
+        else:
+            if len(self.observations) > 0:
+                if macro:
+                    return sum( ( self.fp_rate(x) for x in set(self.goals) ) ) / len(set(self.classes))
+                else:
+                    return sum( ( self.fp_rate(x) for x in self.goals ) ) / len(self.goals)
+            else:
+                #return float('nan')
+                return 0
+       
+    def auc(self, cls=None, macro=False):
+        if not self.computed: self.compute()
+        if cls:
+            tpr = self.tp_rate(cls)
+            fpr =  self.fp_rate(cls)
+            return auc([0,fpr,1], [0,tpr,1])
+        else:
+            if len(self.observations) > 0:
+                if macro:
+                    return sum( ( self.auc(x) for x in set(self.goals) ) ) / len(set(self.classes))                    
+                else:
+                    return sum( ( self.auc(x) for x in self.goals ) ) / len(self.goals)
+            else:
+                #return float('nan')
+                return 0
 
     def __iter__(self):
         for g,o in zip(self.goals, self.observations):
