@@ -57,7 +57,7 @@ import bz2
 import gzip
 
 FOLIAVERSION = '0.9.1'
-LIBVERSION = '0.9.1.35' #== FoLiA version + library revision
+LIBVERSION = '0.9.1.36' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -2321,6 +2321,21 @@ class Word(AbstractStructureElement, AllowCorrections):
     def context(self, size, placeholder=None):
         """Returns this word in context, {size} words to the left, the current word, and {size} words to the right"""
         return self.leftcontext(size, placeholder) + [self] + self.rightcontext(size, placeholder)
+
+    def findspans(self, type,set=None):
+        """Find span annotation of the specified type that include this word"""
+        assert issubclass(type, AbstractAnnotationLayer)
+        l = []
+        e = self
+        while True:
+            if not e.parent: break
+            e = e.parent
+            for layer in e.select(type,set,False):
+                for e2 in layer:
+                    if isinstance(e2, AbstractSpanAnnotation):
+                        if self in e2.wrefs():
+                            l.append(e2)
+        return l
 
 
 class Feature(AbstractElement):

@@ -704,7 +704,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual(m.annotation(folia.PosAnnotation).cls, 'n')
 
     def test039_findspan(self):
-        """Sanity Check - Find span"""
+        """Sanity Check - Find span on layer"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.7']
         semrolelayer = s.annotation(folia.SemanticRolesLayer)
         roles = list(semrolelayer.annotations(folia.SemanticRole))
@@ -719,6 +719,16 @@ class Test2Sanity(unittest.TestCase):
                 for word in entity.wrefs():
                     t.append(word.text())
         self.assertEqual(t, ['ander','woord'])
+
+    def test041_findspans(self):
+        """Sanity check - Find spans given words"""
+        t = []
+        word = self.doc["WR-P-E-J-0000000001.p.1.s.1.w.4"]
+        for entity in word.findspans(folia.EntitiesLayer):
+            for word in entity.wrefs():
+                t.append(word.text())
+        self.assertEqual(t, ['ander','woord'])
+
 
     def test099_write(self):
         """Sanity Check - Writing to file"""
