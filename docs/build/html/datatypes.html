@@ -83,7 +83,7 @@
 
 <dl class="class">
 <dt id="pynlpl.datatypes.PriorityQueue">
-<em class="property">class </em><tt class="descclassname">pynlpl.datatypes.</tt><tt class="descname">PriorityQueue</tt><big>(</big><em>data=</em><span class="optional">[</span><span class="optional">]</span>, <em>f=&lt;function &lt;lambda&gt; at 0x2e44aa0&gt;</em>, <em>minimize=False</em>, <em>length=0</em>, <em>blockworse=False</em>, <em>blockequal=False</em>, <em>duplicates=True</em><big>)</big><a class="headerlink" href="#pynlpl.datatypes.PriorityQueue" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.datatypes.</tt><tt class="descname">PriorityQueue</tt><big>(</big><em>data=</em><span class="optional">[</span><span class="optional">]</span>, <em>f=&lt;function &lt;lambda&gt; at 0x34d8578&gt;</em>, <em>minimize=False</em>, <em>length=0</em>, <em>blockworse=False</em>, <em>blockequal=False</em>, <em>duplicates=True</em><big>)</big><a class="headerlink" href="#pynlpl.datatypes.PriorityQueue" title="Permalink to this definition">¶</a></dt>
 <dd><p>A queue in which the maximum (or minumum) element is returned first, 
 as determined by either an external score function f (by default calling
 the objects score() method). If minimize=True, the item with minimum f(x) is
@@ -165,7 +165,8 @@ len(q)          &#8211; number of items in q (also q.__len()).</dd>
 <dl class="method">
 <dt id="pynlpl.datatypes.Tree.append">
 <tt class="descname">append</tt><big>(</big><em>item</em><big>)</big><a class="headerlink" href="#pynlpl.datatypes.Tree.append" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Add an item to the Tree</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.datatypes.Tree.leaf">
@@ -187,7 +188,8 @@ len(q)          &#8211; number of items in q (also q.__len()).</dd>
 <dl class="method">
 <dt id="pynlpl.datatypes.Trie.depth">
 <tt class="descname">depth</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.datatypes.Trie.depth" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the depth of the current node</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.datatypes.Trie.find">
@@ -208,12 +210,14 @@ len(q)          &#8211; number of items in q (also q.__len()).</dd>
 <dl class="method">
 <dt id="pynlpl.datatypes.Trie.path">
 <tt class="descname">path</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.datatypes.Trie.path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the path to the current node</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.datatypes.Trie.root">
 <tt class="descname">root</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.datatypes.Trie.root" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns True if this is the root of the Trie</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.datatypes.Trie.sequence">

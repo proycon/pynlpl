@@ -137,12 +137,40 @@
 <dl class="class">
 <dt id="textprocessors.ReflowText">
 <em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">ReflowText</tt><big>(</big><em>stream</em>, <em>filternontext=True</em><big>)</big><a class="headerlink" href="#textprocessors.ReflowText" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Attempts to re-flow a text that has arbitrary line endings in it. Also undoes hyphenisation</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="textprocessors.Tokenizer">
+<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Tokenizer</tt><big>(</big><em>stream</em>, <em>splitsentences=True</em>, <em>onesentenceperline=False</em>, <em>regexps=(&lt;_sre.SRE_Pattern object at 0x5965be0&gt;</em>, <em>&lt;_sre.SRE_Pattern object at 0x52243e0&gt;)</em><big>)</big><a class="headerlink" href="#textprocessors.Tokenizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tokenizer and sentence splitter, which acts on a file/stream-like object and when iterating over the object it yields
+a lists of tokens (in case the sentence splitter is active (default)), or a token (if the sentence splitter is deactivated).</p>
+</dd></dl>
 
 <dl class="class">
 <dt id="textprocessors.Windower">
-<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Windower</tt><big>(</big><em>tokens</em>, <em>n=1</em>, <em>beginmarker='&lt;begin&gt;'</em>, <em>endmarker='&lt;end&gt;'</em><big>)</big><a class="headerlink" href="#textprocessors.Windower" title="Permalink to this definition">¶</a></dt>
-<dd><p>Moves a sliding window over a list of tokens, returning all ngrams</p>
+<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Windower</tt><big>(</big><em>tokens</em>, <em>n=1</em>, <em>beginmarker=u'&lt;begin&gt;'</em>, <em>endmarker=u'&lt;end&gt;'</em><big>)</big><a class="headerlink" href="#textprocessors.Windower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Moves a sliding window over a list of tokens, upon iteration in yields all n-grams of specified size in a tuple.</p>
+<p>Example without markers:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">Windower</span><span class="p">(</span><span class="s">&quot;This is a test .&quot;</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ngram</span><span class="p">))</span>
+<span class="go">This is a</span>
+<span class="go">is a test</span>
+<span class="go">a test .</span>
+</pre></div>
+</div>
+<p>Example with default markers:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">Windower</span><span class="p">(</span><span class="s">&quot;This is a test .&quot;</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ngram</span><span class="p">))</span>
+<span class="go">&lt;begin&gt; &lt;begin&gt; This</span>
+<span class="go">&lt;begin&gt; This is</span>
+<span class="go">This is a</span>
+<span class="go">is a test</span>
+<span class="go">a test .</span>
+<span class="go">test . &lt;end&gt;</span>
+<span class="go">. &lt;end&gt; &lt;end&gt;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -153,13 +181,30 @@
 
 <dl class="function">
 <dt id="textprocessors.crude_tokenizer">
-<tt class="descclassname">textprocessors.</tt><tt class="descname">crude_tokenizer</tt><big>(</big><em>line</em><big>)</big><a class="headerlink" href="#textprocessors.crude_tokenizer" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is a very crude tokenizer</p>
+<tt class="descclassname">textprocessors.</tt><tt class="descname">crude_tokenizer</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#textprocessors.crude_tokenizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replaced by tokenize(). Alias</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="textprocessors.find_keyword_in_context">
+<tt class="descclassname">textprocessors.</tt><tt class="descname">find_keyword_in_context</tt><big>(</big><em>tokens</em>, <em>keyword</em>, <em>contextsize=1</em><big>)</big><a class="headerlink" href="#textprocessors.find_keyword_in_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a keyword in a particular sequence of tokens, and return the local context. Contextsize is the number of words to the left and right. The keyword may have multiple word, in which case it should to passed as a tuple or list</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="textprocessors.is_end_of_sentence">
+<tt class="descclassname">textprocessors.</tt><tt class="descname">is_end_of_sentence</tt><big>(</big><em>tokens</em>, <em>i</em><big>)</big><a class="headerlink" href="#textprocessors.is_end_of_sentence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="textprocessors.split_sentences">
+<tt class="descclassname">textprocessors.</tt><tt class="descname">split_sentences</tt><big>(</big><em>tokens</em><big>)</big><a class="headerlink" href="#textprocessors.split_sentences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split sentences (based on tokenised data), returns sentences as a list of lists of tokens, each sentence is a list of tokens</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="textprocessors.strip_accents">
-<tt class="descclassname">textprocessors.</tt><tt class="descname">strip_accents</tt><big>(</big><em>s</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#textprocessors.strip_accents" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">textprocessors.</tt><tt class="descname">strip_accents</tt><big>(</big><em>s</em>, <em>encoding=u'utf-8'</em><big>)</big><a class="headerlink" href="#textprocessors.strip_accents" title="Permalink to this definition">¶</a></dt>
 <dd><p>Strip characters with diacritics and return a flat ascii representation</p>
 </dd></dl>
 
@@ -167,6 +212,43 @@
 <dt id="textprocessors.swap">
 <tt class="descclassname">textprocessors.</tt><tt class="descname">swap</tt><big>(</big><em>tokens</em>, <em>maxdist=2</em><big>)</big><a class="headerlink" href="#textprocessors.swap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform a swap operation on a sequence of tokens, exhaustively swapping all tokens up to the maximum specified distance. This is a subset of all permutations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="textprocessors.tokenise">
+<tt class="descclassname">textprocessors.</tt><tt class="descname">tokenise</tt><big>(</big><em>text</em>, <em>regexps=(&lt;_sre.SRE_Pattern object at 0x5965be0&gt;</em>, <em>&lt;_sre.SRE_Pattern object at 0x52243e0&gt;)</em><big>)</big><a class="headerlink" href="#textprocessors.tokenise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for the British</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="textprocessors.tokenize">
+<tt class="descclassname">textprocessors.</tt><tt class="descname">tokenize</tt><big>(</big><em>text</em>, <em>regexps=(&lt;_sre.SRE_Pattern object at 0x5965be0&gt;</em>, <em>&lt;_sre.SRE_Pattern object at 0x52243e0&gt;)</em><big>)</big><a class="headerlink" href="#textprocessors.tokenize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tokenizes a string and returns a list of tokens</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>text</strong> (<em>string</em>) &#8211; The text to tokenise</li>
+<li><strong>regexps</strong> (<em>Tuple/list of regular expressions to use in tokenisation</em>) &#8211; Regular expressions to use as tokeniser rules in tokenisation (default=_pynlpl.textprocessors.TOKENIZERRULES_)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Returns a list of tokens</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokenize</span><span class="p">(</span><span class="s">&quot;This is a test.&quot;</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="k">print</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+<span class="go">This</span>
+<span class="go">is</span>
+<span class="go">a</span>
+<span class="go">test</span>
+<span class="go">.</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>

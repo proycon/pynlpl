@@ -78,6 +78,26 @@
 <div class="section" id="module-pynlpl.formats.giza">
 <span id="giza"></span><h2>GIZA++<a class="headerlink" href="#module-pynlpl.formats.giza" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
+<dt id="pynlpl.formats.giza.GizaModel">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.giza.</tt><tt class="descname">GizaModel</tt><big>(</big><em>filename</em>, <em>encoding=u'utf-8'</em><big>)</big><a class="headerlink" href="#pynlpl.formats.giza.GizaModel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="pynlpl.formats.giza.GizaSentenceAlignment">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.giza.</tt><tt class="descname">GizaSentenceAlignment</tt><big>(</big><em>sourceline</em>, <em>targetline</em>, <em>index</em><big>)</big><a class="headerlink" href="#pynlpl.formats.giza.GizaSentenceAlignment" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pynlpl.formats.giza.GizaSentenceAlignment.getalignedtarget">
+<tt class="descname">getalignedtarget</tt><big>(</big><em>index</em><big>)</big><a class="headerlink" href="#pynlpl.formats.giza.GizaSentenceAlignment.getalignedtarget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.giza.GizaSentenceAlignment.intersect">
+<tt class="descname">intersect</tt><big>(</big><em>other</em><big>)</big><a class="headerlink" href="#pynlpl.formats.giza.GizaSentenceAlignment.intersect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pynlpl.formats.giza.IntersectionAlignment">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.giza.</tt><tt class="descname">IntersectionAlignment</tt><big>(</big><em>source2target</em>, <em>target2source</em>, <em>encoding=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.giza.IntersectionAlignment" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
@@ -158,7 +178,7 @@
 
 <dl class="class">
 <dt id="pynlpl.formats.moses.PhraseTable">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.moses.</tt><tt class="descname">PhraseTable</tt><big>(</big><em>filename</em>, <em>quiet=False</em>, <em>reverse=False</em>, <em>delimiter='|||'</em>, <em>score_column=5</em>, <em>align2_column=4</em><big>)</big><a class="headerlink" href="#pynlpl.formats.moses.PhraseTable" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.moses.</tt><tt class="descname">PhraseTable</tt><big>(</big><em>filename</em>, <em>quiet=False</em>, <em>reverse=False</em>, <em>delimiter=u'|||'</em>, <em>score_column=5</em>, <em>align2_column=4</em>, <em>max_sourcen=0</em><big>)</big><a class="headerlink" href="#pynlpl.formats.moses.PhraseTable" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="pynlpl.formats.moses.PhraseTable.append">
 <tt class="descname">append</tt><big>(</big><em>source</em>, <em>target</em>, <em>Pst=0</em>, <em>Pts=0</em>, <em>null_alignments=0</em><big>)</big><a class="headerlink" href="#pynlpl.formats.moses.PhraseTable.append" title="Permalink to this definition">¶</a></dt>
@@ -168,7 +188,7 @@
 
 <dl class="class">
 <dt id="pynlpl.formats.moses.PhraseTableClient">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.moses.</tt><tt class="descname">PhraseTableClient</tt><big>(</big><em>host='localhost'</em>, <em>port=65432</em><big>)</big><a class="headerlink" href="#pynlpl.formats.moses.PhraseTableClient" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.moses.</tt><tt class="descname">PhraseTableClient</tt><big>(</big><em>host=u'localhost'</em>, <em>port=65432</em><big>)</big><a class="headerlink" href="#pynlpl.formats.moses.PhraseTableClient" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="class">
@@ -181,12 +201,12 @@
 <span id="sonar"></span><h2>SoNaR<a class="headerlink" href="#module-pynlpl.formats.sonar" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pynlpl.formats.sonar.Corpus">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension='pos'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x4eb8668&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.Corpus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'pos'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6226848&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.Corpus" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.sonar.CorpusDocument">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">CorpusDocument</tt><big>(</big><em>filename</em>, <em>encoding='iso-8859-15'</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusDocument" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">CorpusDocument</tt><big>(</big><em>filename</em>, <em>encoding=u'iso-8859-15'</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusDocument" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class represent one document/text of the Corpus (read-only)</p>
 <dl class="method">
 <dt id="pynlpl.formats.sonar.CorpusDocument.paragraphs">
@@ -219,7 +239,7 @@
 
 <dl class="method">
 <dt id="pynlpl.formats.sonar.CorpusDocumentX.save">
-<tt class="descname">save</tt><big>(</big><em>filename=None</em>, <em>encoding='iso-8859-15'</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusDocumentX.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename=None</em>, <em>encoding=u'iso-8859-15'</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusDocumentX.save" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -230,7 +250,7 @@
 
 <dl class="method">
 <dt id="pynlpl.formats.sonar.CorpusDocumentX.validate">
-<tt class="descname">validate</tt><big>(</big><em>formats_dir='../formats/'</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusDocumentX.validate" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">validate</tt><big>(</big><em>formats_dir=u'../formats/'</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusDocumentX.validate" title="Permalink to this definition">¶</a></dt>
 <dd><p>checks if the document is valid</p>
 </dd></dl>
 
@@ -250,12 +270,12 @@
 
 <dl class="class">
 <dt id="pynlpl.formats.sonar.CorpusFiles">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension='pos'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x4eb8668&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusFiles" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'pos'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6226848&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusFiles" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.sonar.CorpusX">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">CorpusX</tt><big>(</big><em>corpusdir</em>, <em>extension='pos'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x4eb8668&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusX" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">CorpusX</tt><big>(</big><em>corpusdir</em>, <em>extension=u'pos'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6226848&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusX" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -273,7 +293,7 @@
 <span id="taggerdata"></span><h2>Taggerdata<a class="headerlink" href="#module-pynlpl.formats.taggerdata" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pynlpl.formats.taggerdata.Taggerdata">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.taggerdata.</tt><tt class="descname">Taggerdata</tt><big>(</big><em>filename</em>, <em>encoding='utf-8'</em>, <em>mode='r'</em><big>)</big><a class="headerlink" href="#pynlpl.formats.taggerdata.Taggerdata" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.taggerdata.</tt><tt class="descname">Taggerdata</tt><big>(</big><em>filename</em>, <em>encoding=u'utf-8'</em>, <em>mode=u'r'</em><big>)</big><a class="headerlink" href="#pynlpl.formats.taggerdata.Taggerdata" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="pynlpl.formats.taggerdata.Taggerdata.align">
 <tt class="descname">align</tt><big>(</big><em>referencewords</em>, <em>datatuple</em><big>)</big><a class="headerlink" href="#pynlpl.formats.taggerdata.Taggerdata.align" title="Permalink to this definition">¶</a></dt>
@@ -307,7 +327,7 @@
 <span id="timbl"></span><h2>TiMBL<a class="headerlink" href="#module-pynlpl.formats.timbl" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pynlpl.formats.timbl.TimblOutput">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.timbl.</tt><tt class="descname">TimblOutput</tt><big>(</big><em>stream</em>, <em>delimiter=' '</em>, <em>ignorecolumns=</em><span class="optional">[</span><span class="optional">]</span>, <em>ignorevalues=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#pynlpl.formats.timbl.TimblOutput" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.timbl.</tt><tt class="descname">TimblOutput</tt><big>(</big><em>stream</em>, <em>delimiter=u' '</em>, <em>ignorecolumns=</em><span class="optional">[</span><span class="optional">]</span>, <em>ignorevalues=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#pynlpl.formats.timbl.TimblOutput" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for reading Timbl classifier output, supports the +v+db option and ignores comments starting with #</p>
 <dl class="method">
 <dt id="pynlpl.formats.timbl.TimblOutput.parseDistribution">
@@ -330,7 +350,7 @@
 <dd><p>Annotation layers for Span Annotation are derived from this abstract base class</p>
 <dl class="attribute">
 <dt id="formats.folia.AbstractAnnotationLayer.OPTIONAL_ATTRIBS">
-<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = ()</em><a class="headerlink" href="#formats.folia.AbstractAnnotationLayer.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = (6,)</em><a class="headerlink" href="#formats.folia.AbstractAnnotationLayer.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -379,6 +399,11 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="formats.folia.AbstractAnnotationLayer.append">
+<tt class="descname">append</tt><big>(</big><em>child</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractAnnotationLayer.append" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="formats.folia.AbstractAnnotationLayer.findspan">
 <tt class="descname">findspan</tt><big>(</big><em>*words</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractAnnotationLayer.findspan" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the span element which spans over the specified words or morphemes</p>
@@ -389,6 +414,17 @@
 <tt class="descname">hasannotation</tt><big>(</big><em>Class</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractAnnotationLayer.hasannotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns an integer indicating whether such as annotation exists, and if so, how many. See <tt class="docutils literal"><span class="pre">annotations()</span></tt> for a description of the parameters.</p>
 </dd></dl>
+
+<dl class="classmethod">
+<dt id="formats.folia.AbstractAnnotationLayer.relaxng">
+<em class="property">classmethod </em><tt class="descname">relaxng</tt><big>(</big><em>includechildren=True</em>, <em>extraattribs=None</em>, <em>extraelements=None</em>, <em>origclass=None</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractAnnotationLayer.relaxng" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a RelaxNG definition for this element (as an XML element (lxml.etree) rather than a string)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="formats.folia.AbstractAnnotationLayer.xml">
+<tt class="descname">xml</tt><big>(</big><em>attribs=None</em>, <em>elements=None</em>, <em>skipchildren=False</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractAnnotationLayer.xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -495,7 +531,7 @@
 <tt class="descname">append</tt><big>(</big><em>child</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Append a child element. Returns the added element</p>
 <dl class="docutils">
-<dt>Arguments:   </dt>
+<dt>Arguments:</dt>
 <dd><ul class="first last simple">
 <li><tt class="docutils literal"><span class="pre">child</span></tt>            - Instance or class</li>
 </ul>
@@ -525,7 +561,7 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 
 <dl class="method">
 <dt id="formats.folia.AbstractElement.copy">
-<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.copy" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">copy</tt><big>(</big><em>newdoc=None</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a deep copy</p>
 </dd></dl>
 
@@ -546,7 +582,7 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 <dd><p>Obtain the feature value of the specific subset. If a feature occurs multiple times, the values will be returned in a list.</p>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">sense</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">annotation</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Sense</span><span class="p">)</span>
-<span class="n">synset</span> <span class="o">=</span> <span class="n">sense</span><span class="o">.</span><span class="n">feat</span><span class="p">(</span><span class="s">&#39;synset&#39;</span><span class="p">)</span>        
+<span class="n">synset</span> <span class="o">=</span> <span class="n">sense</span><span class="o">.</span><span class="n">feat</span><span class="p">(</span><span class="s">&#39;synset&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -565,7 +601,7 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 
 <dl class="method">
 <dt id="formats.folia.AbstractElement.hastext">
-<tt class="descname">hastext</tt><big>(</big><em>cls='current'</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.hastext" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">hastext</tt><big>(</big><em>cls=u'current'</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.hastext" title="Permalink to this definition">¶</a></dt>
 <dd><p>Does this element have text (of the specified class)</p>
 </dd></dl>
 
@@ -576,7 +612,7 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 <p>If an <em>instance</em> is passed as first argument, it will be appended
 If a <em>class</em> derived from AbstractElement is passed as first argument, an instance will first be created and then appended.</p>
 <dl class="docutils">
-<dt>Arguments:   </dt>
+<dt>Arguments:</dt>
 <dd><ul class="first last simple">
 <li>index</li>
 <li><tt class="docutils literal"><span class="pre">child</span></tt>            - Instance or class</li>
@@ -672,7 +708,7 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 
 <dl class="method">
 <dt id="formats.folia.AbstractElement.select">
-<tt class="descname">select</tt><big>(</big><em>Class, set=None, recursive=True, ignorelist=['Original', 'Suggestion', 'Alternative'], node=None</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.select" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">select</tt><big>(</big><em>Class, set=None, recursive=True, ignorelist=[u'Original', u'Suggestion', u'Alternative'], node=None</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select child elements of the specified class.</p>
 <p>A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into.</p>
 <dl class="docutils">
@@ -689,9 +725,15 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 <dd>A list of elements (instances)</dd>
 </dl>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">text</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Sense</span><span class="p">,</span> <span class="s">&#39;cornetto&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="p">[</span><span class="n">folia</span><span class="o">.</span><span class="n">Original</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Suggestion</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Alternative</span><span class="p">]</span> <span class="p">)</span>        
+<div class="highlight-python"><div class="highlight"><pre><span class="n">text</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Sense</span><span class="p">,</span> <span class="s">&#39;cornetto&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="p">[</span><span class="n">folia</span><span class="o">.</span><span class="n">Original</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Suggestion</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Alternative</span><span class="p">]</span> <span class="p">)</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="method">
+<dt id="formats.folia.AbstractElement.setdoc">
+<tt class="descname">setdoc</tt><big>(</big><em>newdoc</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.setdoc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a different document, usually no need to call this directly, invoked implicitly by copy()</p>
 </dd></dl>
 
 <dl class="method">
@@ -701,21 +743,27 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 </dd></dl>
 
 <dl class="method">
+<dt id="formats.folia.AbstractElement.setparents">
+<tt class="descname">setparents</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.setparents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Correct all parent relations for elements within the scope, usually no need to call this directly, invoked implicitly by copy()</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="formats.folia.AbstractElement.settext">
-<tt class="descname">settext</tt><big>(</big><em>text</em>, <em>cls='current'</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.settext" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">settext</tt><big>(</big><em>text</em>, <em>cls=u'current'</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.settext" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the text for this element (and class)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="formats.folia.AbstractElement.stricttext">
-<tt class="descname">stricttext</tt><big>(</big><em>cls='current'</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.stricttext" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">stricttext</tt><big>(</big><em>cls=u'current'</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.stricttext" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the text strictly associated with this element (of the specified class). Does not recurse into children, with the sole exception of Corection/New</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="formats.folia.AbstractElement.text">
-<tt class="descname">text</tt><big>(</big><em>cls='current'</em>, <em>retaintokenisation=False</em>, <em>previousdelimiter=''</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.text" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the text associated with this element (of the specified class), will always be a unicode instance.  
+<tt class="descname">text</tt><big>(</big><em>cls=u'current'</em>, <em>retaintokenisation=False</em>, <em>previousdelimiter=u''</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the text associated with this element (of the specified class), will always be a unicode instance.
 If no text is directly associated with the element, it will be obtained from the children. If that doesn&#8217;t result
 in any text either, a NoSuchText exception will be raised.</p>
 <p>If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.</p>
@@ -723,7 +771,7 @@ in any text either, a NoSuchText exception will be raised.</p>
 
 <dl class="method">
 <dt id="formats.folia.AbstractElement.textcontent">
-<tt class="descname">textcontent</tt><big>(</big><em>cls='current'</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.textcontent" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">textcontent</tt><big>(</big><em>cls=u'current'</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.textcontent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the text explicitly associated with this element (of the specified class).
 Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
 not found.</p>
@@ -732,20 +780,20 @@ not found.</p>
 
 <dl class="method">
 <dt id="formats.folia.AbstractElement.toktext">
-<tt class="descname">toktext</tt><big>(</big><em>cls='current'</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.toktext" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">toktext</tt><big>(</big><em>cls=u'current'</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.toktext" title="Permalink to this definition">¶</a></dt>
 <dd><p>Alias for text with retaintokenisation=True</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="formats.folia.AbstractElement.xml">
 <tt class="descname">xml</tt><big>(</big><em>attribs=None</em>, <em>elements=None</em>, <em>skipchildren=False</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.xml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Serialises the FoLiA element to XML, bu returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead.</p>
+<dd><p>Serialises the FoLiA element to XML, by returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="formats.folia.AbstractElement.xmlstring">
 <tt class="descname">xmlstring</tt><big>(</big><em>pretty_print=False</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.xmlstring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Serialises this FoLiA element to XML, returns a string with XML representation for this element and all its children.</p>
+<dd><p>Serialises this FoLiA element to XML, returns a (unicode) string with XML representation for this element and all its children.</p>
 </dd></dl>
 
 <dl class="method">
@@ -836,13 +884,25 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.AbstractStructureElement.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n\n'</em><a class="headerlink" href="#formats.folia.AbstractStructureElement.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = u'\n\n'</em><a class="headerlink" href="#formats.folia.AbstractStructureElement.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="formats.folia.AbstractStructureElement.append">
 <tt class="descname">append</tt><big>(</big><em>child</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractStructureElement.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>See <tt class="docutils literal"><span class="pre">AbstractElement.append()</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="formats.folia.AbstractStructureElement.hasannotationlayer">
+<tt class="descname">hasannotationlayer</tt><big>(</big><em>annotationtype=None</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractStructureElement.hasannotationlayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does the specified annotation layer exist?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="formats.folia.AbstractStructureElement.layers">
+<tt class="descname">layers</tt><big>(</big><em>annotationtype=None</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractStructureElement.layers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of annotation layers found <em>directly</em> under this element, does not include alternative layers</p>
 </dd></dl>
 
 <dl class="method">
@@ -918,22 +978,6 @@ not found.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="formats.folia.AbstractSubtokenAnnotationLayer">
-<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">AbstractSubtokenAnnotationLayer</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractSubtokenAnnotationLayer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Annotation layers for Subtoken Annotation are derived from this abstract base class</p>
-<dl class="attribute">
-<dt id="formats.folia.AbstractSubtokenAnnotationLayer.OPTIONAL_ATTRIBS">
-<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = ()</em><a class="headerlink" href="#formats.folia.AbstractSubtokenAnnotationLayer.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="formats.folia.AbstractSubtokenAnnotationLayer.PRINTABLE">
-<tt class="descname">PRINTABLE</tt><em class="property"> = False</em><a class="headerlink" href="#formats.folia.AbstractSubtokenAnnotationLayer.PRINTABLE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="formats.folia.AbstractTokenAnnotation">
 <em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">AbstractTokenAnnotation</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractTokenAnnotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Abstract element, all token annotation elements are derived from this class</p>
@@ -966,7 +1010,7 @@ not found.</p>
 <dd><p>Actor feature, to be used within Event</p>
 <dl class="attribute">
 <dt id="formats.folia.ActorFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'actor'</em><a class="headerlink" href="#formats.folia.ActorFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'actor'</em><a class="headerlink" href="#formats.folia.ActorFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -986,7 +1030,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.AlignReference.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'aref'</em><a class="headerlink" href="#formats.folia.AlignReference.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'aref'</em><a class="headerlink" href="#formats.folia.AlignReference.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -1046,7 +1090,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Alignment.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'alignment'</em><a class="headerlink" href="#formats.folia.Alignment.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'alignment'</em><a class="headerlink" href="#formats.folia.Alignment.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -1146,7 +1190,7 @@ not found.</p>
 <dd><p>Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent.</p>
 <dl class="attribute">
 <dt id="formats.folia.Alternative.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'formats.folia.Correction'&gt;)</em><a class="headerlink" href="#formats.folia.Alternative.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = [&lt;class 'formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'formats.folia.Correction'&gt;, &lt;class 'formats.folia.MorphologyLayer'&gt;]</em><a class="headerlink" href="#formats.folia.Alternative.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1176,7 +1220,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Alternative.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'alt'</em><a class="headerlink" href="#formats.folia.Alternative.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'alt'</em><a class="headerlink" href="#formats.folia.Alternative.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1212,7 +1256,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.AlternativeLayers.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'altlayers'</em><a class="headerlink" href="#formats.folia.AlternativeLayers.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'altlayers'</em><a class="headerlink" href="#formats.folia.AlternativeLayers.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1351,6 +1395,11 @@ not found.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="formats.folia.AnnotationType.STRING">
+<tt class="descname">STRING</tt><em class="property"> = 33</em><a class="headerlink" href="#formats.folia.AnnotationType.STRING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="formats.folia.AnnotationType.SUBJECTIVITY">
 <tt class="descname">SUBJECTIVITY</tt><em class="property"> = 21</em><a class="headerlink" href="#formats.folia.AnnotationType.SUBJECTIVITY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1445,6 +1494,11 @@ not found.</p>
 <tt class="descname">N</tt><em class="property"> = 4</em><a class="headerlink" href="#formats.folia.Attrib.N" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="attribute">
+<dt id="formats.folia.Attrib.SETONLY">
+<tt class="descname">SETONLY</tt><em class="property"> = 6</em><a class="headerlink" href="#formats.folia.Attrib.SETONLY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -1453,7 +1507,7 @@ not found.</p>
 <dd><p>Begindatetime feature, to be used within Event</p>
 <dl class="attribute">
 <dt id="formats.folia.BegindatetimeFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'begindatetime'</em><a class="headerlink" href="#formats.folia.BegindatetimeFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'begindatetime'</em><a class="headerlink" href="#formats.folia.BegindatetimeFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1469,7 +1523,7 @@ not found.</p>
 <dd><p>Element used for captions for figures or tables, contains sentences</p>
 <dl class="attribute">
 <dt id="formats.folia.Caption.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Caption.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;)</em><a class="headerlink" href="#formats.folia.Caption.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1479,7 +1533,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Caption.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'caption'</em><a class="headerlink" href="#formats.folia.Caption.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'caption'</em><a class="headerlink" href="#formats.folia.Caption.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1505,7 +1559,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Chunk.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'chunk'</em><a class="headerlink" href="#formats.folia.Chunk.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'chunk'</em><a class="headerlink" href="#formats.folia.Chunk.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1520,8 +1574,13 @@ not found.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="formats.folia.ChunkingLayer.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 14</em><a class="headerlink" href="#formats.folia.ChunkingLayer.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="formats.folia.ChunkingLayer.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'chunking'</em><a class="headerlink" href="#formats.folia.ChunkingLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'chunking'</em><a class="headerlink" href="#formats.folia.ChunkingLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1556,7 +1615,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Content.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'content'</em><a class="headerlink" href="#formats.folia.Content.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'content'</em><a class="headerlink" href="#formats.folia.Content.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -1597,7 +1656,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.CoreferenceChain.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'coreferencechain'</em><a class="headerlink" href="#formats.folia.CoreferenceChain.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'coreferencechain'</em><a class="headerlink" href="#formats.folia.CoreferenceChain.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1612,8 +1671,13 @@ not found.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="formats.folia.CoreferenceLayer.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 29</em><a class="headerlink" href="#formats.folia.CoreferenceLayer.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="formats.folia.CoreferenceLayer.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'coreferences'</em><a class="headerlink" href="#formats.folia.CoreferenceLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'coreferences'</em><a class="headerlink" href="#formats.folia.CoreferenceLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1644,26 +1708,26 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.CoreferenceLink.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'coreferencelink'</em><a class="headerlink" href="#formats.folia.CoreferenceLink.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'coreferencelink'</em><a class="headerlink" href="#formats.folia.CoreferenceLink.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="formats.folia.Corpus">
-<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6413b90&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6b4fd70&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="formats.folia.CorpusFiles">
-<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6413b90&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6b4fd70&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields the filenames on each iteration.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="formats.folia.CorpusProcessor">
-<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6413d70&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6b4ff50&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes a corpus of various FoLiA documents using a parallel processing. Calls a user-defined function with the three-tuple (filename, args, kwargs) for each file in the corpus. The user-defined function is itself responsible for instantiating a FoLiA document! args and kwargs, as received by the custom function, are set through the run() method, which yields the result of the custom function on each iteration.</p>
 <dl class="method">
 <dt id="formats.folia.CorpusProcessor.execute">
@@ -1712,7 +1776,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Correction.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'correction'</em><a class="headerlink" href="#formats.folia.Correction.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'correction'</em><a class="headerlink" href="#formats.folia.Correction.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1769,12 +1833,12 @@ not found.</p>
 
 <dl class="method">
 <dt id="formats.folia.Correction.text">
-<tt class="descname">text</tt><big>(</big><em>cls='current'</em>, <em>retaintokenisation=False</em>, <em>previousdelimiter=''</em><big>)</big><a class="headerlink" href="#formats.folia.Correction.text" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">text</tt><big>(</big><em>cls=u'current'</em>, <em>retaintokenisation=False</em>, <em>previousdelimiter=u''</em><big>)</big><a class="headerlink" href="#formats.folia.Correction.text" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="formats.folia.Correction.textcontent">
-<tt class="descname">textcontent</tt><big>(</big><em>cls='current'</em><big>)</big><a class="headerlink" href="#formats.folia.Correction.textcontent" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">textcontent</tt><big>(</big><em>cls=u'current'</em><big>)</big><a class="headerlink" href="#formats.folia.Correction.textcontent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the text explicitly associated with this element (of the specified class).
 Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
 not found.</p>
@@ -1803,7 +1867,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Current.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'current'</em><a class="headerlink" href="#formats.folia.Current.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'current'</em><a class="headerlink" href="#formats.folia.Current.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -1828,8 +1892,13 @@ not found.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="formats.folia.DependenciesLayer.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 24</em><a class="headerlink" href="#formats.folia.DependenciesLayer.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="formats.folia.DependenciesLayer.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'dependencies'</em><a class="headerlink" href="#formats.folia.DependenciesLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'dependencies'</em><a class="headerlink" href="#formats.folia.DependenciesLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1854,7 +1923,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Dependency.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'dependency'</em><a class="headerlink" href="#formats.folia.Dependency.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'dependency'</em><a class="headerlink" href="#formats.folia.Dependency.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1896,7 +1965,7 @@ not found.</p>
 
 <dl class="attribute">
 <dt id="formats.folia.DependencyDependent.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'dep'</em><a class="headerlink" href="#formats.folia.DependencyDependent.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'dep'</em><a class="headerlink" href="#formats.folia.DependencyDependent.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1910,8 +1979,7 @@ not found.</p>
 <dl class="class">
 <dt id="formats.folia.Description">
 <em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">Description</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.Description" title="Permalink to this definition">¶</a></dt>
-<dd><p>Description is an element that can be used to associate a description with almost any
-other FoLiA element</p>
+<dd><p>Description is an element that can be used to associate a description with almost any other FoLiA element</p>
 <dl class="attribute">
 <dt id="formats.folia.Description.OCCURRENCES">
 <tt class="descname">OCCURRENCES</tt><em class="property"> = 1</em><a class="headerlink" href="#formats.folia.Description.OCCURRENCES" title="Permalink to this definition">¶</a></dt>
@@ -1919,7 +1987,7 @@ other FoLiA element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Description.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'desc'</em><a class="headerlink" href="#formats.folia.Description.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'desc'</em><a class="headerlink" href="#formats.folia.Description.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -1945,7 +2013,7 @@ other FoLiA element</p>
 <dd><p>Structure element representing some kind of division. Divisions may be nested at will, and may include almost all kinds of other structure elements.</p>
 <dl class="attribute">
 <dt id="formats.folia.Division.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Division'&gt;, &lt;class 'formats.folia.Gap'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.Head'&gt;, &lt;class 'formats.folia.Paragraph'&gt;, &lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.List'&gt;, &lt;class 'formats.folia.Figure'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Linebreak'&gt;, &lt;class 'formats.folia.Whitespace'&gt;)</em><a class="headerlink" href="#formats.folia.Division.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Division'&gt;, &lt;class 'formats.folia.Gap'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.Head'&gt;, &lt;class 'formats.folia.Paragraph'&gt;, &lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.List'&gt;, &lt;class 'formats.folia.Figure'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Linebreak'&gt;, &lt;class 'formats.folia.Whitespace'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;)</em><a class="headerlink" href="#formats.folia.Division.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1965,12 +2033,12 @@ other FoLiA element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Division.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n\n\n'</em><a class="headerlink" href="#formats.folia.Division.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = u'\n\n\n'</em><a class="headerlink" href="#formats.folia.Division.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="formats.folia.Division.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'div'</em><a class="headerlink" href="#formats.folia.Division.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'div'</em><a class="headerlink" href="#formats.folia.Division.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1986,7 +2054,7 @@ other FoLiA element</p>
 <dd><p>This is the FoLiA Document, all elements have to be associated with a FoLiA document. Besides holding elements, the document hold metadata including declaration, and an index of all IDs.</p>
 <dl class="attribute">
 <dt id="formats.folia.Document.IDSEPARATOR">
-<tt class="descname">IDSEPARATOR</tt><em class="property"> = '.'</em><a class="headerlink" href="#formats.folia.Document.IDSEPARATOR" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">IDSEPARATOR</tt><em class="property"> = u'.'</em><a class="headerlink" href="#formats.folia.Document.IDSEPARATOR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1998,7 +2066,7 @@ other FoLiA element</p>
 </pre></div>
 </div>
 <dl class="docutils">
-<dt>Example 2::        </dt>
+<dt>Example 2::</dt>
 <dd>doc.append( folia.Text(doc, id=&#8217;example.text&#8217;) )</dd>
 </dl>
 </dd></dl>
@@ -2206,7 +2274,7 @@ Argument: Set the document&#8217;s title in metadata</p>
 
 <dl class="attribute">
 <dt id="formats.folia.DomainAnnotation.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'domain'</em><a class="headerlink" href="#formats.folia.DomainAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'domain'</em><a class="headerlink" href="#formats.folia.DomainAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2228,7 +2296,7 @@ Argument: Set the document&#8217;s title in metadata</p>
 <dd><p>Enddatetime feature, to be used within Event</p>
 <dl class="attribute">
 <dt id="formats.folia.EnddatetimeFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'enddatetime'</em><a class="headerlink" href="#formats.folia.EnddatetimeFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'enddatetime'</em><a class="headerlink" href="#formats.folia.EnddatetimeFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2248,8 +2316,13 @@ Argument: Set the document&#8217;s title in metadata</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="formats.folia.EntitiesLayer.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 15</em><a class="headerlink" href="#formats.folia.EntitiesLayer.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="formats.folia.EntitiesLayer.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'entities'</em><a class="headerlink" href="#formats.folia.EntitiesLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'entities'</em><a class="headerlink" href="#formats.folia.EntitiesLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2275,7 +2348,7 @@ Argument: Set the document&#8217;s title in metadata</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Entity.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'entity'</em><a class="headerlink" href="#formats.folia.Entity.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'entity'</em><a class="headerlink" href="#formats.folia.Entity.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2295,7 +2368,7 @@ Argument: Set the document&#8217;s title in metadata</p>
 
 <dl class="attribute">
 <dt id="formats.folia.ErrorDetection.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'errordetection'</em><a class="headerlink" href="#formats.folia.ErrorDetection.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'errordetection'</em><a class="headerlink" href="#formats.folia.ErrorDetection.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2305,7 +2378,7 @@ Argument: Set the document&#8217;s title in metadata</p>
 <em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">Event</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.Event" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="formats.folia.Event.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.AbstractStructureElement'&gt;, &lt;class 'formats.folia.Feature'&gt;, &lt;class 'formats.folia.ActorFeature'&gt;, &lt;class 'formats.folia.BegindatetimeFeature'&gt;, &lt;class 'formats.folia.EnddatetimeFeature'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Event.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.AbstractStructureElement'&gt;, &lt;class 'formats.folia.Feature'&gt;, &lt;class 'formats.folia.ActorFeature'&gt;, &lt;class 'formats.folia.BegindatetimeFeature'&gt;, &lt;class 'formats.folia.EnddatetimeFeature'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;)</em><a class="headerlink" href="#formats.folia.Event.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2320,7 +2393,7 @@ Argument: Set the document&#8217;s title in metadata</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Event.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'event'</em><a class="headerlink" href="#formats.folia.Event.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'event'</em><a class="headerlink" href="#formats.folia.Event.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2342,7 +2415,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Feature.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'feat'</em><a class="headerlink" href="#formats.folia.Feature.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'feat'</em><a class="headerlink" href="#formats.folia.Feature.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -2363,7 +2436,7 @@ annotation element</p>
 <dd><p>Element for the representation of a graphical figure. Structure element.</p>
 <dl class="attribute">
 <dt id="formats.folia.Figure.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Caption'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Figure.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Caption'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;)</em><a class="headerlink" href="#formats.folia.Figure.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2373,7 +2446,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Figure.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'figure'</em><a class="headerlink" href="#formats.folia.Figure.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'figure'</em><a class="headerlink" href="#formats.folia.Figure.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -2399,7 +2472,7 @@ annotation element</p>
 <dd><p>Function feature, to be used with morphemes</p>
 <dl class="attribute">
 <dt id="formats.folia.FunctionFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'function'</em><a class="headerlink" href="#formats.folia.FunctionFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'function'</em><a class="headerlink" href="#formats.folia.FunctionFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2430,7 +2503,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Gap.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'gap'</em><a class="headerlink" href="#formats.folia.Gap.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'gap'</em><a class="headerlink" href="#formats.folia.Gap.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -2446,7 +2519,7 @@ annotation element</p>
 <dd><p>Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences.</p>
 <dl class="attribute">
 <dt id="formats.folia.Head.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Head.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;)</em><a class="headerlink" href="#formats.folia.Head.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2456,12 +2529,12 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Head.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = ' '</em><a class="headerlink" href="#formats.folia.Head.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = u' '</em><a class="headerlink" href="#formats.folia.Head.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="formats.folia.Head.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'head'</em><a class="headerlink" href="#formats.folia.Head.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'head'</em><a class="headerlink" href="#formats.folia.Head.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2472,7 +2545,7 @@ annotation element</p>
 <dd><p>Synset feature, to be used within PosAnnotation</p>
 <dl class="attribute">
 <dt id="formats.folia.HeadFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'head'</em><a class="headerlink" href="#formats.folia.HeadFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'head'</em><a class="headerlink" href="#formats.folia.HeadFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2502,7 +2575,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Headspan.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'hd'</em><a class="headerlink" href="#formats.folia.Headspan.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'hd'</em><a class="headerlink" href="#formats.folia.Headspan.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2513,12 +2586,12 @@ annotation element</p>
 <dd><p>Element used for labels. Mostly in within list item. Contains words.</p>
 <dl class="attribute">
 <dt id="formats.folia.Label.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Word'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Label.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Word'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;)</em><a class="headerlink" href="#formats.folia.Label.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="formats.folia.Label.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'label'</em><a class="headerlink" href="#formats.folia.Label.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'label'</em><a class="headerlink" href="#formats.folia.Label.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2539,7 +2612,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.LangAnnotation.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'lang'</em><a class="headerlink" href="#formats.folia.LangAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'lang'</em><a class="headerlink" href="#formats.folia.LangAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2560,7 +2633,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.LemmaAnnotation.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'lemma'</em><a class="headerlink" href="#formats.folia.LemmaAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'lemma'</em><a class="headerlink" href="#formats.folia.LemmaAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2571,7 +2644,7 @@ annotation element</p>
 <dd><p>Level feature, to be used with coreferences</p>
 <dl class="attribute">
 <dt id="formats.folia.LevelFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'level'</em><a class="headerlink" href="#formats.folia.LevelFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'level'</em><a class="headerlink" href="#formats.folia.LevelFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2602,12 +2675,12 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Linebreak.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n'</em><a class="headerlink" href="#formats.folia.Linebreak.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = u'\n'</em><a class="headerlink" href="#formats.folia.Linebreak.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="formats.folia.Linebreak.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'br'</em><a class="headerlink" href="#formats.folia.Linebreak.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'br'</em><a class="headerlink" href="#formats.folia.Linebreak.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2618,7 +2691,7 @@ annotation element</p>
 <dd><p>Element for enumeration/itemisation. Structure element. Contains ListItem elements.</p>
 <dl class="attribute">
 <dt id="formats.folia.List.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.ListItem'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Caption'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.List.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.ListItem'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Caption'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;)</em><a class="headerlink" href="#formats.folia.List.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2628,12 +2701,12 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.List.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n'</em><a class="headerlink" href="#formats.folia.List.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = u'\n'</em><a class="headerlink" href="#formats.folia.List.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="formats.folia.List.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'list'</em><a class="headerlink" href="#formats.folia.List.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'list'</em><a class="headerlink" href="#formats.folia.List.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2644,7 +2717,7 @@ annotation element</p>
 <dd><p>Single element in a List. Structure element. Contained within List element.</p>
 <dl class="attribute">
 <dt id="formats.folia.ListItem.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.List'&gt;, &lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Label'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.ListItem.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.List'&gt;, &lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Label'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;)</em><a class="headerlink" href="#formats.folia.ListItem.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2654,7 +2727,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.ListItem.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'listitem'</em><a class="headerlink" href="#formats.folia.ListItem.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'listitem'</em><a class="headerlink" href="#formats.folia.ListItem.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2699,8 +2772,18 @@ annotation element</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="formats.folia.Metric.OPTIONAL_ATTRIBS">
+<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = (0, 1, 2, 4, 3, 5)</em><a class="headerlink" href="#formats.folia.Metric.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="formats.folia.Metric.REQUIRED_ATTRIB">
+<tt class="descname">REQUIRED_ATTRIB</tt><em class="property"> = (1,)</em><a class="headerlink" href="#formats.folia.Metric.REQUIRED_ATTRIB" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="formats.folia.Metric.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'metric'</em><a class="headerlink" href="#formats.folia.Metric.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'metric'</em><a class="headerlink" href="#formats.folia.Metric.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2711,7 +2794,7 @@ annotation element</p>
 <dd><p>Modality feature, to be used with coreferences</p>
 <dl class="attribute">
 <dt id="formats.folia.ModalityFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'modality'</em><a class="headerlink" href="#formats.folia.ModalityFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'modality'</em><a class="headerlink" href="#formats.folia.ModalityFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2772,7 +2855,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Morpheme.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'morpheme'</em><a class="headerlink" href="#formats.folia.Morpheme.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'morpheme'</em><a class="headerlink" href="#formats.folia.Morpheme.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2787,8 +2870,13 @@ annotation element</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="formats.folia.MorphologyLayer.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 22</em><a class="headerlink" href="#formats.folia.MorphologyLayer.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="formats.folia.MorphologyLayer.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'morphology'</em><a class="headerlink" href="#formats.folia.MorphologyLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'morphology'</em><a class="headerlink" href="#formats.folia.MorphologyLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2823,7 +2911,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.New.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'new'</em><a class="headerlink" href="#formats.folia.New.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'new'</em><a class="headerlink" href="#formats.folia.New.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -2885,7 +2973,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Original.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'original'</em><a class="headerlink" href="#formats.folia.Original.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'original'</em><a class="headerlink" href="#formats.folia.Original.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -2901,7 +2989,7 @@ annotation element</p>
 <dd><p>Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes).</p>
 <dl class="attribute">
 <dt id="formats.folia.Paragraph.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'formats.folia.Correction'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Linebreak'&gt;, &lt;class 'formats.folia.Whitespace'&gt;, &lt;class 'formats.folia.List'&gt;, &lt;class 'formats.folia.Figure'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Paragraph.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'formats.folia.Correction'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Linebreak'&gt;, &lt;class 'formats.folia.Whitespace'&gt;, &lt;class 'formats.folia.List'&gt;, &lt;class 'formats.folia.Figure'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;)</em><a class="headerlink" href="#formats.folia.Paragraph.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2911,12 +2999,12 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Paragraph.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n\n'</em><a class="headerlink" href="#formats.folia.Paragraph.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = u'\n\n'</em><a class="headerlink" href="#formats.folia.Paragraph.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="formats.folia.Paragraph.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'p'</em><a class="headerlink" href="#formats.folia.Paragraph.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'p'</em><a class="headerlink" href="#formats.folia.Paragraph.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2958,7 +3046,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.PosAnnotation.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'pos'</em><a class="headerlink" href="#formats.folia.PosAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'pos'</em><a class="headerlink" href="#formats.folia.PosAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2975,7 +3063,7 @@ annotation element</p>
 <dd><p>Quote: a structure element. For quotes/citations. May hold words or sentences.</p>
 <dl class="attribute">
 <dt id="formats.folia.Quote.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Word'&gt;, &lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.Quote'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Quote.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Word'&gt;, &lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.Quote'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;)</em><a class="headerlink" href="#formats.folia.Quote.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2985,7 +3073,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Quote.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'quote'</em><a class="headerlink" href="#formats.folia.Quote.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'quote'</em><a class="headerlink" href="#formats.folia.Quote.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -3037,7 +3125,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.SemanticRole.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'semrole'</em><a class="headerlink" href="#formats.folia.SemanticRole.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'semrole'</em><a class="headerlink" href="#formats.folia.SemanticRole.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3052,8 +3140,13 @@ annotation element</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="formats.folia.SemanticRolesLayer.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 30</em><a class="headerlink" href="#formats.folia.SemanticRolesLayer.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="formats.folia.SemanticRolesLayer.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'semroles'</em><a class="headerlink" href="#formats.folia.SemanticRolesLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'semroles'</em><a class="headerlink" href="#formats.folia.SemanticRolesLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3074,7 +3167,7 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.SenseAnnotation.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'sense'</em><a class="headerlink" href="#formats.folia.SenseAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'sense'</em><a class="headerlink" href="#formats.folia.SenseAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3085,7 +3178,7 @@ annotation element</p>
 <dd><p>Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)</p>
 <dl class="attribute">
 <dt id="formats.folia.Sentence.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Word'&gt;, &lt;class 'formats.folia.Quote'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'formats.folia.Correction'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Linebreak'&gt;, &lt;class 'formats.folia.Whitespace'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Sentence.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Word'&gt;, &lt;class 'formats.folia.Quote'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'formats.folia.Correction'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Linebreak'&gt;, &lt;class 'formats.folia.Whitespace'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;)</em><a class="headerlink" href="#formats.folia.Sentence.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3095,12 +3188,12 @@ annotation element</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Sentence.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = ' '</em><a class="headerlink" href="#formats.folia.Sentence.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = u' '</em><a class="headerlink" href="#formats.folia.Sentence.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="formats.folia.Sentence.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 's'</em><a class="headerlink" href="#formats.folia.Sentence.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u's'</em><a class="headerlink" href="#formats.folia.Sentence.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -3204,11 +3297,52 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="formats.folia.String">
+<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">String</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.String" title="Permalink to this definition">¶</a></dt>
+<dd><p>String</p>
+<dl class="attribute">
+<dt id="formats.folia.String.ACCEPTED_DATA">
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.Metric'&gt;, &lt;class 'formats.folia.Correction'&gt;)</em><a class="headerlink" href="#formats.folia.String.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="formats.folia.String.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 33</em><a class="headerlink" href="#formats.folia.String.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="formats.folia.String.OCCURRENCES">
+<tt class="descname">OCCURRENCES</tt><em class="property"> = 0</em><a class="headerlink" href="#formats.folia.String.OCCURRENCES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="formats.folia.String.OCCURRENCESPERSET">
+<tt class="descname">OCCURRENCESPERSET</tt><em class="property"> = 0</em><a class="headerlink" href="#formats.folia.String.OCCURRENCESPERSET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="formats.folia.String.OPTIONAL_ATTRIBS">
+<tt class="descname">OPTIONAL_ATTRIBS</tt><em class="property"> = (1, 2, 3, 5)</em><a class="headerlink" href="#formats.folia.String.OPTIONAL_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="formats.folia.String.REQUIRED_ATTRIBS">
+<tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = ()</em><a class="headerlink" href="#formats.folia.String.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="formats.folia.String.XMLTAG">
+<tt class="descname">XMLTAG</tt><em class="property"> = u'str'</em><a class="headerlink" href="#formats.folia.String.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="formats.folia.StyleFeature">
 <em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">StyleFeature</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.StyleFeature" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="formats.folia.StyleFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'style'</em><a class="headerlink" href="#formats.folia.StyleFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'style'</em><a class="headerlink" href="#formats.folia.StyleFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3234,7 +3368,7 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 
 <dl class="attribute">
 <dt id="formats.folia.SubjectivityAnnotation.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'subjectivity'</em><a class="headerlink" href="#formats.folia.SubjectivityAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'subjectivity'</em><a class="headerlink" href="#formats.folia.SubjectivityAnnotation.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3274,7 +3408,7 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Suggestion.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'suggestion'</em><a class="headerlink" href="#formats.folia.Suggestion.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'suggestion'</em><a class="headerlink" href="#formats.folia.Suggestion.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3285,7 +3419,7 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 <dd><p>Synset feature, to be used within Sense</p>
 <dl class="attribute">
 <dt id="formats.folia.SynsetFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'synset'</em><a class="headerlink" href="#formats.folia.SynsetFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'synset'</em><a class="headerlink" href="#formats.folia.SynsetFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3316,7 +3450,7 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 
 <dl class="attribute">
 <dt id="formats.folia.SyntacticUnit.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'su'</em><a class="headerlink" href="#formats.folia.SyntacticUnit.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'su'</em><a class="headerlink" href="#formats.folia.SyntacticUnit.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3331,8 +3465,13 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="formats.folia.SyntaxLayer.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 13</em><a class="headerlink" href="#formats.folia.SyntaxLayer.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="formats.folia.SyntaxLayer.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'syntax'</em><a class="headerlink" href="#formats.folia.SyntaxLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'syntax'</em><a class="headerlink" href="#formats.folia.SyntaxLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3343,7 +3482,7 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 <dd><p>A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc..</p>
 <dl class="attribute">
 <dt id="formats.folia.Text.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Gap'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.Division'&gt;, &lt;class 'formats.folia.Paragraph'&gt;, &lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.List'&gt;, &lt;class 'formats.folia.Figure'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.TextContent'&gt;)</em><a class="headerlink" href="#formats.folia.Text.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.Gap'&gt;, &lt;class 'formats.folia.Event'&gt;, &lt;class 'formats.folia.Division'&gt;, &lt;class 'formats.folia.Paragraph'&gt;, &lt;class 'formats.folia.Sentence'&gt;, &lt;class 'formats.folia.List'&gt;, &lt;class 'formats.folia.Figure'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Text.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3358,12 +3497,12 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 
 <dl class="attribute">
 <dt id="formats.folia.Text.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n\n\n'</em><a class="headerlink" href="#formats.folia.Text.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = u'\n\n\n'</em><a class="headerlink" href="#formats.folia.Text.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="formats.folia.Text.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'text'</em><a class="headerlink" href="#formats.folia.Text.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'text'</em><a class="headerlink" href="#formats.folia.Text.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3404,7 +3543,7 @@ on structure elements like <tt class="docutils literal"><span class="pre">Paragr
 
 <dl class="attribute">
 <dt id="formats.folia.TextContent.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 't'</em><a class="headerlink" href="#formats.folia.TextContent.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u't'</em><a class="headerlink" href="#formats.folia.TextContent.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -3494,7 +3633,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd><p>Time feature, to be used with coreferences</p>
 <dl class="attribute">
 <dt id="formats.folia.TimeFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'time'</em><a class="headerlink" href="#formats.folia.TimeFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'time'</em><a class="headerlink" href="#formats.folia.TimeFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3524,7 +3663,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 
 <dl class="attribute">
 <dt id="formats.folia.TimeSegment.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'timesegment'</em><a class="headerlink" href="#formats.folia.TimeSegment.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'timesegment'</em><a class="headerlink" href="#formats.folia.TimeSegment.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3545,8 +3684,13 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="formats.folia.TimingLayer.ANNOTATIONTYPE">
+<tt class="descname">ANNOTATIONTYPE</tt><em class="property"> = 25</em><a class="headerlink" href="#formats.folia.TimingLayer.ANNOTATIONTYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="formats.folia.TimingLayer.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'timing'</em><a class="headerlink" href="#formats.folia.TimingLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'timing'</em><a class="headerlink" href="#formats.folia.TimingLayer.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3562,7 +3706,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd><p>Value feature, to be used within Metric</p>
 <dl class="attribute">
 <dt id="formats.folia.ValueFeature.SUBSET">
-<tt class="descname">SUBSET</tt><em class="property"> = 'value'</em><a class="headerlink" href="#formats.folia.ValueFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">SUBSET</tt><em class="property"> = u'value'</em><a class="headerlink" href="#formats.folia.ValueFeature.SUBSET" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3593,12 +3737,12 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 
 <dl class="attribute">
 <dt id="formats.folia.Whitespace.TEXTDELIMITER">
-<tt class="descname">TEXTDELIMITER</tt><em class="property"> = '\n\n'</em><a class="headerlink" href="#formats.folia.Whitespace.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">TEXTDELIMITER</tt><em class="property"> = u'\n\n'</em><a class="headerlink" href="#formats.folia.Whitespace.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="formats.folia.Whitespace.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'whitespace'</em><a class="headerlink" href="#formats.folia.Whitespace.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'whitespace'</em><a class="headerlink" href="#formats.folia.Whitespace.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3609,7 +3753,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd><p>Word (aka token) element. Holds a word/token and all its related token annotations.</p>
 <dl class="attribute">
 <dt id="formats.folia.Word.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'formats.folia.AbstractSubtokenAnnotationLayer'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Word.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'formats.folia.AbstractTokenAnnotation'&gt;, &lt;class 'formats.folia.TextContent'&gt;, &lt;class 'formats.folia.Alternative'&gt;, &lt;class 'formats.folia.AlternativeLayers'&gt;, &lt;class 'formats.folia.Description'&gt;, &lt;class 'formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'formats.folia.Alignment'&gt;, &lt;class 'formats.folia.Metric'&gt;)</em><a class="headerlink" href="#formats.folia.Word.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3619,7 +3763,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 
 <dl class="attribute">
 <dt id="formats.folia.Word.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'w'</em><a class="headerlink" href="#formats.folia.Word.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'w'</em><a class="headerlink" href="#formats.folia.Word.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -3766,7 +3910,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 
 <dl class="attribute">
 <dt id="formats.folia.WordReference.XMLTAG">
-<tt class="descname">XMLTAG</tt><em class="property"> = 'wref'</em><a class="headerlink" href="#formats.folia.WordReference.XMLTAG" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">XMLTAG</tt><em class="property"> = u'wref'</em><a class="headerlink" href="#formats.folia.WordReference.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -3781,12 +3925,6 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 
 </dd></dl>
 
-<dl class="attribute">
-<dt id="formats.folia.c">
-<tt class="descclassname">formats.folia.</tt><tt class="descname">c</tt><a class="headerlink" href="#formats.folia.c" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#formats.folia.Alignment" title="formats.folia.Alignment"><tt class="xref py py-class docutils literal"><span class="pre">Alignment</span></tt></a></p>
-</dd></dl>
-
 <dl class="function">
 <dt id="formats.folia.isncname">
 <tt class="descclassname">formats.folia.</tt><tt class="descname">isncname</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#formats.folia.isncname" title="Permalink to this definition">¶</a></dt>
@@ -3795,6 +3933,11 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dl class="function">
 <dt id="formats.folia.loadsetdefinition">
 <tt class="descclassname">formats.folia.</tt><tt class="descname">loadsetdefinition</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#formats.folia.loadsetdefinition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="formats.folia.makeelement">
+<tt class="descclassname">formats.folia.</tt><tt class="descname">makeelement</tt><big>(</big><em>E</em>, <em>tagname</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.makeelement" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3822,6 +3965,11 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dl class="function">
 <dt id="formats.folia.validate">
 <tt class="descclassname">formats.folia.</tt><tt class="descname">validate</tt><big>(</big><em>filename</em>, <em>schema=None</em>, <em>deep=False</em><big>)</big><a class="headerlink" href="#formats.folia.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="formats.folia.xmltreefromstring">
+<tt class="descclassname">formats.folia.</tt><tt class="descname">xmltreefromstring</tt><big>(</big><em>s</em>, <em>bypassleak=False</em><big>)</big><a class="headerlink" href="#formats.folia.xmltreefromstring" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
