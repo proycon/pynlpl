@@ -2,9 +2,9 @@
 FoLiA library 
 *************
 
-This tutorial will introduce the FoLiA Python library, part of PyNLPl. The FoLiA library provides an Application Programming Interface for the reading, creation and manipulation of FoLiA XML documents.
+This tutorial will introduce the FoLiA Python library, part of PyNLPl. The FoLiA library provides an Application Programming Interface for the reading, creation and manipulation of FoLiA XML documents. The library works under Python 2.6, 2.7, as well as Python 3. The samples in this documentation follow Python 2.x conventions.
 
-Prior to reading this document, it is highly recommended to first read the FoLiA documentation itself and familiarise yourself with the format and underlying paradigm. The FoLiA documentaiton can be found through http://ilk.uvt.nl/folia . 
+Prior to reading this document, it is highly recommended to first read the FoLiA documentation itself and familiarise yourself with the format and underlying paradigm. The FoLiA documentation can be found through http://proycon.github.com/folia . 
 
 
 Reading FoLiA
@@ -38,8 +38,7 @@ Alternatively, you can obtain a string representation of all text::
     text_u = unicode(doc) #unicode instance
     text = str(doc) #UTF-8 encoded string
 
-For any subelement of the document, you can obtain its text in the same fashion.
-
+For any subelement of the document, you can obtain its text in the same fashion. In Python 3, ``str()`` returns a ``str``, which by definition is a unicode instance,  the ``unicode()`` method is not available there.
 
 Index
 ----------------------------------
@@ -78,7 +77,7 @@ You can also use this method to obtain a specific word, by passing an index para
 
         word = sentence.words(3) #retrieves the fourth word
                     
-If you want to iterate over all of the child elements of a certain element, regardless of what class they are, you can simply do so as follows::
+If you want to iterate over all of the child elements of a certain element, regardless of what type they are, you can simply do so as follows::
 
     for element in doc:
         if isinstance(element, folia.Sentence):
@@ -119,7 +118,7 @@ Attributes that are not available for certain elements, or not set, default to N
 Annotations
 --------------------
 
-FoLiA is of course a format for linguistic annotation. So let's see at how to obtain annotations. This can be done using annotations() or annotation(), which is very similar to the select method, except that it will raise an exception when no such annotation is found. The difference between ``annotation()`` and ``annotations()`` is that the former will grab only one and raise an exception if there are more between which it can't disambiguate::
+FoLiA is of course a format for linguistic annotation. So let's see at how to obtain annotations. This can be done using ``annotations()`` or ``annotation()``, which is very similar to the ``select()`` method, except that it will raise an exception when no such annotation is found. The difference between ``annotation()`` and ``annotations()`` is that the former will grab only one and raise an exception if there are more between which it can't disambiguate::
 
     for word in doc.words():
         try:
@@ -138,12 +137,26 @@ Note that the second argument of ``annotation()``, ``annotations()`` or ``select
 Span Annotation
 +++++++++++++++++++
 
-(to be written still)
+We will discuss two ways of accessing span annotation. Span annotation is contained within an annotation layer of a certain structure element, often a sentence. In the first way of accessing span annotation, we will first obtain the layer, then iterate over the span annotation elements within that layer, and finally iterate over the words to which the span applies. Assume we have a ``sentence`` and we want to print all the named entities in it::
 
-Subtoken Annotation
-+++++++++++++++++++++
 
-(to be written still)
+    for layer in sentence.select(folia.EntitiesLayer):
+        for entity in layer.select(folia.Entity):
+            print " Entity class=", entity.cls, " words="
+            for word in entity.wrefs():
+                print word,  #print without newline
+            print   #print newline
+
+The ``wrefs()`` method, available on all span annotation elements, will return a list of all words (as well as morphemes) over which a span annotation element spans.
+
+The second way of accessing span annotation takes another approach, here we start from a word and seek span annotations in which the word occurs. Assume we have a ``word`` and want to find chunks it occurs in::
+
+    for chunk in word.findspans(folia.ChunkingLayer):
+        print " Chunk class=", chunk.cls, " words="
+        for word2 in chunk.wrefs(): #print all words in the chunk (of which the word is a part)
+            print word2,
+        print
+ 
 
 Searching in a FoLiA document
 ================================
@@ -230,7 +243,7 @@ Adding span annotation
 
 Adding span annotation is easy with the FoLiA library, not withstanding the fact that there's more to it than adding token annotation.
 
-As you know, span annotation uses an stand-off annotation embedded in annotation layers. These layers are in turn embedded at the sentence level. In the following example we first create a sentence and then add a syntax parse::
+As you know, span annotation uses a stand-off annotation embedded in annotation layers. These layers are in turn embedded in structural elements such as sentences. In the following example we first create a sentence and then add a syntax parse::
 
     
     sentence = text.append(folia.Sentence)
