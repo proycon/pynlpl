@@ -49,7 +49,7 @@ else:
     import xml.etree.cElementTree as ElementTree
 
 
-def xmlcheck(xml,expect):    
+def xmlcheck(xml,expect):
     #obj1 = lxml.objectify.fromstring(expect)
     #expect = lxml.etree.tostring(obj1)
     f = open('/tmp/foliatest.fragment.expect.xml','w')
@@ -58,12 +58,12 @@ def xmlcheck(xml,expect):
     f = open('/tmp/foliatest.fragment.out.xml','w')
     f.write(xml)
     f.close()
-            
+
     retcode = os.system('xmldiff /tmp/foliatest.fragment.expect.xml /tmp/foliatest.fragment.out.xml')
     passed = (retcode == 0)
-    
+
     #obj2 = lxml.objectify.fromstring(xml)
-    #xml = lxml.etree.tostring(obj2)        
+    #xml = lxml.etree.tostring(obj2)
     #passed = (expect == xml)
     if not passed:
         print("XML fragments don't match:",file=stderr)
@@ -76,138 +76,138 @@ def xmlcheck(xml,expect):
 
 
 class Test1Read(unittest.TestCase):
-                        
-    def test1_readfromfile(self):        
+
+    def test1_readfromfile(self):
         """Reading from file"""
         global FOLIAEXAMPLE
         #write example to file
         f = io.open('/tmp/foliatest.xml','w',encoding='utf-8')
-        f.write(FOLIAEXAMPLE)    
+        f.write(FOLIAEXAMPLE)
         f.close()
-        
+
         doc = folia.Document(file='/tmp/foliatest.xml')
         self.assertTrue(isinstance(doc,folia.Document))
-        
+
         #sanity check: reading from file must yield the exact same data as reading from string
         doc2 = folia.Document(string=FOLIAEXAMPLE)
         self.assertEqual( doc, doc2)
 
-    def test1a_readfromfile(self):        
+    def test1a_readfromfile(self):
         """Reading from GZ file"""
         global FOLIAEXAMPLE
         #write example to file
         f = gzip.GzipFile('/tmp/foliatest.xml.gz','w')
-        f.write(FOLIAEXAMPLE.encode('utf-8'))    
+        f.write(FOLIAEXAMPLE.encode('utf-8'))
         f.close()
-        
+
         doc = folia.Document(file='/tmp/foliatest.xml.gz')
         self.assertTrue(isinstance(doc,folia.Document))
-        
+
         #sanity check: reading from file must yield the exact same data as reading from string
         doc2 = folia.Document(string=FOLIAEXAMPLE)
         self.assertEqual( doc, doc2)
 
 
-    def test1b_readfromfile(self):        
+    def test1b_readfromfile(self):
         """Reading from BZ2 file"""
         global FOLIAEXAMPLE
         #write example to file
         f = bz2.BZ2File('/tmp/foliatest.xml.bz2','w')
-        f.write(FOLIAEXAMPLE.encode('utf-8'))    
+        f.write(FOLIAEXAMPLE.encode('utf-8'))
         f.close()
-        
+
         doc = folia.Document(file='/tmp/foliatest.xml.bz2')
         self.assertTrue(isinstance(doc,folia.Document))
-        
+
         #sanity check: reading from file must yield the exact same data as reading from string
         doc2 = folia.Document(string=FOLIAEXAMPLE)
         self.assertEqual( doc, doc2)
-        
-                
-    def test2_readfromstring(self):        
-        """Reading from string (unicode)"""        
+
+
+    def test2_readfromstring(self):
+        """Reading from string (unicode)"""
         global FOLIAEXAMPLE
         doc = folia.Document(string=FOLIAEXAMPLE)
         self.assertTrue(isinstance(doc,folia.Document))
 
-    def test2_readfromstring(self):        
-        """Reading from string (bytes)"""        
+    def test2_readfromstring(self):
+        """Reading from string (bytes)"""
         global FOLIAEXAMPLE
         doc = folia.Document(string=FOLIAEXAMPLE.encode('utf-8'))
         self.assertTrue(isinstance(doc,folia.Document))
-        
-    def test3_readfromstring(self):        
-        """Reading from pre-parsed XML tree (as unicode(Py2)/str(Py3) obj)"""        
+
+    def test3_readfromstring(self):
+        """Reading from pre-parsed XML tree (as unicode(Py2)/str(Py3) obj)"""
         global FOLIAEXAMPLE
         if sys.version < '3':
             doc = folia.Document(tree=ElementTree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
         else:
-            doc = folia.Document(tree=ElementTree.parse(BytesIO(FOLIAEXAMPLE.encode('utf-8'))))            
+            doc = folia.Document(tree=ElementTree.parse(BytesIO(FOLIAEXAMPLE.encode('utf-8'))))
         self.assertTrue(isinstance(doc,folia.Document))
-        
 
-    def test4_readdcoi(self):        
+
+    def test4_readdcoi(self):
         """Reading D-Coi file"""
         global DCOIEXAMPLE
         doc = folia.Document(string=DCOIEXAMPLE)
         #doc = folia.Document(tree=lxml.etree.parse(StringIO(DCOIEXAMPLE.encode('iso-8859-15'))))
         self.assertTrue(isinstance(doc,folia.Document))
         self.assertEqual(len(doc.words()),1465)
-                        
+
 class Test2Sanity(unittest.TestCase):
-    
+
     def setUp(self):
         self.doc = folia.Document(string=FOLIAEXAMPLE)
-        
+
     def test000_count_text(self):
-        """Sanity check - One text """        
-        self.assertEqual( len(self.doc), 1) 
-        self.assertTrue( isinstance( self.doc[0], folia.Text )) 
-        
-    def test001_count_paragraphs(self):                                    
-        """Sanity check - Paragraph count"""        
+        """Sanity check - One text """
+        self.assertEqual( len(self.doc), 1)
+        self.assertTrue( isinstance( self.doc[0], folia.Text ))
+
+    def test001_count_paragraphs(self):
+        """Sanity check - Paragraph count"""
         self.assertEqual( len(self.doc.paragraphs()) , 1)
-        
-    def test002_count_sentences(self):                                    
-        """Sanity check - Sentences count"""        
-        self.assertEqual( len(self.doc.sentences()) , 13)        
-    
-    def test003_count_words(self):                                    
-        """Sanity check - Word count"""        
+
+    def test002_count_sentences(self):
+        """Sanity check - Sentences count"""
+        self.assertEqual( len(self.doc.sentences()) , 13)
+
+    def test003_count_words(self):
+        """Sanity check - Word count"""
         self.assertEqual( len(self.doc.words()) , 163)
-    
-    def test004_first_word(self):                                    
-        """Sanity check - First word"""            
+
+    def test004_first_word(self):
+        """Sanity check - First word"""
         #grab first word
-        w = self.doc.words(0) # shortcut for doc.words()[0]         
+        w = self.doc.words(0) # shortcut for doc.words()[0]
         self.assertTrue( isinstance(w, folia.Word) )
-        self.assertEqual( w.id , 'WR-P-E-J-0000000001.head.1.s.1.w.1' )         
-        self.assertEqual( w.text() , "Stemma" ) 
-        self.assertEqual( str(w) , "Stemma" ) #should be unicode object also in Py2! 
+        self.assertEqual( w.id , 'WR-P-E-J-0000000001.head.1.s.1.w.1' )
+        self.assertEqual( w.text() , "Stemma" )
+        self.assertEqual( str(w) , "Stemma" ) #should be unicode object also in Py2!
         if sys.version < '3':
-            self.assertEqual( unicode(w) , "Stemma" ) 
-        
-        
-    def test005_last_word(self):                                    
-        """Sanity check - Last word"""            
+            self.assertEqual( unicode(w) , "Stemma" )
+
+
+    def test005_last_word(self):
+        """Sanity check - Last word"""
         #grab last word
-        w = self.doc.words(-1) # shortcut for doc.words()[0]         
+        w = self.doc.words(-1) # shortcut for doc.words()[0]
         self.assertTrue( isinstance(w, folia.Word) )
-        self.assertEqual( w.id , 'WR-P-E-J-0000000001.sandbox.2.s.1.w.6' ) 
-        self.assertEqual( w.text() , "." )             
-        self.assertEqual( str(w) , "." )             
-        
-    def test006_second_sentence(self):                                    
-        """Sanity check - Sentence"""                                
+        self.assertEqual( w.id , 'WR-P-E-J-0000000001.sandbox.2.s.1.w.6' )
+        self.assertEqual( w.text() , "." )
+        self.assertEqual( str(w) , "." )
+
+    def test006_second_sentence(self):
+        """Sanity check - Sentence"""
         #grab second sentence
         s = self.doc.sentences(1)
         self.assertTrue( isinstance(s, folia.Sentence) )
         self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.1' )
-        self.assertFalse( s.hastext() ) 
-        self.assertEqual( str(s), "Stemma is een ander woord voor stamboom ." ) 
+        self.assertFalse( s.hastext() )
+        self.assertEqual( str(s), "Stemma is een ander woord voor stamboom ." )
 
-    def test006b_sentencetest(self):                                    
-        """Sanity check - Sentence text (including retaining tokenisation)"""                                
+    def test006b_sentencetest(self):
+        """Sanity check - Sentence text (including retaining tokenisation)"""
         #grab second sentence
         s = self.doc['WR-P-E-J-0000000001.p.1.s.5']
         self.assertTrue( isinstance(s, folia.Sentence) )
@@ -215,143 +215,143 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( s.text(), "De andere handschriften krijgen ook een letter die verband kan houden met hun plaats van oorsprong of plaats van bewaring.")
         self.assertEqual( s.text('current',True), "De andere handschriften krijgen ook een letter die verband kan houden met hun plaats van oorsprong of plaats van bewaring .") #not detokenised
         self.assertEqual( s.toktext(), "De andere handschriften krijgen ook een letter die verband kan houden met hun plaats van oorsprong of plaats van bewaring .") #just an alias for the above
-        
-    def test007_index(self):                                    
-        """Sanity check - Index"""            
+
+    def test007_index(self):
+        """Sanity check - Index"""
         #grab something using the index
-        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7']
         self.assertTrue( isinstance(w, folia.Word) )
-        self.assertEqual( self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] , self.doc.index['WR-P-E-J-0000000001.p.1.s.2.w.7'] )         
-        self.assertEqual( w.id , 'WR-P-E-J-0000000001.p.1.s.2.w.7' )         
-        self.assertEqual( w.text() , "stamboom" ) 
-        
-    def test008_division(self):                                    
-        """Sanity check - Division + head""" 
-                            
+        self.assertEqual( self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] , self.doc.index['WR-P-E-J-0000000001.p.1.s.2.w.7'] )
+        self.assertEqual( w.id , 'WR-P-E-J-0000000001.p.1.s.2.w.7' )
+        self.assertEqual( w.text() , "stamboom" )
+
+    def test008_division(self):
+        """Sanity check - Division + head"""
+
         #grab something using the index
-        div = self.doc['WR-P-E-J-0000000001.div0.1'] 
+        div = self.doc['WR-P-E-J-0000000001.div0.1']
         self.assertTrue( isinstance(div, folia.Division) )
         self.assertEqual( div.head() , self.doc['WR-P-E-J-0000000001.head.1'] )
         self.assertEqual( len(div.head()) ,1 ) #Head contains one element (one sentence)
-    
-    def test009_pos(self):                                        
-        """Sanity check - Token Annotation - Pos""" 
+
+    def test009_pos(self):
+        """Sanity check - Token Annotation - Pos"""
         #grab first word
         w = self.doc.words(0)
-        
-        
+
+
         self.assertEqual( w.annotation(folia.PosAnnotation), w.select(folia.PosAnnotation)[0] ) #w.annotation() selects the single first annotation of that type, select is the generic method to retrieve pretty much everything
         self.assertTrue( isinstance(w.annotation(folia.PosAnnotation), folia.PosAnnotation) )
         self.assertTrue( issubclass(folia.PosAnnotation, folia.AbstractTokenAnnotation) )
-                
+
         self.assertEqual( w.annotation(folia.PosAnnotation).cls, 'N(soort,ev,basis,onz,stan)' ) #cls is used everywhere instead of class, since class is a reserved keyword in python
         self.assertEqual( w.pos(),'N(soort,ev,basis,onz,stan)' ) #w.pos() is just a direct shortcut for getting the class
-        self.assertEqual( w.annotation(folia.PosAnnotation).set, 'cgn-combinedtags' ) 
-        self.assertEqual( w.annotation(folia.PosAnnotation).annotator, 'tadpole' ) 
+        self.assertEqual( w.annotation(folia.PosAnnotation).set, 'cgn-combinedtags' )
+        self.assertEqual( w.annotation(folia.PosAnnotation).annotator, 'tadpole' )
         self.assertEqual( w.annotation(folia.PosAnnotation).annotatortype, folia.AnnotatorType.AUTO )
 
-    
-    def test010_lemma(self):                                        
-        """Sanity check - Token Annotation - Lemma""" 
+
+    def test010_lemma(self):
+        """Sanity check - Token Annotation - Lemma"""
         #grab first word
         w = self.doc.words(0)
-        
-        self.assertEqual( w.annotation(folia.LemmaAnnotation), w.annotation(folia.LemmaAnnotation) ) #w.lemma() is just a shortcut 
+
+        self.assertEqual( w.annotation(folia.LemmaAnnotation), w.annotation(folia.LemmaAnnotation) ) #w.lemma() is just a shortcut
         self.assertEqual( w.annotation(folia.LemmaAnnotation), w.select(folia.LemmaAnnotation)[0] ) #w.annotation() selects the single first annotation of that type, select is the generic method to retrieve pretty much everything
         self.assertTrue( isinstance(w.annotation(folia.LemmaAnnotation), folia.LemmaAnnotation))
-                
+
         self.assertEqual( w.annotation(folia.LemmaAnnotation).cls, 'stemma' )
         self.assertEqual( w.lemma(),'stemma' ) #w.lemma() is just a direct shortcut for getting the class
-        self.assertEqual( w.annotation(folia.LemmaAnnotation).set, 'lemmas-nl' ) 
-        self.assertEqual( w.annotation(folia.LemmaAnnotation).annotator, 'tadpole' ) 
+        self.assertEqual( w.annotation(folia.LemmaAnnotation).set, 'lemmas-nl' )
+        self.assertEqual( w.annotation(folia.LemmaAnnotation).annotator, 'tadpole' )
         self.assertEqual( w.annotation(folia.LemmaAnnotation).annotatortype, folia.AnnotatorType.AUTO )
 
-    def test011_tokenannot_notexist(self):                                        
-        """Sanity check - Token Annotation - Non-existing element""" 
+    def test011_tokenannot_notexist(self):
+        """Sanity check - Token Annotation - Non-existing element"""
         #grab first word
         w = self.doc.words(0)
-        
+
         self.assertEqual( len(w.select(folia.SenseAnnotation)), 0)  #list
         self.assertRaises( folia.NoSuchAnnotation, w.annotation, folia.SenseAnnotation) #exception
 
 
 
     def test012_correction(self):
-        """Sanity check - Correction - Text""" 
+        """Sanity check - Correction - Text"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.31']
         c = w.annotation(folia.Correction)
-        
-        self.assertEqual( len(c.new()), 1) 
-        self.assertEqual( len(c.original()), 1) 
-        
+
+        self.assertEqual( len(c.new()), 1)
+        self.assertEqual( len(c.original()), 1)
+
         self.assertEqual( w.text(), 'vierkante')
-        self.assertEqual( c.new(0), 'vierkante') 
-        self.assertEqual( c.original(0) , 'vierkant') 
-        
+        self.assertEqual( c.new(0), 'vierkante')
+        self.assertEqual( c.original(0) , 'vierkant')
+
     def test013_correction(self):
-        """Sanity check - Correction - Token Annotation""" 
+        """Sanity check - Correction - Token Annotation"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.32']
         c = w.annotation(folia.Correction)
-                
-        self.assertEqual( len(c.new()), 1) 
-        self.assertEqual( len(c.original()), 1) 
-        
-        self.assertEqual( w.annotation(folia.LemmaAnnotation).cls , 'haak')
-        self.assertEqual( c.new(0).cls, 'haak') 
-        self.assertEqual( c.original(0).cls, 'haaak') 
-        
 
-    def test014_correction(self):                                        
-        """Sanity check - Correction - Suggestions (text)""" 
+        self.assertEqual( len(c.new()), 1)
+        self.assertEqual( len(c.original()), 1)
+
+        self.assertEqual( w.annotation(folia.LemmaAnnotation).cls , 'haak')
+        self.assertEqual( c.new(0).cls, 'haak')
+        self.assertEqual( c.original(0).cls, 'haaak')
+
+
+    def test014_correction(self):
+        """Sanity check - Correction - Suggestions (text)"""
         #grab first word
         w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.14']
         c = w.annotation(folia.Correction)
-        self.assertTrue( isinstance(c, folia.Correction) ) 
-        self.assertEqual( len(c.suggestions()), 2 ) 
-        self.assertEqual( str(c.suggestions(0).text()), 'twijfelachtige' ) 
-        self.assertEqual( str(c.suggestions(1).text()), 'ongewisse' ) 
-        
-    def test015_parenttest(self):                                        
-        """Sanity check - Checking if all elements know who's their daddy""" 
-        
-        def check(parent, indent = ''):  
-            
+        self.assertTrue( isinstance(c, folia.Correction) )
+        self.assertEqual( len(c.suggestions()), 2 )
+        self.assertEqual( str(c.suggestions(0).text()), 'twijfelachtige' )
+        self.assertEqual( str(c.suggestions(1).text()), 'ongewisse' )
+
+    def test015_parenttest(self):
+        """Sanity check - Checking if all elements know who's their daddy"""
+
+        def check(parent, indent = ''):
+
             for child in parent:
-                if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and (isinstance(child, folia.Word) or isinstance(child, folia.Morpheme))): #words and morphemes are exempted in abstractspanannotation                    
+                if isinstance(child, folia.AbstractElement) and not (isinstance(parent, folia.AbstractSpanAnnotation) and (isinstance(child, folia.Word) or isinstance(child, folia.Morpheme))): #words and morphemes are exempted in abstractspanannotation
                     #print indent + repr(child), child.id, child.cls
-                    self.assertTrue( child.parent is parent)                
-                    check(child, indent + '  ')                        
+                    self.assertTrue( child.parent is parent)
+                    check(child, indent + '  ')
             return True
-        
+
         self.assertTrue( check(self.doc.data[0],'  ') )
 
-    def test016a_description(self):        
+    def test016a_description(self):
         """Sanity Check - Description"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.1.w.6']
         self.assertEqual( w.description(), 'Dit woordje is een voorzetsel, het is maar dat je het weet...')
 
-    def test016b_description(self):        
+    def test016b_description(self):
         """Sanity Check - Error on non-existing description"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.1.w.7']
-        self.assertRaises( folia.NoDescription,  w.description)        
-    
-    def test017_gap(self):            
+        self.assertRaises( folia.NoDescription,  w.description)
+
+    def test017_gap(self):
         """Sanity Check - Gap"""
         gap = self.doc["WR-P-E-J-0000000001.gap.1"]
         self.assertEqual( gap.content().strip()[:11], 'De tekst is')
         self.assertEqual( gap.cls, 'backmatter')
         self.assertEqual( gap.description(), 'Backmatter')
-        
-    def test018_subtokenannot(self):            
-        """Sanity Check - Subtoken annotation (part of speech)"""        
-        w= self.doc['WR-P-E-J-0000000001.p.1.s.2.w.5']
-        p = w.annotation(folia.PosAnnotation)       
-        self.assertEqual( p.feat('role'), 'pv' ) 
-        self.assertEqual( p.feat('tense'), 'tgw' )
-        self.assertEqual( p.feat('form'), 'met-t' ) 
 
-    def test019_alignment(self):            
-        """Sanity Check - Alignment in same document"""        
+    def test018_subtokenannot(self):
+        """Sanity Check - Subtoken annotation (part of speech)"""
+        w= self.doc['WR-P-E-J-0000000001.p.1.s.2.w.5']
+        p = w.annotation(folia.PosAnnotation)
+        self.assertEqual( p.feat('role'), 'pv' )
+        self.assertEqual( p.feat('tense'), 'tgw' )
+        self.assertEqual( p.feat('form'), 'met-t' )
+
+    def test019_alignment(self):
+        """Sanity Check - Alignment in same document"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.10']
         aref = w.annotation(folia.Alignment)
         target = aref.resolve()[0]
@@ -359,176 +359,176 @@ class Test2Sanity(unittest.TestCase):
 
 
     def test020a_spanannotation(self):
-        """Sanity Check - Span Annotation (Syntax)"""        
+        """Sanity Check - Span Annotation (Syntax)"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
         l = s.annotation(folia.SyntaxLayer)
-        
-        self.assertTrue( isinstance(l[0], folia.SyntacticUnit ) ) 
-        self.assertEqual( l[0].cls,  'sentence' ) 
-        self.assertEqual( l[0][0].cls,  'subject' ) 
-        self.assertEqual( l[0][0].text(),  'Stemma' ) 
-        self.assertEqual( l[0][1].cls,  'verb' ) 
-        self.assertEqual( l[0][2].cls,  'predicate' ) 
-        self.assertEqual( l[0][2][0].cls,  'np' ) 
-        self.assertEqual( l[0][2][1].cls,  'pp' ) 
-        self.assertEqual( l[0][2][1].text(),  'voor stamboom' ) 
-        self.assertEqual( l[0][2].text(),  'een ander woord voor stamboom' ) 
-        
+
+        self.assertTrue( isinstance(l[0], folia.SyntacticUnit ) )
+        self.assertEqual( l[0].cls,  'sentence' )
+        self.assertEqual( l[0][0].cls,  'subject' )
+        self.assertEqual( l[0][0].text(),  'Stemma' )
+        self.assertEqual( l[0][1].cls,  'verb' )
+        self.assertEqual( l[0][2].cls,  'predicate' )
+        self.assertEqual( l[0][2][0].cls,  'np' )
+        self.assertEqual( l[0][2][1].cls,  'pp' )
+        self.assertEqual( l[0][2][1].text(),  'voor stamboom' )
+        self.assertEqual( l[0][2].text(),  'een ander woord voor stamboom' )
+
     def test020b_spanannotation(self):
-        """Sanity Check - Span Annotation (Chunking)"""        
+        """Sanity Check - Span Annotation (Chunking)"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
         l = s.annotation(folia.ChunkingLayer)
-        
-        self.assertTrue( isinstance(l[0], folia.Chunk ) ) 
-        self.assertEqual( l[0].text(),  'een ander woord' )         
-        self.assertEqual( l[1].text(),  'voor stamboom' ) 
-    
+
+        self.assertTrue( isinstance(l[0], folia.Chunk ) )
+        self.assertEqual( l[0].text(),  'een ander woord' )
+        self.assertEqual( l[1].text(),  'voor stamboom' )
+
     def test020c_spanannotation(self):
-        """Sanity Check - Span Annotation (Entities)"""        
+        """Sanity Check - Span Annotation (Entities)"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
         l = s.annotation(folia.EntitiesLayer)
-        
+
         self.assertTrue( isinstance(l[0], folia.Entity) )
-        self.assertEqual( l[0].text(),  'ander woord' )                                     
-        
+        self.assertEqual( l[0].text(),  'ander woord' )
+
     def test020d_spanannotation(self):
-        """Sanity Check - Span Annotation (Dependencies)"""        
+        """Sanity Check - Span Annotation (Dependencies)"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
         l = s.annotation(folia.DependenciesLayer)
-        
+
         self.assertTrue( isinstance(l[0], folia.Dependency) )
-        self.assertEqual( l[0].head().text(),  'is' )                         
-        self.assertEqual( l[0].dependent().text(),  'Stemma' )                         
-        self.assertEqual( l[0].cls,  'su' )    
-        
+        self.assertEqual( l[0].head().text(),  'is' )
+        self.assertEqual( l[0].dependent().text(),  'Stemma' )
+        self.assertEqual( l[0].cls,  'su' )
+
         self.assertTrue( isinstance(l[1], folia.Dependency) )
-        self.assertEqual( l[1].head().text(),  'is' )                         
-        self.assertEqual( l[1].dependent().text(),  'woord' )                         
-        self.assertEqual( l[1].cls,'predc' )    
-        
+        self.assertEqual( l[1].head().text(),  'is' )
+        self.assertEqual( l[1].dependent().text(),  'woord' )
+        self.assertEqual( l[1].cls,'predc' )
+
         self.assertTrue( isinstance(l[2], folia.Dependency) )
-        self.assertEqual( l[2].head().text(),  'woord' )                         
-        self.assertEqual( l[2].dependent().text(),  'een' )                         
-        self.assertEqual( l[2].cls,'det' ) 
-        
+        self.assertEqual( l[2].head().text(),  'woord' )
+        self.assertEqual( l[2].dependent().text(),  'een' )
+        self.assertEqual( l[2].cls,'det' )
+
         self.assertTrue( isinstance(l[3], folia.Dependency) )
-        self.assertEqual( l[3].head().text(),  'woord' )                         
-        self.assertEqual( l[3].dependent().text(),  'ander' )                         
-        self.assertEqual( l[3].cls,'mod' )                      
+        self.assertEqual( l[3].head().text(),  'woord' )
+        self.assertEqual( l[3].dependent().text(),  'ander' )
+        self.assertEqual( l[3].cls,'mod' )
 
         self.assertTrue( isinstance(l[4], folia.Dependency) )
-        self.assertEqual( l[4].head().text(),  'woord' )                         
-        self.assertEqual( l[4].dependent().text(),  'voor' )                         
-        self.assertEqual( l[4].cls,'mod' )  
-        
+        self.assertEqual( l[4].head().text(),  'woord' )
+        self.assertEqual( l[4].dependent().text(),  'voor' )
+        self.assertEqual( l[4].cls,'mod' )
+
         self.assertTrue( isinstance(l[5], folia.Dependency) )
-        self.assertEqual( l[5].head().text(),  'voor' )                         
-        self.assertEqual( l[5].dependent().text(),  'stamboom' )                         
-        self.assertEqual( l[5].cls,'obj1' )                                                             
-        
+        self.assertEqual( l[5].head().text(),  'voor' )
+        self.assertEqual( l[5].dependent().text(),  'stamboom' )
+        self.assertEqual( l[5].cls,'obj1' )
+
     def test020e_spanannotation(self):
-        """Sanity Check - Span Annotation (Timedevent)"""        
+        """Sanity Check - Span Annotation (Timedevent)"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
         l = s.annotation(folia.TimingLayer)
-        
-        self.assertTrue( isinstance(l[0], folia.TimeSegment ) ) 
-        self.assertEqual( l[0].text(),  'een ander woord' )         
-        self.assertEqual( l[1].cls, 'cough' )         
-        self.assertEqual( l[2].text(),  'voor stamboom' )         
-        
+
+        self.assertTrue( isinstance(l[0], folia.TimeSegment ) )
+        self.assertEqual( l[0].text(),  'een ander woord' )
+        self.assertEqual( l[1].cls, 'cough' )
+        self.assertEqual( l[2].text(),  'voor stamboom' )
+
     def test020f_spanannotation(self):
         """Sanity Check - Co-Reference"""
         div = self.doc["WR-P-E-J-0000000001.div0.1"]
         deplayer = div.annotation(folia.DependenciesLayer)
         deps = list(deplayer.annotations(folia.Dependency))
-        
+
         self.assertEqual( deps[0].cls,  'su' )
         self.assertEqual( deps[1].cls,  'predc' )
         self.assertEqual( deps[2].cls,  'det' )
         self.assertEqual( deps[3].cls,  'mod' )
         self.assertEqual( deps[4].cls,  'mod' )
         self.assertEqual( deps[5].cls,  'obj1' )
-        
+
         self.assertEqual( deps[2].head().wrefs(0), self.doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] )
         self.assertEqual( deps[2].dependent().wrefs(0), self.doc['WR-P-E-J-0000000001.p.1.s.1.w.3'] )
 
-        
+
     def test020g_spanannotation(self):
         """Sanity Check - Semantic Role Labelling"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.7']
         semrolelayer = s.annotation(folia.SemanticRolesLayer)
         roles = list(semrolelayer.annotations(folia.SemanticRole))
-        
+
         self.assertEqual( roles[0].cls,  'actor' )
         self.assertEqual( roles[1].cls,  'patient' )
-        
+
         self.assertEqual( roles[0].wrefs(0), self.doc['WR-P-E-J-0000000001.p.1.s.7.w.3'] )
         self.assertEqual( roles[1].wrefs(0), self.doc['WR-P-E-J-0000000001.p.1.s.7.w.4'] )
         self.assertEqual( roles[1].wrefs(1), self.doc['WR-P-E-J-0000000001.p.1.s.7.w.5'] )
-                     
-        
-    def test021_previousword(self):        
-        """Sanity Check - Obtaining previous word"""
-        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
-        prevw = w.previous()
-        self.assertTrue( isinstance(prevw, folia.Word) )    
-        self.assertEqual( prevw.text(),  "zo'n" )         
 
-    def test022_nextword(self):        
+
+    def test021_previousword(self):
+        """Sanity Check - Obtaining previous word"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7']
+        prevw = w.previous()
+        self.assertTrue( isinstance(prevw, folia.Word) )
+        self.assertEqual( prevw.text(),  "zo'n" )
+
+    def test022_nextword(self):
         """Sanity Check - Obtaining next word"""
-        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7']
         nextw = w.next()
-        self.assertTrue( isinstance(nextw, folia.Word) )    
-        self.assertEqual( nextw.text(),  "," )       
-        
-    def test023_leftcontext(self):        
+        self.assertTrue( isinstance(nextw, folia.Word) )
+        self.assertEqual( nextw.text(),  "," )
+
+    def test023_leftcontext(self):
         """Sanity Check - Obtaining left context"""
-        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7']
         context = w.leftcontext(3)
-        self.assertEqual( [ x.text() for x in context ], ['wetenschap','wordt',"zo'n"] )    
-    
-    def test024_rightcontext(self):        
+        self.assertEqual( [ x.text() for x in context ], ['wetenschap','wordt',"zo'n"] )
+
+    def test024_rightcontext(self):
         """Sanity Check - Obtaining right context"""
-        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7']
         context = w.rightcontext(3)
-        self.assertEqual( [ x.text() for x in context ], [',','onder','de'] )    
-        
-    def test025_fullcontext(self):        
+        self.assertEqual( [ x.text() for x in context ], [',','onder','de'] )
+
+    def test025_fullcontext(self):
         """Sanity Check - Obtaining full context"""
-        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] 
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7']
         context = w.context(3)
-        self.assertEqual( [ x.text() for x in context ], ['wetenschap','wordt',"zo'n",'stamboom',',','onder','de'] )            
-    
+        self.assertEqual( [ x.text() for x in context ], ['wetenschap','wordt',"zo'n",'stamboom',',','onder','de'] )
+
     def test026_feature(self):
         """Sanity Check - Features"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.1']
         pos = w.annotation(folia.PosAnnotation)
         self.assertTrue( isinstance(pos, folia.PosAnnotation) )
         self.assertEqual(pos.cls,'WW(vd,prenom,zonder)')
-        self.assertEqual( len(pos),  1)        
-        features = pos.select(folia.Feature)                
-        self.assertEqual( len(features),  1)        
+        self.assertEqual( len(pos),  1)
+        features = pos.select(folia.Feature)
+        self.assertEqual( len(features),  1)
         self.assertTrue( isinstance(features[0], folia.Feature))
         self.assertEqual( features[0].subset, 'head')
         self.assertEqual( features[0].cls, 'WW')
-        
-    def test027_datetime(self):  
+
+    def test027_datetime(self):
         """Sanity Check - Time stamp"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.15']
-        
+
         pos = w.annotation(folia.PosAnnotation)
-        self.assertEqual( pos.datetime, datetime(2011, 7, 20, 19, 0, 1) ) 
-        
-        self.assertTrue( xmlcheck(pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/>') )        
-    
-    def test028_wordparents(self):  
+        self.assertEqual( pos.datetime, datetime(2011, 7, 20, 19, 0, 1) )
+
+        self.assertTrue( xmlcheck(pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/>') )
+
+    def test028_wordparents(self):
         """Sanity Check - Finding parents of word"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.15']
-        
+
         s = w.sentence()
         self.assertTrue( isinstance(s, folia.Sentence) )
         self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.8')
-        
+
         p = w.paragraph()
         self.assertTrue( isinstance(p, folia.Paragraph) )
         self.assertEqual( p.id, 'WR-P-E-J-0000000001.p.1')
@@ -536,92 +536,92 @@ class Test2Sanity(unittest.TestCase):
         div = w.division()
         self.assertTrue( isinstance(div, folia.Division) )
         self.assertEqual( div.id, 'WR-P-E-J-0000000001.div0.1')
-        
+
         self.assertEqual( w.incorrection(), None)
-        
+
     def test0029_quote(self):
         """Sanity Check - Quote"""
         q = self.doc['WR-P-E-J-0000000001.p.1.s.8.q.1']
         self.assertTrue( isinstance(q, folia.Quote) )
         self.assertEqual(q.text(), 'volle lijn')
-        
+
         s = self.doc['WR-P-E-J-0000000001.p.1.s.8']
         self.assertEqual(s.text(), 'Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .') #(spelling errors are present in sentence)
-        
+
         #a word from the quote
         w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.2']
         #check if sentence matches
         self.assertTrue( (w.sentence() is s) )
-        
+
     def test030_textcontent(self):
         """Sanity check - Text Content"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.4']
-        
+
         self.assertEqual( s.text(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
         self.assertEqual( s.stricttext(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
         self.assertEqual( s.textcontent().value, 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
-        self.assertEqual( s.text('original'), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')    
+        self.assertEqual( s.text('original'), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
         self.assertRaises( folia.NoSuchText, s.text, 'BLAH' )
-        
-        
+
+
         w = self.doc['WR-P-E-J-0000000001.p.1.s.4.w.2']
         self.assertEqual( w.text(), 'hoofdletter')
-        
+
         self.assertEqual( w.textcontent().value, 'hoofdletter')
         self.assertEqual( w.textcontent().offset, 3)
-        
+
         w2 = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.31']
         self.assertEqual( w2.text(), 'vierkante')
         self.assertEqual( w2.stricttext(), 'vierkante')
-        
-    def test031_sense(self):   
+
+    def test031_sense(self):
         """Sanity Check - Lexical Semantic Sense Annotation"""
         w = self.doc['sandbox.list.1.listitem.1.s.1.w.1']
         sense = w.annotation(folia.SenseAnnotation)
-        
+
         self.assertEqual( sense.cls , 'some.sense.id')
         self.assertEqual( sense.feat('synset') , 'some.synset.id')
-        
-    def test032_event(self):   
+
+    def test032_event(self):
         """Sanity Check - Events"""
         l= self.doc['sandbox.list.1']
         event = l.annotation(folia.Event)
-        
+
         self.assertEqual( event.cls , 'applause')
         self.assertEqual( event.feat('actor') , 'audience')
 
-    def test033_list(self):   
+    def test033_list(self):
         """Sanity Check - List"""
         l = self.doc['sandbox.list.1']
-        self.assertTrue( isinstance( l[0], folia.ListItem) ) 
+        self.assertTrue( isinstance( l[0], folia.ListItem) )
         self.assertEqual( l[0].n, '1' ) #testing common n attribute
-        self.assertEqual( l[0].text(), 'Eerste testitem') 
+        self.assertEqual( l[0].text(), 'Eerste testitem')
         self.assertTrue( isinstance( l[-1], folia.ListItem) )
         self.assertEqual( l[-1].text(), 'Tweede testitem')
         self.assertEqual( l[-1].n, '2' )
 
-    def test034_figure(self):   
+    def test034_figure(self):
         """Sanity Check - Figure"""
         fig = self.doc['sandbox.figure.1']
         self.assertEqual( fig.src, "http://upload.wikimedia.org/wikipedia/commons/8/8e/Family_tree.svg")
         self.assertEqual( fig.caption(), 'Een stamboom')
 
-    def test035_event(self):   
+    def test035_event(self):
         """Sanity Check - Event"""
         e = self.doc['sandbox.event.1']
         self.assertEqual( e.feat('actor'), 'proycon')
         self.assertEqual( e.feat('begindatetime'), '2011-12-15T19:01')
         self.assertEqual( e.feat('enddatetime'), '2011-12-15T19:05')
 
-    def test036_parsen(self):   
+    def test036_parsen(self):
         """Sanity Check - Paragraph and Sentence annotation"""
         p = self.doc['WR-P-E-J-0000000001.p.1']
-        self.assertEqual( p.cls, 'firstparagraph' ) 
+        self.assertEqual( p.cls, 'firstparagraph' )
         s = self.doc['WR-P-E-J-0000000001.p.1.s.6']
-        self.assertEqual( s.cls, 'sentence' )        
-        
-    
-    def test037a_feat(self):          
+        self.assertEqual( s.cls, 'sentence' )
+
+
+    def test037a_feat(self):
         """Sanity Check - Feature test (including shortcut)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
@@ -657,9 +657,9 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( doc['head.1.s.1.w.1'].pos() , 'NN(blah)')
         self.assertEqual( doc['head.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('head') , 'NN')
         self.assertEqual( doc['p.1.s.1.w.1'].pos() , 'NN(blah)')
-        self.assertEqual( doc['p.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('head') , 'NN')        
-        
-    def test037b_multiclassfeat(self):          
+        self.assertEqual( doc['p.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('head') , 'NN')
+
+    def test037b_multiclassfeat(self):
         """Sanity Check - Multiclass feature"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
@@ -685,21 +685,21 @@ class Test2Sanity(unittest.TestCase):
     </div>
 </text>
 </FoLiA>"""
-        doc = folia.Document(string=xml)    
+        doc = folia.Document(string=xml)
         self.assertEqual( doc['p.1.s.1.w.1'].pos() , 'NN(a,b,c)')
-        self.assertEqual( doc['p.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('x') , ['a','b','c'] )        
-        
-    def test038a_morphemeboundary(self): 
-        """Sanity check - Obtaining annotation should not descend into morphology layer"""        
+        self.assertEqual( doc['p.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('x') , ['a','b','c'] )
+
+    def test038a_morphemeboundary(self):
+        """Sanity check - Obtaining annotation should not descend into morphology layer"""
         self.assertRaises( folia.NoSuchAnnotation,  self.doc['WR-P-E-J-0000000001.sandbox.2.s.1.w.2'].annotation , folia.PosAnnotation)
 
-    def test038b_morphemeboundary(self): 
+    def test038b_morphemeboundary(self):
         """Sanity check - Obtaining morphemes and token annotation under morphemes"""
-        
+
         w = self.doc['WR-P-E-J-0000000001.sandbox.2.s.1.w.2']
         l = list(w.morphemes()) #get all morphemes
         self.assertEqual(len(l), 2)
-        m = w.morpheme(1) #get second morpheme       
+        m = w.morpheme(1) #get second morpheme
         self.assertEqual(m.annotation(folia.PosAnnotation).cls, 'n')
 
     def test039_findspan(self):
@@ -708,41 +708,41 @@ class Test2Sanity(unittest.TestCase):
         semrolelayer = s.annotation(folia.SemanticRolesLayer)
         roles = list(semrolelayer.annotations(folia.SemanticRole))
         self.assertEqual(semrolelayer.findspan( self.doc['WR-P-E-J-0000000001.p.1.s.7.w.4'], self.doc['WR-P-E-J-0000000001.p.1.s.7.w.5']), roles[1] )
-        
-        
-    def test099_write(self):        
+
+
+    def test099_write(self):
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
-    
-    def test099b_write(self):        
+
+    def test099b_write(self):
         """Sanity Check - Writing to GZ file"""
         self.doc.save('/tmp/foliasavetest.xml.gz')
-        
-    def test099c_write(self):        
-        """Sanity Check - Writing to BZ2 file"""
-        self.doc.save('/tmp/foliasavetest.xml.bz2')        
 
-    def test100a_sanity(self):                       
+    def test099c_write(self):
+        """Sanity Check - Writing to BZ2 file"""
+        self.doc.save('/tmp/foliasavetest.xml.bz2')
+
+    def test100a_sanity(self):
         """Sanity Check - A - Checking output file against input (should be equal)"""
         global FOLIAEXAMPLE
         f = io.open('/tmp/foliatest.xml','w',encoding='utf-8')
-        f.write(FOLIAEXAMPLE)    
-        f.close()                
-        self.doc.save('/tmp/foliatest100.xml')        
+        f.write(FOLIAEXAMPLE)
+        f.close()
+        self.doc.save('/tmp/foliatest100.xml')
         self.assertEqual(  folia.Document(file='/tmp/foliatest100.xml',debug=False), self.doc )
-    
-    def test100b_sanity_xmldiff(self):                       
+
+    def test100b_sanity_xmldiff(self):
         """Sanity Check - B - Checking output file against input using xmldiff (should be equal)"""
         global FOLIAEXAMPLE
         f = io.open('/tmp/foliatest.xml','w',encoding='utf-8')
-        f.write(FOLIAEXAMPLE)    
-        f.close()                  
+        f.write(FOLIAEXAMPLE)
+        f.close()
         #use xmldiff to compare the two:
         self.doc.save('/tmp/foliatest100.xml')
         retcode = os.system('xmldiff /tmp/foliatest.xml /tmp/foliatest100.xml')
         self.assertEqual( retcode, 0)
-    
-    def test101a_metadataextref(self):          
+
+    def test101a_metadataextref(self):
         """Sanity Check - Metadata external reference (CMDI)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
@@ -755,9 +755,9 @@ class Test2Sanity(unittest.TestCase):
 </FoLiA>"""
         doc = folia.Document(string=xml)
         self.assertEqual( doc.metadatatype, folia.MetaDataType.CMDI )
-        self.assertEqual( doc.metadatafile, 'test.cmdi.xml' )    
+        self.assertEqual( doc.metadatafile, 'test.cmdi.xml' )
 
-    def test101b_metadataextref2(self):          
+    def test101b_metadataextref2(self):
         """Sanity Check - Metadata external reference (IMDI)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
@@ -770,7 +770,7 @@ class Test2Sanity(unittest.TestCase):
 </FoLiA>"""
         doc = folia.Document(string=xml)
         self.assertEqual( doc.metadatatype, folia.MetaDataType.IMDI )
-        self.assertEqual( doc.metadatafile, 'test.imdi.xml' )    
+        self.assertEqual( doc.metadatafile, 'test.imdi.xml' )
 
 
     def test102a_declarations(self):
@@ -787,11 +787,11 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" />
   </text>
-</FoLiA>""" 
+</FoLiA>"""
         doc = folia.Document(string=xml)
         self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'gap-set' )
-        
-        
+
+
     def test102a2_declarations(self):
         """Sanity Check - Declarations - Default set, no further defaults"""
         xml = """<?xml version="1.0"?>\n
@@ -806,12 +806,12 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" annotator="proycon" annotatortype="manual" />
   </text>
-</FoLiA>""" 
+</FoLiA>"""
         doc = folia.Document(string=xml)
         self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'gap-set' )
         self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].annotator, 'proycon' )
-        self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].annotatortype, folia.AnnotatorType.MANUAL)        
-        
+        self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].annotatortype, folia.AnnotatorType.MANUAL)
+
     def test102b_declarations(self):
         """Sanity Check - Declarations - Set mismatching """
         xml = """<?xml version="1.0"?>\n
@@ -826,9 +826,9 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" set="extended-gap-set" />
   </text>
-</FoLiA>""" 
-        self.assertRaises( ValueError,  folia.Document, string=xml)   
-             
+</FoLiA>"""
+        self.assertRaises( ValueError,  folia.Document, string=xml)
+
 
     def test102c_declarations(self):
         """Sanity Check - Declarations - Multiple sets for the same annotation type"""
@@ -846,11 +846,11 @@ folia-v0.8" version="0.8">
     <gap class="X" set="gap-set"/>
     <gap class="Y" set="extended-gap-set"/>
   </text>
-</FoLiA>""" 
+</FoLiA>"""
         doc = folia.Document(string=xml)
         self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'gap-set' )
         self.assertEqual( doc['example.text.1'].select(folia.Gap)[1].set, 'extended-gap-set' )
-        
+
     def test102d1_declarations(self):
         """Sanity Check - Declarations - Multiple sets for the same annotation type (testing failure)"""
         xml = """<?xml version="1.0"?>\n
@@ -867,13 +867,13 @@ folia-v0.8" version="0.8">
     <gap class="X" set="gap-set"/>
     <gap class="Y" />
   </text>
-</FoLiA>""" 
+</FoLiA>"""
         self.assertRaises(ValueError,  folia.Document, string=xml )
 
 
 
 
-        
+
     def test102d2_declarations(self):
         """Sanity Check - Declarations - Multiple sets for the same annotation type (testing failure)"""
         xml = """<?xml version="1.0"?>\n
@@ -890,9 +890,9 @@ folia-v0.8" version="0.8">
     <gap class="X" set="gap-set"/>
     <gap class="Y" set="gip-set"/>
   </text>
-</FoLiA>""" 
+</FoLiA>"""
         self.assertRaises(ValueError,  folia.Document, string=xml )
-        
+
     def test102d3_declarations(self):
         """Sanity Check - Declarations - Ignore Duplicates"""
         xml = """<?xml version="1.0"?>\n
@@ -908,12 +908,12 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" set="gap-set"/>
   </text>
-</FoLiA>""" 
+</FoLiA>"""
 
         doc = folia.Document(string=xml)
         self.assertEqual( doc.defaultset(folia.AnnotationType.GAP), 'gap-set' )
         self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP), "sloot" )
-        
+
 
     def test102e_declarations(self):
         """Sanity Check - Declarations - Missing declaration"""
@@ -928,8 +928,8 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" set="extended-gap-set" />
   </text>
-</FoLiA>""" 
-        self.assertRaises( ValueError,  folia.Document, string=xml)   
+</FoLiA>"""
+        self.assertRaises( ValueError,  folia.Document, string=xml)
 
     def test102f_declarations(self):
         """Sanity Check - Declarations - Declaration not needed"""
@@ -944,9 +944,9 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap />
   </text>
-</FoLiA>""" 
-        doc = folia.Document(string=xml)   
-        
+</FoLiA>"""
+        doc = folia.Document(string=xml)
+
 
     def test102g_declarations(self):
         """Sanity Check - Declarations - 'Undefined' set in declaration"""
@@ -962,8 +962,8 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X"  />
   </text>
-</FoLiA>""" 
-        doc = folia.Document(string=xml)           
+</FoLiA>"""
+        doc = folia.Document(string=xml)
         self.assertEqual( doc['example.text.1'].select(folia.Gap)[0].set, 'undefined' )
 
     def test102h_declarations(self):
@@ -981,7 +981,7 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap />
   </text>
-</FoLiA>""" 
+</FoLiA>"""
         doc = folia.Document(string=xml)
         self.assertRaises(folia.NoDefaultError, doc.defaultannotator, folia.AnnotationType.GAP)
 
@@ -1001,8 +1001,8 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" set="gap1-set"/>
   </text>
-</FoLiA>""" 
-        doc = folia.Document(string=xml)          
+</FoLiA>"""
+        doc = folia.Document(string=xml)
         self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP,"gap1-set"), "sloot" )
         doc.declare(folia.AnnotationType.GAP, "gap1-set", annotator='proycon' ) #slightly different behaviour from libfolia: here this overrides the earlier default
         self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP,"gap1-set"), "proycon" )
@@ -1035,8 +1035,8 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" />
   </text>
-</FoLiA>""" 
-        doc = folia.Document(string=xml)          
+</FoLiA>"""
+        doc = folia.Document(string=xml)
         text = doc["example.text.1"]
         doc.declare(folia.AnnotationType.GAP, "other-set", annotator='proycon' )
         text.append( folia.Gap(doc, set='other-set', cls='Y', annotator='proycon') )
@@ -1062,8 +1062,8 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" />
   </text>
-</FoLiA>""" 
-        doc = folia.Document(string=xml)          
+</FoLiA>"""
+        doc = folia.Document(string=xml)
         self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP, 'gap-set'),  folia.AnnotatorType.AUTO)
         text = doc["example.text.1"]
         gaps = text.select(folia.Gap)
@@ -1072,7 +1072,7 @@ folia-v0.8" version="0.8">
         doc.declare(folia.AnnotationType.GAP, "gap-set", annotatortype=folia.AnnotatorType.MANUAL )
         self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP), folia.AnnotatorType.MANUAL )
         self.assertRaises( ValueError, folia.Gap, doc, set='gap-set', cls='Y', annotatortype='unknown' )
-         
+
         text.append( folia.Gap(doc, set='gap-set', cls='Y', annotatortype='manual' ) )
         text.append( folia.Gap(doc, set='gap-set', cls='Z', annotatortype='auto' ) )
 
@@ -1097,15 +1097,15 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" />
   </text>
-</FoLiA>""" 
-        doc = folia.Document(string=xml)          
+</FoLiA>"""
+        doc = folia.Document(string=xml)
         self.assertEqual( doc.defaultdatetime(folia.AnnotationType.GAP, 'gap-set'),  folia.parse_datetime('2011-12-15T19:00') )
-        
-        self.assertEqual( doc["example.text.1"].select(folia.Gap)[0].datetime ,  folia.parse_datetime('2011-12-15T19:00') )
-        
-                        
 
-        
+        self.assertEqual( doc["example.text.1"].select(folia.Gap)[0].datetime ,  folia.parse_datetime('2011-12-15T19:00') )
+
+
+
+
 
     def test103_namespaces(self):
         """Sanity Check - Alien namespaces - Checking whether properly ignored"""
@@ -1121,37 +1121,37 @@ folia-v0.8" version="0.8">
     <s xml:id="example.text.1.s.1">
         <alien:blah>
             <w xml:id="example.text.1.s.1.alienword">
-                <t>blah</t>                     
+                <t>blah</t>
             </w>
         </alien:blah>
         <w xml:id="example.text.1.s.1.w.1">
             <t>word</t>
-            <alien:invasion number="99999" />                
+            <alien:invasion number="99999" />
         </w>
     </s>
   </text>
-</FoLiA>""" 
+</FoLiA>"""
         doc = folia.Document(string=xml)
-        self.assertTrue( len(doc['example.text.1.s.1'].words()) == 1 ) #second word is in alien namespace, not read          
+        self.assertTrue( len(doc['example.text.1.s.1'].words()) == 1 ) #second word is in alien namespace, not read
         self.assertRaises( KeyError,  doc.__getitem__, 'example.text.1.s.1.alienword') #doesn't exist
-        
-        
+
+
 class Test4Edit(unittest.TestCase):
-        
+
     def setUp(self):
         global FOLIAEXAMPLE
-        self.doc = folia.Document(string=FOLIAEXAMPLE)    
-    
-    def test001_addsentence(self):        
+        self.doc = folia.Document(string=FOLIAEXAMPLE)
+
+    def test001_addsentence(self):
         """Edit Check - Adding a sentence to last paragraph (verbose)"""
-        
+
         #grab last paragraph
         p = self.doc.paragraphs(-1)
-                    
+
         #how many sentences?
         tmp = len(p.sentences())
-         
-        #make a sentence            
+
+        #make a sentence
         s = folia.Sentence(self.doc, generate_id_in=p)
         #add words to the sentence
         s.append( folia.Word(self.doc, text='Dit',generate_id_in=s, annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
@@ -1163,42 +1163,42 @@ class Test4Edit(unittest.TestCase):
 
         #add the sentence
         p.append(s)
-        
+
         #ID check
         self.assertEqual( s[0].id, s.id + '.w.1' )
         self.assertEqual( s[1].id, s.id + '.w.2' )
         self.assertEqual( s[2].id, s.id + '.w.3' )
         self.assertEqual( s[3].id, s.id + '.w.4' )
         self.assertEqual( s[4].id, s.id + '.w.5' )
-        self.assertEqual( s[5].id, s.id + '.w.6' )        
-        
+        self.assertEqual( s[5].id, s.id + '.w.6' )
+
         #index check
         self.assertEqual( self.doc[s.id], s )
         self.assertEqual( self.doc[s.id + '.w.3'], s[2] )
-        
+
         #attribute check
         self.assertEqual( s[0].annotator, 'testscript' )
         self.assertEqual( s[0].annotatortype, folia.AnnotatorType.AUTO )
-        
+
         #addition to paragraph correct?
         self.assertEqual( len(p.sentences()) , tmp + 1)
         self.assertEqual( p[-1] , s)
-        
+
         # text() ok?
         self.assertEqual( s.text(), "Dit is een nieuwe zin." )
-        
+
         # xml() ok?
         self.assertTrue( xmlcheck( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1" annotator="testscript"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2" annotator="testscript"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3" annotator="testscript"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4" annotator="testscript"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5" annotator="testscript" space="no"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" annotator="testscript"><t>.</t></w></s>') )
-        
-    def test001b_addsentence(self):        
+
+    def test001b_addsentence(self):
         """Edit Check - Adding a sentence to last paragraph (shortcut)"""
-        
+
         #grab last paragraph
         p = self.doc.paragraphs(-1)
-                    
+
         #how many sentences?
-        tmp = len(p.sentences())                    
-                    
+        tmp = len(p.sentences())
+
         s = p.append(folia.Sentence)
         s.append(folia.Word,'Dit')
         s.append(folia.Word,'is')
@@ -1206,204 +1206,204 @@ class Test4Edit(unittest.TestCase):
         s.append(folia.Word,'nieuwe')
         w = s.append(folia.Word,'zin')
         w2 = s.append(folia.Word,'.',cls='PUNCTUATION')
-        
+
         self.assertEqual( len(s.words()), 6 ) #number of words in sentence
         self.assertEqual( w.text(), 'zin' ) #text check
         self.assertEqual( self.doc[w.id], w ) #index check
-        
+
         #addition to paragraph correct?
         self.assertEqual( len(p.sentences()) , tmp + 1)
         self.assertEqual( p[-1] , s)
-        
+
         self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" class="PUNCTUATION"><t>.</t></w></s>'))
-          
-        
-        
-    def test002_addannotation(self):        
+
+
+
+    def test002_addannotation(self):
         """Edit Check - Adding a token annotation (pos, lemma) (pre-generated instances)"""
-         
+
         #grab a word (naam)
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
-        
+
         self.doc.declare(folia.PosAnnotation, 'adhocpos')
         self.doc.declare(folia.LemmaAnnotation, 'adhoclemma')
-        
+
         #add a pos annotation (in a different set than the one already present, to prevent conflict)
         w.append( folia.PosAnnotation(self.doc, set='adhocpos', cls='NOUN', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
-        w.append( folia.LemmaAnnotation(self.doc, set='adhoclemma', cls='NAAM', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO, datetime=datetime(1982, 12, 15, 19, 0, 1) ) ) 
-        
+        w.append( folia.LemmaAnnotation(self.doc, set='adhoclemma', cls='NAAM', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO, datetime=datetime(1982, 12, 15, 19, 0, 1) ) )
+
         #retrieve and check
         p = w.annotation(folia.PosAnnotation, 'adhocpos')
         self.assertTrue( isinstance(p, folia.PosAnnotation) )
         self.assertEqual( p.cls, 'NOUN' )
-        
+
         l = w.annotation(folia.LemmaAnnotation, 'adhoclemma')
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )
-        
-        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma set="adhoclemma" class="NAAM" datetime="1982-12-15T19:00:01" annotatortype="auto" annotator="testscript"/></w>') )             
-        
-    def test002b_addannotation(self):   
+
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma set="adhoclemma" class="NAAM" datetime="1982-12-15T19:00:01" annotatortype="auto" annotator="testscript"/></w>') )
+
+    def test002b_addannotation(self):
         """Edit Check - Adding a token annotation (pos, lemma) (instances generated on the fly)"""
-        
+
         #grab a word (naam)
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
-        
+
         self.doc.declare(folia.PosAnnotation, 'adhocpos')
         self.doc.declare(folia.LemmaAnnotation, 'adhoclemma')
-        
+
         #add a pos annotation (in a different set than the one already present, to prevent conflict)
-        w.append( folia.PosAnnotation, set='adhocpos', cls='NOUN', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
+        w.append( folia.PosAnnotation, set='adhocpos', cls='NOUN', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
         w.append( folia.LemmaAnnotation, set='adhoclemma', cls='NAAM', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO )
-       
+
         #retrieve and check
         p = w.annotation(folia.PosAnnotation, 'adhocpos')
         self.assertTrue( isinstance(p, folia.PosAnnotation) )
         self.assertEqual( p.cls, 'NOUN' )
-        
+
         l = w.annotation(folia.LemmaAnnotation, 'adhoclemma')
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
-        self.assertEqual( l.cls, 'NAAM' )       
-    
+        self.assertEqual( l.cls, 'NAAM' )
+
         self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma class="NAAM" set="adhoclemma" annotatortype="auto" annotator="testscript"/></w>'))
 
 
-    def test004_addinvalidannotation(self):        
-        """Edit Check - Adding a token default-set annotation that clashes with the existing one"""        
+    def test004_addinvalidannotation(self):
+        """Edit Check - Adding a token default-set annotation that clashes with the existing one"""
         #grab a word (naam)
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
-        
+
         #add a pos annotation without specifying a set (should take default set), but this will clash with existing tag!
-   
+
         self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.PosAnnotation(self.doc,  cls='N', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
-        self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.LemmaAnnotation(self.doc, cls='naam', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO ) ) 
-        
-    def test005_addalternative(self):        
+        self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.LemmaAnnotation(self.doc, cls='naam', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO ) )
+
+    def test005_addalternative(self):
         """Edit Check - Adding an alternative token annotation"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
         w.append( folia.Alternative(self.doc, generate_id_in=w, contents=folia.PosAnnotation(self.doc, cls='V')))
-        
-        #reobtaining it:        
+
+        #reobtaining it:
         alt = list(w.alternatives()) #all alternatives
-        
+
         set = self.doc.defaultset(folia.AnnotationType.POS)
-        
-        alt2 = w.alternatives(folia.PosAnnotation, set)        
-        
-        self.assertEqual( alt[0],alt2[0] )        
+
+        alt2 = w.alternatives(folia.PosAnnotation, set)
+
+        self.assertEqual( alt[0],alt2[0] )
         self.assertEqual( len(alt),1 )
-        self.assertEqual( len(alt2),1 )        
+        self.assertEqual( len(alt2),1 )
         self.assertTrue( isinstance(alt[0].annotation(folia.PosAnnotation, set), folia.PosAnnotation) )
 
         self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="naam"/><alt xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11.alt.1" auth="no"><pos class="V"/></alt></w>'))
 
 
-    def test006_addcorrection(self):        
+    def test006_addcorrection(self):
         """Edit Check - Correcting Text"""
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        
-        w.correct(new='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)                     
-        self.assertEqual( w.annotation(folia.Correction).original(0).text() ,'stippelijn' ) 
-        self.assertEqual( w.annotation(folia.Correction).new(0).text() ,'stippellijn' )     
-        self.assertEqual( w.text(), 'stippellijn')    
+
+        w.correct(new='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+        self.assertEqual( w.annotation(folia.Correction).original(0).text() ,'stippelijn' )
+        self.assertEqual( w.annotation(folia.Correction).new(0).text() ,'stippellijn' )
+        self.assertEqual( w.text(), 'stippellijn')
 
         self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
-        
-    def test007_addcorrection2(self):                
-        """Edit Check - Correcting a Token Annotation element"""        
+
+    def test007_addcorrection2(self):
+        """Edit Check - Correcting a Token Annotation element"""
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         oldpos = w.annotation(folia.PosAnnotation)
         newpos = folia.PosAnnotation(self.doc, cls='N(soort,ev,basis,zijd,stan)')
-        w.correct(original=oldpos,new=newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
-                    
-        self.assertEqual( w.annotation(folia.Correction).original(0) ,oldpos ) 
-        self.assertEqual( w.annotation(folia.Correction).new(0),newpos )     
-        
+        w.correct(original=oldpos,new=newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+
+        self.assertEqual( w.annotation(folia.Correction).original(0) ,oldpos )
+        self.assertEqual( w.annotation(folia.Correction).new(0),newpos )
+
         self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><pos class="N(soort,ev,basis,zijd,stan)"/></new><original auth="no"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/></original></correction><lemma class="stippelijn"/></w>'))
-    
+
     def test008_addsuggestion(self):
-        """Edit Check - Suggesting a text correction"""        
+        """Edit Check - Suggesting a text correction"""
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
-                    
+        w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+
         self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
         self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
-        self.assertEqual( w.text(), 'stippelijn')    
-        
+        self.assertEqual( w.text(), 'stippelijn')
+
         self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><suggestion auth="no"><t>stippellijn</t></suggestion></correction></w>'))
-        
+
     def test009a_idclash(self):
-        """Edit Check - Checking for exception on adding a duplicate ID"""     
+        """Edit Check - Checking for exception on adding a duplicate ID"""
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
-        
+
         self.assertRaises( folia.DuplicateIDError,  w.sentence().append, folia.Word, id='WR-P-E-J-0000000001.p.1.s.8.w.11', text='stippellijn')
-    
-        
+
+
     #def test009b_textcorrectionlevel(self):
-    #    """Edit Check - Checking for exception on an adding TextContent of wrong level"""     
+    #    """Edit Check - Checking for exception on an adding TextContent of wrong level"""
     #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
-    #    
+    #
     #    self.assertRaises(  ValueError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.ORIGINAL )
-    #    
+    #
 
     #def test009c_duptextcontent(self):
-    #    """Edit Check - Checking for exception on an adding duplicate textcontent"""     
+    #    """Edit Check - Checking for exception on an adding duplicate textcontent"""
     #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
-    #    
+    #
     #    self.assertRaises(  folia.DuplicateAnnotationError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.PROCESSED )
-        
+
     def test010_documentlesselement(self):
-        """Edit Check - Creating an initially document-less tokenannotation element and adding it to a word"""     
-        
+        """Edit Check - Creating an initially document-less tokenannotation element and adding it to a word"""
+
         #not associated with any document yet (first argument is None instead of Document instance)
         pos = folia.PosAnnotation(None, set='fakecgn', cls='N')
 
-        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] 
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
         w.append(pos)
-        
+
         self.assertEqual( w.annotation(folia.PosAnnotation,'fakecgn'), pos)
         self.assertEqual( pos.parent, w)
         self.assertEqual( pos.doc, w.doc)
-        
+
         self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>'))
-        
-    def test011_subtokenannot(self):            
-        """Edit Check - Adding morphemes"""        
+
+    def test011_subtokenannot(self):
+        """Edit Check - Adding morphemes"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.5.w.3']
         l = w.append( folia.MorphologyLayer )
         l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='handschrift', offset=0), folia.LemmaAnnotation(self.doc, cls='handschrift'), cls='stem',function='lexical'  ))
         l.append( folia.Morpheme(self.doc, folia.TextContent(self.doc, value='en', offset=11), cls='suffix',function='inflexional' ))
-               
-        
+
+
         self.assertEqual( len(l), 2) #two morphemes
-        self.assertTrue( isinstance(l[0], folia.Morpheme ) ) 
-        self.assertEqual( l[0].text(), 'handschrift' ) 
-        self.assertEqual( l[0].cls , 'stem' ) 
-        self.assertEqual( l[0].feat('function'), 'lexical' ) 
-        self.assertEqual( l[1].text(), 'en' ) 
-        self.assertEqual( l[1].cls, 'suffix' ) 
-        self.assertEqual( l[1].feat('function'), 'inflexional' )         
-    
-    
-    
+        self.assertTrue( isinstance(l[0], folia.Morpheme ) )
+        self.assertEqual( l[0].text(), 'handschrift' )
+        self.assertEqual( l[0].cls , 'stem' )
+        self.assertEqual( l[0].feat('function'), 'lexical' )
+        self.assertEqual( l[1].text(), 'en' )
+        self.assertEqual( l[1].cls, 'suffix' )
+        self.assertEqual( l[1].feat('function'), 'inflexional' )
+
+
+
         self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme function="lexical" class="stem"><t offset="0">handschrift</t><lemma class="handschrift"/></morpheme><morpheme function="inflexional" class="suffix"><t offset="11">en</t></morpheme></morphology></w>'))
 
-    def test012_alignment(self):            
+    def test012_alignment(self):
         """Edit Check - Adding Alignment"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.8']
-        
+
         a = w.append( folia.Alignment, cls="coreference")
         a.append( folia.AlignReference, id='WR-P-E-J-0000000001.p.1.s.6.w.1', type=folia.Word)
         a.append( folia.AlignReference, id='WR-P-E-J-0000000001.p.1.s.6.w.2', type=folia.Word)
-        
+
         self.assertEqual( a.resolve()[0], self.doc['WR-P-E-J-0000000001.p.1.s.6.w.1'] )
         self.assertEqual( a.resolve()[1], self.doc['WR-P-E-J-0000000001.p.1.s.6.w.2'] )
 
         self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.6.w.8"><t>ze</t><pos class="VNW(pers,pron,stan,red,3,mv)"/><lemma class="ze"/><alignment class="coreference"><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.1"/><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.2"/></alignment></w>'))
 
-    def test013_spanannot(self):            
+    def test013_spanannot(self):
         """Edit Check - Adding Span Annotatation (syntax)"""
-        
+
         s = self.doc['WR-P-E-J-0000000001.p.1.s.4']
         #sentence: 'De hoofdletter A wordt gebruikt voor het originele handschrift .'
         layer = s.append(folia.SyntaxLayer)
@@ -1414,8 +1414,8 @@ class Test4Edit(unittest.TestCase):
                     folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.2'], cls='n'),
                     folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.3'], cls='n'),
                 ]),
-                folia.SyntacticUnit(self.doc,cls='vp',contents=[     
-                    folia.SyntacticUnit(self.doc,cls='vp',contents=[ 
+                folia.SyntacticUnit(self.doc,cls='vp',contents=[
+                    folia.SyntacticUnit(self.doc,cls='vp',contents=[
                         folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.4'], cls='v'),
                         folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.5'], cls='participle'),
                     ]),
@@ -1430,26 +1430,26 @@ class Test4Edit(unittest.TestCase):
                 ])
             ])
         )
-        
+
         self.assertTrue( xmlcheck(layer.xmlstring(),'<syntax xmlns="http://ilk.uvt.nl/folia"><su class="s"><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.1" t="De"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.2" t="hoofdletter"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.3" t="A"/></su></su><su class="vp"><su class="vp"><su class="v"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.4" t="wordt"/></su><su class="participle"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.5" t="gebruikt"/></su></su><su class="pp"><su class="prep"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.6" t="voor"/></su><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.7" t="het"/></su><su class="adj"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.8" t="originele"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.9" t="handschrift"/></su></su></su></su></su></syntax>'))
 
-    def test014_replace(self):            
+    def test014_replace(self):
         """Edit Check - Replacing an annotation"""
         word = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.14']
         word.replace(folia.PosAnnotation(self.doc, cls='BOGUS') )
-        
-        self.assertEqual( len(list(word.annotations(folia.PosAnnotation))), 1)   
-        self.assertEqual( word.annotation(folia.PosAnnotation).cls, 'BOGUS')   
-    
+
+        self.assertEqual( len(list(word.annotations(folia.PosAnnotation))), 1)
+        self.assertEqual( word.annotation(folia.PosAnnotation).cls, 'BOGUS')
+
         self.assertTrue( xmlcheck(word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/><pos class="BOGUS"/></w>'))
-    
-    def test015_remove(self):            
+
+    def test015_remove(self):
         """Edit Check - Removing an annotation"""
         word = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.14']
         word.remove( word.annotation(folia.PosAnnotation) )
-        
+
         self.assertRaises( folia.NoSuchAnnotation, word.annotations, folia.PosAnnotation )
-    
+
         self.assertTrue( xmlcheck(word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/></w>'))
 
     def test016_datetime(self):
@@ -1457,96 +1457,96 @@ class Test4Edit(unittest.TestCase):
         w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.16']
         pos = w.annotation(folia.PosAnnotation)
         pos.datetime = datetime(1982, 12, 15, 19, 0, 1) #(the datetime of my joyful birth)
-        
+
         self.assertTrue( xmlcheck(pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="WW(pv,tgw,met-t)" datetime="1982-12-15T19:00:01"/>'))
-                
+
     def test017_wordtext(self):
         """Edit Check - Altering word text"""
-        
+
         #Important note: directly altering text is usually bad practise, you'll want to use proper corrections instead.
         w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.9']
         self.assertEqual(w.text(), 'terweil')
-        
+
         w.settext('terwijl')
         self.assertEqual(w.text(), 'terwijl')
-    
-    def test018a_sentencetext(self):    
+
+    def test018a_sentencetext(self):
         """Edit Check - Altering sentence text (untokenised by definition)"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
-        
+
         self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom .') #text is obtained from children, since there is no direct text associated
 
         self.assertFalse(s.hastext()) #no text DIRECTLY associated with the sentence
-        
+
         #associating text directly with the sentence: de-tokenised by definition!
-        s.settext('Stemma is een ander woord voor stamboom.') 
-        self.assertTrue(s.hastext()) 
+        s.settext('Stemma is een ander woord voor stamboom.')
+        self.assertTrue(s.hastext())
         self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom.')
-        
-    def test018b_sentencetext(self):    
+
+    def test018b_sentencetext(self):
         """Edit Check - Altering sentence text (untokenised by definition)"""
-           
+
         s = self.doc['WR-P-E-J-0000000001.p.1.s.8']
-        
+
         self.assertEqual( s.text(), 'Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .' ) #dynamic from children
 
-        
+
         s.settext('Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.' )
-        s.settext('Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.', 'original' ) 
-        
+        s.settext('Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.', 'original' )
+
         self.assertEqual( s.text(), 'Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.' ) #processed version by default
         self.assertEqual( s.text('original'), 'Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.' )
         self.assertTrue( s.hastext('original') )
-        
-        self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8"><t>Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.</t><t class="original">Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.</t><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.1"><t>Een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><quote xml:id="WR-P-E-J-0000000001.p.1.s.8.q.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.2"><t>volle</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="vol"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.3"><t>lijn</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="lijn"/></w></quote><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.4"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.5"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.6"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.7"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.8"><t>,</t><pos class="LET()"/><lemma class=","/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.9"><t>terweil</t><errordetection class="spelling"/><pos class="VG(onder)"/><lemma class="terweil"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.10"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.12"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.13"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14"><t>onzekere</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="onzeker"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14.c.1" class="spelling"><suggestion  auth="no"><t>twijfelachtige</t></suggestion><suggestion  auth="no"><t>ongewisse</t></suggestion></correction></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.15"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.16"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.17"><t>.</t><pos class="LET()"/><lemma class="."/></w></s>'))                
-        
-    def test019_adderrordetection(self):        
+
+        self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8"><t>Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.</t><t class="original">Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.</t><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.1"><t>Een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><quote xml:id="WR-P-E-J-0000000001.p.1.s.8.q.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.2"><t>volle</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="vol"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.3"><t>lijn</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="lijn"/></w></quote><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.4"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.5"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.6"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.7"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.8"><t>,</t><pos class="LET()"/><lemma class=","/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.9"><t>terweil</t><errordetection class="spelling"/><pos class="VG(onder)"/><lemma class="terweil"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.10"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.12"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.13"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14"><t>onzekere</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="onzeker"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14.c.1" class="spelling"><suggestion  auth="no"><t>twijfelachtige</t></suggestion><suggestion  auth="no"><t>ongewisse</t></suggestion></correction></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.15"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.16"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.17"><t>.</t><pos class="LET()"/><lemma class="."/></w></s>'))
+
+    def test019_adderrordetection(self):
         """Edit Check - Error Detection"""
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-        
+
         w.append( folia.ErrorDetection(self.doc, cls="spelling", annotator="testscript", annotatortype=folia.AnnotatorType.AUTO) )
-        self.assertEqual( w.annotation(folia.ErrorDetection).cls ,'spelling' ) 
+        self.assertEqual( w.annotation(folia.ErrorDetection).cls ,'spelling' )
 
         #self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
 
-    #def test008_addaltcorrection(self):            
-    #    """Edit Check - Adding alternative corrections"""        
+    #def test008_addaltcorrection(self):
+    #    """Edit Check - Adding alternative corrections"""
     #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-    #    w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto', alternative=True) 
-    #        
-    #    alt = w.alternatives(folia.AnnotationType.CORRECTION)        
-    #    self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' ) 
-    #    self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippellijn' ) 
-        
-    #def test009_addaltcorrection2(self):            
-    #    """Edit Check - Adding an alternative and a selected correction"""        
+    #    w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto', alternative=True)
+    #
+    #    alt = w.alternatives(folia.AnnotationType.CORRECTION)
+    #    self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' )
+    #    self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippellijn' )
+
+    #def test009_addaltcorrection2(self):
+    #    """Edit Check - Adding an alternative and a selected correction"""
     #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-    #    w.correcttext('stippel-lijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto', alternative=True) 
-        
-    #    w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto') 
-            
-    #    alt = w.alternatives(folia.AnnotationType.CORRECTION)        
-    #    self.assertEqual( alt[0].annotation(folia.Correction).id ,'WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1' ) 
-    #    self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' ) 
-    #    self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippel-lijn' )         
-                            
-    #    self.assertEqual( w.annotation(folia.Correction).id ,'WR-P-E-J-0000000001.p.1.s.8.w.11.correction.2' ) 
-    #    self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' ) 
-    #    self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )     
-    #    self.assertEqual( w.text(), 'stippellijn')            
-        
+    #    w.correcttext('stippel-lijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto', alternative=True)
+
+    #    w.correcttext('stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype='auto')
+
+    #    alt = w.alternatives(folia.AnnotationType.CORRECTION)
+    #    self.assertEqual( alt[0].annotation(folia.Correction).id ,'WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1' )
+    #    self.assertEqual( alt[0].annotation(folia.Correction).original[0] ,'stippelijn' )
+    #    self.assertEqual( alt[0].annotation(folia.Correction).new[0] ,'stippel-lijn' )
+
+    #    self.assertEqual( w.annotation(folia.Correction).id ,'WR-P-E-J-0000000001.p.1.s.8.w.11.correction.2' )
+    #    self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' )
+    #    self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )
+    #    self.assertEqual( w.text(), 'stippellijn')
+
 class Test4Create(unittest.TestCase):
         def test001_create(self):
             """Creating a FoLiA Document from scratch"""
             self.doc = folia.Document(id='example')
             self.doc.declare(folia.AnnotationType.TOKEN, 'adhocset',annotator='proycon')
-        
+
             self.assertEqual(self.doc.defaultset(folia.AnnotationType.TOKEN), 'adhocset')
             self.assertEqual(self.doc.defaultannotator(folia.AnnotationType.TOKEN, 'adhocset'), 'proycon')
-    
+
             text = folia.Text(self.doc, id=self.doc.id + '.text.1')
             self.doc.append( text )
-            
+
             text.append(
                 folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
@@ -1557,20 +1557,20 @@ class Test4Create(unittest.TestCase):
                 ]
                 )
             )
-        
+
             self.assertEqual( len(self.doc.index[self.doc.id + '.s.1']), 5)
-        
+
 class Test5Correction(unittest.TestCase):
         def setUp(self):
             self.doc = folia.Document(id='example')
-            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')        
+            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')
             self.text = folia.Text(self.doc, id=self.doc.id + '.text.1')
-            self.doc.append( self.text )            
-     
-        
-        def test001_splitcorrection(self):  
+            self.doc.append( self.text )
+
+
+        def test001_splitcorrection(self):
             """Correction - Split correction"""
-            
+
             self.text.append(
                 folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
@@ -1581,23 +1581,23 @@ class Test5Correction(unittest.TestCase):
                 ]
                 )
             )
-                    
-            
+
+
             w = self.doc.index[self.doc.id + '.s.1.w.4']
-            
+
             w.split( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
-            
-            s = self.doc.index[self.doc.id + '.s.1']            
+
+            s = self.doc.index[self.doc.id + '.s.1']
             self.assertEqual( s.words(-3).text(), 'on' )
             self.assertEqual( s.words(-2).text(), 'line' )
             self.assertEqual( s.text(), 'De site staat on line .' )
             self.assertEqual( len(s.words()), 6 )
             self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4a"><t>on</t></w><w xml:id="example.s.1.w.4b"><t>line</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>online</t></w></original></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
-            
-        
-        def test001_splitcorrection2(self):  
+
+
+        def test001_splitcorrection2(self):
             """Correction - Split suggestion"""
-            
+
             self.text.append(
                 folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
@@ -1608,21 +1608,21 @@ class Test5Correction(unittest.TestCase):
                 ]
                 )
             )
-                    
-            
+
+
             w = self.doc.index[self.doc.id + '.s.1.w.4']
-            
-            s = self.doc.index[self.doc.id + '.s.1'] 
+
+            s = self.doc.index[self.doc.id + '.s.1']
             w.split( folia.Word(self.doc, generate_id_in=s, text="on"), folia.Word(self.doc, generate_id_in=s, text="line"), suggest=True )
-            
+
             self.assertEqual( len(s.words()), 5 )
             self.assertEqual( s.words(-2).text(), 'online' )
             self.assertEqual( s.text(), 'De site staat online .' )
 
             self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><current><w xml:id="example.s.1.w.4"><t>online</t></w></current><suggestion auth="no"><w xml:id="example.s.1.w.6"><t>on</t></w><w xml:id="example.s.1.w.7"><t>line</t></w></suggestion></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
 
-            
-        def test002_mergecorrection(self):         
+
+        def test002_mergecorrection(self):
             """Correction - Merge corrections"""
             self.text.append(
                 folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
@@ -1634,25 +1634,25 @@ class Test5Correction(unittest.TestCase):
                     folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
                 ]
                 )
-            )       
-            
+            )
+
             s = self.doc.index[self.doc.id + '.s.1']
-            
-                               
+
+
             s.mergewords( folia.Word(self.doc, 'online', id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.4'], self.doc.index[self.doc.id + '.s.1.w.5'] )
-           
+
             self.assertEqual( len(s.words()), 5 )
             self.assertEqual( s.text(), 'De site staat online .')
-            
+
             #incorrection() test, check if newly added word correctly reports being part of a correction
             w = self.doc.index[self.doc.id + '.s.1.w.4-5']
-            self.assertTrue( isinstance(w.incorrection(), folia.Correction) ) #incorrection return the correction the word is part of, or None if not part of a correction, 
-            
-            
-            self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4-5"><t>online</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w></original></correction><w xml:id="example.s.1.w.6"><t>.</t></w></s>'))         
+            self.assertTrue( isinstance(w.incorrection(), folia.Correction) ) #incorrection return the correction the word is part of, or None if not part of a correction,
 
-            
-        def test003_deletecorrection(self):         
+
+            self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4-5"><t>online</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w></original></correction><w xml:id="example.s.1.w.6"><t>.</t></w></s>'))
+
+
+        def test003_deletecorrection(self):
             """Correction - Deletion"""
 
             self.text.append(
@@ -1670,10 +1670,10 @@ class Test5Correction(unittest.TestCase):
             s.deleteword(self.doc.index[self.doc.id + '.s.1.w.4'])
             self.assertEqual( len(s.words()), 5 )
             self.assertEqual( s.text(), 'Ik zie een huis .')
-            
-            self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new/><original auth="no"><w xml:id="example.s.1.w.4"><t>groot</t></w></original></correction><w xml:id="example.s.1.w.5"><t>huis</t></w><w xml:id="example.s.1.w.6"><t>.</t></w></s>') )       
 
-        def test004_insertcorrection(self):         
+            self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new/><original auth="no"><w xml:id="example.s.1.w.4"><t>groot</t></w></original></correction><w xml:id="example.s.1.w.5"><t>huis</t></w><w xml:id="example.s.1.w.6"><t>.</t></w></s>') )
+
+        def test004_insertcorrection(self):
             """Correction - Insert"""
             self.text.append(
                 folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
@@ -1688,26 +1688,26 @@ class Test5Correction(unittest.TestCase):
             s = self.doc.index[self.doc.id + '.s.1']
             s.insertword( folia.Word(self.doc, id=self.doc.id+'.s.1.w.3b',text='groot'),  self.doc.index[self.doc.id + '.s.1.w.3'])
             self.assertEqual( len(s.words()), 6 )
-            
+
             self.assertEqual( s.text(), 'Ik zie een groot huis .')
             self.assertTrue( xmlcheck( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.3b"><t>groot</t></w></new><original auth="no"/></correction><w xml:id="example.s.1.w.4"><t>huis</t></w><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
 
-        def test005_reusecorrection(self):     
+        def test005_reusecorrection(self):
             """Correction - Re-using a correction with only suggestions"""
             global FOLIAEXAMPLE
             self.doc = folia.Document(string=FOLIAEXAMPLE)
-            
+
             w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-            w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) 
+            w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
             c = w.annotation(folia.Correction)
-                    
+
             self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
             self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
-            self.assertEqual( w.text(), 'stippelijn')  
-            
+            self.assertEqual( w.text(), 'stippelijn')
+
             w.correct(new='stippellijn',set='corrections',cls='spelling',annotator='John Doe', annotatortype=folia.AnnotatorType.MANUAL,reuse=c.id)
-            
-            self.assertEqual( w.text(), 'stippellijn')    
+
+            self.assertEqual( w.text(), 'stippellijn')
             self.assertEqual( len(list(w.annotations(folia.Correction))), 1 )
             self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
             self.assertEqual( w.annotation(folia.Correction).suggestions(0).annotator , 'testscript' )
@@ -1715,16 +1715,16 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( w.annotation(folia.Correction).new(0).text() , 'stippellijn' )
             self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
             self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
-            
+
             self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" auth="no" annotatortype="auto"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
-            
-            
+
+
 class Test6Query(unittest.TestCase):
     def setUp(self):
         global FOLIAEXAMPLE
         self.doc = folia.Document(string=FOLIAEXAMPLE)
-    
-    def test001_findwords_simple(self):     
+
+    def test001_findwords_simple(self):
         """Querying - Find words (simple)"""
         matches = list(self.doc.findwords( folia.Pattern('van','het','alfabet') ))
         self.assertEqual( len(matches), 1 )
@@ -1733,8 +1733,8 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][1].text(), 'het' )
         self.assertEqual( matches[0][2].text(), 'alfabet' )
 
-    
-    def test002_findwords_wildcard(self):     
+
+    def test002_findwords_wildcard(self):
         """Querying - Find words (with wildcard)"""
         matches = list(self.doc.findwords( folia.Pattern('van','het',True) ))
         self.assertEqual( len(matches), 1 )
@@ -1743,39 +1743,39 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][0].text(), 'van' )
         self.assertEqual( matches[0][1].text(), 'het' )
         self.assertEqual( matches[0][2].text(), 'alfabet' )
-        
-    def test003_findwords_annotation(self):     
+
+    def test003_findwords_annotation(self):
         """Querying - Find words by annotation"""
         matches = list(self.doc.findwords( folia.Pattern('de','historisch','wetenschap','worden', matchannotation=folia.LemmaAnnotation) ))
         self.assertEqual( len(matches), 1 )
         self.assertEqual( len(matches[0]), 4 )
         self.assertEqual( matches[0][0].text(), 'de' )
         self.assertEqual( matches[0][1].text(), 'historische' )
-        self.assertEqual( matches[0][2].text(), 'wetenschap' )        
-        self.assertEqual( matches[0][3].text(), 'wordt' ) 
+        self.assertEqual( matches[0][2].text(), 'wetenschap' )
+        self.assertEqual( matches[0][3].text(), 'wordt' )
 
 
-        
-    def test004_findwords_multi(self):     
+
+    def test004_findwords_multi(self):
         """Querying - Find words using a conjunction of multiple patterns """
         matches = list(self.doc.findwords( folia.Pattern('de','historische',True, 'wordt'), folia.Pattern('de','historisch','wetenschap','worden', matchannotation=folia.LemmaAnnotation) ))
         self.assertEqual( len(matches), 1 )
         self.assertEqual( len(matches[0]), 4 )
         self.assertEqual( matches[0][0].text(), 'de' )
         self.assertEqual( matches[0][1].text(), 'historische' )
-        self.assertEqual( matches[0][2].text(), 'wetenschap' )        
-        self.assertEqual( matches[0][3].text(), 'wordt' )      
-        
-    def test005_findwords_none(self):     
+        self.assertEqual( matches[0][2].text(), 'wetenschap' )
+        self.assertEqual( matches[0][3].text(), 'wordt' )
+
+    def test005_findwords_none(self):
         """Querying - Find words that don't exist"""
         matches = list(self.doc.findwords( folia.Pattern('bli','bla','blu')))
         self.assertEqual( len(matches), 0)
-        
-    def test006_findwords_overlap(self):     
+
+    def test006_findwords_overlap(self):
         """Querying - Find words with overlap"""
         doc = folia.Document(id='test')
         text = folia.Text(doc, id='test.text')
-        
+
         text.append(
             folia.Sentence(doc,id=doc.id + '.s.1', contents=[
                 folia.Word(doc,id=doc.id + '.s.1.w.1', text="a"),
@@ -1788,14 +1788,14 @@ class Test6Query(unittest.TestCase):
             ]
             )
         )
-        doc.append(text)                        
-        
-        matches = list(doc.findwords( folia.Pattern('a','a')))
-        self.assertEqual( len(matches), 4)       
-        matches = list(doc.findwords( folia.Pattern('a','a',casesensitive=True)))
-        self.assertEqual( len(matches), 3)       
+        doc.append(text)
 
-    def test007_findwords_context(self):     
+        matches = list(doc.findwords( folia.Pattern('a','a')))
+        self.assertEqual( len(matches), 4)
+        matches = list(doc.findwords( folia.Pattern('a','a',casesensitive=True)))
+        self.assertEqual( len(matches), 3)
+
+    def test007_findwords_context(self):
         """Querying - Find words with context"""
         matches = list(self.doc.findwords( folia.Pattern('van','het','alfabet'), leftcontext=3, rightcontext=3 ))
         self.assertEqual( len(matches), 1 )
@@ -1809,29 +1809,29 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][6].text(), 'en' )
         self.assertEqual( matches[0][7].text(), 'worden' )
         self.assertEqual( matches[0][8].text(), 'tussen' )
-                      
-    def test008_findwords_disjunction(self):     
+
+    def test008_findwords_disjunction(self):
         """Querying - Find words with disjunctions"""
         matches = list(self.doc.findwords( folia.Pattern('de',('historische','hedendaagse'),'wetenschap','wordt') ))
         self.assertEqual( len(matches), 1 )
         self.assertEqual( len(matches[0]), 4 )
         self.assertEqual( matches[0][0].text(), 'de' )
         self.assertEqual( matches[0][1].text(), 'historische' )
-        self.assertEqual( matches[0][2].text(), 'wetenschap' )        
-        self.assertEqual( matches[0][3].text(), 'wordt' ) 
+        self.assertEqual( matches[0][2].text(), 'wetenschap' )
+        self.assertEqual( matches[0][3].text(), 'wordt' )
 
-    def test009_findwords_regexp(self):     
+    def test009_findwords_regexp(self):
         """Querying - Find words with regular expressions"""
         matches = list(self.doc.findwords( folia.Pattern('de',folia.RegExp('hist.*'),folia.RegExp('.*schap'),folia.RegExp('w[oae]rdt')) ))
         self.assertEqual( len(matches), 1 )
         self.assertEqual( len(matches[0]), 4 )
         self.assertEqual( matches[0][0].text(), 'de' )
         self.assertEqual( matches[0][1].text(), 'historische' )
-        self.assertEqual( matches[0][2].text(), 'wetenschap' )        
-        self.assertEqual( matches[0][3].text(), 'wordt' ) 
-        
+        self.assertEqual( matches[0][2].text(), 'wetenschap' )
+        self.assertEqual( matches[0][3].text(), 'wordt' )
 
-    def test010a_findwords_variablewildcard(self):     
+
+    def test010a_findwords_variablewildcard(self):
         """Querying - Find words with variable wildcard"""
         matches = list(self.doc.findwords( folia.Pattern('de','laatste','*','alfabet') ))
         self.assertEqual( len(matches), 1 )
@@ -1841,13 +1841,13 @@ class Test6Query(unittest.TestCase):
         self.assertEqual( matches[0][2].text(), 'letters' )
         self.assertEqual( matches[0][3].text(), 'van' )
         self.assertEqual( matches[0][4].text(), 'het' )
-        self.assertEqual( matches[0][5].text(), 'alfabet' )   
+        self.assertEqual( matches[0][5].text(), 'alfabet' )
 
-    def test010b_findwords_varwildoverlap(self):     
+    def test010b_findwords_varwildoverlap(self):
         """Querying - Find words with variable wildcard and overlap"""
         doc = folia.Document(id='test')
         text = folia.Text(doc, id='test.text')
-        
+
         text.append(
             folia.Sentence(doc,id=doc.id + '.s.1', contents=[
                 folia.Word(doc,id=doc.id + '.s.1.w.1', text="a"),
@@ -1860,47 +1860,47 @@ class Test6Query(unittest.TestCase):
             ]
             )
         )
-        doc.append(text)                        
-        
-        matches = list(doc.findwords( folia.Pattern('a','*', 'c')))
-        self.assertEqual( len(matches), 3)       
+        doc.append(text)
 
-        
-    def test011_findwords_annotation_na(self):     
+        matches = list(doc.findwords( folia.Pattern('a','*', 'c')))
+        self.assertEqual( len(matches), 3)
+
+
+    def test011_findwords_annotation_na(self):
         """Querying - Find words by non existing annotation"""
         matches = list(self.doc.findwords( folia.Pattern('bli','bla','blu', matchannotation=folia.SenseAnnotation) ))
         self.assertEqual( len(matches), 0 )
 
-class Test7XpathQuery(unittest.TestCase):                
-    def test050_findwords_xpath(self):     
-        """Xpath Querying - Collect all words (including non-authoritative)"""        
+class Test7XpathQuery(unittest.TestCase):
+    def test050_findwords_xpath(self):
+        """Xpath Querying - Collect all words (including non-authoritative)"""
         count = 0
-        for word in folia.Query('/tmp/foliatest.xml','//f:w'):            
+        for word in folia.Query('/tmp/foliatest.xml','//f:w'):
             count += 1
             self.assertTrue( isinstance(word, folia.Word) )
         self.assertEqual(count, 163)
-        
-    def test051_findwords_xpath(self):     
-        """Xpath Querying - Collect all words (authoritative only)"""        
+
+    def test051_findwords_xpath(self):
+        """Xpath Querying - Collect all words (authoritative only)"""
         count = 0
-        for word in folia.Query('/tmp/foliatest.xml','//f:w[not(ancestor-or-self::*/@auth)]'):            
+        for word in folia.Query('/tmp/foliatest.xml','//f:w[not(ancestor-or-self::*/@auth)]'):
             count += 1
             self.assertTrue( isinstance(word, folia.Word) )
-        self.assertEqual(count, 163)        
+        self.assertEqual(count, 163)
 
 
-class Test8Validation(unittest.TestCase):    
-      def test000_relaxng(self): 
+class Test8Validation(unittest.TestCase):
+      def test000_relaxng(self):
         """Validation - RelaxNG schema generation"""
         folia.relaxng()
 
-      def test001_shallowvalidation(self): 
+      def test001_shallowvalidation(self):
         """Validation - Shallow validation against automatically generated RelaxNG schema"""
         folia.validate('/tmp/foliasavetest.xml')
 
 
 f = io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8')
-FOLIAEXAMPLE = f.read() 
+FOLIAEXAMPLE = f.read()
 f.close()
 
 
