@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FoLiA library &mdash; PyNLPl 0.5.3 documentation</title>
+    <title>FoLiA library &mdash; PyNLPl 0.6.2 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.3',
+        VERSION:     '0.6.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.5.3 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.6.2 documentation" href="index.html" />
     <link rel="next" title="Formats" href="formats.html" />
     <link rel="prev" title="Evaluation &amp; Experiments" href="evaluation.html" /> 
   </head>
@@ -46,7 +46,7 @@
         <li class="right" >
           <a href="evaluation.html" title="Evaluation &amp; Experiments"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.5.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -1676,19 +1676,19 @@ not found.</p>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.Corpus">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x3d28cf8&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x45d6758&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.CorpusFiles">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x3d28cf8&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x45d6758&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields the filenames on each iteration.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.CorpusProcessor">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x3d28ed8&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x45d6938&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes a corpus of various FoLiA documents using a parallel processing. Calls a user-defined function with the three-tuple (filename, args, kwargs) for each file in the corpus. The user-defined function is itself responsible for instantiating a FoLiA document! args and kwargs, as received by the custom function, are set through the run() method, which yields the result of the custom function on each iteration.</p>
 <dl class="method">
 <dt id="pynlpl.formats.folia.CorpusProcessor.execute">
@@ -4017,11 +4017,11 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
         <li class="right" >
           <a href="evaluation.html" title="Evaluation &amp; Experiments"
              >previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.5.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2012, Maarten van Gompel.
+        &copy; Copyright 2013, Maarten van Gompel.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

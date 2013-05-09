@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Evaluation &amp; Experiments &mdash; PyNLPl 0.5.3 documentation</title>
+    <title>Evaluation &amp; Experiments &mdash; PyNLPl 0.6.2 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.3',
+        VERSION:     '0.6.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.5.3 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.6.2 documentation" href="index.html" />
     <link rel="next" title="FoLiA library" href="folia.html" />
     <link rel="prev" title="Data Types" href="datatypes.html" /> 
   </head>
@@ -46,7 +46,7 @@
         <li class="right" >
           <a href="datatypes.html" title="Data Types"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.5.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -129,6 +129,11 @@
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.auc">
+<tt class="descname">auc</tt><big>(</big><em>cls=None</em>, <em>macro=False</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.auc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="pynlpl.evaluation.ClassEvaluation.compute">
 <tt class="descname">compute</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.compute" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -136,6 +141,11 @@
 <dl class="method">
 <dt id="pynlpl.evaluation.ClassEvaluation.confusionmatrix">
 <tt class="descname">confusionmatrix</tt><big>(</big><em>casesensitive=True</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.confusionmatrix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.fp_rate">
+<tt class="descname">fp_rate</tt><big>(</big><em>cls=None</em>, <em>macro=False</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.fp_rate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -161,6 +171,11 @@
 <dl class="method">
 <dt id="pynlpl.evaluation.ClassEvaluation.specificity">
 <tt class="descname">specificity</tt><big>(</big><em>cls=None</em>, <em>macro=False</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.specificity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.evaluation.ClassEvaluation.tp_rate">
+<tt class="descname">tp_rate</tt><big>(</big><em>cls=None</em>, <em>macro=False</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.tp_rate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -224,6 +239,34 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="pynlpl.evaluation.auc">
+<tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">auc</tt><big>(</big><em>x</em>, <em>y</em>, <em>reorder=False</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.auc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Area Under the Curve (AUC) using the trapezoidal rule</p>
+<p>This is a general fuction, given points on a curve.  For computing the area
+under the ROC-curve, see <tt class="xref py py-func docutils literal"><span class="pre">auc_score()</span></tt>.</p>
+<dl class="docutils">
+<dt>x <span class="classifier-delimiter">:</span> <span class="classifier">array, shape = [n]</span></dt>
+<dd>x coordinates.</dd>
+<dt>y <span class="classifier-delimiter">:</span> <span class="classifier">array, shape = [n]</span></dt>
+<dd>y coordinates.</dd>
+<dt>reorder <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional (default=False)</span></dt>
+<dd>If True, assume that the curve is ascending in the case of ties, as for
+an ROC curve. If the curve is non-ascending, the result will be wrong.</dd>
+</dl>
+<p>auc : float</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">metrics</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">,</span> <span class="n">thresholds</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">roc_curve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">pred</span><span class="p">,</span> <span class="n">pos_label</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">metrics</span><span class="o">.</span><span class="n">auc</span><span class="p">(</span><span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">)</span>
+<span class="go">0.75</span>
+</pre></div>
+</div>
+<p>auc_score : Computes the area under the ROC curve</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="pynlpl.evaluation.filesampler">
 <tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">filesampler</tt><big>(</big><em>files</em>, <em>testsetsize=0.1</em>, <em>devsetsize=0</em>, <em>trainsetsize=0</em>, <em>outputdir=u''</em>, <em>encoding=u'utf-8'</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.filesampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract a training set, test set and optimally a development set from one file, or multiple <em>interdependent</em> files (such as a parallel corpus). It is assumed each line contains one instance (such as a word or sentence for example).</p>
@@ -280,11 +323,11 @@
         <li class="right" >
           <a href="datatypes.html" title="Data Types"
              >previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.5.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2012, Maarten van Gompel.
+        &copy; Copyright 2013, Maarten van Gompel.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
