@@ -101,7 +101,7 @@ There is a generic method available on all elements to select child elements of 
 Note that the select method is by default recursive, set the third argument to False to make it non-recursive. The second argument can be used for restricting matches to a specific set.
 
 Common attributes
-3-----------------------
+-----------------------
 
 
 As you know, the FoLiA paradigm introduces *sets*, *classes*, *annotator* with *annotator types* and *confidence* values. These attributes are easily accessible on any element that has them:
