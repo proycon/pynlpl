@@ -67,11 +67,12 @@
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pynlpl.formats</span> <span class="kn">import</span> <span class="n">folia</span>
 </pre></div>
 </div>
-<p>Subsequently, a document can be read from file and into memory as follows:</p>
+<p>Subsequently, a document can be read from file and follows:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">doc</span> <span class="o">=</span> <span class="n">folia</span><span class="o">.</span><span class="n">Document</span><span class="p">(</span><span class="nb">file</span><span class="o">=</span><span class="s">&quot;/path/to/document.xml&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This returns an instance that holds the entire document.</p>
+<p>This returns an instance that holds the entire document in memory. Note that for large
+FoLiA documents this may consume quite some memory!</p>
 <p>Once you have loaded a document, all data is available for you to read and manipulate as you see fit. We will first illustrate some simple use cases:</p>
 </div>
 <div class="section" id="printing-text">
@@ -140,8 +141,9 @@
 </pre></div>
 </div>
 <p>Note that the select method is by default recursive, set the third argument to False to make it non-recursive. The second argument can be used for restricting matches to a specific set.</p>
-<p>Common attributes
-3&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;</p>
+</div>
+<div class="section" id="common-attributes">
+<h3>Common attributes<a class="headerlink" href="#common-attributes" title="Permalink to this headline">¶</a></h3>
 <p>As you know, the FoLiA paradigm introduces <em>sets</em>, <em>classes</em>, <em>annotator</em> with <em>annotator types</em> and <em>confidence</em> values. These attributes are easily accessible on any element that has them:</p>
 <blockquote>
 <div><ul class="simple">
@@ -1785,19 +1787,19 @@ not found.</p>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.Corpus">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x3288d70&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x2e1bd70&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.CorpusFiles">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x3288d70&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x2e1bd70&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields the filenames on each iteration.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.CorpusProcessor">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x3288f50&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x2e1bf50&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes a corpus of various FoLiA documents using a parallel processing. Calls a user-defined function with the three-tuple (filename, args, kwargs) for each file in the corpus. The user-defined function is itself responsible for instantiating a FoLiA document! args and kwargs, as received by the custom function, are set through the run() method, which yields the result of the custom function on each iteration.</p>
 <dl class="method">
 <dt id="pynlpl.formats.folia.CorpusProcessor.execute">
@@ -4066,6 +4068,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <li><a class="reference internal" href="#index">Index</a></li>
 <li><a class="reference internal" href="#obtaining-list-of-elements">Obtaining list of elements</a></li>
 <li><a class="reference internal" href="#select-method">Select method</a></li>
+<li><a class="reference internal" href="#common-attributes">Common attributes</a></li>
 <li><a class="reference internal" href="#annotations">Annotations</a><ul>
 <li><a class="reference internal" href="#span-annotation">Span Annotation</a></li>
 </ul>
