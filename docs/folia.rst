@@ -17,11 +17,12 @@ Any script that uses FoLiA starts with the import::
 
     from pynlpl.formats import folia
 
-Subsequently, a document can be read from file and into memory as follows::
+Subsequently, a document can be read from file and follows::
 
     doc = folia.Document(file="/path/to/document.xml")
 
-This returns an instance that holds the entire document.
+This returns an instance that holds the entire document in memory. Note that for large
+FoLiA documents this may consume quite some memory!
 
 Once you have loaded a document, all data is available for you to read and manipulate as you see fit. We will first illustrate some simple use cases:
 
