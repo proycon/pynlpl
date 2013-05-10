@@ -4,7 +4,7 @@ FoLiA library
 
 This tutorial will introduce the FoLiA Python library, part of PyNLPl. The FoLiA library provides an Application Programming Interface for the reading, creation and manipulation of FoLiA XML documents. The library works under Python 2.6, 2.7, as well as Python 3. The samples in this documentation follow Python 2.x conventions.
 
-Prior to reading this document, it is highly recommended to first read the FoLiA documentation itself and familiarise yourself with the format and underlying paradigm. The FoLiA documentation can be found through http://proycon.github.com/folia . 
+Prior to reading this document, it is highly recommended to first read the FoLiA documentation itself and familiarise yourself with the format and underlying paradigm. The FoLiA documentation can be found through http://proycon.github.com/folia . It is especially important to understand the way FoLiA handles sets/classes, declarations, common attributes such as annotator/annotatortype and the distinction between various kinds of annotation categories such as token annotation and span annotation.
 
 
 Reading FoLiA
@@ -100,7 +100,7 @@ There is a generic method available on all elements to select child elements of 
 Note that the select method is by default recursive, set the third argument to False to make it non-recursive. The second argument can be used for restricting matches to a specific set.
 
 Common attributes
------------------------
+3-----------------------
 
 
 As you know, the FoLiA paradigm introduces *sets*, *classes*, *annotator* with *annotator types* and *confidence* values. These attributes are easily accessible on any element that has them:
@@ -137,7 +137,7 @@ Note that the second argument of ``annotation()``, ``annotations()`` or ``select
 Span Annotation
 +++++++++++++++++++
 
-We will discuss two ways of accessing span annotation. Span annotation is contained within an annotation layer of a certain structure element, often a sentence. In the first way of accessing span annotation, we will first obtain the layer, then iterate over the span annotation elements within that layer, and finally iterate over the words to which the span applies. Assume we have a ``sentence`` and we want to print all the named entities in it::
+We will discuss three ways of accessing span annotation. Span annotation is contained within an annotation layer of a certain structure element, often a sentence. In the first way of accessing span annotation, we will first obtain the layer, then iterate over the span annotation elements within that layer, and finally iterate over the words to which the span applies. Assume we have a ``sentence`` and we want to print all the named entities in it::
 
 
     for layer in sentence.select(folia.EntitiesLayer):
@@ -147,21 +147,21 @@ We will discuss two ways of accessing span annotation. Span annotation is contai
                 print word,  #print without newline
             print   #print newline
 
-The ``wrefs()`` method, available on all span annotation elements, will return a list of all words (as well as morphemes) over which a span annotation element spans.
+The ``wrefs()`` method, available on all span annotation elements, will return a list of all words (as well as morphemes and phonemes) over which a span annotation element spans.
 
-The second way of accessing span annotation takes another approach, here we start from a word and seek span annotations in which the word occurs. Assume we have a ``word`` and want to find chunks it occurs in::
+The second way of accessing span annotation takes another approach, using the ``findspans()`` method on Word instances. Here we start from a word and seek span annotations in which the word occurs. Assume we have a ``word`` and want to find chunks it occurs in::
 
     for chunk in word.findspans(folia.ChunkingLayer):
         print " Chunk class=", chunk.cls, " words="
         for word2 in chunk.wrefs(): #print all words in the chunk (of which the word is a part)
             print word2,
         print
- 
 
-Searching in a FoLiA document
-================================
+The third way allows us to look for span elements given an annotation layer and words. In other words, it checks if one or more words form a span. This is an exact match and not a sub-part match as in the previously described method. To do this, we use use the ``findspan()`` method on annotation layers::
 
-(Yet to be written)
+    for span in annotationlayer.findspan(word1,word2):
+        print span.cls
+
 
 Editing FoLiA
 ======================
@@ -173,6 +173,24 @@ Creating a new FoliA document, rather than loading an existing one from file, ca
 
     doc = folia.Document(id='example')
     
+
+Declarations
+---------------------
+
+Whenever you add a new type of annotation, or a different set, to a FoLiA document, you have to
+first declare it. This is done using the ``declare()`` method. It takes as
+arguments the annotation type, the set, and you can optionally pass keyword
+arguments to ``annotator=`` and ``annotatortype=`` to set defaults.
+
+An example for Part-of-Speech annotation::
+
+    doc.declare(folia.PosAnnotation, 'brown-tag-set')
+
+An example with a default annotator::
+    
+    doc.declare(folia.PosAnnotation, 'brown-tag-set', annotator='proycon', annotatortype=folia.AnnotatorType.MANUAL)
+
+Any additional sets for Part-of-Speech would have to be explicitly declared as well.
 
 Adding structure
 -------------------------
@@ -191,7 +209,7 @@ Assuming we begin with an empty document, we should first add a Text element. Th
 Adding annotations
 -------------------------
 
-Adding annotations, or any elements for that matter, is done using the append method. Let's build on the previous example::
+Adding annotations, or any elements for that matter, is done using the append method. We assume that the annotations we add have already been properly declared, otherwise an exception will be raised as soon as ``append()`` is called. Let's build on the previous example::
 
     #First we grab the fourth word, 'test', from the sentence
     word = sentence.words(3)
@@ -245,6 +263,7 @@ Adding span annotation is easy with the FoLiA library, not withstanding the fact
 
 As you know, span annotation uses a stand-off annotation embedded in annotation layers. These layers are in turn embedded in structural elements such as sentences. In the following example we first create a sentence and then add a syntax parse::
 
+    doc.declare(folia.SyntaxLayer, 'some-syntax-set')
     
     sentence = text.append(folia.Sentence)
     sentence.append(folia.Word, 'The',id='example.s.1.w.1')
@@ -259,35 +278,119 @@ As you know, span annotation uses a stand-off annotation embedded in annotation 
     
     #Adding Syntactic Units
     layer.append( 
-        SyntacticUnit(self.doc, cls='s', contents=[
-            SyntacticUnit(self.doc, cls='np', contents=[
-                SyntacticUnit(self.doc, self.doc['example.s.1.w.1'], cls='det'),
-                SyntacticUnit(self.doc, self.doc['example.s.1.w.2'], cls='n'),
+        folia.SyntacticUnit(self.doc, cls='s', contents=[
+            folia.SyntacticUnit(self.doc, cls='np', contents=[
+                folia.SyntacticUnit(self.doc, self.doc['example.s.1.w.1'], cls='det'),
+                folia.SyntacticUnit(self.doc, self.doc['example.s.1.w.2'], cls='n'),
             ]),
-            SyntacticUnit(self.doc, cls='vp', contents=[
-                SyntacticUnit(self.doc, self.doc['example.s.1.w.3'], cls='v')
-                    SyntacticUnit(self.doc, cls='np', contents=[
-                        SyntacticUnit(self.doc, self.doc['example.s.1.w.4'], cls='det'),
-                        SyntacticUnit(self.doc, self.doc['example.s.1.w.5'], cls='n'),            
+            folia.SyntacticUnit(self.doc, cls='vp', contents=[
+                folia.SyntacticUnit(self.doc, self.doc['example.s.1.w.3'], cls='v')
+                    folia.SyntacticUnit(self.doc, cls='np', contents=[
+                        folia.SyntacticUnit(self.doc, self.doc['example.s.1.w.4'], cls='det'),
+                        folia.SyntacticUnit(self.doc, self.doc['example.s.1.w.5'], cls='n'),            
                     ]),
                 ]),
-            SyntacticUnit(self.doc, self.doc['example.s.1.w.6'], cls='fin')        
+            folia.SyntacticUnit(self.doc, self.doc['example.s.1.w.6'], cls='fin')        
         ])
     )
     
 To make references to the words, we simply pass the word instances and use the document's index to obtain them.  Note also that passing a list using the keyword argument ``contents`` is wholly equivalent to passing the non-keyword arguments separately.
 
 
-Adding subtoken annotation
---------------------------------
+Searching in a FoLiA document
+================================
 
-(Yet to be written)
+If you have loaded a FoLiA document into memory, there are several ways to search in it. Iteration over any FoLiA element will iterate over all its children. As already discussed, you can of course loop over any annotation element using ``select()``, ``annotation()`` and ``annotations()``. Additionally, ``Word.findspans()`` and ``AbstractAnnotationLayer.findspan()`` are useful methods of finding span annotations covering particular words, whereas ``AbstractSpanAnnotation.wrefs()`` does the reverse and finds the words for a given span annotation element. In addition to these main methods of navigation and selection, there are several more high-level functions available for searching.
+
+For this we introduce the ``folia.Pattern`` class. This class describes a pattern over words to be searched for. The ``Document.findwords()`` method can subsequently be called with this pattern, and it will return all the words that match. An example will best illustrate this, first a trivial example of searching for one word::
+
+    for match in doc.findwords( folia.Pattern('house') ):
+        for word in match:
+            print word.id
+        print "----"
+
+The same can be done for a sequence::
+
+    for match in doc.findwords( folia.Pattern('a','big', 'house') ):
+        for word in match:
+            print word.id
+        print "----"
+
+The boolean value ``True`` acts as a wildcard, matching any word::
+
+    for match in doc.findwords( folia.Pattern('a',True,'house') ):
+        for word in match:
+            print word.id, word.text()
+        print "----"
+
+Alternatively, and more constraning, you may also specify a tuple of alternatives::
 
 
-Corrections
-----------------
+    for match in doc.findwords( folia.Pattern('a',('big','small'),'house') ):
+        for word in match:
+            print word.id, word.text()
+        print "----"
+
+Or even a regular expression using the ``folia.RegExp`` class::
 
 
+    for match in doc.findwords( folia.Pattern('a', folia.RegExp('b?g'),'house') ):
+        for word in match:
+            print word.id, word.text()
+        print "----"
+
+        
+Rather than searching on the text content of the words, you can search on the
+classes of any kind of token annotation using the keyword argument
+``matchannotation=``::
+
+    for match in doc.findwords( folia.Pattern('det','adj','noun',matchannotation=folia.PosAnnotation ) ):
+        for word in match:
+            print word.id, word.text()
+        print "----"
+
+The set can be restricted by adding the additional keyword argument
+``matchannotationset=``. Case sensitivity, by default disabled, can be enabled by setting ``casesensitive=True``.
+
+Things become even more interesting when different Patterns are combined. A
+match will have to satisfy all patterns::
+
+    for match in doc.findwords( folia.Pattern('a', True, 'house'), folia.Pattern('det','adj','noun',matchannotation=folia.PosAnnotation ) ):
+        for word in match:
+            print word.id, word.text()
+        print "----"
+
+
+The ``findwords()`` method can be instructed to also return left and/or right context for any match. This is done using the ``leftcontext=`` and ``rightcontext=`` keyword arguments, their values being an integer number of the number of context words to include in each match. For instance, we can look for the word house and return its immediate neighbours as follows::
+
+    for match in doc.findwords( folia.Pattern('house') , leftcontext=1, rightcontext=1):
+        for word in match:
+            print word.id
+        print "----"
+
+A match here would thus always consist of three words instead of just one.
+
+Last, ``Pattern`` also has support for variable-width gaps, the asterisk symbol
+has special meaning to this end::
+
+
+    for match in doc.findwords( folia.Pattern('a','*','house') ):
+        for word in match:
+            print word.id
+        print "----"
+
+Unlike the pattern ``('a',True,'house')``, which by definition is a pattern of
+three words, the pattern in the example above will match gaps of any length (up
+to a certain built-in maximum), so this might include matches such as *a very
+nice house*.
+
+Some remarks on these methods of querying are in order. These searches are
+pretty exhaustive and are done by simply iterating over all the words in the
+document. The entire document is loaded in memory and no special indices are involved. 
+For single documents this is okay, but when iterating over a corpus of
+thousands of documents, this method is too slow, especially for real-time
+applications. For huge corpora, clever indexing and database management systems
+will be required. This however is beyond the scope of this library.
 
 
 

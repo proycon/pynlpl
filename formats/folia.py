@@ -3536,6 +3536,100 @@ class RegExp(object):
 
 
 class Pattern(object):
+    """
+    This class describes a pattern over words to be searched for. The ``Document.findwords()`` method can subsequently be called with this pattern, and it will return all the words that match. An example will best illustrate this, first a trivial example of searching for one word::
+
+        for match in doc.findwords( folia.Pattern('house') ):
+            for word in match:
+                print word.id
+            print "----"
+
+    The same can be done for a sequence::
+
+        for match in doc.findwords( folia.Pattern('a','big', 'house') ):
+            for word in match:
+                print word.id
+            print "----"
+
+    The boolean value ``True`` acts as a wildcard, matching any word::
+
+        for match in doc.findwords( folia.Pattern('a',True,'house') ):
+            for word in match:
+                print word.id, word.text()
+            print "----"
+
+    Alternatively, and more constraning, you may also specify a tuple of alternatives::
+
+
+        for match in doc.findwords( folia.Pattern('a',('big','small'),'house') ):
+            for word in match:
+                print word.id, word.text()
+            print "----"
+
+    Or even a regular expression using the ``folia.RegExp`` class::
+
+
+        for match in doc.findwords( folia.Pattern('a', folia.RegExp('b?g'),'house') ):
+            for word in match:
+                print word.id, word.text()
+            print "----"
+
+
+    Rather than searching on the text content of the words, you can search on the
+    classes of any kind of token annotation using the keyword argument
+    ``matchannotation=``::
+
+        for match in doc.findwords( folia.Pattern('det','adj','noun',matchannotation=folia.PosAnnotation ) ):
+            for word in match:
+                print word.id, word.text()
+            print "----"
+
+    The set can be restricted by adding the additional keyword argument
+    ``matchannotationset=``. Case sensitivity, by default disabled, can be enabled by setting ``casesensitive=True``.
+
+    Things become even more interesting when different Patterns are combined. A
+    match will have to satisfy all patterns::
+
+        for match in doc.findwords( folia.Pattern('a', True, 'house'), folia.Pattern('det','adj','noun',matchannotation=folia.PosAnnotation ) ):
+            for word in match:
+                print word.id, word.text()
+            print "----"
+
+
+    The ``findwords()`` method can be instructed to also return left and/or right context for any match. This is done using the ``leftcontext=`` and ``rightcontext=`` keyword arguments, their values being an integer number of the number of context words to include in each match. For instance, we can look for the word house and return its immediate neighbours as follows::
+
+        for match in doc.findwords( folia.Pattern('house') , leftcontext=1, rightcontext=1):
+            for word in match:
+                print word.id
+            print "----"
+
+    A match here would thus always consist of three words instead of just one.
+
+    Last, ``Pattern`` also has support for variable-width gaps, the asterisk symbol
+    has special meaning to this end::
+
+
+        for match in doc.findwords( folia.Pattern('a','*','house') ):
+            for word in match:
+                print word.id
+            print "----"
+
+    Unlike the pattern ``('a',True,'house')``, which by definition is a pattern of
+    three words, the pattern in the example above will match gaps of any length (up
+    to a certain built-in maximum), so this might include matches such as *a very
+    nice house*.
+
+    Some remarks on these methods of querying are in order. These searches are
+    pretty exhaustive and are done by simply iterating over all the words in the
+    document. The entire document is loaded in memory and no special indices are involved.
+    For single documents this is okay, but when iterating over a corpus of
+    thousands of documents, this method is too slow, especially for real-time
+    applications. For huge corpora, clever indexing and database management systems
+    will be required. This however is beyond the scope of this library.
+
+    """
+
+
     def __init__(self, *args, **kwargs):
         if not all( ( (x is True or isinstance(x,RegExp) or isstring(x) or isinstance(x, list) or isinstance(x, tuple)) for x in args )):
             raise TypeError
