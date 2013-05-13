@@ -36,7 +36,6 @@ import array
 import re
 from itertools import permutations
 from pynlpl.statistics import FrequencyList
-from pynlpl.datatypes import intarraytobytearray, bytearraytoint, containsnullbyte
 
 
 WHITESPACE = [" ", "\t", "\n", "\r","\v","\f"]
@@ -457,11 +456,12 @@ if sys.version > '3':
 
     class ClassEncoder:
 
-        def __init__(self, filename="", autoadd=False, syncwithdecoder=None):
+        def __init__(self, filename="", autoadd=False, allowunknown=False,syncwithdecoder=None):
             self.newestclass = 5
             self.data = { "\n": 1, "{UNKNOWN}": 2 }
             self.filename = filename
             self.autoadd = autoadd
+            self.allowunknown = allowunknown
             self.syncwithdecoder = syncwithdecoder
 
             if filename:
@@ -494,8 +494,9 @@ if sys.version > '3':
 
 
             for word, count in freqlist:
-                self.newestclass += 1
-                self.data[word] = self.newestclass
+                if not word in self.data:
+                    self.newestclass += 1
+                    self.data[word] = self.newestclass
 
         def __iter__(self):
             for word, cls in self.data:
@@ -512,7 +513,7 @@ if sys.version > '3':
                     self.newestclass += 1
                     self.data[self.newestclass] = word
                     if self.syncwithdecoder:
-                        self.syncwithdecoder.data[word] = self.newestclass
+                        self.syncwithdecoder.data[self.newestclass] = word
                     return self.newestclass
             else:
                 return self.data[word]
@@ -537,7 +538,19 @@ if sys.version > '3':
 
         def encodesentence(self, tokens, stream=None):
             for token in tokens:
-                b = int.to_bytes(self[token])
+                try:
+                    b = int.to_bytes(self[token])
+                except KeyError:
+                    if self.autoadd:
+                        self.newestclass += 1
+                        b = int.to_bytes(self.newestclass)
+                        self.data[token] = self.newestclass
+                        if self.syncwithdecoder:
+                            self.syncwithdecoder.data[self.newestclass] = token
+                    elif self.allowunknown:
+                        b = b'\x02'
+                    else:
+                        raise
                 assert len(b) < 128
                 size = int.to_bytes(len(b))
                 stream.write(size)
