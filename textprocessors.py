@@ -521,19 +521,28 @@ if sys.version > '3':
             return word in self.data
 
 
-        def encodefile(self, filename,targetfilename, encoding='utf-8'):
-            with open(targetfilename,'wb') as o:
-                version = o.write('b\x00') #first byte contains version number!
+        def encodefile(self, files,targetfilename, encoding='utf-8'):
+            if isinstance(str, files): files = [files]
+            o = self.newencodedfile(targetfilename)
+            for filename in files:
                 with open(filename,'r',encoding=encoding) as f:
                     for line in f:
-                        for token in line.strip().split():
-                            b = int.to_bytes(self[token])
-                            assert len(b) < 128
-                            size = int.to_bytes(len(b))
-                            o.write(size)
-                            o.write(b)
-                        o.write(b'\x01\x01') #newline
+                        self.encodesentence(line.strip().split(), 0)
+            o.close()
 
+        def newencodedfile(self, targetfilename):
+            o = open(targetfilename,'wb')
+            o.write('b\x00') #first byte contains version number!
+            return o
+
+        def encodesentence(self, tokens, stream=None):
+            for token in tokens:
+                b = int.to_bytes(self[token])
+                assert len(b) < 128
+                size = int.to_bytes(len(b))
+                stream.write(size)
+                stream.write(b)
+            stream.write(b'\x01\x01') #newline
 
 
     class ClassDecoder:
