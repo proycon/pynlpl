@@ -452,156 +452,149 @@ def find_keyword_in_context(tokens, keyword, contextsize=1):
         if ngram[focuspos:focuspos+l] == keyword:
             yield ngram[:focuspos], ngram[focuspos:focuspos+l],ngram[focuspos+l+1:]
 
+if sys.version > '3':
+    #Python 3 only
 
-class Classer(object):
-    """The Classer can encode and decode tokens to an integer representation. It is constructed using a frequency list."""
+    class ClassEncoder:
 
-    def __init__(self, f, **kwargs):
-        """Pass either a filename of a plain text data file or a pre-computed frequency list.
+        def __init__(self, filename="", autoadd=False, syncwithdecoder=None):
+            self.newestclass = 5
+            self.data = { "\n": 1, "{UNKNOWN}": 2 }
+            self.filename = filename
+            self.autoadd = autoadd
+            self.syncwithdecoder = syncwithdecoder
 
-        Keyword arguments:
-            decoder = True/False   Enable decoder? Default: True
-            encoder = True/False   Enable encoder? Default: True
-            encoding = (str)       The encoding of your data (None for encoding-agnostic, default)
-        """
+            if filename:
+                with open(filename,'r',encoding='utf-8') as f:
+                    for line in f:
+                        if line.strip():
+                            cls, word = line.strip().split('\t')
+                            cls = int(cls)
+                            self.data[word] = cls
+                            if not self.syncwithdecoder is None:
+                                self.syncwithdecoder.data[cls] = word
+                            if cls > self.newestclass:
+                                self.newestclass = cls
 
-        if 'decoder' in kwargs:
-            self.decoder = bool(kwargs['decoder'])
-        else:
-            self.decoder = True
+        def save(self, filename=""):
+            if not filename: filename = self.filename
+            with open(filename, 'w',encoding='utf-8') as f:
+                for word, cls in self:
+                    f.write( str(cls) + "\t" + word + "\n")
 
-        if 'encoder' in kwargs:
-            self.encoder = bool(kwargs['encoder'])
-        else:
-            self.encoder = True
 
-        self.newestclass = 0
+        def build(self, files, encoding='utf-8'):
+            freqlist = FrequencyList()
+            if isinstance(files, str): files = [files]
+            for filename in files:
+                with open(filename, 'r',encoding=encoding) as f:
+                    for line in f:
+                        tokens = line.strip().split()
+                        freqlist.append(tokens)
 
-        if self.decoder:
-            self.class2word = {}
-        if self.encoder:
-            self.word2class = {}
 
-        if 'encoding' in kwargs and kwargs['encoding']:
-            self.encoding = kwargs['encoding']
-        else:
-            self.encoding = None
-
-        if 'filesupport' in kwargs:
-            self.filesupport = bool(kwargs['filesupport'])
-        else:
-            self.filesupport = False
-
-        if self.filesupport:
-            self.newestclass = 1 #0 and 1 are reserved for space and newline
-
-        if isinstance(f, FrequencyList):
-            for word, _ in f:
+            for word, count in freqlist:
                 self.newestclass += 1
-                if self.filesupport:
-                    while containsnullbyte(self.newestclass):
-                        self.newestclass += 1
-                print(self.newestclass, word,file=stderr)
-                if self.decoder:
-                    self.class2word[self.newestclass] = word
-                if self.encoder:
-                    self.word2class[word] = self.newestclass
-            if not self.decoder:
-                del self.class2word
-        elif isinstance(f, str) or (sys.version < '3' and isinstance(f,unicode)):
-            f = io.open(f,'r',encoding='utf-8')
-            for line in f:
-                cls, word = line.strip().split('\t',2)
-                if self.decoder: self.class2word[int(cls)] = word
-                if self.encoder: self.word2class[word] = int(cls)
-            f.close()
-        else:
-            raise Exception("Expected FrequencyList or filename, got " + str(type(f)))
+                self.data[word] = self.newestclass
 
+        def __iter__(self):
+            for word, cls in self.data:
+                yield word, cls
 
+        def __len__(self):
+            return self.data
 
-    def save(self, filename):
-        """Save to a class file"""
-        if not self.decoder: raise Exception("Decoder not enabled!")
-        if self.encoding:
-            f = io.open(filename,'w',encoding=self.encoding)
-        else:
-            f = io.open(filename,'w',encoding='utf-8')
-        for cls, word in sorted(self.class2word.items()):
-            if cls:
-                f.write( str(cls) + '\t' + word + '\n')
-        f.close()
-
-    def decode(self, x):
-        """Encode a class integer, return string token"""
-        try:
-            return self.class2word[x]
-        except:
-            if not self.decoder:
-                raise Exception("Decoder not enabled!")
+        def __getitem__(self, word):
+            if self.autoadd:
+                try:
+                    return self.data[word]
+                except KeyError:
+                    self.newestclass += 1
+                    self.data[self.newestclass] = word
+                    if self.syncwithdecoder:
+                        self.syncwithdecoder.data[word] = self.newestclass
+                    return self.newestclass
             else:
-                raise
+                return self.data[word]
 
-    def encode(self, x):
-        """Encode a string token, return class integer"""
-        try:
-            return self.word2class[x]
-        except:
-            if not self.encoder:
-                raise Exception("Encoder not enabled!")
+        def __contains__(self, word):
+            return word in self.data
+
+
+        def encodefile(self, filename,targetfilename, encoding='utf-8'):
+            with open(targetfilename,'wb') as o:
+                version = o.write('b\x00') #first byte contains version number!
+                with open(filename,'r',encoding=encoding) as f:
+                    for line in f:
+                        for token in line.strip().split():
+                            b = int.to_bytes(self[token])
+                            assert len(b) < 128
+                            size = int.to_bytes(len(b))
+                            o.write(size)
+                            o.write(b)
+                        o.write(b'\x01\x01') #newline
+
+
+
+    class ClassDecoder:
+
+        def __init__(self, filename="", allowunknown=False):
+            self.newestclass = 5
+            self.data = { 1: "\n", 2: "{UNKNOWN}"}
+            self.filename = filename
+            self.allowunknown=allowunknown
+
+
+            if filename:
+                with open(filename,'r',encoding='utf-8') as f:
+                    for line in f:
+                        if line.strip():
+                            cls, word = line.strip().split('\t')
+                            cls = int(cls)
+                            self.data[cls] = word
+                            if cls > self.newestclass:
+                                self.newestclass = cls
+
+
+        def __iter__(self):
+            for cls, word in self.data:
+                yield cls, word
+
+        def __len__(self):
+            return self.data
+
+        def __getitem__(self, cls):
+            if self.allowunknown:
+                try:
+                    return self.data[cls]
+                except:
+                    return "{UNKNOWN}"
             else:
-                raise
+                return self.data[cls]
 
-    def decodeseq(self, sequence):
-        """Decode a sequence, converting class integers to strings"""
-        return tuple( self.decode(x) for x in sequence  )
+        def __contains__(self, cls):
+            return cls in self.data
 
-    def encodeseq(self, sequence):
-        """Encode a sequence of string tokens to class integers"""
-        return tuple( self.encode(x) for x in sequence  )
+        def decodefile(self, filename, targetfilename = None, encoding='utf-8'):
+            if targetfilename:
+                o = open(targetfilename,'w',encoding=encoding)
 
-    def __len__(self):
-        try:
-            return len(self.class2word)
-        except:
-            return len(self.word2class)
+            with open(filename,'rb') as f:
+                version = f.read(1)
+                assert (version == b'\x00')
+                while True:
+                    size = f.read(1)
+                    if not size:
+                        break #EOF
+                    b = f.read(size)
+                    cls = int.from_bytes(b)
+                    if targetfilename:
+                        o.write(self[cls])
+                    else:
+                        print(self[cls],newline=False)
 
-    def encodefile(self, fromfile, tofile):
-        """Encode a file, converting word tokens to class integers"""
-        assert self.filesupport
-        ffrom = io.open(fromfile,'rb')
-        fto = io.open(tofile,'wb')
-        for line in ffrom:
-            a = intarraytobytearray( self.encodeseq( line.strip().split(' ') ))
-            a.append(0) #delimiter
-            a.append(1) #newline
-            a.append(0) #delimiter
-            a.tofile(fto)
-        fto.close()
-        ffrom.close()
-
-    def decodefile(self, filename):
-        """Decode a file, converting class integers to token strings"""
-        f = io.open(filename,'rb')
-        buffer = array.array('B')
-        line = []
-        b = chr(0)
-        nullbyte = chr(0)
-        while b != "":
-            b = f.read(1)
-            if b == "": break
-            if b == nullbyte:
-                cls = bytearraytoint(buffer)
-                if cls == 1:
-                    yield line
-                    line = []
-                else:
-                    line.append( self.decode(cls) )
-                buffer = array.array('B')
-            else:
-                buffer.append(ord(b))
-        f.close()
-
+            if targetfilename:
+                o.close()
 
 
 
