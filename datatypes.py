@@ -25,6 +25,7 @@ from pynlpl.common import u
 import random
 import bisect
 import array
+from sys import version as PYTHONVERSION
 
 
 class Queue(object): #from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
@@ -42,7 +43,7 @@ class Queue(object): #from AI: A Modern Appproach : http://aima.cs.berkeley.edu/
         """Append all elements from items to the queue"""
         for item in items: self.append(item)
 
-    
+
 #note: A Python list is a LIFOQueue / Stack
 
 class FIFOQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
@@ -71,7 +72,7 @@ class FIFOQueue(Queue): #adapted from AI: A Modern Appproach : http://aima.cs.be
         return e
 
 class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
-    """A queue in which the maximum (or minumum) element is returned first, 
+    """A queue in which the maximum (or minumum) element is returned first,
     as determined by either an external score function f (by default calling
     the objects score() method). If minimize=True, the item with minimum f(x) is
     returned first; otherwise is the item with maximum f(x) or x.score().
@@ -148,7 +149,7 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
 
     def __iter__(self):
         """Iterate over all items, in order from best to worst!"""
-        if self.minimize: 
+        if self.minimize:
             f = lambda x: x
         else:
             f = reversed
@@ -166,7 +167,7 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
         else:
             if self.minimize:
                 return self.data[i][1]
-            else:   
+            else:
                 return self.data[(-1 * i) - 1][1]
 
     def pop(self):
@@ -229,7 +230,7 @@ class PriorityQueue(Queue): #Heavily adapted/extended, originally from AI: A Mod
 
 class Tree(object):
     """Simple tree structure. Nodes are themselves trees."""
-    
+
     def __init__(self, value = None, children = None):
         self.parent = None
         self.value = value
@@ -238,25 +239,25 @@ class Tree(object):
         else:
             for c in children:
                 self.append(c)
-                
+
     def leaf(self):
         """Is this a leaf node or not?"""
         return not self.children
-                
+
     def __len__(self):
-        if not self.children: 
+        if not self.children:
             return 0
         else:
             return len(self.children)
-            
+
     def __bool__(self):
         return True
-        
+
     def __iter__(self):
         """Iterate over all items in the tree"""
         for c in self.children:
             return c
-            
+
     def append(self, item):
         """Add an item to the Tree"""
         if not isinstance(item, Tree):
@@ -272,72 +273,72 @@ class Tree(object):
             return self.children[index]
         except:
             raise
-            
+
     def __str__(self):
         return str(self.value)
-    
+
     def __unicode__(self): #Python 2.x
         return u(self.value)
-    
+
 
 
 
 class Trie(object):
     """Simple trie structure. Nodes are themselves tries, values are stored on the edges, not the nodes."""
-    
+
     def __init__(self, sequence = None):
         self.parent = None
         self.children = None
         self.value = None
         if sequence:
             self.append(sequence)
-                
+
     def leaf(self):
         """Is this a leaf node or not?"""
         return not self.children
-        
+
     def root(self):
         """Returns True if this is the root of the Trie"""
         return not self.parent
-                
+
     def __len__(self):
-        if not self.children: 
+        if not self.children:
             return 0
         else:
             return len(self.children)
-            
+
     def __bool__(self):
         return True
-        
+
     def __iter__(self):
         if self.children:
             for key in self.children.keys():
                 yield key
-            
+
     def items(self):
         if self.children:
             for key, trie in self.children.items():
                 yield key, trie
-            
+
     def __setitem__(self, key, subtrie):
         if not isinstance(subtrie, Trie):
             return ValueError("Can only set items of type Trie, got " + str(type(subtrie)))
         if not self.children: self.children = {}
         subtrie.value = key
         subtrie.parent = self
-        self.children[key] = subtrie 
-            
+        self.children[key] = subtrie
+
     def append(self, sequence):
-        if not sequence: 
+        if not sequence:
             return self
-        if not self.children: 
+        if not self.children:
             self.children = {}
         if not (sequence[0] in self.children):
             self.children[sequence[0]] = Trie()
             return self.children[sequence[0]].append( sequence[1:] )
         else:
             return self.children[sequence[0]].append( sequence[1:] )
-        
+
     def find(self, sequence):
         if not sequence:
             return self
@@ -348,125 +349,216 @@ class Trie(object):
 
     def __contains__(self, key):
         return (key in self.children)
-    
+
 
     def __getitem__(self, key):
         try:
             return self.children[key]
         except:
             raise
-            
-            
+
+
     def size(self):
         """Size is number of nodes under the trie, including the current node"""
         if self.children:
             return sum( ( c.size() for c in self.children.values() ) ) + 1
         else:
             return 1
-            
+
     def path(self):
         """Returns the path to the current node"""
         if self.parent:
             return (self,) + self.parent.path()
         else:
             return (self,)
-            
+
     def depth(self):
         """Returns the depth of the current node"""
         if self.parent:
             return 1 + self.parent.depth()
         else:
             return 1
-    
+
     def sequence(self):
         if self.parent:
             if self.value:
                 return (self.value,) + self.parent.sequence()
             else:
-                return self.parent.sequence()                
+                return self.parent.sequence()
         else:
             return (self,)
-            
-        
+
+
     def walk(self, leavesonly=True, maxdepth=None, _depth = 0):
         """Depth-first search, walking through trie, returning all encounterd nodes (by default only leaves)"""
         if self.children:
-            if not maxdepth or (maxdepth and _depth < maxdepth):                
+            if not maxdepth or (maxdepth and _depth < maxdepth):
                 for key, child in self.children.items():
                     if child.leaf():
                         yield child
                     else:
                         for results in child.walk(leavesonly, maxdepth, _depth + 1):
                             yield results
-                        
-    
 
-def containsnullbyte(i):
-    assert isinstance(i,int)
-    while True:
-        if i % 256 == 0:
-            return True
-        if i >= 256:
-            i = i // 256
-        else:
-            return False
-    
 
-def inttobytearray(i,bigendian=False, nonullbyte=False):
-    #convert int to byte array
-    a = array.array('B')
-    while True:
-        r = i % 256
-        #print hex(r), bin(r)
-        if nonullbyte and r == 0:
-            raise ValueError("Null byte encountered")
-        a.append(r)
-        if i >= 256:
-            i = i // 256
-        else:
-            break
-    if bigendian: a.reverse()
-    return a
-    
-    
-def bytearraytoint(a,bigendian=False):
-    i = 0
-    for n,b in enumerate(a):
-        if bigendian: n = len(a) - 1 - n
-        i += b * 256**n
-    return i
-    
-def intarraytobytearray(intarray,bigendian=False):
-    """Converts an array of integers (with some value restrictions) to an array of bytes in which elements are NULL-byte delimited"""
-    a = array.array('B')
-    l = len(intarray)
-    for n,  i in enumerate(intarray):
-        a += inttobytearray(i,bigendian,True)
-        if n < l - 1:
-            a.append(0) 
-    return a
+FIXEDGAP = 128
+DYNAMICGAP = 129
 
-def bytearraytointarray(bytearray, bigendian=False):
-    """Converts a NULL-byte delimited array of bytes into an array of integers"""
-    a = array.array('I')
-    begin = 0    
-    for n, b in enumerate(bytearray):
-        if b == 0:
-            a.append( bytearraytoint(b[begin:n]) )
-    a.append( bytearraytoint(b[begin:len(bytearray)]) )
-    return a
-    
-        
+if PYTHONVERSION > '3':
+    #only available for Python 3
+
+    class Pattern:
+        def __init__(self, data, classdecoder=None):
+            assert isinstance(data, bytes)
+            self.data = data
+            self.classdecoder = classdecoder
+
+        @staticmethod
+        def fromstring(s, classencoder): #static
+            data = b''
+            for s in s.split():
+                data += classencoder[s]
+            return Pattern(data)
+
+        def __str__(self):
+            s = ""
+            for cls in self:
+                s += self.classdecoder[int.from_bytes(cls)]
+
+        def iterbytes(self, begin=0, end=0):
+            i = 0
+            l = len(self.data)
+            n = 0
+            if (end != begin):
+                slice = True
+            else:
+                slice = False
+
+            while i < l:
+                size = self.data[i]
+                if (size < 128): #everything from 128 onward is reserved for markers
+                    if not slice:
+                        yield self.data[i+1:i+1+size]
+                    else:
+                        n += 1
+                        if n >= begin and n < end:
+                            yield self.data[i+1:i+1+size]
+                    i += 1 + size
+                else:
+                    raise ValueError("Size >= 128")
+
+
+        def __iter__(self):
+            for b in self.iterbytes():
+                yield Pattern(b, self.classdecoder)
+
+        def __bytes__(self):
+            return self.data
+
+        def __len__(self):
+            """Return n"""
+            i = 0
+            l = len(self.data)
+            n = 0
+            while i < l:
+                size = self.data[i]
+                if (size < 128):
+                    n += 1
+                    i += 1 + size
+                else:
+                    raise ValueError("Size >= 128")
+
+        def __getitem__(self, index):
+            assert isinstance(index, int)
+            for b in self.iterbytes(index,index+1):
+                return Pattern(b, self.classdecoder)
+
+        def __getslice__(self, begin, end):
+            slice = b''
+            for b in self.iterbytes(begin,end):
+                slice += b
+            return slice
+
+        def __add__(self, other):
+            assert isinstance(other, Pattern)
+            return Pattern(self.data + other.data, self.classdecoder)
+
+
+    class PatternSet:
+        def __init__(self):
+            self.data = set()
+
+        def add(self, pattern):
+            self.data.add(pattern.data)
+
+        def remove(self, pattern):
+            self.data.remove(pattern.data)
+
+        def __len__(self):
+            return len(self.data)
+
+        def __bool__(self):
+            return len(self.data) > 0
+
+        def __contains__(self, pattern):
+            return pattern.data in self.data
+
+        def __iter__(self):
+            for patterndata in self.data:
+                yield Pattern(patterndata)
+
+
+    class PatternMap:
+        def __init__(self, default=None):
+            self.data = {}
+            self.default = default
+
+        def __getitem__(self, pattern):
+            assert isinstance(pattern, Pattern)
+            if not self.default is None:
+                try:
+                    return self.data[pattern.data]
+                except KeyError:
+                    return self.default
+            else:
+                return self.data[pattern.data]
+
+        def __setitem__(self, pattern, value):
+            self.data[pattern.data] = value
+
+        def __delitem__(self, pattern):
+            del self.data[pattern.data]
+
+        def __len__(self):
+            return len(self.data)
+
+        def __bool__(self):
+            return len(self.data) > 0
+
+        def __contains__(self, pattern):
+            return pattern.data in self.data
+
+        def __iter__(self):
+            for patterndata in self.data:
+                yield Pattern(patterndata)
+
+        def items(self):
+            for patterndata, value in self.data.items():
+                yield Pattern(patterndata), value
+
+
+
+
 #class SuffixTree(object):
 #   def __init__(self):
 #       self.data = {}
-#       
-#   
+#
+#
 #   def append(self, seq):
 #       if len(seq) > 1:
 #           for item in seq:
 #                self.append(item)
 #        else:
-#            
-#                     
+#
+#
 #    def compile(self, s):
