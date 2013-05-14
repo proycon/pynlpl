@@ -28,12 +28,11 @@ def read(fname):
 
 entry_points = {}
 if sys.version > '3':
-    entry_points = {
-        'console_scripts': [
+    entry_points = {    'console_scripts': [
             'pynlpl-classencoder = pynlpl.tools.classencoder:main',
             'pynlpl-classdecoder = pynlpl.tools.classdecoder:main',
         ]
-    },
+    }
 
 
 setup(
