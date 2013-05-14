@@ -7,18 +7,18 @@
 #
 #       Licensed under GPLv3
 #
-# This is a Python library classes and functions for 
-# reading file-formats produced by Moses. Currently 
+# This is a Python library classes and functions for
+# reading file-formats produced by Moses. Currently
 # contains only a class for reading a Moses PhraseTable.
 # (migrated to pynlpl from pbmbmt)
 #
-###############################################################    
+###############################################################
 
 
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
-from __future__ import absolute_import    
+from __future__ import absolute_import
 
 from pynlpl.common import u
 
@@ -38,74 +38,88 @@ except:
 
 
 class PhraseTable(object):
-    def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 5, align2_column = 4, max_sourcen = 0):
+    def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 5, max_sourcen = 0,sourceencoder=None, targetencoder=None):
         """Load a phrase table from file into memory (memory intensive!)"""
         self.phrasetable = {}
+        self.sourceencoder = sourceencoder
+        self.targetencoder = targetencoder
+
+
         if filename.split(".")[-1] == "bz2":
-            f = bz2.BZ2File(filename,'r')        
+            f = bz2.BZ2File(filename,'r')
         else:
             f = io.open(filename,'r','utf-8')
         linenum = 0
+        prevsource = None
+        targets = []
+
         while True:
             if not quiet:
                 linenum += 1
                 if (linenum % 100000) == 0:
                     print("Loading phrase-table: @%d" % linenum, "\t(" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ")",file=sys.stderr)
             line = f.readline()
-            if not line: 
+            if not line:
                 break
 
-             #split into (trimmed) segments
+            #split into (trimmed) segments
             segments = [ segment.strip() for segment in line.split(delimiter) ]
 
             #Do we have a score associated?
             if score_column > 0 and len(segments) >= score_column:
-                nums = segments[score_column-1].strip().split(" ")
-                Pst = float(nums[0]) #the 1st number is p(source|target)
-                Pts = float(nums[2]) #3rd number is p(target|source)
+                scores = tuple(segments[score_column-1].strip().split())
             else:
-                Pst = Pts = 0
+                scores = tuple()
 
-            if align2_column > 0:
-                try:
-                    null_alignments = segments[align2_column].count("()")
-                except:
-                    null_alignments = 0
-            else:
-                null_alignments = 0
+            #if align2_column > 0:
+            #    try:
+            #        null_alignments = segments[align2_column].count("()")
+            #    except:
+            #        null_alignments = 0
+            #else:
+            #    null_alignments = 0
 
             if reverse:
-                source = segments[1] #tuple(segments[1].split(" "))
-                target = segments[0] #tuple(segments[0].split(" "))
+                if max_sourcen > 0 and segments[1].count(' ') + 1 > max_sourcen:
+                    continue
+
+                if self.sourceencoder:
+                    source = self.sourceencoder(segments[1]) #tuple(segments[1].split(" "))
+                else:
+                    source = segments[1]
+                if self.targetencoder:
+                    target = self.targetencoder(segments[0]) #tuple(segments[0].split(" "))
+                else:
+                    target = segments[0]
             else:
-                source = segments[0] #tuple(segments[0].split(" "))
-                target = segments[1] #tuple(segments[1].split(" "))
+                if max_sourcen > 0 and segments[0].count(' ') + 1 > max_sourcen:
+                    continue
 
-            if max_sourcen == 0 or (len(source.split(' ')) <= max_sourcen):                      
-                self.append(source, target,Pst,Pts,null_alignments)
-                        
-        f.close()        
+                if self.sourceencoder:
+                    source = self.sourceencoder(segments[0]) #tuple(segments[0].split(" "))
+                else:
+                    source = segments[0]
+                if self.targetencoder:
+                    target = self.targetencoder(segments[1]) #tuple(segments[1].split(" "))
+                else:
+                    target = segments[1]
 
 
-    def append(self, source, target, Pst = 0, Pts = 0, null_alignments = 0):
-        try:
-            self.phrasetable[source].append((target, Pst, Pts, null_alignments))
-        except:
-            self.phrasetable[source] = [ (target, Pst, Pts, null_alignments) ]
+            if source != prevsource and targets:
+                self.phrasetable[source] = tuple(targets)
+                targets = []
+            targets.append( (target,scores) )
 
-        #d = self.phrasetable
-        #for word in source:
-        #    if not word in d:
-        #        d[word] = {}
-        #    d = d[word]
+        #don't forget last one:
+        if source != prevsource and targets:
+            self.phrasetable[source] = tuple(targets)
 
-        #if "" in d:
-        #    d[""].append( (target, Pst, Pts, null_alignments) )
-        #else:
-        #    d[""] = [ (target, Pst, Pts, null_alignments) ]
+        f.close()
+
 
     def __contains__(self, phrase):
         """Query if a certain phrase exist in the phrase table"""
+        if self.sourceencoder: phrase = self.sourceencoder(phrase)
         return (phrase in self.phrasetable)
         #d = self.phrasetable
         #for word in phrase:
@@ -116,10 +130,8 @@ class PhraseTable(object):
 
     def __getitem__(self, phrase): #same as translations
         """Return a list of (translation, Pst, Pts, null_alignment) tuples"""
-        try:
-            return self.phrasetable[phrase]
-        except KeyError:
-            raise
+        if self.sourceencoder: phrase = self.sourceencoder(phrase)
+        return self.phrasetable[phrase]
 
 
         #d = self.phrasetable
@@ -151,25 +163,25 @@ if twistedimported:
         def __init__(self, phrasetable, port=65432):
             reactor.listenTCP(port, PTFactory(phrasetable))
             reactor.run()
-        
+
 
 
 
 class PhraseTableClient(object):
 
-    def __init__(self,host= "localhost",port=65432):        
+    def __init__(self,host= "localhost",port=65432):
         self.BUFSIZE = 4048
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #Create the socket
-        self.socket.settimeout(120) 
+        self.socket.settimeout(120)
         self.socket.connect((host, port)) #Connect to server
         self.lastresponse = ""
         self.lastquery = ""
 
     def __getitem__(self, phrase):
-        solutions = []        
+        solutions = []
         if phrase != self.lastquery:
             self.socket.send(phrase+ "\r\n")
-                    
+
             data = b""
             while not data or data[-1] != '\n':
                 data += self.socket.recv(self.BUFSIZE)
@@ -188,16 +200,16 @@ class PhraseTableClient(object):
                     solutions.append( fields )
                 else:
                     print >>sys.stderr,"PHRASETABLECLIENT WARNING: Unable to parse response line"
-                    
+
         self.lastresponse = data
         self.lastquery = phrase
-                            
+
         return solutions
-    
+
     def __contains__(self, phrase):
         self.socket.send(phrase.encode('utf-8')+ b"\r\n")\
-        
-        
+
+
         data = b""
         while not data or data[-1] != '\n':
             data += self.socket.recv(self.BUFSIZE)
@@ -208,9 +220,9 @@ class PhraseTableClient(object):
             line = line.strip('\r\n')
             if line == "NOTFOUND":
                 return False
-                
+
         self.lastresponse = data
         self.lastquery = phrase
-        
+
         return True
-                
+

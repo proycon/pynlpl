@@ -483,6 +483,8 @@ if PYTHONVERSION > '3':
             assert isinstance(other, Pattern)
             return Pattern(self.data + other.data, self.classdecoder)
 
+        def __eq__(self, other):
+            return self.data == other.data
 
     class PatternSet:
         def __init__(self):
