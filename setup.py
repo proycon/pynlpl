@@ -44,7 +44,7 @@ setup(
     license = "GPL",
     keywords = "nlp computational_linguistics search ngrams language_models linguistics toolkit",
     url = "https://github.com/proycon/pynlpl",
-    packages=['pynlpl','pynlpl.clients','pynlpl.lm','pynlpl.formats','pynlpl.mt'],
+    packages=['pynlpl','pynlpl.clients','pynlpl.lm','pynlpl.formats','pynlpl.mt','pynlpl.tools'],
     long_description=read('README'),
     classifiers=[
         "Development Status :: 4 - Beta",

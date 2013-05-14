@@ -63,7 +63,7 @@ def main():
         classencoder.encodefile(args.files, args.singleoutput, args.encoding)
     else:
         for filename in args.files:
-            targetfilename = os.path.basename(filename).replace('.txt','').replace('.xml','') + '.clsenc')
+            targetfilename = os.path.basename(filename).replace('.txt','').replace('.xml','') + '.clsenc'
             print("Encoding " + filename + " in " + targetfilename + "...",file=sys.stderr)
             classencoder.encodefile(filename, targetfilename)
 
