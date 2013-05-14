@@ -4,6 +4,8 @@
 
 from pynlpl.textprocessors import ClassDecoder
 import sys
+import os
+import argparse
 
 
 
@@ -24,15 +26,14 @@ def main():
     parser.add_argument("-u","--unknown",action='store_true',default=False,help="Unknown classes will be assigned a special 'unknown' class (used with -c)")
 
     parser.add_argument('classfile', type=str, help="Class file (*.cls)")
-    parser.add_argument('files', nargs='+', help="The encoded corpus files (*.clsenc)"
+    parser.add_argument('files', nargs='+', help="The encoded corpus files (*.clsenc)")
     args = parser.parse_args()
 
-
-    classdecoder = ClassDecoder(args.classfile, args.allowunknown)
+    classdecoder = ClassDecoder(args.classfile, args.unknown)
 
     if args.singleoutput:
         print("Decoding all files to " + args.singleoutput+"...", file=sys.stderr)
-        classencoder.encodefile(args.files, args.singleoutput if args.singleoutput != '-' else None, args.encoding)
+        classdecoder.decodefile(args.files, args.singleoutput if args.singleoutput != '-' else None, args.encoding)
     else:
         for filename in args.files:
             targetfile = os.path.basename(filename).replace('.clsenc','') + '.txt'

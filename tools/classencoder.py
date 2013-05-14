@@ -9,6 +9,7 @@ from pynlpl.statistics import FrequencyList
 from pynlpl.formats import folia
 import argparse
 import sys
+import os
 assert sys.version > '3'
 
 def main():

@@ -37,7 +37,7 @@ import re
 from itertools import permutations
 from pynlpl.statistics import FrequencyList
 from pynlpl.formats import folia
-
+from pynlpl.algorithms import bytesize
 
 WHITESPACE = [" ", "\t", "\n", "\r","\v","\f"]
 EOSMARKERS = ('.','?','!','。',';','؟','｡','？','！','।','։','՞','።','᙮','។','៕')
@@ -481,7 +481,8 @@ if sys.version > '3':
             if not filename: filename = self.filename
             with open(filename, 'w',encoding='utf-8') as f:
                 for word, cls in self:
-                    f.write( str(cls) + "\t" + word + "\n")
+                    if cls > 2:
+                        f.write( str(cls) + "\t" + word + "\n")
 
 
         def buildfromtext(self, files, encoding='utf-8'):
@@ -515,7 +516,7 @@ if sys.version > '3':
             self.buildfromfreqlist(freqlist)
 
         def __iter__(self):
-            for word, cls in self.data:
+            for word, cls in self.data.items():
                 yield word, cls
 
         def __len__(self):
@@ -539,27 +540,28 @@ if sys.version > '3':
 
 
         def encodefile(self, files,targetfilename, encoding='utf-8'):
-            if isinstance(str, files): files = [files]
+            if isinstance(files, str): files = [files]
             o = self.newencodedfile(targetfilename)
             for filename in files:
                 with open(filename,'r',encoding=encoding) as f:
                     for line in f:
-                        self.encodesentence(line.strip().split(), 0)
+                        self.encodesentence(line.strip().split(), o)
             o.close()
 
         def newencodedfile(self, targetfilename):
             o = open(targetfilename,'wb')
-            o.write('b\x00') #first byte contains version number!
+            o.write(b'\x00') #first byte contains version number!
             return o
 
         def encodesentence(self, tokens, stream=None):
             for token in tokens:
                 try:
-                    b = int.to_bytes(self[token])
+                    cls = self[token]
+                    b = int.to_bytes(cls, bytesize(cls), 'big' )
                 except KeyError:
                     if self.autoadd:
                         self.newestclass += 1
-                        b = int.to_bytes(self.newestclass)
+                        b = int.to_bytes(self.newestclass, bytesize(self.newestclass),'big')
                         self.data[token] = self.newestclass
                         if self.syncwithdecoder:
                             self.syncwithdecoder.data[self.newestclass] = token
@@ -568,7 +570,7 @@ if sys.version > '3':
                     else:
                         raise
                 assert len(b) < 128
-                size = int.to_bytes(len(b))
+                size = int.to_bytes(len(b),1,'big')
                 stream.write(size)
                 stream.write(b)
             stream.write(b'\x01\x01') #newline
@@ -587,7 +589,10 @@ if sys.version > '3':
                 with open(filename,'r',encoding='utf-8') as f:
                     for line in f:
                         if line.strip():
-                            cls, word = line.strip().split('\t')
+                            try:
+                                cls, word = line.strip().split('\t')
+                            except:
+                                print("WARNING: Unable to parse line:", line,file=sys.stderr)
                             cls = int(cls)
                             self.data[cls] = word
                             if cls > self.newestclass:
@@ -618,6 +623,7 @@ if sys.version > '3':
                 o = open(targetfilename,'w',encoding=encoding)
 
             if isinstance(files, str): files = [files]
+            nextspace = False
             for filename in files:
                 with open(filename,'rb') as f:
                     version = f.read(1)
@@ -626,12 +632,19 @@ if sys.version > '3':
                         size = f.read(1)
                         if not size:
                             break #EOF
-                        b = f.read(size)
-                        cls = int.from_bytes(b)
+                        b = f.read(int.from_bytes(size,'big'))
+                        cls = int.from_bytes(b,'big' )
                         if targetfilename:
+                            if nextspace: o.write(" ")
                             o.write(self[cls])
                         else:
-                            print(self[cls],newline=False)
+                            if nextspace: print(" ", end="")
+                            print(self[cls],end="")
+                        if cls != 1:
+                            nextspace = True
+                        else:
+                            nextspace = False
+
 
             if targetfilename:
                 o.close()
