@@ -26,6 +26,15 @@ if not os.path.exists('pynlpl'):
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+entry_points = {}
+if sys.version > '3':
+    entry_points = {
+        'console_scripts': [
+            'pynlpl-classencoder = pynlpl.tools.classencoder:main',
+            'pynlpl-classdecoder = pynlpl.tools.classdecoder:main',
+        ]
+    },
+
 
 setup(
     name = "PyNLPl",
@@ -51,5 +60,6 @@ setup(
     ],
     #include_package_data=True,
     #package_data = {'': ['*.wsgi','*.js','*.xsl','*.gif','*.png','*.xml','*.html','*.jpg','*.svg','*.rng'] },
-    install_requires=['lxml >= 2.2','httplib2 >= 0.6','numpy']
+    install_requires=['lxml >= 2.2','httplib2 >= 0.6','numpy'],
+    entry_points = entry_points
 )
