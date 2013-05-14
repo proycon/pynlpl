@@ -36,6 +36,7 @@ import array
 import re
 from itertools import permutations
 from pynlpl.statistics import FrequencyList
+from pynlpl.formats import folia
 
 
 WHITESPACE = [" ", "\t", "\n", "\r","\v","\f"]
@@ -483,7 +484,7 @@ if sys.version > '3':
                     f.write( str(cls) + "\t" + word + "\n")
 
 
-        def build(self, files, encoding='utf-8'):
+        def buildfromtext(self, files, encoding='utf-8'):
             freqlist = FrequencyList()
             if isinstance(files, str): files = [files]
             for filename in files:
@@ -492,11 +493,26 @@ if sys.version > '3':
                         tokens = line.strip().split()
                         freqlist.append(tokens)
 
+            self.buildfromfreqlist(freqlist)
 
+        def buildfromfreqlist(self, freqlist):
             for word, count in freqlist:
                 if not word in self.data:
                     self.newestclass += 1
                     self.data[word] = self.newestclass
+
+
+        def buildfromfolia(self, files, encoding='utf-8'):
+            freqlist = FrequencyList()
+            if isinstance(files, str): files = [files]
+            for filename in files:
+                f = folia.Document(file=filename)
+                for sentence in f.sentences():
+                    tokens = sentence.toktext().split(' ')
+                    freqlist.append(tokens)
+
+
+            self.buildfromfreqlist(freqlist)
 
         def __iter__(self):
             for word, cls in self.data:
@@ -597,23 +613,25 @@ if sys.version > '3':
         def __contains__(self, cls):
             return cls in self.data
 
-        def decodefile(self, filename, targetfilename = None, encoding='utf-8'):
+        def decodefile(self, files, targetfilename = None, encoding='utf-8'):
             if targetfilename:
                 o = open(targetfilename,'w',encoding=encoding)
 
-            with open(filename,'rb') as f:
-                version = f.read(1)
-                assert (version == b'\x00')
-                while True:
-                    size = f.read(1)
-                    if not size:
-                        break #EOF
-                    b = f.read(size)
-                    cls = int.from_bytes(b)
-                    if targetfilename:
-                        o.write(self[cls])
-                    else:
-                        print(self[cls],newline=False)
+            if isinstance(files, str): files = [files]
+            for filename in files:
+                with open(filename,'rb') as f:
+                    version = f.read(1)
+                    assert (version == b'\x00')
+                    while True:
+                        size = f.read(1)
+                        if not size:
+                            break #EOF
+                        b = f.read(size)
+                        cls = int.from_bytes(b)
+                        if targetfilename:
+                            o.write(self[cls])
+                        else:
+                            print(self[cls],newline=False)
 
             if targetfilename:
                 o.close()

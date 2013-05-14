@@ -6,6 +6,7 @@
 
 from pynlpl.textprocessors import ClassEncoder
 from pynlpl.statistics import FrequencyList
+from pynlpl.formats import folia
 import argparse
 import sys
 
@@ -26,9 +27,9 @@ def main():
     parser.add_argument("-c","--classfile", type=str,help="Load and use existing class model instead of building a new one")
     parser.add_argument("-o","--output", type=str, default="classes.cls", help="Filename of the class file")
     parser.add_argument("-s","--singleoutput", type=str, help="Encode all files to a single file")
-    parser.add_argument("-e","--extend",default=False,help="Extend existing class model with (used with -c)")
-    parser.add_argument("-a","--autoadd",default=False,help="Automatically add newly found classes to existing class file (used with -c)")
-    parser.add_argument("-u","--unknown",default=False,help="Unknown classes will be assigned a special 'unknown' class (used with -c)")
+    parser.add_argument("-e","--extend",action='store_true',default=False,help="Extend existing class model with (used with -c)")
+    parser.add_argument("-a","--autoadd",action='store_true',default=False,help="Automatically add newly found classes to existing class file (used with -c)")
+    parser.add_argument("-u","--unknown",action='store_true',default=False,help="Unknown classes will be assigned a special 'unknown' class (used with -c)")
     parser.add_argument("--encoding",type=str,default="utf-8",help="Encoding of plain-text input files")
 
     parser.add_argument('files', nargs='+')
@@ -37,22 +38,33 @@ def main():
 
     if args.classfile:
         classencoder = ClassEncoder(args.classfile, args.autoadd or args.extend, args.unknown)
-        if args.extend:
-            print("Building classes...", file=sys.stderr)
-            classencoder.build(args.files)
     else:
-        classencoder = ClassEncoder()
-        print("Building classes...", file=sys.stderr)
-        classencoder.build(args.files)
+        classencoder = ClassEncoder(None, args.autoadd or args.extend, args.unknown)
+
+    if not args.classfile or args.extend:
+        if args.xml:
+            for filename in args.files:
+                doc = folia.Document(file=filename)
+
+        else:
+            print("Building classes...", file=sys.stderr)
+            if args.xml:
+                classencoder.buildfromfolia(args.files)
+            else:
+                classencoder.buildfromtext(args.files)
+
+    if not args.classfile:
         print("Writing classes to ", args.output, file=sys.stderr)
         classencoder.save(args.output)
 
-    print("Encoding files...", file=sys.stderr)
     if args.singleoutput:
+        print("Encoding all files in " + args.singleoutput + "...", file=sys.stderr)
         classencoder.encodefile(args.files, args.singleoutput, args.encoding)
     else:
         for filename in args.files:
-            classencoder.encodefile(filename, os.path.basename(filename) + '.clsenc')
+            targetfilename = os.path.basename(filename).replace('.txt','').replace('.xml','') + '.clsenc')
+            print("Encoding " + filename + " in " + targetfilename + "...",file=sys.stderr)
+            classencoder.encodefile(filename, targetfilename)
 
     if args.classfile and args.autoadd:
         print("Writing classes to ", args.classfile, file=sys.stderr)
