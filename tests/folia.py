@@ -1891,6 +1891,72 @@ class Test6Query(unittest.TestCase):
         matches = list(self.doc.findwords( folia.Pattern('bli','bla','blu', matchannotation=folia.SenseAnnotation) ))
         self.assertEqual( len(matches), 0 )
 
+
+
+class Test9Reader(unittest.TestCase):
+    def setUp(self):
+        self.reader = folia.Reader("/tmp/foliatest.xml", folia.Word)
+
+    def test000_findwords_simple(self):
+        """Stream reader - Iterating over words"""
+        count = 0
+        for word in self.reader:
+            count += 1
+        self.assertEqual(count, 163)
+
+    def test001_findwords_simple(self):
+        """Querying using stream reader - Find words (simple)"""
+        matches = list(self.reader.findwords( folia.Pattern('van','het','alfabet') ))
+        self.assertEqual( len(matches), 1 )
+        self.assertEqual( len(matches[0]), 3 )
+        self.assertEqual( matches[0][0].text(), 'van' )
+        self.assertEqual( matches[0][1].text(), 'het' )
+        self.assertEqual( matches[0][2].text(), 'alfabet' )
+
+
+    def test002_findwords_wildcard(self):
+        """Querying using stream reader - Find words (with wildcard)"""
+        matches = list(self.reader.findwords( folia.Pattern('van','het',True) ))
+        self.assertEqual( len(matches), 1 )
+        self.assertEqual( len(matches[0]), 3 )
+
+        self.assertEqual( matches[0][0].text(), 'van' )
+        self.assertEqual( matches[0][1].text(), 'het' )
+        self.assertEqual( matches[0][2].text(), 'alfabet' )
+
+    def test003_findwords_annotation(self):
+        """Querying using stream reader - Find words by annotation"""
+        matches = list(self.reader.findwords( folia.Pattern('de','historisch','wetenschap','worden', matchannotation=folia.LemmaAnnotation) ))
+        self.assertEqual( len(matches), 1 )
+        self.assertEqual( len(matches[0]), 4 )
+        self.assertEqual( matches[0][0].text(), 'de' )
+        self.assertEqual( matches[0][1].text(), 'historische' )
+        self.assertEqual( matches[0][2].text(), 'wetenschap' )
+        self.assertEqual( matches[0][3].text(), 'wordt' )
+
+
+
+    def test004_findwords_multi(self):
+        """Querying using stream reader - Find words using a conjunction of multiple patterns """
+        matches = list(self.reader.findwords( folia.Pattern('de','historische',True, 'wordt'), folia.Pattern('de','historisch','wetenschap','worden', matchannotation=folia.LemmaAnnotation) ))
+        self.assertEqual( len(matches), 1 )
+        self.assertEqual( len(matches[0]), 4 )
+        self.assertEqual( matches[0][0].text(), 'de' )
+        self.assertEqual( matches[0][1].text(), 'historische' )
+        self.assertEqual( matches[0][2].text(), 'wetenschap' )
+        self.assertEqual( matches[0][3].text(), 'wordt' )
+
+    def test005_findwords_none(self):
+        """Querying using stream reader - Find words that don't exist"""
+        matches = list(self.reader.findwords( folia.Pattern('bli','bla','blu')))
+        self.assertEqual( len(matches), 0)
+
+
+    def test011_findwords_annotation_na(self):
+        """Querying using stream reader - Find words by non existing annotation"""
+        matches = list(self.reader.findwords( folia.Pattern('bli','bla','blu', matchannotation=folia.SenseAnnotation) ))
+        self.assertEqual( len(matches), 0 )
+
 class Test7XpathQuery(unittest.TestCase):
     def test050_findwords_xpath(self):
         """Xpath Querying - Collect all words (including non-authoritative)"""

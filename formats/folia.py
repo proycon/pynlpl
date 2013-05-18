@@ -5178,8 +5178,8 @@ class Reader(object):
 
 
     def findwords(self, *args, **kwargs):
-        self.target = folia.Word
-        for x in findwords(self,self.__iter__,*args,**kwargs):
+        self.target = Word
+        for x in findwords(self.doc,self.__iter__,*args,**kwargs):
             yield x
 
     def openstream(self, filename):
