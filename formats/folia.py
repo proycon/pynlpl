@@ -41,6 +41,7 @@ else:
     from io import StringIO,  BytesIO
     from urllib.request import urlopen
 
+
 from copy import copy, deepcopy
 from pynlpl.formats.imdi import RELAXNG_IMDI
 from datetime import datetime
@@ -50,7 +51,11 @@ import inspect
 import glob
 import os
 import re
-import io
+try:
+    import io
+except ImportError:
+    #old-Python 2.6 fallback
+    import codecs as io
 import multiprocessing
 import threading
 import bz2
@@ -69,7 +74,8 @@ nslendcoi = len(NSDCOI) + 2
 
 defaultignorelist = [] #Will be set at end of file! Only here so pylint won't complain
 #default ignore list for token annotation
-defaultignorelist2 = [] #Will be set at end of file! Only here so pylint won't complain
+defaultignorelist_annotations = [] #Will be set at end of file! Only here so pylint won't complain
+defaultignorelist_structure = [] #Will be set at end of file! Only here so pylint won't complain
 
 ILLEGAL_UNICODE_CONTROL_CHARACTERS = {} #XML does not like unicode control characters
 for ordinal in range(0x20):
@@ -139,6 +145,39 @@ class SetDefinitionError(DeepValidationError):
 class ModeError(Exception):
     pass
 
+
+#There is a leak in lxml :( , specialise file handler to replace xml:id to id, ugly hack (especially for Python2)
+if sys.version < '3':
+    if hasattr(io,'FileIO'):
+        #Python 2.6 with io, 2.7
+        class BypassLeakFile(io.FileIO):
+            def read(self,n=0):
+                s = unicode(super(BypassLeakFile,self).read(n),'utf-8')
+                return s.replace('xml:id','id').encode('utf-8')
+
+            def readline(self):
+                s = unicode(super(BypassLeakFile,self).readline(),'utf-8')
+                return s.replace('xml:id','id').encode('utf-8')
+    else:
+        #Python 2.6 without io
+        class BypassLeakFile(file):
+            def read(self,n=0):
+                s = unicode(super(BypassLeakFile,self).read(n),'utf-8')
+                return s.replace('xml:id','id').encode('utf-8')
+
+            def readline(self):
+                s = unicode(super(BypassLeakFile,self).readline(),'utf-8')
+                return s.replace('xml:id','id').encode('utf-8')
+else:
+    #Python 3
+    class BypassLeakFile(io.FileIO):
+        def read(self,n=0):
+            s = super(BypassLeakFile,self).read(n)
+            return s.replace(b'xml:id',b'id')
+
+        def readline(self):
+            s = super(BypassLeakFile,self).readline()
+            return s.replace(b'xml:id',b'id')
 
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     """Internal function, parses common FoLiA attributes and sets up the instance accordingly"""
@@ -399,6 +438,15 @@ def xmltreefromstring(s, bypassleak=False):
                 if bypassleak: s = s.replace(' xml:id=', ' id=')
                 s = s.encode('utf-8')
             return ElementTree.parse(BytesIO(s))
+
+def xmltreefromfile(filename,bypassleak=False):
+    if bypassleak:
+        f = BypassLeakFile(filename,'rb')
+        tree = ElementTree.parse(f)
+        f.close()
+        return tree
+    else:
+        return ElementTree.parse(file)
 
 def makeelement(E, tagname, **kwargs):
     if sys.version < '3':
@@ -1645,7 +1693,7 @@ class AllowTokenAnnotation(AllowCorrections):
         Raises:
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
-        l = self.select(Class,set,True,defaultignorelist2)
+        l = self.select(Class,set,True,defaultignorelist_annotations)
         if not l:
             raise NoSuchAnnotation()
         else:
@@ -1653,12 +1701,12 @@ class AllowTokenAnnotation(AllowCorrections):
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        l = self.select(Class,set,True,defaultignorelist2)
+        l = self.select(Class,set,True,defaultignorelist_annotations)
         return len(l)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.select(type,set,True,defaultignorelist2)
+        l = self.select(type,set,True,defaultignorelist_annotations)
         if len(l) >= 1:
             return l[0]
         else:
@@ -1676,7 +1724,7 @@ class AllowTokenAnnotation(AllowCorrections):
         """
         l = []
 
-        for e in self.select(Alternative,None, True, ['Original','Suggestion']):
+        for e in self.select(Alternative,None, True, []):
             if Class is None:
                 l.append(e)
             elif len(e) >= 1: #child elements?
@@ -1816,9 +1864,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return self.select(Word,None,True,True)
+            return self.select(Word,None,True,defaultignorelist_structure)
         else:
-            return self.select(Word,None,True,True)[index]
+            return self.select(Word,None,True,defaultignorelist_structure)[index]
 
 
     def paragraphs(self, index = None):
@@ -1828,9 +1876,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return self.select(Paragraph,None,True,True)
+            return self.select(Paragraph,None,True,defaultignorelist_structure)
         else:
-            return self.select(Paragraph,None,True,True)[index]
+            return self.select(Paragraph,None,True,defaultignorelist_structure)[index]
 
     def sentences(self, index = None):
         """Returns a list of Sentence elements found (recursively) under this element
@@ -1839,9 +1887,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return self.select(Sentence,None,True,True)
+            return self.select(Sentence,None,True,defaultignorelist_structure)
         else:
-            return self.select(Sentence,None,True,True)[index]
+            return self.select(Sentence,None,True,defaultignorelist_structure)[index]
 
     def layers(self, annotationtype=None,set=None):
         """Returns a list of annotation layers found *directly* under this element, does not include alternative layers"""
@@ -2542,7 +2590,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
         Raises:
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
-        l = self.select(Class,set,True,defaultignorelist2)
+        l = self.select(Class,set,True,defaultignorelist_annotations)
         if not l:
             raise NoSuchAnnotation()
         else:
@@ -2550,12 +2598,12 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        l = self.select(Class,set,True,defaultignorelist2)
+        l = self.select(Class,set,True,defaultignorelist_annotations)
         return len(l)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.select(type,set,True,defaultignorelist2)
+        l = self.select(type,set,True,defaultignorelist_annotations)
         if len(l) >= 1:
             return l[0]
         else:
@@ -2936,7 +2984,10 @@ class Correction(AbstractExtendedTokenAnnotation):
             #to override and go into all branches, set ignorelist explictly to False
             return super(Correction,self).select(cls,set,recursive, ignorelist, node)
         else:
-            ignorelist = copy(ignorelist) #we don't want to alter a passed ignorelist (by ref)
+            if ignorelist is True:
+                ignorelist = copy(defaultignorelist)
+            else:
+                ignorelist = copy(ignorelist) #we don't want to alter a passed ignorelist (by ref)
             ignorelist.append(Original)
             ignorelist.append(Suggestion)
             return super(Correction,self).select(cls,set,recursive, ignorelist, node)
@@ -3877,16 +3928,7 @@ class Document(object):
                 del contents
                 self.parsexml(self.tree.getroot())
             else:
-                if not self.bypassleak:
-                    self.load(self.filename)
-                else:
-                    f = io.open(self.filename,'r',encoding='utf-8')
-                    contents = f.read()
-                    f.close()
-                    #contents is bytes (utf-8 bytes)
-                    self.tree = xmltreefromstring(contents,self.bypassleak)
-                    del contents
-                    self.parsexml(self.tree.getroot())
+                self.load(self.filename)
         elif 'string' in kwargs:
             self.tree = xmltreefromstring(kwargs['string'],self.bypassleak)
             del kwargs['string']
@@ -3919,7 +3961,7 @@ class Document(object):
         #    #f.close()
         #    self.tree = ElementTree.parse(filename)
         #else:
-        self.tree = ElementTree.parse(filename)
+        self.tree = xmltreefromfile(filename, self.bypassleak)
         self.parsexml(self.tree.getroot())
         if self.mode != Mode.XPATH:
             #XML Tree is now obsolete (only needed when partially loaded for xpath queries)
@@ -3939,127 +3981,8 @@ class Document(object):
 
 
     def findwords(self, *args, **kwargs):
-        if 'leftcontext' in kwargs:
-            leftcontext = int(kwargs['leftcontext'])
-            del kwargs['leftcontext']
-        else:
-            leftcontext = 0
-        if 'rightcontext' in kwargs:
-            rightcontext =  int(kwargs['rightcontext'])
-            del kwargs['rightcontext']
-        else:
-            rightcontext = 0
-        if 'maxgapsize' in kwargs:
-            maxgapsize = int(kwargs['maxgapsize'])
-            del kwargs['maxgapsize']
-        else:
-            maxgapsize = 10
-        for key in kwargs.keys():
-            raise Exception("Unknown keyword parameter: " + key)
-
-        matchcursor = 0
-        matched = []
-
-        #shortcut for when no Pattern is passed, make one on the fly
-        if len(args) == 1 and not isinstance(args[0], Pattern):
-            if not isinstance(args[0], list) and not isinstance(args[0], tuple):
-                args[0] = [args[0]]
-            args[0] = Pattern(*args[0])
-
-
-
-        unsetwildcards = False
-        variablewildcards = None
-        prevsize = -1
-        minsize = 99999
-        #sanity check
-        for i, pattern in enumerate(args):
-            if not isinstance(pattern, Pattern):
-                raise TypeError("You must pass instances of Sequence to findwords")
-            if prevsize > -1 and len(pattern) != prevsize:
-                raise Exception("If multiple patterns are provided, they must all have the same length!")
-            if pattern.variablesize():
-                if not variablewildcards and i > 0:
-                    unsetwildcards = True
-                else:
-                    if variablewildcards and pattern.variablewildcards() != variablewildcards:
-                        raise Exception("If multiple patterns are provided with variable wildcards, then these wildcards must all be in the same positions!")
-                    variablewildcards = pattern.variablewildcards()
-            elif variablewildcards:
-                unsetwildcards = True
-            prevsize = len(pattern)
-
-        if unsetwildcards:
-            #one pattern determines a fixed length whilst others are variable, rewrite all to fixed length
-            #converting multi-span * wildcards into single-span 'True' wildcards
-            for pattern in args:
-                if pattern.variablesize():
-                    pattern.sequence = [ True if x == '*' else x for x in pattern.sequence ]
-            variablesize = False
-
-        if variablewildcards:
-            #one or more items have a * wildcard, which may span multiple tokens. Resolve this to a wider range of simpler patterns
-
-            #we're not commited to a particular size, expand to various ones
-            for size in range(len(variablewildcards), maxgapsize+1):
-                for distribution in  pynlpl.algorithms.sum_to_n(size, len(variablewildcards)): #gap distributions, (amount) of 'True' wildcards
-                    patterns = []
-                    for pattern in args:
-                        if pattern.variablesize():
-                            patterns += list(pattern.resolve(size,distribution))
-                        else:
-                            patterns.append( pattern )
-                    for match in self.findwords(*patterns, **{'leftcontext':leftcontext,'rightcontext':rightcontext}):
-                        yield match
-
-        else:
-            patterns = args
-            buffers = []
-
-            for word in self.words():
-                buffers.append( [] ) #Add a new empty buffer for every word
-                match = [None] * len(buffers)
-                for pattern in patterns:
-                    #find value to match against
-                    if not pattern.matchannotation:
-                        value = word.text()
-                    else:
-                        if pattern.matchannotationset:
-                            items = word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative])
-                        else:
-                            try:
-                                set = self.defaultset(pattern.matchannotation.ANNOTATIONTYPE)
-                                items = word.select(pattern.matchannotation, set, True, [Original, Suggestion, Alternative] )
-                            except KeyError:
-                                continue
-                        if len(items) == 1:
-                            value = items[0].cls
-                        else:
-                            continue
-
-                    if not pattern.casesensitive:
-                        value = value.lower()
-
-
-                    for i, buffer in enumerate(buffers):
-                        if match[i] is False:
-                            continue
-                        matchcursor = len(buffer)
-                        if (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
-                            match[i] = True
-                        else:
-                            match[i] = False
-
-
-                for buffer, matches in list(zip(buffers, match)):
-                    if matches:
-                        buffer.append(word) #add the word
-                        if len(buffer) == len(pattern.sequence):
-                            yield buffer[0].leftcontext(leftcontext) + buffer + buffer[-1].rightcontext(rightcontext)
-                            buffers.remove(buffer)
-                    else:
-                        buffers.remove(buffer) #remove buffer
-
+        for x in findwords(self,self.words,*args,**kwargs):
+            yield x
 
     def save(self, filename=None):
         """Save the document to FoLiA XML.
@@ -4604,9 +4527,9 @@ class Document(object):
 
         If an index is specified, return the n'th word only (starting at 0)"""
         if index is None:
-            return sum([ t.select(Word,None,True,True) for t in self.data ],[])
+            return sum([ t.select(Word,None,True,defaultignorelist_structure) for t in self.data ],[])
         else:
-            return sum([ t.select(Word,None,True,True) for t in self.data ],[])[index]
+            return sum([ t.select(Word,None,True,defaultignorelist_structure) for t in self.data ],[])[index]
 
 
     def text(self, retaintokenisation=False):
@@ -5103,11 +5026,134 @@ def relaxng(filename=None):
     return grammar
 
 
+
+def findwords(doc, worditerator, *args, **kwargs):
+        if 'leftcontext' in kwargs:
+            leftcontext = int(kwargs['leftcontext'])
+            del kwargs['leftcontext']
+        else:
+            leftcontext = 0
+        if 'rightcontext' in kwargs:
+            rightcontext =  int(kwargs['rightcontext'])
+            del kwargs['rightcontext']
+        else:
+            rightcontext = 0
+        if 'maxgapsize' in kwargs:
+            maxgapsize = int(kwargs['maxgapsize'])
+            del kwargs['maxgapsize']
+        else:
+            maxgapsize = 10
+        for key in kwargs.keys():
+            raise Exception("Unknown keyword parameter: " + key)
+
+        matchcursor = 0
+        matched = []
+
+        #shortcut for when no Pattern is passed, make one on the fly
+        if len(args) == 1 and not isinstance(args[0], Pattern):
+            if not isinstance(args[0], list) and not isinstance(args[0], tuple):
+                args[0] = [args[0]]
+            args[0] = Pattern(*args[0])
+
+
+
+        unsetwildcards = False
+        variablewildcards = None
+        prevsize = -1
+        minsize = 99999
+        #sanity check
+        for i, pattern in enumerate(args):
+            if not isinstance(pattern, Pattern):
+                raise TypeError("You must pass instances of Sequence to findwords")
+            if prevsize > -1 and len(pattern) != prevsize:
+                raise Exception("If multiple patterns are provided, they must all have the same length!")
+            if pattern.variablesize():
+                if not variablewildcards and i > 0:
+                    unsetwildcards = True
+                else:
+                    if variablewildcards and pattern.variablewildcards() != variablewildcards:
+                        raise Exception("If multiple patterns are provided with variable wildcards, then these wildcards must all be in the same positions!")
+                    variablewildcards = pattern.variablewildcards()
+            elif variablewildcards:
+                unsetwildcards = True
+            prevsize = len(pattern)
+
+        if unsetwildcards:
+            #one pattern determines a fixed length whilst others are variable, rewrite all to fixed length
+            #converting multi-span * wildcards into single-span 'True' wildcards
+            for pattern in args:
+                if pattern.variablesize():
+                    pattern.sequence = [ True if x == '*' else x for x in pattern.sequence ]
+            variablesize = False
+
+        if variablewildcards:
+            #one or more items have a * wildcard, which may span multiple tokens. Resolve this to a wider range of simpler patterns
+
+            #we're not commited to a particular size, expand to various ones
+            for size in range(len(variablewildcards), maxgapsize+1):
+                for distribution in  pynlpl.algorithms.sum_to_n(size, len(variablewildcards)): #gap distributions, (amount) of 'True' wildcards
+                    patterns = []
+                    for pattern in args:
+                        if pattern.variablesize():
+                            patterns += list(pattern.resolve(size,distribution))
+                        else:
+                            patterns.append( pattern )
+                    for match in findwords(doc, worditerator,*patterns, **{'leftcontext':leftcontext,'rightcontext':rightcontext}):
+                        yield match
+
+        else:
+            patterns = args
+            buffers = []
+
+            for word in worditerator():
+                buffers.append( [] ) #Add a new empty buffer for every word
+                match = [None] * len(buffers)
+                for pattern in patterns:
+                    #find value to match against
+                    if not pattern.matchannotation:
+                        value = word.text()
+                    else:
+                        if pattern.matchannotationset:
+                            items = word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative])
+                        else:
+                            try:
+                                set = doc.defaultset(pattern.matchannotation.ANNOTATIONTYPE)
+                                items = word.select(pattern.matchannotation, set, True, [Original, Suggestion, Alternative] )
+                            except KeyError:
+                                continue
+                        if len(items) == 1:
+                            value = items[0].cls
+                        else:
+                            continue
+
+                    if not pattern.casesensitive:
+                        value = value.lower()
+
+
+                    for i, buffer in enumerate(buffers):
+                        if match[i] is False:
+                            continue
+                        matchcursor = len(buffer)
+                        if (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
+                            match[i] = True
+                        else:
+                            match[i] = False
+
+
+                for buffer, matches in list(zip(buffers, match)):
+                    if matches:
+                        buffer.append(word) #add the word
+                        if len(buffer) == len(pattern.sequence):
+                            yield buffer[0].leftcontext(leftcontext) + buffer + buffer[-1].rightcontext(rightcontext)
+                            buffers.remove(buffer)
+                    else:
+                        buffers.remove(buffer) #remove buffer
+
 class Reader(object):
-    """Streaming FoLiA reader. The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found. """
+    """Streaming FoLiA reader. The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found. If you are querying a corpus of large FoLiA documents for a specific structure, then it is strongly recommend to use the Reader rather than the standard Document!"""
 
 
-    def __init__(self, filename, target, bypassleak=False):
+    def __init__(self, filename, target, *args, **kwargs):
         """Read a FoLiA document in a streaming fashion. You select a specific target element and all occurrences of this element, including all  contents (so all elements within), will be returned.
 
         Arguments:
@@ -5118,58 +5164,69 @@ class Reader(object):
 
         """
 
-        self.filename = filename
         self.target = target
         if not issubclass(self.target, AbstractElement):
             raise ValueError("Target must be subclass of FoLiA element")
-        self.bypassleak = bypassleak
+        if 'bypassleak' in kwargs:
+            self.bypassleak = bool(kwargs['bypassleak'])
+        else:
+            self.bypassleak = True
+
+        self.openstream(filename)
+        self.initdoc()
 
 
-    def __iter__(self):
-        """Iterating over a Reader instance will cause the FoLiA document to be read. This is a generator yielding instances of the object you specified"""
 
-        global NSFOLIA
-        f = io.open(self.filename,'r',encoding='utf-8')
+    def findwords(self, *args, **kwargs):
+        self.target = folia.Word
+        for x in findwords(self,self.__iter__,*args,**kwargs):
+            yield x
+
+    def openstream(self, filename):
         if self.bypassleak:
-            data = f.read()
-            data = data.replace(' xml:id="',' id="')
-            f.close()
-            if sys.version < '3':
-                f = StringIO(data.encode('utf-8'))
-            else:
-                f = BytesIO(data.encode('utf-8'))
+            self.stream = BypassLeakFile(filename,'rb')
+        else:
+            self.stream = io.open(filename,'rb')
 
-        doc = None
+    def initdoc(self):
+        self.doc = None
         metadata = False
-        parser = ElementTree.iterparse(f, events=("start","end"))
+        parser = ElementTree.iterparse(self.stream, events=("start","end"))
         for action, node in parser:
             if action == "start" and node.tag == "{" + NSFOLIA + "}FoLiA":
-                doc = Document(id= node.attrib['{http://www.w3.org/XML/1998/namespace}id'])
+                if '{http://www.w3.org/XML/1998/namespace}id' in node.attrib:
+                    id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
+                else:
+                    id = node.attrib['id']
+                self.doc = Document(id=id)
                 if 'version' in node.attrib:
-                    doc.version = node.attrib['version']
+                    self.doc.version = node.attrib['version']
             if action == "end" and node.tag == "{" + NSFOLIA + "}metadata":
-                if not doc:
+                if not self.doc:
                     raise MalformedXMLError("Metadata found, but no document? Impossible")
                 metadata = True
-                doc.parsemetadata(node)
+                self.doc.parsemetadata(node)
                 break
 
-        if not doc:
+        if not self.doc:
             raise MalformedXMLError("No FoLiA Document found!")
         elif not metadata:
             raise MalformedXMLError("No metadata found!")
 
-        f.seek(0) #reset
+        self.stream.seek(0) #reset
 
-        parser = ElementTree.iterparse(f, events=("end",), tag="{" + NSFOLIA + "}" + self.target.XMLTAG  )
+    def __iter__(self):
+        """Iterating over a Reader instance will cause the FoLiA document to be read. This is a generator yielding instances of the object you specified"""
+
+        parser = ElementTree.iterparse(self.stream, events=("end",), tag="{" + NSFOLIA + "}" + self.target.XMLTAG  )
         for action, node in parser:
-            element = self.target.parsexml(node, doc)
+            element = self.target.parsexml(node, self.doc)
             node.clear() #clean up children
             while node.getprevious() is not None:
                 del node.getparent()[0]  # clean up preceding siblings
             yield element
 
-        f.close()
+        self.stream.close()
 
 
 #class WordIndexer(object):
@@ -5234,5 +5291,6 @@ for c in list(vars().values()):
 
 defaultignorelist = [Original,Suggestion,Alternative, AlternativeLayers]
 #default ignore list for token annotation
-defaultignorelist2 = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer]
+defaultignorelist_annotations = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer]
+defaultignorelist_structure = [Original,Suggestion,Alternative, AlternativeLayers,AbstractAnnotationLayer]
 
