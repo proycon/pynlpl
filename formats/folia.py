@@ -63,6 +63,12 @@ LIBVERSION = '0.9.1.36' #== FoLiA version + library revision
 
 NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
+nslen = len(NSFOLIA) + 2
+nslendcoi = len(NSDCOI) + 2
+
+defaultignorelist = [] #Will be set at end of file! Only here so pylint won't complain
+#default ignore list for token annotation
+defaultignorelist2 = [] #Will be set at end of file! Only here so pylint won't complain
 
 ILLEGAL_UNICODE_CONTROL_CHARACTERS = {} #XML does not like unicode control characters
 for ordinal in range(0x20):
@@ -742,7 +748,7 @@ class AbstractElement(object):
 
         if Class.OCCURRENCES > 0:
             #check if the parent doesn't have too many already
-            count = len(parent.select(Class,None,True,['Original','Suggestion','Alternative','AlternativeLayers']))
+            count = len(parent.select(Class,None,True,True))
             if count >= Class.OCCURRENCES:
                 if raiseexceptions:
                     raise DuplicateAnnotationError("Unable to add another object of type " + child.__class__.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum.")
@@ -750,7 +756,7 @@ class AbstractElement(object):
                     return False
 
         if Class.OCCURRENCESPERSET > 0 and set and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
-            count = len(parent.select(Class,set,True, ['Original','Suggestion','Alternative','AlternativeLayers']))
+            count = len(parent.select(Class,set,True, True))
             if count >= Class.OCCURRENCESPERSET:
                 if raiseexceptions:
                     if parent.id:
@@ -1110,7 +1116,7 @@ class AbstractElement(object):
         return s
 
 
-    def select(self, Class, set=None, recursive=True,  ignorelist=['Original','Suggestion','Alternative',], node=None):
+    def select(self, Class, set=None, recursive=True,  ignorelist=True, node=None):
         """Select child elements of the specified class.
 
         A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into.
@@ -1119,7 +1125,13 @@ class AbstractElement(object):
             * ``Class``: The class to select; any python class subclassed off `'AbstractElement``
             * ``set``: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
             * ``recursive``: Select recursively? Descending into child elements? Boolean defaulting to True.
-            * ``ignorelist``: A list of Classes (subclassed off ``AbstractElement``) not to recurse into. It is common not to want to recurse into the following elements: ``folia.Alternative``, ``folia.Suggestion``, and ``folia.Original``. As elements contained in these are never *authorative*.
+            * ``ignorelist``: A list of Classes (subclassed off
+            * ``AbstractElement``) not to recurse into. It is common not to
+               want to recurse into the following elements:
+               ``folia.Alternative``, ``folia.AlternativeLayer``,
+               ``folia.Suggestion``, and ``folia.Original``. As elements
+               contained in these are never *authorative*. If ignorelist is
+               set to the boolean True rather than a list, this will be the default list.
             * ``node``: Reserved for internal usage, used in recursion.
 
         Returns:
@@ -1130,6 +1142,12 @@ class AbstractElement(object):
             text.select(folia.Sense, 'cornetto', True, [folia.Original, folia.Suggestion, folia.Alternative] )
 
         """
+
+        if ignorelist is True:
+            ignorelist = defaultignorelist
+        #elif ignorelist:
+        #    ignorelist = [ globals()[c] if not inspect.isclass(c) else c for c in ignorelist ]  #TODO: make more efficient, resolving the same default ignorelist every time is slow, isclass is costly
+
         l = []
         if not node:
             node = self
@@ -1137,8 +1155,6 @@ class AbstractElement(object):
             if ignorelist:
                 ignore = False
                 for c in ignorelist:
-                    if not inspect.isclass(c):
-                        c = globals()[c]
                     if c == e.__class__ or issubclass(e.__class__,c):
                         ignore = True
                         break
@@ -1317,17 +1333,15 @@ class AbstractElement(object):
 
         assert issubclass(Class, AbstractElement)
         global NSFOLIA, NSDCOI
-        nslen = len(NSFOLIA) + 2
-        nslendcoi = len(NSDCOI) + 2
-        dcoi = (node.tag[:nslendcoi] == '{' + NSDCOI + '}')
+        dcoi = node.tag.startswith('{' + NSDCOI + '}')
         args = []
         kwargs = {}
         text = None
         for subnode in node:
-            if subnode.tag[:nslen] == '{' + NSFOLIA + '}':
+            if subnode.tag.startswith('{' + NSFOLIA + '}'):
                 if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:],file=stderr)
                 args.append(doc.parsexml(subnode, Class) )
-            elif subnode.tag[:nslendcoi] == '{' + NSDCOI + '}':
+            elif subnode.tag.startswith('{' + NSDCOI + '}'):
                 #Dcoi support
                 if Class is Text and subnode.tag[nslendcoi:] == 'body':
                     for subsubnode in subnode:
@@ -1341,35 +1355,39 @@ class AbstractElement(object):
 
 
 
-        id = dcoipos = dcoilemma = dcoicorrection = dcoicorrectionoriginal = None
+        id = None
+        if dcoi:
+            dcoipos = dcoilemma = dcoicorrection = dcoicorrectionoriginal = None
         for key, value in node.attrib.items():
-            if key == '{http://www.w3.org/XML/1998/namespace}id':
-                id = value
-                key = 'id'
-            elif key[:nslen] == '{' + NSFOLIA + '}':
-                key = key[nslen:]
-            elif key[:nslendcoi] == '{' + NSDCOI + '}':
-                key = key[nslendcoi:]
+            if key[0] == '{':
+                if key == '{http://www.w3.org/XML/1998/namespace}id':
+                    id = value
+                    key = 'id'
+                elif key.startswith( '{' + NSFOLIA + '}'):
+                    key = key[nslen:]
+                elif key.startswith('{' + NSDCOI + '}'):
+                    key = key[nslendcoi:]
 
             #D-Coi support:
-            if Class is Word and key == 'pos':
-                dcoipos = value
-                continue
-            elif Class is Word and  key == 'lemma':
-                dcoilemma = value
-                continue
-            elif Class is Word and  key == 'correction':
-                dcoicorrection = value #class
-                continue
-            elif Class is Word and  key == 'original':
-                dcoicorrectionoriginal = value
-                continue
-            elif Class is Gap and  key == 'reason':
-                key = 'class'
-            elif Class is Gap and  key == 'hand':
-                key = 'annotator'
-            elif Class is Division and  key == 'type':
-                key = 'cls'
+            if dcoi:
+                if Class is Word and key == 'pos':
+                    dcoipos = value
+                    continue
+                elif Class is Word and  key == 'lemma':
+                    dcoilemma = value
+                    continue
+                elif Class is Word and  key == 'correction':
+                    dcoicorrection = value #class
+                    continue
+                elif Class is Word and  key == 'original':
+                    dcoicorrectionoriginal = value
+                    continue
+                elif Class is Gap and  key == 'reason':
+                    key = 'class'
+                elif Class is Gap and  key == 'hand':
+                    key = 'annotator'
+                elif Class is Division and  key == 'type':
+                    key = 'cls'
 
             kwargs[key] = value
 
@@ -1388,18 +1406,19 @@ class AbstractElement(object):
         #if id:
         #    if doc.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Adding to index: " + id
         #    doc.index[id] = instance
-        if dcoipos:
-            if not AnnotationType.POS in doc.annotationdefaults:
-                doc.declare(AnnotationType.POS, set='http://ilk.uvt.nl/folia/sets/cgn-legacy.foliaset')
-            instance.append( PosAnnotation(doc, cls=dcoipos) )
-        if dcoilemma:
-            if not AnnotationType.LEMMA in doc.annotationdefaults:
-                doc.declare(AnnotationType.LEMMA, set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset')
-            instance.append( LemmaAnnotation(doc, cls=dcoilemma) )
-        if dcoicorrection and dcoicorrectionoriginal and text:
-            if not AnnotationType.CORRECTION in doc.annotationdefaults:
-                doc.declare(AnnotationType.CORRECTION, set='http://ilk.uvt.nl/folia/sets/dcoi-corrections.foliaset')
-            instance.correct(generate_id_in=instance, cls=dcoicorrection, original=dcoicorrectionoriginal, new=text)
+        if dcoi:
+            if dcoipos:
+                if not AnnotationType.POS in doc.annotationdefaults:
+                    doc.declare(AnnotationType.POS, set='http://ilk.uvt.nl/folia/sets/cgn-legacy.foliaset')
+                instance.append( PosAnnotation(doc, cls=dcoipos) )
+            if dcoilemma:
+                if not AnnotationType.LEMMA in doc.annotationdefaults:
+                    doc.declare(AnnotationType.LEMMA, set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset')
+                instance.append( LemmaAnnotation(doc, cls=dcoilemma) )
+            if dcoicorrection and dcoicorrectionoriginal and text:
+                if not AnnotationType.CORRECTION in doc.annotationdefaults:
+                    doc.declare(AnnotationType.CORRECTION, set='http://ilk.uvt.nl/folia/sets/dcoi-corrections.foliaset')
+                instance.correct(generate_id_in=instance, cls=dcoicorrection, original=dcoicorrectionoriginal, new=text)
         return instance
 
     def resolveword(self, id):
@@ -1627,7 +1646,7 @@ class AllowTokenAnnotation(AllowCorrections):
         Raises:
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
-        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
+        l = self.select(Class,set,True,defaultignorelist2)
         if not l:
             raise NoSuchAnnotation()
         else:
@@ -1635,12 +1654,12 @@ class AllowTokenAnnotation(AllowCorrections):
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
+        l = self.select(Class,set,True,defaultignorelist2)
         return len(l)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.select(type,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
+        l = self.select(type,set,True,defaultignorelist2)
         if len(l) >= 1:
             return l[0]
         else:
@@ -1798,9 +1817,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return self.select(Word,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer'])
+            return self.select(Word,None,True,True)
         else:
-            return self.select(Word,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer'])[index]
+            return self.select(Word,None,True,True)[index]
 
 
     def paragraphs(self, index = None):
@@ -1810,9 +1829,9 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return self.select(Paragraph,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer'])
+            return self.select(Paragraph,None,True,True)
         else:
-            return self.select(Paragraph,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer'])[index]
+            return self.select(Paragraph,None,True,True)[index]
 
     def sentences(self, index = None):
         """Returns a list of Sentence elements found (recursively) under this element
@@ -1821,14 +1840,14 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative','AbstractAnnotationLayer'])
+            return self.select(Sentence,None,True,True)
         else:
-            return self.select(Sentence,None,True,['Quote','Original','Suggestion','Alternative','AbstractAnnotationLayer'])[index]
+            return self.select(Sentence,None,True,True)[index]
 
     def layers(self, annotationtype=None,set=None):
         """Returns a list of annotation layers found *directly* under this element, does not include alternative layers"""
         if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
-        return [ x for x in self.select(AbstractAnnotationLayer,set,False,['AlternativeLayers']) if annotationtype is None or x.ANNOTATIONTYPE == annotationtype ]
+        return [ x for x in self.select(AbstractAnnotationLayer,set,False,True) if annotationtype is None or x.ANNOTATIONTYPE == annotationtype ]
 
     def hasannotationlayer(self, annotationtype=None,set=None):
         """Does the specified annotation layer exist?"""
@@ -2041,7 +2060,6 @@ class TextContent(AbstractElement):
     def parsexml(Class, node, doc):
         """(Method for internal usage, see AbstractElement)"""
         global NSFOLIA
-        nslen = len(NSFOLIA) + 2
         args = []
         kwargs = {}
         if 'class' in node.attrib:
@@ -2244,7 +2262,6 @@ class Word(AbstractStructureElement, AllowCorrections):
     def parsexml(Class, node, doc):
         assert Class is Word
         global NSFOLIA
-        nslen = len(NSFOLIA) + 2
         instance = super(Word,Class).parsexml(node, doc)
         if 'space' in node.attrib:
             if node.attrib['space'] == 'no':
@@ -2526,7 +2543,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
         Raises:
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
-        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
+        l = self.select(Class,set,True,defaultignorelist2)
         if not l:
             raise NoSuchAnnotation()
         else:
@@ -2534,12 +2551,12 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        l = self.select(Class,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
+        l = self.select(Class,set,True,defaultignorelist2)
         return len(l)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.select(type,set,True,['Original','Suggestion','Alternative','AlternativeLayers','MorphologyLayer'])
+        l = self.select(type,set,True,defaultignorelist2)
         if len(l) >= 1:
             return l[0]
         else:
@@ -2920,7 +2937,7 @@ class Correction(AbstractExtendedTokenAnnotation):
             #to override and go into all branches, set ignorelist explictly to False
             return super(Correction,self).select(cls,set,recursive, ignorelist, node)
         else:
-            ignorelist = copy(ignorelist) #we don't want to alter an passed ignorelist (by ref)
+            ignorelist = copy(ignorelist) #we don't want to alter a passed ignorelist (by ref)
             ignorelist.append(Original)
             ignorelist.append(Suggestion)
             return super(Correction,self).select(cls,set,recursive, ignorelist, node)
@@ -4486,8 +4503,6 @@ class Document(object):
     def parsexml(self, node, ParentClass = None):
         """Main XML parser, will invoke class-specific XML parsers. For internal use."""
         global XML2CLASS, NSFOLIA, NSDCOI, LXE
-        nslen = len(NSFOLIA) + 2
-        nslendcoi = len(NSDCOI) + 2
 
 
         if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)):
@@ -4495,26 +4510,34 @@ class Document(object):
         elif isstring(node):
             node = xmltreefromstring(node).getroot()
 
-        if node.tag == '{' + NSFOLIA + '}FoLiA':
-            if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found FoLiA document",file=stderr)
-            try:
-                self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
-            except KeyError:
+        if node.tag.startswith('{' + NSFOLIA + '}'):
+            foliatag = node.tag[nslen:]
+            if foliatag == "FoLiA":
+                if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found FoLiA document",file=stderr)
                 try:
-                    self.id = node.attrib['id']
+                    self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
                 except KeyError:
-                    raise Exception("FoLiA Document has no ID!")
-            if 'version' in node.attrib:
-                self.version = node.attrib['version']
-            else:
-                self.version = None
+                    try:
+                        self.id = node.attrib['id']
+                    except KeyError:
+                        raise Exception("FoLiA Document has no ID!")
+                if 'version' in node.attrib:
+                    self.version = node.attrib['version']
+                else:
+                    self.version = None
 
-            for subnode in node:
-                if subnode.tag == '{' + NSFOLIA + '}metadata':
-                    self.parsemetadata(subnode)
-                elif subnode.tag == '{' + NSFOLIA + '}text' and self.mode == Mode.MEMORY:
-                    if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found Text",file=stderr)
-                    self.data.append( self.parsexml(subnode) )
+                for subnode in node:
+                    if subnode.tag == '{' + NSFOLIA + '}metadata':
+                        self.parsemetadata(subnode)
+                    elif subnode.tag == '{' + NSFOLIA + '}text' and self.mode == Mode.MEMORY:
+                        if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found Text",file=stderr)
+                        self.data.append( self.parsexml(subnode) )
+            else:
+                #generic handling (FoLiA)
+                if not foliatag in XML2CLASS:
+                        raise Exception("Unknown FoLiA XML tag: " + foliatag)
+                Class = XML2CLASS[foliatag]
+                return Class.parsexml(node,self)
         elif node.tag == '{' + NSDCOI + '}DCOI':
             if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found DCOI document",file=stderr)
             self.autodeclare = True
@@ -4532,13 +4555,7 @@ class Document(object):
                 elif subnode.tag == '{' + NSDCOI + '}text':
                     if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found Text",file=stderr)
                     self.data.append( self.parsexml(subnode) )
-        elif node.tag[:nslen] == '{' + NSFOLIA + '}':
-            #generic handling (FoLiA)
-            if not node.tag[nslen:] in XML2CLASS:
-                    raise Exception("Unknown FoLiA XML tag: " + node.tag)
-            Class = XML2CLASS[node.tag[nslen:]]
-            return Class.parsexml(node,self)
-        elif node.tag[:nslendcoi] == '{' + NSDCOI + '}':
+        elif node.tag.startswith('{' + NSDCOI + '}'):
             #generic handling (D-Coi)
             if node.tag[nslendcoi:] in XML2CLASS:
                 Class = XML2CLASS[node.tag[nslendcoi:]]
@@ -4588,9 +4605,9 @@ class Document(object):
 
         If an index is specified, return the n'th word only (starting at 0)"""
         if index is None:
-            return sum([ t.select(Word,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer']) for t in self.data ],[])
+            return sum([ t.select(Word,None,True,True) for t in self.data ],[])
         else:
-            return sum([ t.select(Word,None,True,['Original','Suggestion','Alternative','AbstractAnnotationLayer']) for t in self.data ],[])[index]
+            return sum([ t.select(Word,None,True,True) for t in self.data ],[])[index]
 
 
     def text(self, retaintokenisation=False):
@@ -5216,4 +5233,7 @@ for c in list(vars().values()):
     except:
         continue
 
+defaultignorelist = [Original,Suggestion,Alternative, AlternativeLayers]
+#default ignore list for token annotation
+defaultignorelist2 = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer]
 
