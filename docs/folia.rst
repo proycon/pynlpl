@@ -402,7 +402,7 @@ memory, which can be a considerable resource demand. The ``folia.Reader`` class
 provides an alternative to loading FoLiA documents. It does not load the entire
 document in memory but merely returns the elements you are interested in. This results in far less memory usage and also provides a speed-up.
 
-A reader is constructed as follows, the second argument is the element you
+A reader is constructed as follows, the second argument is the class of the element you
 want::
 
     reader = folia.Reader("my.folia.xml", folia.Word)

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Formats &mdash; PyNLPl 0.6.2 documentation</title>
+    <title>Formats &mdash; PyNLPl 0.6.3 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.2',
+        VERSION:     '0.6.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.6.2 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.6.3 documentation" href="index.html" />
     <link rel="next" title="Language Models" href="lm.html" />
     <link rel="prev" title="FoLiA library" href="folia.html" /> 
   </head>
@@ -46,7 +46,7 @@
         <li class="right" >
           <a href="folia.html" title="FoLiA library"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.3 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -178,13 +178,8 @@
 
 <dl class="class">
 <dt id="pynlpl.formats.moses.PhraseTable">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.moses.</tt><tt class="descname">PhraseTable</tt><big>(</big><em>filename</em>, <em>quiet=False</em>, <em>reverse=False</em>, <em>delimiter=u'|||'</em>, <em>score_column=5</em>, <em>align2_column=4</em>, <em>max_sourcen=0</em><big>)</big><a class="headerlink" href="#pynlpl.formats.moses.PhraseTable" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="pynlpl.formats.moses.PhraseTable.append">
-<tt class="descname">append</tt><big>(</big><em>source</em>, <em>target</em>, <em>Pst=0</em>, <em>Pts=0</em>, <em>null_alignments=0</em><big>)</big><a class="headerlink" href="#pynlpl.formats.moses.PhraseTable.append" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.moses.</tt><tt class="descname">PhraseTable</tt><big>(</big><em>filename</em>, <em>quiet=False</em>, <em>reverse=False</em>, <em>delimiter=u'|||'</em>, <em>score_column=5</em>, <em>max_sourcen=0</em>, <em>sourceencoder=None</em>, <em>targetencoder=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.moses.PhraseTable" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-</dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.moses.PhraseTableClient">
@@ -201,7 +196,7 @@
 <span id="sonar"></span><h2>SoNaR<a class="headerlink" href="#module-pynlpl.formats.sonar" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pynlpl.formats.sonar.Corpus">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'pos'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x5a00050&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.Corpus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'pos'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6985758&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.Corpus" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="class">
@@ -270,12 +265,12 @@
 
 <dl class="class">
 <dt id="pynlpl.formats.sonar.CorpusFiles">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'pos'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x5a00050&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusFiles" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'pos'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6985758&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusFiles" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.sonar.CorpusX">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">CorpusX</tt><big>(</big><em>corpusdir</em>, <em>extension=u'pos'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x5a00050&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusX" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.sonar.</tt><tt class="descname">CorpusX</tt><big>(</big><em>corpusdir</em>, <em>extension=u'pos'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6985758&gt;</em>, <em>ignoreerrors=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.sonar.CorpusX" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -708,17 +703,32 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 
 <dl class="method">
 <dt id="formats.folia.AbstractElement.select">
-<tt class="descname">select</tt><big>(</big><em>Class, set=None, recursive=True, ignorelist=[u'Original', u'Suggestion', u'Alternative'], node=None</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.select" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">select</tt><big>(</big><em>Class</em>, <em>set=None</em>, <em>recursive=True</em>, <em>ignorelist=True</em>, <em>node=None</em><big>)</big><a class="headerlink" href="#formats.folia.AbstractElement.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select child elements of the specified class.</p>
 <p>A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into.</p>
 <dl class="docutils">
 <dt>Arguments:</dt>
-<dd><ul class="first last simple">
-<li><tt class="docutils literal"><span class="pre">Class</span></tt>: The class to select; any python class subclassed off <cite>&#8216;AbstractElement`</cite></li>
-<li><tt class="docutils literal"><span class="pre">set</span></tt>: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.</li>
-<li><tt class="docutils literal"><span class="pre">recursive</span></tt>: Select recursively? Descending into child elements? Boolean defaulting to True.</li>
-<li><tt class="docutils literal"><span class="pre">ignorelist</span></tt>: A list of Classes (subclassed off <tt class="docutils literal"><span class="pre">AbstractElement</span></tt>) not to recurse into. It is common not to want to recurse into the following elements: <tt class="docutils literal"><span class="pre">folia.Alternative</span></tt>, <tt class="docutils literal"><span class="pre">folia.Suggestion</span></tt>, and <tt class="docutils literal"><span class="pre">folia.Original</span></tt>. As elements contained in these are never <em>authorative</em>.</li>
-<li><tt class="docutils literal"><span class="pre">node</span></tt>: Reserved for internal usage, used in recursion.</li>
+<dd><ul class="first last">
+<li><p class="first"><tt class="docutils literal"><span class="pre">Class</span></tt>: The class to select; any python class subclassed off <cite>&#8216;AbstractElement`</cite></p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">set</span></tt>: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">recursive</span></tt>: Select recursively? Descending into child elements? Boolean defaulting to True.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">ignorelist</span></tt>: A list of Classes (subclassed off</p>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">AbstractElement</span></tt>) not to recurse into. It is common not to</dt>
+<dd><p class="first last">want to recurse into the following elements:
+<tt class="docutils literal"><span class="pre">folia.Alternative</span></tt>, <tt class="docutils literal"><span class="pre">folia.AlternativeLayer</span></tt>,
+<tt class="docutils literal"><span class="pre">folia.Suggestion</span></tt>, and <tt class="docutils literal"><span class="pre">folia.Original</span></tt>. As elements
+contained in these are never <em>authorative</em>. If ignorelist is
+set to the boolean True rather than a list, this will be the default list.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">node</span></tt>: Reserved for internal usage, used in recursion.</p>
+</li>
 </ul>
 </dd>
 <dt>Returns:</dt>
@@ -1518,6 +1528,21 @@ not found.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="formats.folia.BypassLeakFile">
+<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">BypassLeakFile</tt><a class="headerlink" href="#formats.folia.BypassLeakFile" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="formats.folia.BypassLeakFile.read">
+<tt class="descname">read</tt><big>(</big><em>n=0</em><big>)</big><a class="headerlink" href="#formats.folia.BypassLeakFile.read" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="formats.folia.BypassLeakFile.readline">
+<tt class="descname">readline</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.folia.BypassLeakFile.readline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="formats.folia.Caption">
 <em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">Caption</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.Caption" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element used for captions for figures or tables, contains sentences</p>
@@ -1715,19 +1740,19 @@ not found.</p>
 
 <dl class="class">
 <dt id="formats.folia.Corpus">
-<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x5bc3ed8&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6b37de8&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="formats.folia.CorpusFiles">
-<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x5bc3ed8&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6b37de8&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields the filenames on each iteration.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="formats.folia.CorpusProcessor">
-<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x5bbc140&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x6b3c050&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes a corpus of various FoLiA documents using a parallel processing. Calls a user-defined function with the three-tuple (filename, args, kwargs) for each file in the corpus. The user-defined function is itself responsible for instantiating a FoLiA document! args and kwargs, as received by the custom function, are set through the run() method, which yields the result of the custom function on each iteration.</p>
 <dl class="method">
 <dt id="formats.folia.CorpusProcessor.execute">
@@ -3176,8 +3201,23 @@ will be required. This however is beyond the scope of this library.</p>
 
 <dl class="class">
 <dt id="formats.folia.Reader">
-<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">Reader</tt><big>(</big><em>filename</em>, <em>target</em>, <em>bypassleak=False</em><big>)</big><a class="headerlink" href="#formats.folia.Reader" title="Permalink to this definition">¶</a></dt>
-<dd><p>Streaming FoLiA reader. The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found.</p>
+<em class="property">class </em><tt class="descclassname">formats.folia.</tt><tt class="descname">Reader</tt><big>(</big><em>filename</em>, <em>target</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.Reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Streaming FoLiA reader. The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found. If you are querying a corpus of large FoLiA documents for a specific structure, then it is strongly recommend to use the Reader rather than the standard Document!</p>
+<dl class="method">
+<dt id="formats.folia.Reader.findwords">
+<tt class="descname">findwords</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.Reader.findwords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="formats.folia.Reader.initdoc">
+<tt class="descname">initdoc</tt><big>(</big><big>)</big><a class="headerlink" href="#formats.folia.Reader.initdoc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="formats.folia.Reader.openstream">
+<tt class="descname">openstream</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#formats.folia.Reader.openstream" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -4013,6 +4053,11 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 </dd></dl>
 
 <dl class="function">
+<dt id="formats.folia.findwords">
+<tt class="descclassname">formats.folia.</tt><tt class="descname">findwords</tt><big>(</big><em>doc</em>, <em>worditerator</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#formats.folia.findwords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="formats.folia.isncname">
 <tt class="descclassname">formats.folia.</tt><tt class="descname">isncname</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#formats.folia.isncname" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -4052,6 +4097,11 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dl class="function">
 <dt id="formats.folia.validate">
 <tt class="descclassname">formats.folia.</tt><tt class="descname">validate</tt><big>(</big><em>filename</em>, <em>schema=None</em>, <em>deep=False</em><big>)</big><a class="headerlink" href="#formats.folia.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="formats.folia.xmltreefromfile">
+<tt class="descclassname">formats.folia.</tt><tt class="descname">xmltreefromfile</tt><big>(</big><em>filename</em>, <em>bypassleak=False</em><big>)</big><a class="headerlink" href="#formats.folia.xmltreefromfile" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4126,7 +4176,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
         <li class="right" >
           <a href="folia.html" title="FoLiA library"
              >previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

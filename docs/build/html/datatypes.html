@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Data Types &mdash; PyNLPl 0.6.2 documentation</title>
+    <title>Data Types &mdash; PyNLPl 0.6.3 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.2',
+        VERSION:     '0.6.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.6.2 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.6.3 documentation" href="index.html" />
     <link rel="next" title="Evaluation &amp; Experiments" href="evaluation.html" />
     <link rel="prev" title="Common Functions" href="common.html" /> 
   </head>
@@ -46,7 +46,7 @@
         <li class="right" >
           <a href="common.html" title="Common Functions"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.3 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -83,8 +83,8 @@
 
 <dl class="class">
 <dt id="pynlpl.datatypes.PriorityQueue">
-<em class="property">class </em><tt class="descclassname">pynlpl.datatypes.</tt><tt class="descname">PriorityQueue</tt><big>(</big><em>data=</em><span class="optional">[</span><span class="optional">]</span>, <em>f=&lt;function &lt;lambda&gt; at 0x38fa1b8&gt;</em>, <em>minimize=False</em>, <em>length=0</em>, <em>blockworse=False</em>, <em>blockequal=False</em>, <em>duplicates=True</em><big>)</big><a class="headerlink" href="#pynlpl.datatypes.PriorityQueue" title="Permalink to this definition">¶</a></dt>
-<dd><p>A queue in which the maximum (or minumum) element is returned first, 
+<em class="property">class </em><tt class="descclassname">pynlpl.datatypes.</tt><tt class="descname">PriorityQueue</tt><big>(</big><em>data=</em><span class="optional">[</span><span class="optional">]</span>, <em>f=&lt;function &lt;lambda&gt; at 0x3244578&gt;</em>, <em>minimize=False</em>, <em>length=0</em>, <em>blockworse=False</em>, <em>blockequal=False</em>, <em>duplicates=True</em><big>)</big><a class="headerlink" href="#pynlpl.datatypes.PriorityQueue" title="Permalink to this definition">¶</a></dt>
+<dd><p>A queue in which the maximum (or minumum) element is returned first,
 as determined by either an external score function f (by default calling
 the objects score() method). If minimize=True, the item with minimum f(x) is
 returned first; otherwise is the item with maximum f(x) or x.score().</p>
@@ -238,33 +238,6 @@ len(q)          &#8211; number of items in q (also q.__len()).</dd>
 
 </dd></dl>
 
-<dl class="function">
-<dt id="pynlpl.datatypes.bytearraytoint">
-<tt class="descclassname">pynlpl.datatypes.</tt><tt class="descname">bytearraytoint</tt><big>(</big><em>a</em>, <em>bigendian=False</em><big>)</big><a class="headerlink" href="#pynlpl.datatypes.bytearraytoint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="pynlpl.datatypes.bytearraytointarray">
-<tt class="descclassname">pynlpl.datatypes.</tt><tt class="descname">bytearraytointarray</tt><big>(</big><em>bytearray</em>, <em>bigendian=False</em><big>)</big><a class="headerlink" href="#pynlpl.datatypes.bytearraytointarray" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a NULL-byte delimited array of bytes into an array of integers</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pynlpl.datatypes.containsnullbyte">
-<tt class="descclassname">pynlpl.datatypes.</tt><tt class="descname">containsnullbyte</tt><big>(</big><em>i</em><big>)</big><a class="headerlink" href="#pynlpl.datatypes.containsnullbyte" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="pynlpl.datatypes.intarraytobytearray">
-<tt class="descclassname">pynlpl.datatypes.</tt><tt class="descname">intarraytobytearray</tt><big>(</big><em>intarray</em>, <em>bigendian=False</em><big>)</big><a class="headerlink" href="#pynlpl.datatypes.intarraytobytearray" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts an array of integers (with some value restrictions) to an array of bytes in which elements are NULL-byte delimited</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pynlpl.datatypes.inttobytearray">
-<tt class="descclassname">pynlpl.datatypes.</tt><tt class="descname">inttobytearray</tt><big>(</big><em>i</em>, <em>bigendian=False</em>, <em>nonullbyte=False</em><big>)</big><a class="headerlink" href="#pynlpl.datatypes.inttobytearray" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </div>
 
 
@@ -316,7 +289,7 @@ len(q)          &#8211; number of items in q (also q.__len()).</dd>
         <li class="right" >
           <a href="common.html" title="Common Functions"
              >previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Language Models &mdash; PyNLPl 0.6.2 documentation</title>
+    <title>Language Models &mdash; PyNLPl 0.6.3 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.2',
+        VERSION:     '0.6.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.6.2 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.6.3 documentation" href="index.html" />
     <link rel="next" title="Search Algorithms" href="search.html" />
     <link rel="prev" title="Formats" href="formats.html" /> 
   </head>
@@ -46,7 +46,7 @@
         <li class="right" >
           <a href="formats.html" title="Formats"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.3 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -58,9 +58,25 @@
   <div class="section" id="module-pynlpl.lm.lm">
 <span id="language-models"></span><h1>Language Models<a class="headerlink" href="#module-pynlpl.lm.lm" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
+<dt id="pynlpl.lm.lm.ARPALanguageModel">
+<em class="property">class </em><tt class="descclassname">pynlpl.lm.lm.</tt><tt class="descname">ARPALanguageModel</tt><big>(</big><em>filename</em>, <em>encoding=u'utf-8'</em>, <em>encoder=None</em>, <em>base_e=True</em>, <em>debug=False</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Full back-off language model, loaded from file in ARPA format. This class does not build the model but allows you to use a pre-computed one. You can use the tool ngram-count from for instance SRILM to actually build the model.</p>
+<dl class="method">
+<dt id="pynlpl.lm.lm.ARPALanguageModel.score">
+<tt class="descname">score</tt><big>(</big><em>data</em>, <em>history=None</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel.score" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.lm.lm.ARPALanguageModel.scoreword">
+<tt class="descname">scoreword</tt><big>(</big><em>word</em>, <em>history=None</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel.scoreword" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pynlpl.lm.lm.SimpleLanguageModel">
 <em class="property">class </em><tt class="descclassname">pynlpl.lm.lm.</tt><tt class="descname">SimpleLanguageModel</tt><big>(</big><em>n=2</em>, <em>casesensitive=True</em>, <em>beginmarker=u'&lt;begin&gt;'</em>, <em>endmarker=u'&lt;end&gt;'</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.SimpleLanguageModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is a very simple unsmoothed language model</p>
+<dd><p>This is a simple unsmoothed language model. This class can both hold and compute the model.</p>
 <dl class="method">
 <dt id="pynlpl.lm.lm.SimpleLanguageModel.append">
 <tt class="descname">append</tt><big>(</big><em>sentence</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.SimpleLanguageModel.append" title="Permalink to this definition">¶</a></dt>
@@ -192,7 +208,7 @@
         <li class="right" >
           <a href="formats.html" title="Formats"
              >previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

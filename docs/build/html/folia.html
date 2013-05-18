@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FoLiA library &mdash; PyNLPl 0.6.2 documentation</title>
+    <title>FoLiA library &mdash; PyNLPl 0.6.3 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.2',
+        VERSION:     '0.6.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.6.2 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.6.3 documentation" href="index.html" />
     <link rel="next" title="Formats" href="formats.html" />
     <link rel="prev" title="Evaluation &amp; Experiments" href="evaluation.html" /> 
   </head>
@@ -46,7 +46,7 @@
         <li class="right" >
           <a href="evaluation.html" title="Evaluation &amp; Experiments"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.3 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -408,6 +408,31 @@ For single documents this is okay, but when iterating over a corpus of
 thousands of documents, this method is too slow, especially for real-time
 applications. For huge corpora, clever indexing and database management systems
 will be required. This however is beyond the scope of this library.</p>
+<div class="section" id="streaming-reader">
+<h3>Streaming Reader<a class="headerlink" href="#streaming-reader" title="Permalink to this headline">¶</a></h3>
+<p>Throughout this tutorial you have seen the <tt class="docutils literal"><span class="pre">folia.Document</span></tt> class as a means
+of reading FoLiA documents. This class always loads the entire document in
+memory, which can be a considerable resource demand. The <tt class="docutils literal"><span class="pre">folia.Reader</span></tt> class
+provides an alternative to loading FoLiA documents. It does not load the entire
+document in memory but merely returns the elements you are interested in. This results in far less memory usage and also provides a speed-up.</p>
+<p>A reader is constructed as follows, the second argument is the class of the element you
+want:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">reader</span> <span class="o">=</span> <span class="n">folia</span><span class="o">.</span><span class="n">Reader</span><span class="p">(</span><span class="s">&quot;my.folia.xml&quot;</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Word</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span>
+</pre></div>
+</div>
+<p>The streaming reader also has a <tt class="docutils literal"><span class="pre">findwords()</span></tt> implementation that works the same as the
+one in <tt class="docutils literal"><span class="pre">Document</span></tt>, except that directly retrieving words in context is not possible
+using the reader:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">reader</span> <span class="o">=</span> <span class="n">folia</span><span class="o">.</span><span class="n">Reader</span><span class="p">(</span><span class="s">&quot;my.folia.xml&quot;</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Word</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">reader</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;house&#39;</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">print</span> <span class="s">&quot;----&quot;</span>
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="module-pynlpl.formats.folia">
 <span id="api-reference"></span><h2>API Reference<a class="headerlink" href="#module-pynlpl.formats.folia" title="Permalink to this headline">¶</a></h2>
@@ -780,17 +805,32 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.select">
-<tt class="descname">select</tt><big>(</big><em>Class, set=None, recursive=True, ignorelist=[u'Original', u'Suggestion', u'Alternative'], node=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.select" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">select</tt><big>(</big><em>Class</em>, <em>set=None</em>, <em>recursive=True</em>, <em>ignorelist=True</em>, <em>node=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select child elements of the specified class.</p>
 <p>A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into.</p>
 <dl class="docutils">
 <dt>Arguments:</dt>
-<dd><ul class="first last simple">
-<li><tt class="docutils literal"><span class="pre">Class</span></tt>: The class to select; any python class subclassed off <cite>&#8216;AbstractElement`</cite></li>
-<li><tt class="docutils literal"><span class="pre">set</span></tt>: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.</li>
-<li><tt class="docutils literal"><span class="pre">recursive</span></tt>: Select recursively? Descending into child elements? Boolean defaulting to True.</li>
-<li><tt class="docutils literal"><span class="pre">ignorelist</span></tt>: A list of Classes (subclassed off <tt class="docutils literal"><span class="pre">AbstractElement</span></tt>) not to recurse into. It is common not to want to recurse into the following elements: <tt class="docutils literal"><span class="pre">folia.Alternative</span></tt>, <tt class="docutils literal"><span class="pre">folia.Suggestion</span></tt>, and <tt class="docutils literal"><span class="pre">folia.Original</span></tt>. As elements contained in these are never <em>authorative</em>.</li>
-<li><tt class="docutils literal"><span class="pre">node</span></tt>: Reserved for internal usage, used in recursion.</li>
+<dd><ul class="first last">
+<li><p class="first"><tt class="docutils literal"><span class="pre">Class</span></tt>: The class to select; any python class subclassed off <cite>&#8216;AbstractElement`</cite></p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">set</span></tt>: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">recursive</span></tt>: Select recursively? Descending into child elements? Boolean defaulting to True.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">ignorelist</span></tt>: A list of Classes (subclassed off</p>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">AbstractElement</span></tt>) not to recurse into. It is common not to</dt>
+<dd><p class="first last">want to recurse into the following elements:
+<tt class="docutils literal"><span class="pre">folia.Alternative</span></tt>, <tt class="docutils literal"><span class="pre">folia.AlternativeLayer</span></tt>,
+<tt class="docutils literal"><span class="pre">folia.Suggestion</span></tt>, and <tt class="docutils literal"><span class="pre">folia.Original</span></tt>. As elements
+contained in these are never <em>authorative</em>. If ignorelist is
+set to the boolean True rather than a list, this will be the default list.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">node</span></tt>: Reserved for internal usage, used in recursion.</p>
+</li>
 </ul>
 </dd>
 <dt>Returns:</dt>
@@ -1590,6 +1630,21 @@ not found.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="pynlpl.formats.folia.BypassLeakFile">
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">BypassLeakFile</tt><a class="headerlink" href="#pynlpl.formats.folia.BypassLeakFile" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pynlpl.formats.folia.BypassLeakFile.read">
+<tt class="descname">read</tt><big>(</big><em>n=0</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.BypassLeakFile.read" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.BypassLeakFile.readline">
+<tt class="descname">readline</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.BypassLeakFile.readline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pynlpl.formats.folia.Caption">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Caption</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Caption" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element used for captions for figures or tables, contains sentences</p>
@@ -1787,19 +1842,19 @@ not found.</p>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.Corpus">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x2e1bd70&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x56cab90&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.CorpusFiles">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x2e1bd70&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x56cab90&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields the filenames on each iteration.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.CorpusProcessor">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x2e1bf50&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension=u'xml'</em>, <em>restrict_to_collection=u''</em>, <em>conditionf=&lt;function &lt;lambda&gt; at 0x56cad70&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes a corpus of various FoLiA documents using a parallel processing. Calls a user-defined function with the three-tuple (filename, args, kwargs) for each file in the corpus. The user-defined function is itself responsible for instantiating a FoLiA document! args and kwargs, as received by the custom function, are set through the run() method, which yields the result of the custom function on each iteration.</p>
 <dl class="method">
 <dt id="pynlpl.formats.folia.CorpusProcessor.execute">
@@ -3084,7 +3139,88 @@ annotation element</p>
 <dl class="class">
 <dt id="pynlpl.formats.folia.Pattern">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Pattern</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Pattern" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>This class describes a pattern over words to be searched for. The <tt class="docutils literal"><span class="pre">Document.findwords()</span></tt> method can subsequently be called with this pattern, and it will return all the words that match. An example will best illustrate this, first a trivial example of searching for one word:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">print</span> <span class="s">&quot;----&quot;</span>
+</pre></div>
+</div>
+<p>The same can be done for a sequence:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;big&#39;</span><span class="p">,</span> <span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">print</span> <span class="s">&quot;----&quot;</span>
+</pre></div>
+</div>
+<p>The boolean value <tt class="docutils literal"><span class="pre">True</span></tt> acts as a wildcard, matching any word:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="bp">True</span><span class="p">,</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;----&quot;</span>
+</pre></div>
+</div>
+<p>Alternatively, and more constraning, you may also specify a tuple of alternatives:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,(</span><span class="s">&#39;big&#39;</span><span class="p">,</span><span class="s">&#39;small&#39;</span><span class="p">),</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;----&quot;</span>
+</pre></div>
+</div>
+<p>Or even a regular expression using the <tt class="docutils literal"><span class="pre">folia.RegExp</span></tt> class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">RegExp</span><span class="p">(</span><span class="s">&#39;b?g&#39;</span><span class="p">),</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;----&quot;</span>
+</pre></div>
+</div>
+<p>Rather than searching on the text content of the words, you can search on the
+classes of any kind of token annotation using the keyword argument
+<tt class="docutils literal"><span class="pre">matchannotation=</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;det&#39;</span><span class="p">,</span><span class="s">&#39;adj&#39;</span><span class="p">,</span><span class="s">&#39;noun&#39;</span><span class="p">,</span><span class="n">matchannotation</span><span class="o">=</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span> <span class="p">)</span> <span class="p">):</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;----&quot;</span>
+</pre></div>
+</div>
+<p>The set can be restricted by adding the additional keyword argument
+<tt class="docutils literal"><span class="pre">matchannotationset=</span></tt>. Case sensitivity, by default disabled, can be enabled by setting <tt class="docutils literal"><span class="pre">casesensitive=True</span></tt>.</p>
+<p>Things become even more interesting when different Patterns are combined. A
+match will have to satisfy all patterns:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;house&#39;</span><span class="p">),</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;det&#39;</span><span class="p">,</span><span class="s">&#39;adj&#39;</span><span class="p">,</span><span class="s">&#39;noun&#39;</span><span class="p">,</span><span class="n">matchannotation</span><span class="o">=</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span> <span class="p">)</span> <span class="p">):</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;----&quot;</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">findwords()</span></tt> method can be instructed to also return left and/or right context for any match. This is done using the <tt class="docutils literal"><span class="pre">leftcontext=</span></tt> and <tt class="docutils literal"><span class="pre">rightcontext=</span></tt> keyword arguments, their values being an integer number of the number of context words to include in each match. For instance, we can look for the word house and return its immediate neighbours as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">,</span> <span class="n">leftcontext</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rightcontext</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">print</span> <span class="s">&quot;----&quot;</span>
+</pre></div>
+</div>
+<p>A match here would thus always consist of three words instead of just one.</p>
+<p>Last, <tt class="docutils literal"><span class="pre">Pattern</span></tt> also has support for variable-width gaps, the asterisk symbol
+has special meaning to this end:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;*&#39;</span><span class="p">,</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">word</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">print</span> <span class="s">&quot;----&quot;</span>
+</pre></div>
+</div>
+<p>Unlike the pattern <tt class="docutils literal"><span class="pre">('a',True,'house')</span></tt>, which by definition is a pattern of
+three words, the pattern in the example above will match gaps of any length (up
+to a certain built-in maximum), so this might include matches such as <em>a very
+nice house</em>.</p>
+<p>Some remarks on these methods of querying are in order. These searches are
+pretty exhaustive and are done by simply iterating over all the words in the
+document. The entire document is loaded in memory and no special indices are involved.
+For single documents this is okay, but when iterating over a corpus of
+thousands of documents, this method is too slow, especially for real-time
+applications. For huge corpora, clever indexing and database management systems
+will be required. This however is beyond the scope of this library.</p>
+<dl class="method">
 <dt id="pynlpl.formats.folia.Pattern.resolve">
 <tt class="descname">resolve</tt><big>(</big><em>size</em>, <em>distribution</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Pattern.resolve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resolve a variable sized pattern to all patterns of a certain fixed size</p>
@@ -3167,8 +3303,23 @@ annotation element</p>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.Reader">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Reader</tt><big>(</big><em>filename</em>, <em>target</em>, <em>bypassleak=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Reader" title="Permalink to this definition">¶</a></dt>
-<dd><p>Streaming FoLiA reader. The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found.</p>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Reader</tt><big>(</big><em>filename</em>, <em>target</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Streaming FoLiA reader. The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found. If you are querying a corpus of large FoLiA documents for a specific structure, then it is strongly recommend to use the Reader rather than the standard Document!</p>
+<dl class="method">
+<dt id="pynlpl.formats.folia.Reader.findwords">
+<tt class="descname">findwords</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Reader.findwords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.Reader.initdoc">
+<tt class="descname">initdoc</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Reader.initdoc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.Reader.openstream">
+<tt class="descname">openstream</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Reader.openstream" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -4004,6 +4155,11 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 </dd></dl>
 
 <dl class="function">
+<dt id="pynlpl.formats.folia.findwords">
+<tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">findwords</tt><big>(</big><em>doc</em>, <em>worditerator</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.findwords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="pynlpl.formats.folia.isncname">
 <tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">isncname</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.isncname" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -4046,6 +4202,11 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="pynlpl.formats.folia.xmltreefromfile">
+<tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">xmltreefromfile</tt><big>(</big><em>filename</em>, <em>bypassleak=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.xmltreefromfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="pynlpl.formats.folia.xmltreefromstring">
 <tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">xmltreefromstring</tt><big>(</big><em>s</em>, <em>bypassleak=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.xmltreefromstring" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -4083,7 +4244,10 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <li><a class="reference internal" href="#adding-span-annotation">Adding span annotation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#searching-in-a-folia-document">Searching in a FoLiA document</a></li>
+<li><a class="reference internal" href="#searching-in-a-folia-document">Searching in a FoLiA document</a><ul>
+<li><a class="reference internal" href="#streaming-reader">Streaming Reader</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-pynlpl.formats.folia">API Reference</a></li>
 </ul>
 </li>
@@ -4132,7 +4296,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
         <li class="right" >
           <a href="evaluation.html" title="Evaluation &amp; Experiments"
              >previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.6.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
