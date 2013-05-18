@@ -393,7 +393,31 @@ thousands of documents, this method is too slow, especially for real-time
 applications. For huge corpora, clever indexing and database management systems
 will be required. This however is beyond the scope of this library.
 
+Streaming Reader
+-------------------
 
+Throughout this tutorial you have seen the ``folia.Document`` class as a means
+of reading FoLiA documents. This class always loads the entire document in
+memory, which can be a considerable resource demand. The ``folia.Reader`` class
+provides an alternative to loading FoLiA documents. It does not load the entire
+document in memory but merely returns the elements you are interested in. This results in far less memory usage and also provides a speed-up.
+
+A reader is constructed as follows, the second argument is the element you
+want::
+
+    reader = folia.Reader("my.folia.xml", folia.Word)
+    for word in reader:
+        print word.id
+
+The streaming reader also has a ``findwords()`` implementation that works the same as the
+one in ``Document``, except that directly retrieving words in context is not possible
+using the reader::
+
+    reader = folia.Reader("my.folia.xml", folia.Word)
+    for match in reader.findwords( folia.Pattern('house')):
+        for word in match:
+            print word.id
+        print "----"
 
 API Reference
 ==============================
