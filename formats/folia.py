@@ -56,8 +56,9 @@ import threading
 import bz2
 import gzip
 
+
 FOLIAVERSION = '0.9.1'
-LIBVERSION = '0.9.1.36' #== FoLiA version + library revision
+LIBVERSION = '0.9.1.37' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -1145,8 +1146,6 @@ class AbstractElement(object):
 
         if ignorelist is True:
             ignorelist = defaultignorelist
-        #elif ignorelist:
-        #    ignorelist = [ globals()[c] if not inspect.isclass(c) else c for c in ignorelist ]  #TODO: make more efficient, resolving the same default ignorelist every time is slow, isclass is costly
 
         l = []
         if not node:
@@ -1181,7 +1180,7 @@ class AbstractElement(object):
         return l
 
 
-    def xselect(self, Class, recursive=True, node=None):
+    def xselect(self, Class, recursive=True, node=None): #obsolete?
         """Same as ``select()``, but this is a generator instead of returning a list"""
         if not node:
             node = self
@@ -5114,7 +5113,7 @@ class Reader(object):
         Arguments:
 
             * ``filename``: The filename of the document to read
-            * ``target``: A FoLiA elements you want to read, passed as a class. For example: ``folia.Sentence``.
+            * ``target``: The FoLiA element you want to read, passed as a class. For example: ``folia.Sentence``.
             * ``bypassleak'': Boolean indicating whether to bypass a memory leak in lxml. Set this to true if you are processing a large number of files sequentially! This comes at the cost of a higher memory footprint, as the raw contents of the file, as opposed to the tree structure, *will* be loaded in memory.
 
         """
