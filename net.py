@@ -16,7 +16,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
-from pynlpl.common import u
+from pynlpl.common import u,b
 import sys
 if sys.version < '3':
     from codecs import getwriter
@@ -31,20 +31,20 @@ import shlex
 
 
 
-class GWSNetProtocol(basic.LineReceiver):        
+class GWSNetProtocol(basic.LineReceiver):
     def connectionMade(self):
         print("Client connected", file=stderr)
         self.factory.connections += 1
         if self.factory.connections != 1:
-            self.transport.loseConnection()            
-        else:            
-            self.sendLine("READY")
-            
+            self.transport.loseConnection()
+        else:
+            self.sendLine(b("READY"))
+
     def lineReceived(self, line):
         print("Client in: " + line,file=stderr)
-        self.factory.processprotocol.transport.write(line +'\n')        
-        self.factory.processprotocol.currentclient = self 
-        
+        self.factory.processprotocol.transport.write(b(line +'\n'))
+        self.factory.processprotocol.currentclient = self
+
     def connectionLost(self, reason):
         self.factory.connections -= 1
         if self.factory.processprotocol.currentclient == self:
@@ -56,11 +56,11 @@ class GWSFactory(protocol.ServerFactory):
     def __init__(self, processprotocol):
         self.connections = 0
         self.processprotocol = processprotocol
-        
+
 
 class GWSProcessProtocol(protocol.ProcessProtocol):
     def __init__(self, printstderr=True, sendstderr= False, filterout = None, filtererr = None):
-        self.currentclient = None        
+        self.currentclient = None
         self.printstderr = printstderr
         self.sendstderr = sendstderr
         if not filterout:
@@ -71,38 +71,38 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
             self.filtererr = lambda x: x
         else:
             self.filtererr = filtererr
-        
+
     def connectionMade(self):
         pass
-    
+
     def outReceived(self, data):
         print("Process out " + data,file=stderr)
         for line in data.strip().split('\n'):
             line = self.filterout(line.strip())
-            if self.currentclient and line:        
-                self.currentclient.sendLine(line)                
-        
+            if self.currentclient and line:
+                self.currentclient.sendLine(line)
+
     def errReceived(self, data):
         print("Process err " + data,file=stderr)
-        if self.printstderr and data:    
+        if self.printstderr and data:
             print(data.strip(),file=stderr)
-        for line in data.strip().split('\n'):                
+        for line in data.strip().split('\n'):
             line = self.filtererr(line.strip())
-            if self.sendstderr and self.currentclient and line:        
-                self.currentclient.sendLine(line)
-        
-            
+            if self.sendstderr and self.currentclient and line:
+                self.currentclient.sendLine(b(line))
+
+
     def processExited(self, reason):
         print("Process exited",file=stderr)
-           
-    
+
+
     def processEnded(self, reason):
         print("Process ended",file=stderr)
         if self.currentclient:
             self.currentclient.transport.loseConnection()
         reactor.stop()
-            
-    
+
+
 class GenericWrapperServer:
     """Generic Server around a stdin/stdout based CLI tool. Only accepts one client at a time to prevent concurrency issues !!!!!"""
     def __init__(self, cmdline, port, printstderr= True, sendstderr= False, filterout = None, filtererr = None):

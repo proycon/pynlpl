@@ -8,9 +8,9 @@
 #   Radboud University Nijmegen
 #   http://www.github.com/proycon/pynlpl
 #   proycon AT anaproy DOT nl
-#       
+#
 #       Licensed under GPLv3
-# 
+#
 # This contains very common functions and language extensions
 #
 ###############################################################
@@ -76,19 +76,34 @@ def u(s, encoding = 'utf-8', errors='strict'):
             return s
         else:
             return str(s,encoding,errors=errors)
-    
+
+def b(s):
+    #ensure s is bytestring
+    if version < '3':
+        #ensure the object is unicode
+        if isinstance(s, str):
+            return s
+        else:
+            return s.encode('utf-8')
+    else:
+        #will work on byte arrays
+        if isinstance(s, bytes):
+            return s
+        else:
+            return s.encode('utf-8')
+
 def isstring(s): #Is this a proper string?
     return isinstance(s, str) or (version < '3' and isinstance(s, unicode))
 
 def log(msg, **kwargs):
     """Generic log method. Will prepend timestamp.
-    
+
     Keyword arguments:
-      system   - Name of the system/module 
+      system   - Name of the system/module
       indent   - Integer denoting the desired level of indentation
       streams  - List of streams to output to
       stream   - Stream to output to (singleton version of streams)
-    """        
+    """
     if 'debug' in kwargs:
         if 'currentdebug' in kwargs:
             if kwargs['currentdebug'] < kwargs['debug']:
@@ -99,23 +114,23 @@ def log(msg, **kwargs):
     s = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "] "
     if 'system' in kwargs:
         s += "[" + system + "] "
-    
+
 
     if 'indent' in kwargs:
         s += ("\t" * int(kwargs['indent']))
-        
+
     s += u(msg)
-            
+
     if s[-1] != '\n':
         s += '\n'
-            
+
     if 'streams' in kwargs:
         streams = kwargs['streams']
     elif 'stream' in kwargs:
         streams = [kwargs['stream']]
     else:
-        streams = [stderr]        
-    
+        streams = [stderr]
+
     for stream in streams:
         stream.write(s)
     return s
