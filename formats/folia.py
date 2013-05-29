@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.9.1'
-LIBVERSION = '0.9.1.37' #== FoLiA version + library revision
+LIBVERSION = '0.9.1.38' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
