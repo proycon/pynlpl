@@ -1802,12 +1802,18 @@ class AllowGenerateID(object):
                     id = e.id
                     break
                 e = e.parent
-        id = id + '.' + xmltag + '.' + str(maxid + 1)
+
+        while True:
+            maxid += 1
+            id = id + '.' + xmltag + '.' + str(maxid)
+            if not self.doc or id not in self.doc.index: #extra check
+                break
+
         try:
             self.maxid
         except AttributeError:
             self.maxid = {}
-        self.maxid[xmltag] = maxid + 1 #Set MAX ID
+        self.maxid[xmltag] = maxid #Set MAX ID
         return id
 
         #i = 0
