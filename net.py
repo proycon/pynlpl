@@ -41,7 +41,10 @@ class GWSNetProtocol(basic.LineReceiver):
             self.sendLine(b("READY"))
 
     def lineReceived(self, line):
-        print("Client in: " + line,file=stderr)
+        try:
+            print("Client in: " + line,file=stderr)
+        except UnicodeDecodeError:
+            print("Client in: (unicodeerror)",file=stderr)
         self.factory.processprotocol.transport.write(b(line +'\n'))
         self.factory.processprotocol.currentclient = self
 
@@ -76,14 +79,20 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         pass
 
     def outReceived(self, data):
-        print("Process out " + data,file=stderr)
+        try:
+            print("Process out " + data,file=stderr)
+        except UnicodeDecodeError:
+            print("Process out (unicodeerror)",file=stderr)
         for line in data.strip().split('\n'):
             line = self.filterout(line.strip())
             if self.currentclient and line:
                 self.currentclient.sendLine(line)
 
     def errReceived(self, data):
-        print("Process err " + data,file=stderr)
+        try:
+            print("Process err " + data,file=stderr)
+        except UnicodeDecodeError:
+            print("Process out (unicodeerror)",file=stderr)
         if self.printstderr and data:
             print(data.strip(),file=stderr)
         for line in data.strip().split('\n'):
