@@ -83,7 +83,7 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
             print("Process out " + data,file=stderr)
         except UnicodeDecodeError:
             print("Process out (unicodeerror)",file=stderr)
-        for line in data.strip().split('\n'):
+        for line in b(data).strip().split(b('\n')):
             line = self.filterout(line.strip())
             if self.currentclient and line:
                 self.currentclient.sendLine(line)
@@ -95,10 +95,10 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
             print("Process out (unicodeerror)",file=stderr)
         if self.printstderr and data:
             print(data.strip(),file=stderr)
-        for line in data.strip().split('\n'):
+        for line in b(data).strip().split(b('\n')):
             line = self.filtererr(line.strip())
             if self.sendstderr and self.currentclient and line:
-                self.currentclient.sendLine(b(line))
+                self.currentclient.sendLine(line)
 
 
     def processExited(self, reason):
