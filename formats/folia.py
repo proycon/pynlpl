@@ -4706,14 +4706,14 @@ class Division(AbstractStructureElement):
                 return e
         raise NoSuchAnnotation()
 
-Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer)
 
 class Text(AbstractStructureElement):
     """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent, Metric)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, Table, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent, Metric)
     XMLTAG = 'text'
     TEXTDELIMITER = "\n\n\n"
 
