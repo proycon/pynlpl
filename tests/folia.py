@@ -741,6 +741,14 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( table[0][0].text(), "Naam | Universiteit" ) #text of whole row
 
 
+    def test043_string(self):
+        """Sanity check - String"""
+        s = self.doc["sandbox.3.head"]
+        self.assertTrue( s.hasannotation(folia.String) )
+        st = s.select(folia.String)[0]
+        self.assertEqual( st.text(), "FoLiA developers")
+        self.assertEqual( st.annotation(folia.LangAnnotation).cls, "eng")
+
     def test099_write(self):
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
