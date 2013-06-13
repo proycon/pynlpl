@@ -1902,7 +1902,7 @@ class Test9Reader(unittest.TestCase):
         count = 0
         for word in self.reader:
             count += 1
-        self.assertEqual(count, 163)
+        self.assertEqual(count, 177)
 
     def test001_findwords_simple(self):
         """Querying using stream reader - Find words (simple)"""
@@ -1964,7 +1964,7 @@ class Test7XpathQuery(unittest.TestCase):
         for word in folia.Query('/tmp/foliatest.xml','//f:w'):
             count += 1
             self.assertTrue( isinstance(word, folia.Word) )
-        self.assertEqual(count, 163)
+        self.assertEqual(count, 177)
 
     def test051_findwords_xpath(self):
         """Xpath Querying - Collect all words (authoritative only)"""
@@ -1972,7 +1972,7 @@ class Test7XpathQuery(unittest.TestCase):
         for word in folia.Query('/tmp/foliatest.xml','//f:w[not(ancestor-or-self::*/@auth)]'):
             count += 1
             self.assertTrue( isinstance(word, folia.Word) )
-        self.assertEqual(count, 163)
+        self.assertEqual(count, 177)
 
 
 class Test8Validation(unittest.TestCase):
