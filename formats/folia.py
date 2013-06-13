@@ -2678,7 +2678,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
 
 
 
-class String(AbstractElement):
+class String(AbstractElement, AllowTokenAnnotation):
    """String"""
    #ACCEPTED_DATA = DEFINED LATER!!
    XMLTAG = 'str'
@@ -2687,6 +2687,7 @@ class String(AbstractElement):
    ANNOTATIONTYPE = AnnotationType.STRING
    OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
    OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
+   PRINTABLE = True
 
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME,Attrib.N)
