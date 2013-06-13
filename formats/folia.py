@@ -2677,6 +2677,17 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
         # super(AbstractSubtokenAnnotationLayer,self).__init__(doc, *args, **kwargs)
 
 
+
+class String(AbstractElement):
+   """String"""
+   #ACCEPTED_DATA = DEFINED LATER!!
+   XMLTAG = 'str'
+   REQUIRED_ATTRIBS = ()
+   OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
+   ANNOTATIONTYPE = AnnotationType.STRING
+   OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
+   OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
+
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME,Attrib.N)
     ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, String, Description, Metric)
@@ -3002,15 +3013,8 @@ class Correction(AbstractExtendedTokenAnnotation):
 Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent,String, Correction, Description, Metric)
 
 
-class String(AbstractElement):
-   """String"""
-   ACCEPTED_DATA = (TextContent,Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation)
-   XMLTAG = 'str'
-   REQUIRED_ATTRIBS = ()
-   OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
-   ANNOTATIONTYPE = AnnotationType.STRING
-   OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
-   OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
+
+String.ACCEPTED_DATA = (TextContent,Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation)
 
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
@@ -3588,18 +3592,21 @@ class Cell(AbstractStructureElement):
     ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Linebreak, Whitespace, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation)
     XMLTAG = 'cell'
     TEXTDELIMITER = " | "
+    REQUIRED_ATTRIBS = (),
     ANNOTATIONTYPE = AnnotationType.TABLE
 
 class Row(AbstractStructureElement):
     ACCEPTED_DATA = (Cell,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation)
     XMLTAG = 'row'
     TEXTDELIMITER = "\n"
+    REQUIRED_ATTRIBS = (),
     ANNOTATIONTYPE = AnnotationType.TABLE
 
 
 class TableHead(AbstractStructureElement):
     ACCEPTED_DATA = (Row,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation)
     XMLTAG = 'tablehead'
+    REQUIRED_ATTRIBS = (),
     ANNOTATIONTYPE = AnnotationType.TABLE
 
 

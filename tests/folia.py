@@ -170,7 +170,7 @@ class Test2Sanity(unittest.TestCase):
 
     def test002_count_sentences(self):
         """Sanity check - Sentences count"""
-        self.assertEqual( len(self.doc.sentences()) , 14)
+        self.assertEqual( len(self.doc.sentences()) , 13)
 
     def test003_count_words(self):
         """Sanity check - Word count"""
@@ -193,9 +193,9 @@ class Test2Sanity(unittest.TestCase):
         #grab last word
         w = self.doc.words(-1) # shortcut for doc.words()[0]
         self.assertTrue( isinstance(w, folia.Word) )
-        self.assertEqual( w.id , 'WR-P-E-J-0000000001.sandbox.2.s.1.w.6' )
-        self.assertEqual( w.text() , "." )
-        self.assertEqual( str(w) , "." )
+        self.assertEqual( w.id , "example.table.1.w.14" )
+        self.assertEqual( w.text() , "University" )
+        self.assertEqual( str(w) , "University" )
 
     def test006_second_sentence(self):
         """Sanity check - Sentence"""
