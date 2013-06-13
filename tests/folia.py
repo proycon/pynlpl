@@ -729,6 +729,17 @@ class Test2Sanity(unittest.TestCase):
                 t.append(word.text())
         self.assertEqual(t, ['ander','woord'])
 
+    def test042_table(self):
+        """Sanity check - Table"""
+        table = self.doc["example.table.1"]
+        self.assertTrue( isinstance(table, folia.Table))
+        self.assertTrue( isinstance(table[0], folia.TableHead))
+        self.assertTrue( isinstance(table[0][0], folia.Row))
+        self.assertEqual( len(table[0][0]), 2) #two cells
+        self.assertTrue( isinstance(table[0][0][0], folia.Cell))
+        self.assertEqual( table[0][0][0].text(), "Naam" )
+        self.assertEqual( table[0][0].text(), "Naam | Universiteit" ) #text of whole row
+
 
     def test099_write(self):
         """Sanity Check - Writing to file"""
