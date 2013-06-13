@@ -62,8 +62,8 @@ import bz2
 import gzip
 
 
-FOLIAVERSION = '0.9.1'
-LIBVERSION = '0.9.1.38' #== FoLiA version + library revision
+FOLIAVERSION = '0.9.2'
+LIBVERSION = '0.9.2.39' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -99,7 +99,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING = range(34)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE = range(35)
 
     #Alternative is a special one, not declared and not used except for ID generation
 
@@ -3003,7 +3003,7 @@ Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, Correction
 
 class String(AbstractElement):
    """String"""
-   ACCEPTED_DATA = (TextContent,Alignment,Description, Metric, Correction)
+   ACCEPTED_DATA = (TextContent,Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation)
    XMLTAG = 'str'
    REQUIRED_ATTRIBS = ()
    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
@@ -3575,14 +3575,38 @@ class Paragraph(AbstractStructureElement):
     TEXTDELIMITER = "\n\n"
     ANNOTATIONTYPE = AnnotationType.PARAGRAPH
 
-
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
 
-    ACCEPTED_DATA = (Sentence,Description, Event, TextContent,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Sentence, Word, Description, Event, TextContent,Alignment, Metric, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'
+
+class Cell(AbstractStructureElement):
+    ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Linebreak, Whitespace, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation)
+    XMLTAG = 'cell'
+    TEXTDELIMITER = " | "
+    ANNOTATIONTYPE = AnnotationType.TABLE
+
+class Row(AbstractStructureElement):
+    ACCEPTED_DATA = (Cell,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation)
+    XMLTAG = 'row'
+    TEXTDELIMITER = "\n"
+    ANNOTATIONTYPE = AnnotationType.TABLE
+
+
+class TableHead(AbstractStructureElement):
+    ACCEPTED_DATA = (Row,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation)
+    XMLTAG = 'tablehead'
+    ANNOTATIONTYPE = AnnotationType.TABLE
+
+
+class Table(AbstractStructureElement):
+    ACCEPTED_DATA = (TableHead, Row, AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation)
+    XMLTAG = 'table'
+    ANNOTATIONTYPE = AnnotationType.TABLE
+
 
 class Query(object):
     """An XPath query on one or more FoLiA documents"""
