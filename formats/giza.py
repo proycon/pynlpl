@@ -8,9 +8,9 @@
 #       Universiteit van Tilburg
 #
 #       In part using code by Sander Canisius
-#       
+#
 #       Licensed under GPLv3
-# 
+#
 #
 # This library reads GIZA++ A3 files. It contains three classes over which
 # you can iterate to obtain (sourcewords,targetwords,alignment) pairs.
@@ -25,40 +25,41 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
-from __future__ import absolute_import  
-#from pynlpl.common import u
+from __future__ import absolute_import
 
+from pynlpl.common import u
 
 import bz2
+import gzip
 import copy
 import io
 from sys import stderr
 
 class GizaSentenceAlignment(object):
-    
-    def __init__(self, sourceline, targetline, index):    
+
+    def __init__(self, sourceline, targetline, index):
         self.index = index
         self.alignment = []
         if sourceline:
             self.source = self._parsesource(sourceline.strip())
-        else: 
+        else:
             self.source = []
         self.target = targetline.strip().split(' ')
-                
+
     def _parsesource(self, line):
         cleanline = ""
-        
+
         inalignment = False
         begin = 0
         sourceindex = 0
-        
+
         for i in range(0,len(line)):
             if line[i] == ' ' or i == len(line) - 1:
                 if i == len(line) - 1:
                     offset = 1
                 else:
                     offset = 0
-                
+
                 word = line[begin:i+offset]
                 if word == '})':
                     inalignment = False
@@ -77,33 +78,33 @@ class GizaSentenceAlignment(object):
                         targetindex = int(word)
                         self.alignment.append( (sourceindex-1, targetindex-1) )
                 begin = i + 1
-        
+
         return cleanline.split(' ')
-    
-        
+
+
     def intersect(self,other):
         if other.target != self.source:
             print("Mismatch between self.source and other.target: " + repr(self.source) + " -- vs -- " + repr(other.target),file=stderr)
             return None
-            
+
         intersection = copy.copy(self)
         intersection.alignment = []
-        
+
         for sourceindex, targetindex in self.alignment:
             for targetindex2, sourceindex2 in other.alignment:
                 if targetindex2 == targetindex and sourceindex2 == sourceindex:
                     intersection.alignment.append( (sourceindex, targetindex) )
-                    
-        return intersection            
-    
+
+        return intersection
+
     def __repr__(self):
         s = " ".join(self.source)+ " ||| "
         s += " ".join(self.target) + " ||| "
-        for S,T in sorted(self.alignment): 
+        for S,T in sorted(self.alignment):
             s += self.source[S] + "->" + self.target[T] + " ; "
         return s
 
-    
+
     def getalignedtarget(self, index):
         targetindices = []
         target = None
@@ -114,7 +115,7 @@ class GizaSentenceAlignment(object):
         if len(targetindices) > 1:
             consecutive = True
             for i in range(1,len(targetindices)):
-                if abs(targetindices[i] - targetindices[i-1]) != 1:  
+                if abs(targetindices[i] - targetindices[i-1]) != 1:
                     consecutive  = False
                     break
             if consecutive:
@@ -123,41 +124,46 @@ class GizaSentenceAlignment(object):
         elif targetindices:
             foundindex = targetindices[0]
             target = self.target[foundindex]
-            
+
         return target, foundindex
-    
+
 class GizaModel(object):
     def __init__(self, filename, encoding= 'utf-8'):
-        self.f = io.open(filename,'r',encoding)        
+        if filename.split(".")[-1] == "bz2":
+            self.f = bz2.BZ2File(filename,'r')
+        elif filename.split(".")[-1] == "gz":
+            self.f = gzip.GzipFile(filename,'r')
+        else:
+            self.f = io.open(filename,'r',encoding)
         self.nextlinebuffer = None
-        
-        
+
+
     def __iter__(self):
         self.f.seek(0)
-        nextlinebuffer = self.f.next()  
+        nextlinebuffer = u(self.f.next())
         sentenceindex = 0
-    
+
         done = False
         while not done:
             sentenceindex += 1
             line = nextlinebuffer
-            if line[0] != '#': 
+            if line[0] != '#':
                 raise Exception("Error parsing GIZA++ Alignment at sentence " +  str(sentenceindex) + ", expected new fragment, found: " + repr(line))
-        
-            targetline = self.f.next()
-            sourceline = self.f.next()
-        
+
+            targetline = u(self.f.next())
+            sourceline = u(self.f.next())
+
             yield GizaSentenceAlignment(sourceline, targetline, sentenceindex)
-        
+
             try:
-                nextlinebuffer = self.f.next()
-            except StopIteration:      
+                nextlinebuffer = u(self.f.next())
+            except StopIteration:
                 done = True
-               
+
 
     def __del__(self):
         if self.f: self.f.close()
-        
+
 
 #------------------ OLD -------------------
 
@@ -178,7 +184,7 @@ def parseAlignment(tokens): #by Sander Canisius
         yield word, positions
 
 
-class WordAlignment: 
+class WordAlignment:
     """Target to Source alignment: reads target-source.A3.final files, in which each source word is aligned to one target word"""
 
     def __init__(self,filename, encoding=False):
@@ -205,12 +211,12 @@ class WordAlignment:
             for i, (targetWord, positions) in enumerate(parseAlignment(self.stream.readline().split())):
 
                 trg.append(targetWord)
-                
+
                 for pos in positions:
                     assert alignment[pos - 1] is None
                     alignment[pos - 1] = i
 
-            if self.encoding: 
+            if self.encoding:
                 yield [ u(w,self.encoding) for w in src ], [ u(w,self.encoding) for w in trg ], alignment
             else:
                 yield src, trg, alignment
@@ -256,7 +262,7 @@ class MultiWordAlignment:
                 alignment.append( [ p - 1 for p in positions ] )
 
 
-            if self.encoding: 
+            if self.encoding:
                 yield [ unicode(w,self.encoding) for w in src ], [ unicode(w,self.encoding) for w in trg ], alignment
             else:
                 yield src, trg, alignment
@@ -275,7 +281,7 @@ class MultiWordAlignment:
         self.stream.seek(0)
 
 
-class IntersectionAlignment:          
+class IntersectionAlignment:
 
     def __init__(self,source2target,target2source,encoding=False):
         self.s2t = MultiWordAlignment(source2target, encoding)
@@ -286,9 +292,9 @@ class IntersectionAlignment:
         for (src, trg, alignment), (revsrc, revtrg, revalignment) in zip(self.s2t,self.t2s): #will take unnecessary memory in Python 2.x, optimal in Python 3
             if src != revsrc or trg != revtrg:
                 raise Exception("Files are not identical!")
-            else:                
+            else:
                 #keep only those alignments that are present in both
-                intersection = []                
+                intersection = []
                 for i, x in enumerate(alignment):
                     if revalignment[i] and revalignment[i] in x:
                         intersection.append(revalignment[i])

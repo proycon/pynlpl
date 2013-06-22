@@ -24,6 +24,7 @@ from pynlpl.common import u
 
 import sys
 import bz2
+import gzip
 import datetime
 import socket
 import io
@@ -47,8 +48,10 @@ class PhraseTable(object):
 
         if filename.split(".")[-1] == "bz2":
             f = bz2.BZ2File(filename,'r')
+        elif filename.split(".")[-1] == "gz":
+            f = gzip.GzipFile(filename,'r')
         else:
-            f = io.open(filename,'r','utf-8')
+            f = io.open(filename,'r',encoding='utf-8')
         linenum = 0
         prevsource = None
         targets = []
@@ -58,7 +61,7 @@ class PhraseTable(object):
                 linenum += 1
                 if (linenum % 100000) == 0:
                     print("Loading phrase-table: @%d" % linenum, "\t(" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ")",file=sys.stderr)
-            line = f.readline()
+            line = u(f.readline())
             if not line:
                 break
 
@@ -125,11 +128,11 @@ class PhraseTable(object):
         #for word in phrase:
         #    if not word in d:
         #        return False
-        #    d = d[word]
+        #    d = d[word
         #return ("" in d)
 
     def __getitem__(self, phrase): #same as translations
-        """Return a list of (translation, Pst, Pts, null_alignment) tuples"""
+        """Return a list of (translation, scores) tuples"""
         if self.sourceencoder: phrase = self.sourceencoder(phrase)
         return self.phrasetable[phrase]
 
