@@ -68,6 +68,10 @@ class PhraseTable(object):
             #split into (trimmed) segments
             segments = [ segment.strip() for segment in line.split(delimiter) ]
 
+            if len(segments) < 3:
+                print("Invalid line: ", line, file=sys.stderr)
+                continue
+
             #Do we have a score associated?
             if score_column > 0 and len(segments) >= score_column:
                 scores = tuple(segments[score_column-1].strip().split())
