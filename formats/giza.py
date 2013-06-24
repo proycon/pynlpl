@@ -140,7 +140,7 @@ class GizaModel(object):
 
     def __iter__(self):
         self.f.seek(0)
-        nextlinebuffer = u(self.f.next())
+        nextlinebuffer = u(next(self.f))
         sentenceindex = 0
 
         done = False
@@ -150,13 +150,13 @@ class GizaModel(object):
             if line[0] != '#':
                 raise Exception("Error parsing GIZA++ Alignment at sentence " +  str(sentenceindex) + ", expected new fragment, found: " + repr(line))
 
-            targetline = u(self.f.next())
-            sourceline = u(self.f.next())
+            targetline = u(next(self.f))
+            sourceline = u(next(self.f))
 
             yield GizaSentenceAlignment(sourceline, targetline, sentenceindex)
 
             try:
-                nextlinebuffer = u(self.f.next())
+                nextlinebuffer = u(next(self.f))
             except StopIteration:
                 done = True
 
