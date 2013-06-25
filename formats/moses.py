@@ -74,7 +74,7 @@ class PhraseTable(object):
 
             #Do we have a score associated?
             if score_column > 0 and len(segments) >= score_column:
-                scores = tuple(segments[score_column-1].strip().split())
+                scores = tuple( ( float(x) for x in segments[score_column-1].strip().split() ) )
             else:
                 scores = tuple()
 
