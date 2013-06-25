@@ -39,7 +39,7 @@ except:
 
 
 class PhraseTable(object):
-    def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 5, max_sourcen = 0,sourceencoder=None, targetencoder=None):
+    def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 3, max_sourcen = 0,sourceencoder=None, targetencoder=None):
         """Load a phrase table from file into memory (memory intensive!)"""
         self.phrasetable = {}
         self.sourceencoder = sourceencoder
@@ -112,14 +112,16 @@ class PhraseTable(object):
                     target = segments[1]
 
 
-            if source != prevsource and targets:
-                self.phrasetable[source] = tuple(targets)
+            if prevsource and source != prevsource and targets:
+                self.phrasetable[prevsource] = tuple(targets)
                 targets = []
+
             targets.append( (target,scores) )
+            prevsource = source
 
         #don't forget last one:
-        if source != prevsource and targets:
-            self.phrasetable[source] = tuple(targets)
+        if prevsource and targets:
+            self.phrasetable[prevsource] = tuple(targets)
 
         f.close()
 
