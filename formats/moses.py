@@ -39,7 +39,7 @@ except:
 
 
 class PhraseTable(object):
-    def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 3, max_sourcen = 0,sourceencoder=None, targetencoder=None):
+    def __init__(self,filename, quiet=False, reverse=False, delimiter="|||", score_column = 3, max_sourcen = 0,sourceencoder=None, targetencoder=None, scorefilter=None):
         """Load a phrase table from file into memory (memory intensive!)"""
         self.phrasetable = {}
         self.sourceencoder = sourceencoder
@@ -85,6 +85,9 @@ class PhraseTable(object):
             #        null_alignments = 0
             #else:
             #    null_alignments = 0
+
+            if scorefilter:
+                if not scorefilter(scores): continue
 
             if reverse:
                 if max_sourcen > 0 and segments[1].count(' ') + 1 > max_sourcen:
