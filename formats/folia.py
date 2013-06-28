@@ -2160,6 +2160,81 @@ class TextContent(AbstractElement):
 
 
 
+
+class Content(AbstractElement):     #used for raw content, subelement for Gap
+    OCCURRENCES = 1
+    XMLTAG = 'content'
+
+    def __init__(self,doc, *args, **kwargs):
+        if 'value' in kwargs:
+            if isstring(kwargs['value']):
+                self.value = u(kwargs['value'])
+            elif kwargs['value'] is None:
+                self.value = ""
+            else:
+                raise Exception("value= parameter must be unicode or str instance")
+            del kwargs['value']
+        else:
+            raise Exception("Description expects value= parameter")
+        super(Content,self).__init__(doc, *args, **kwargs)
+
+    def __nonzero__(self):
+        return bool(self.value)
+
+    def __bool__(self):
+        return bool(self.value)
+
+    def __unicode__(self):
+        return self.value
+
+    def __str__(self):
+        return self.value
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        global NSFOLIA
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
+        if not attribs:
+            attribs = {}
+
+        return E.content(self.value, **attribs)
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        kwargs = {}
+        kwargs['value'] = node.text
+        return Content(doc, **kwargs)
+
+class Gap(AbstractElement):
+    """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
+    ACCEPTED_DATA = (Content, Description)
+    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
+    ANNOTATIONTYPE = AnnotationType.GAP
+    XMLTAG = 'gap'
+
+    def __init__(self, doc, *args, **kwargs):
+        if 'content' in kwargs:
+            self.content = kwargs['content']
+            del kwargs['content']
+        elif 'description' in kwargs:
+            self.description = kwargs['description']
+            del kwargs['description']
+        super(Gap,self).__init__(doc, *args, **kwargs)
+
+    def content(self):
+        for e in self:
+            if isinstance(e, Content):
+                return e.value
+        return ""
+
+
 class Linebreak(AbstractStructureElement):
     """Line break element, signals a line break"""
     REQUIRED_ATTRIBS = ()
@@ -3388,7 +3463,7 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
 
-    ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, String, Description,  Linebreak, Whitespace, Event, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, String,Gap, Description,  Linebreak, Whitespace, Event, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 's'
     TEXTDELIMITER = ' '
     ANNOTATIONTYPE = AnnotationType.SENTENCE
@@ -3499,12 +3574,12 @@ class Sentence(AbstractStructureElement):
 
 
 
-Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, String, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
 
 
 class Caption(AbstractStructureElement):
     """Element used for captions for figures or tables, contains sentences"""
-    ACCEPTED_DATA = (Sentence, Description, TextContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Sentence, Description, TextContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     OCCURRENCES = 1
     XMLTAG = 'caption'
 
@@ -3529,7 +3604,7 @@ class List(AbstractStructureElement):
     TEXTDELIMITER = '\n'
     ANNOTATIONTYPE = AnnotationType.LIST
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,String,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
 
 class Figure(AbstractStructureElement):
     """Element for the representation of a graphical figure. Structure element."""
@@ -3576,7 +3651,7 @@ class Figure(AbstractStructureElement):
 class Paragraph(AbstractStructureElement):
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent,String, Description, Linebreak, Whitespace, List, Figure, Event, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n\n"
     ANNOTATIONTYPE = AnnotationType.PARAGRAPH
@@ -3584,13 +3659,13 @@ class Paragraph(AbstractStructureElement):
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
 
-    ACCEPTED_DATA = (Sentence, Word, Description, Event, TextContent,String,Alignment, Metric, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Sentence, Word, Description, Event, TextContent,String,Alignment, Metric, Linebreak, Whitespace,Gap,  Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'
 
 class Cell(AbstractStructureElement):
-    ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Linebreak, Whitespace, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation)
     XMLTAG = 'cell'
     TEXTDELIMITER = " | "
     REQUIRED_ATTRIBS = (),
@@ -4622,81 +4697,6 @@ class Document(object):
 
 
 
-class Content(AbstractElement):     #used for raw content, subelement for Gap
-    OCCURRENCES = 1
-    XMLTAG = 'content'
-
-    def __init__(self,doc, *args, **kwargs):
-        if 'value' in kwargs:
-            if isstring(kwargs['value']):
-                self.value = u(kwargs['value'])
-            elif kwargs['value'] is None:
-                self.value = ""
-            else:
-                raise Exception("value= parameter must be unicode or str instance")
-            del kwargs['value']
-        else:
-            raise Exception("Description expects value= parameter")
-        super(Content,self).__init__(doc, *args, **kwargs)
-
-    def __nonzero__(self):
-        return bool(self.value)
-
-    def __bool__(self):
-        return bool(self.value)
-
-    def __unicode__(self):
-        return self.value
-
-    def __str__(self):
-        return self.value
-
-    def xml(self, attribs = None,elements = None, skipchildren = False):
-        global NSFOLIA
-        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-
-        if not attribs:
-            attribs = {}
-
-        return E.content(self.value, **attribs)
-
-    @classmethod
-    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
-        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
-
-    @classmethod
-    def parsexml(Class, node, doc):
-        global NSFOLIA
-        kwargs = {}
-        kwargs['value'] = node.text
-        return Content(doc, **kwargs)
-
-class Gap(AbstractElement):
-    """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
-    ACCEPTED_DATA = (Content, Description)
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
-    ANNOTATIONTYPE = AnnotationType.GAP
-    XMLTAG = 'gap'
-
-    def __init__(self, doc, *args, **kwargs):
-        if 'content' in kwargs:
-            self.content = kwargs['content']
-            del kwargs['content']
-        elif 'description' in kwargs:
-            self.description = kwargs['description']
-            del kwargs['description']
-        super(Gap,self).__init__(doc, *args, **kwargs)
-
-    def content(self):
-        for e in self:
-            if isinstance(e, Content):
-                return e.value
-        return ""
-
-
-
 
 
 
@@ -5002,7 +5002,7 @@ def loadsetdefinition(filename):
         f.close()
     else:
         tree = ElementTree.parse(filename)
-    root = self.tree.getroot()
+    root = tree.getroot()
     if root.tag != '{' + NSFOLIA + '}set':
         raise SetDefinitionError("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
 
