@@ -575,6 +575,20 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( w2.text(), 'vierkante')
         self.assertEqual( w2.stricttext(), 'vierkante')
 
+
+    def test030b_textcontent(self):
+        """Sanity check - Text Content (2)"""
+        s = self.doc['sandbox.3.head']
+        t = s.textcontent()
+        self.assertEqual( len(t), 3)
+        self.assertEqual( t.value, "De FoLiA developers zijn:")
+        self.assertEqual( t.text(), "De FoLiA developers zijn:")
+        self.assertEqual( t[0], "De ")
+        self.assertTrue( isinstance(t[1], folia.TextMarkupString) )
+        self.assertEqual( t[1].value, "FoLiA developers")
+        self.assertEqual( t[2], " zijn:")
+
+
     def test031_sense(self):
         """Sanity Check - Lexical Semantic Sense Annotation"""
         w = self.doc['sandbox.list.1.listitem.1.s.1.w.1']
@@ -748,6 +762,29 @@ class Test2Sanity(unittest.TestCase):
         st = s.select(folia.String)[0]
         self.assertEqual( st.text(), "FoLiA developers")
         self.assertEqual( st.annotation(folia.LangAnnotation).cls, "eng")
+
+    def test044_textmarkup(self):
+        """Sanity check - Text Markup"""
+        s = self.doc["sandbox.3.head"]
+        t = s.textcontent()
+        self.assertEqual( len(s.select(folia.TextMarkupString)), 1)
+        self.assertEqual( len(t.select(folia.TextMarkupString)), 1)
+
+        st = t.select(folia.TextMarkupString)[0]
+        self.assertEqual( st.value, "FoLiA developers" ) #testing value (full text value)
+
+        self.assertEqual( st.resolve(), self.doc['sandbox.3.str']) #testing resolving references
+
+        #testing nesting
+        self.assertEqual( len(st), 2)
+        self.assertEqual( st[0], self.doc['sandbox.3.str.bold'])
+
+        #testing TextMarkup.text()
+        self.assertEqual( st[0].text(), 'FoLiA' )
+
+        #resolving returns self if it's not a reference
+        self.assertEqual( self.doc['sandbox.3.str.bold'].resolve(), self.doc['sandbox.3.str.bold'])
+
 
     def test099_write(self):
         """Sanity Check - Writing to file"""

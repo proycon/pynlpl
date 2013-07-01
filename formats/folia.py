@@ -39,7 +39,7 @@ if sys.version < '3':
     from urllib import urlopen
 else:
     from io import StringIO,  BytesIO
-    from urllib.request import urlopen
+    from urllib.request import urlopen #pylint: disable=E0611
 
 
 from copy import copy, deepcopy
@@ -62,8 +62,8 @@ import bz2
 import gzip
 
 
-FOLIAVERSION = '0.9.2'
-LIBVERSION = '0.9.2.39' #== FoLiA version + library revision
+FOLIAVERSION = '0.10.0'
+LIBVERSION = '0.10.0.40' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -99,7 +99,8 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE = range(35)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE = range(36)
+
 
     #Alternative is a special one, not declared and not used except for ID generation
 
@@ -161,21 +162,21 @@ if sys.version < '3':
     else:
         #Python 2.6 without io
         class BypassLeakFile(file):
-            def read(self,n=0):
+            def read(self,n=0): #pylint: disable=E1003
                 s = unicode(super(BypassLeakFile,self).read(n),'utf-8')
                 return s.replace('xml:id','id').encode('utf-8')
 
-            def readline(self):
+            def readline(self): #pylint: disable=E1003
                 s = unicode(super(BypassLeakFile,self).readline(),'utf-8')
                 return s.replace('xml:id','id').encode('utf-8')
 else:
     #Python 3
     class BypassLeakFile(io.FileIO):
-        def read(self,n=0):
+        def read(self,n=0): #pylint: disable=E1003
             s = super(BypassLeakFile,self).read(n)
             return s.replace(b'xml:id',b'id')
 
-        def readline(self):
+        def readline(self):  #pylint: disable=E1003
             s = super(BypassLeakFile,self).readline()
             return s.replace(b'xml:id',b'id')
 
@@ -338,18 +339,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'text' in kwargs:
         object.settext(kwargs['text'])
         del kwargs['text']
-    if 'processedtext' in kwargs:
-        object.settext(kwargs['text'], TextCorrectionLevel.PROCESSED)
-        del kwargs['processedtext']
-    elif 'correctedtext' in kwargs: #backwards compatible alias
-        object.settext(kwargs['text'], TextCorrectionLevel.PROCESSED)
-        del kwargs['correctedtext']
-    if 'originaltext' in kwargs:
-        object.settext(kwargs['text'], TextCorrectionLevel.ORIGINAL)
-        del kwargs['originaltext']
-    if 'uncorrectedtext' in kwargs: #backwards compatible alias
-        object.settext(kwargs['text'], TextCorrectionLevel.ORIGINAL)
-        del kwargs['uncorrectedtext']
 
     if doc and doc.debug >= 2:
         print("   @id           = ", repr(object.id),file=stderr)
@@ -487,6 +476,7 @@ class AbstractElement(object):
     TEXTDELIMITER = None #Delimiter to use when dynamically gathering text from child elements
     PRINTABLE = False #Is this element printable (aka, can its text method be called?)
     AUTH = True #Authoritative by default. Elements the parser should skip on normal queries are non-authoritative (such as original, alternative)
+    TEXTCONTAINER = False #Text containers directly take textual content. (t is a TEXTCONTAINER)
 
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document) and not doc is None:
@@ -494,6 +484,9 @@ class AbstractElement(object):
         self.doc = doc
         self.parent = None
         self.data = []
+
+        if self.TEXTCONTAINER:
+            self.value = "" #full textual value (no elements), value will be populated by postappend()
 
         kwargs = parsecommonarguments(self, doc, self.ANNOTATIONTYPE, self.REQUIRED_ATTRIBS, self.OPTIONAL_ATTRIBS,**kwargs)
         for child in args:
@@ -568,6 +561,9 @@ class AbstractElement(object):
         If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.
         """
 
+
+        if self.TEXTCONTAINER:
+            return self.value
         if not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
 
@@ -891,22 +887,36 @@ class AbstractElement(object):
             raise Exception("Too many arguments specified. Only possible when first argument is a class and not an instance")
 
 
+        dopostappend = True
 
         #Do the actual appending
-        if not Class and isstring(child) and TextContent in self.ACCEPTED_DATA:
-            #you can pass strings directly (just for convenience), will be made into textcontent automatically.
-            child = TextContent(self.doc, child )
-            self.data.append(child)
-            child.parent = self
+        if not Class and isstring(child):
+            if self.TEXTCONTAINER:
+                #element is a text container and directly allows strings as content, add the string as such:
+                self.data.append(u(child))
+                self.value += u(child)
+                dopostappend = False
+            elif TextContent in self.ACCEPTED_DATA:
+                #you can pass strings directly (just for convenience), will be made into textcontent automatically.
+                child = TextContent(self.doc, child )
+                self.data.append(child)
+                child.parent = self
+            else:
+                raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ + ". Type not allowed as child.")
         elif Class or (isinstance(child, AbstractElement) and child.__class__.addable(self, set)): #(prevents calling addable again if already done above)
             if 'alternative' in kwargs and kwargs['alternative']:
                 child = Alternative(self.doc, child, generate_id_in=self)
             self.data.append(child)
             child.parent = self
+            if self.TEXTCONTAINER and isinstance(child, AbstractTextMarkup):
+                if self.value:
+                    self.value += child.TEXTDELIMITER + child.value #TEXTDELIMITER will be "" for most AbstractTextMarkup element (except Linebreak)
+                else:
+                    self.value = child.value
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ + ". Type not allowed as child.")
 
-        child.postappend()
+        if dopostappend: child.postappend()
         return child
 
     def insert(self, index, child, *args, **kwargs):
@@ -1059,53 +1069,61 @@ class AbstractElement(object):
                 attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
 
         #Some attributes only need to be added if they are not the same as what's already set in the declaration
-        try:
-            if self.set:
-                if not self.ANNOTATIONTYPE in self.doc.annotationdefaults or len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or list(self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys())[0] != self.set:
-                    if self.set != None:
-                        attribs['{' + NSFOLIA + '}set'] = self.set
-        except AttributeError:
-            pass
+        if not '{' + NSFOLIA + '}set' in attribs: #do not override if overloaded function already set it
+            try:
+                if self.set:
+                    if not self.ANNOTATIONTYPE in self.doc.annotationdefaults or len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or list(self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys())[0] != self.set:
+                        if self.set != None:
+                            attribs['{' + NSFOLIA + '}set'] = self.set
+            except AttributeError:
+                pass
 
-        try:
-            if self.cls:
-                attribs['{' + NSFOLIA + '}class'] = self.cls
-        except AttributeError:
-            pass
+        if not '{' + NSFOLIA + '}class' in attribs: #do not override if caller already set it
+            try:
+                if self.cls:
+                    attribs['{' + NSFOLIA + '}class'] = self.cls
+            except AttributeError:
+                pass
 
-        try:
-            if self.annotator and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'annotator' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.annotator != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['annotator'])):
-                attribs['{' + NSFOLIA + '}annotator'] = self.annotator
-            if self.annotatortype and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ('annotatortype' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.annotatortype != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['annotatortype'])):
-                if self.annotatortype == AnnotatorType.AUTO:
-                    attribs['{' + NSFOLIA + '}annotatortype'] = 'auto'
-                elif self.annotatortype == AnnotatorType.MANUAL:
-                    attribs['{' + NSFOLIA + '}annotatortype'] = 'manual'
-        except AttributeError:
-            pass
+        if not '{' + NSFOLIA + '}annotator' in attribs: #do not override if caller already set it
+            try:
+                if self.annotator and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'annotator' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.annotator != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['annotator'])):
+                    attribs['{' + NSFOLIA + '}annotator'] = self.annotator
+                if self.annotatortype and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ('annotatortype' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.annotatortype != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['annotatortype'])):
+                    if self.annotatortype == AnnotatorType.AUTO:
+                        attribs['{' + NSFOLIA + '}annotatortype'] = 'auto'
+                    elif self.annotatortype == AnnotatorType.MANUAL:
+                        attribs['{' + NSFOLIA + '}annotatortype'] = 'manual'
+            except AttributeError:
+                pass
 
-        try:
-            if self.confidence:
-                attribs['{' + NSFOLIA + '}confidence'] = str(self.confidence)
-        except AttributeError:
-            pass
-        try:
-            if self.n:
-                attribs['{' + NSFOLIA + '}n'] = str(self.n)
-        except AttributeError:
-            pass
+        if not '{' + NSFOLIA + '}confidence' in attribs: #do not override if caller already set it
+            try:
+                if self.confidence:
+                    attribs['{' + NSFOLIA + '}confidence'] = str(self.confidence)
+            except AttributeError:
+                pass
 
-        try:
-            if not self.AUTH or not self.auth: #(former is static, latter isn't)
-                attribs['{' + NSFOLIA + '}auth'] = 'no'
-        except AttributeError:
-            pass
+        if not '{' + NSFOLIA + '}n' in attribs: #do not override if caller already set it
+            try:
+                if self.n:
+                    attribs['{' + NSFOLIA + '}n'] = str(self.n)
+            except AttributeError:
+                pass
 
-        try:
-            if self.datetime and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'datetime' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.datetime != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['datetime'])):
-                attribs['{' + NSFOLIA + '}datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
-        except AttributeError:
-            pass
+        if not '{' + NSFOLIA + '}auth' in attribs: #do not override if caller already set it
+            try:
+                if not self.AUTH or not self.auth: #(former is static, latter isn't)
+                    attribs['{' + NSFOLIA + '}auth'] = 'no'
+            except AttributeError:
+                pass
+
+        if not '{' + NSFOLIA + '}datetime' in attribs: #do not override if caller already set it
+            try:
+                if self.datetime and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'datetime' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.datetime != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['datetime'])):
+                    attribs['{' + NSFOLIA + '}datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            except AttributeError:
+                pass
 
 
         omitchildren =  []
@@ -1140,6 +1158,20 @@ class AbstractElement(object):
                 elif not (child in omitchildren):
                     otherelements.append(child)
             for child in textelements+otherelements:
+                if self.TEXTCONTAINER and isstring(child):
+                    if len(e) == 0:
+                        if e.text:
+                            e.text += child
+                        else:
+                            e.text = child
+                    else:
+                        #add to tail of last child
+                        if e[-1].tail:
+                            e[-1].tail += child
+                        else:
+                            e[-1].tail = child
+
+                else:
                     e.append(child.xml())
 
         if elements: #extra elements
@@ -1199,32 +1231,33 @@ class AbstractElement(object):
         if not node:
             node = self
         for e in self.data:
-            if ignorelist:
-                ignore = False
-                for c in ignorelist:
-                    if c == e.__class__ or issubclass(e.__class__,c):
-                        ignore = True
-                        break
-                if ignore:
-                    continue
-
-            if isinstance(e, Class):
-                if not set is None:
-                    try:
-                        if e.set != set:
-                            continue
-                    except:
+            if not self.TEXTCONTAINER or isinstance(e, AbstractElement):
+                if ignorelist:
+                    ignore = False
+                    for c in ignorelist:
+                        if c == e.__class__ or issubclass(e.__class__,c):
+                            ignore = True
+                            break
+                    if ignore:
                         continue
-                l.append(e)
-            if recursive:
-                for e2 in e.select(Class, set, recursive, ignorelist, e):
+
+                if isinstance(e, Class):
                     if not set is None:
                         try:
-                            if e2.set != set:
+                            if e.set != set:
                                 continue
                         except:
                             continue
-                    l.append(e2)
+                    l.append(e)
+                if recursive:
+                    for e2 in e.select(Class, set, recursive, ignorelist, e):
+                        if not set is None:
+                            try:
+                                if e2.set != set:
+                                    continue
+                            except:
+                                continue
+                        l.append(e2)
         return l
 
 
@@ -1233,23 +1266,24 @@ class AbstractElement(object):
         if not node:
             node = self
         for e in self:
-            if isinstance(e, Class):
-                if not set is None:
-                    try:
-                        if e.set != set:
-                            continue
-                    except:
-                        continue
-                yield e
-            elif recursive:
-                for e2 in e.select(Class, recursive, e):
+            if not self.TEXTCONTAINER or isinstance(e, AbstractElement):
+                if isinstance(e, Class):
                     if not set is None:
                         try:
-                            if e2.set != set:
+                            if e.set != set:
                                 continue
                         except:
                             continue
-                    yield e2
+                    yield e
+                elif recursive:
+                    for e2 in e.select(Class, recursive, e):
+                        if not set is None:
+                            try:
+                                if e2.set != set:
+                                    continue
+                            except:
+                                continue
+                        yield e2
 
     def items(self, founditems=[]):
         """Returns a depth-first flat list of *all* items below this element (not limited to AbstractElement)"""
@@ -1383,12 +1417,16 @@ class AbstractElement(object):
         dcoi = node.tag.startswith('{' + NSDCOI + '}')
         args = []
         kwargs = {}
-        text = None
+        text = None #for dcoi support
+        if Class.TEXTCONTAINER and node.text:
+            args.append(node.text)
         for subnode in node:
             if not isinstance(subnode, ElementTree._Comment): #don't trip over comments
                 if subnode.tag.startswith('{' + NSFOLIA + '}'):
                     if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:],file=stderr)
                     args.append(doc.parsexml(subnode, Class) )
+                    if Class.TEXTCONTAINER and subnode.tail:
+                        args.append(subnode.tail)
                 elif subnode.tag.startswith('{' + NSDCOI + '}'):
                     #Dcoi support
                     if Class is Text and subnode.tag[nslendcoi:] == 'body':
@@ -1443,8 +1481,6 @@ class AbstractElement(object):
         if dcoi and TextContent in Class.ACCEPTED_DATA and node.text:
             text = node.text.strip()
 
-
-        if text:
             kwargs['text'] = text
             if not AnnotationType.TOKEN in doc.annotationdefaults:
                 doc.declare(AnnotationType.TOKEN, set='http://ilk.uvt.nl/folia/sets/ilktok.foliaset')
@@ -1931,6 +1967,68 @@ class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID):
 class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation):
     pass
 
+
+class AbstractTextMarkup(AbstractAnnotation):
+    PRINTABLE = True
+    TEXTDELIMITER = ""
+    #ACCEPTED_DATA is defined after this class
+
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = Attrib.ALL
+    TEXTCONTAINER = True #This element is a direct text container
+
+    def __init__(self, doc, *args, **kwargs):
+        if 'idref' in kwargs:
+            self.idref = kwargs['idref']
+            del kwargs['idref']
+        else:
+            self.idref = None
+        super(AbstractTextMarkup,self).__init__(doc, *args, **kwargs)
+
+        if self.value and (self.value != self.value.translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
+            raise ValueError("There are illegal unicode control characters present in Text Markup Content: " + repr(self.value))
+
+    def resolve(self):
+        if self.idref:
+            return self.doc[self.idref]
+        else:
+            return self
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        if not attribs: attribs = {}
+        if self.idref:
+            attribs['id'] = self.idref
+        elements = []
+        return super(AbstractTextMarkup,self).xml(attribs,elements, skipchildren)
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        instance = super(AbstractTextMarkup,Class).parsexml(node, doc)
+        if 'id' in node.attrib:
+            instance.idref = node.attrib['id']
+        return instance
+
+AbstractTextMarkup.ACCEPTED_DATA = (AbstractTextMarkup,)
+
+class TextMarkupString(AbstractTextMarkup):
+    ANNOTATIONTYPE = AnnotationType.STRING
+    XMLTAG = 't-str'
+
+class TextMarkupGap(AbstractTextMarkup):
+    ANNOTATIONTYPE = AnnotationType.GAP
+    XMLTAG = 't-gap'
+
+class TextMarkupCorrection(AbstractTextMarkup):
+    ANNOTATIONTYPE = AnnotationType.CORRECTION
+    XMLTAG = 't-correction'
+
+class TextMarkupStyle(AbstractTextMarkup):
+    ANNOTATIONTYPE = AnnotationType.STYLE
+    XMLTAG = 't-style'
+
+
+
 class TextContent(AbstractElement):
     """Text content element (``t``), holds text to be associated with whatever element the text content element is a child of.
 
@@ -1947,6 +2045,10 @@ class TextContent(AbstractElement):
     OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
     OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
 
+    TEXTCONTAINER = True #This element is a direct text container
+    ACCEPTED_DATA = (AbstractTextMarkup,)
+
+
     def __init__(self, doc, *args, **kwargs):
         global ILLEGAL_UNICODE_CONTROL_CHARACTERS
         """Required keyword arguments:
@@ -1955,33 +2057,16 @@ class TextContent(AbstractElement):
 
             Example::
 
-                text = folia.TextContent(doc, value='test')
+                text = folia.TextContent(doc, 'test')
 
-                text = folia.TextContent(doc, value='test',cls='original')
+                text = folia.TextContent(doc, 'test',cls='original')
 
         """
 
-
-        if not 'value' in kwargs:
-            if args and isstring(args[0]):
-                kwargs['value'] = args[0]
-                args = args[1:]
-            else:
-                raise Exception("TextContent expects value= parameter")
-
-
-        if isstring(kwargs['value']):
-            self.value = u(kwargs['value'])
+        if 'value' in kwargs:
+            #for backward compatibility
+            kwargs['contents'] = kwargs['value']
             del kwargs['value']
-        elif not kwargs['value']:
-            self.value = ""
-            del kwargs['value']
-        else:
-            raise Exception("Invalid value: " + repr(kwargs['value']))
-
-
-        if self.value and (self.value != self.value.translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
-            raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.value))
 
 
         if 'offset' in kwargs: #offset
@@ -1989,7 +2074,6 @@ class TextContent(AbstractElement):
             del kwargs['offset']
         else:
             self.offset = None
-
 
         if 'ref' in kwargs: #reference to offset
             if isinstance(self.ref, AbstractElement):
@@ -2009,9 +2093,15 @@ class TextContent(AbstractElement):
 
         super(TextContent,self).__init__(doc, *args, **kwargs)
 
+        if not self.value:
+            raise ValueError("Empty text content elements are not allowed")
+        if (self.value != self.value.translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
+            raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.value))
+
+
     def text(self):
         """Obtain the text (unicode instance)"""
-        return self.value
+        return super(TextContent,self).text() #AbstractElement will handle it now, merely overridden to get rid of parameters that dont make sense in this context
 
     def validateref(self):
         """Validates the Text Content's references. Raises UnresolvableTextContent when invalid"""
@@ -2051,10 +2141,7 @@ class TextContent(AbstractElement):
         else:
             return False
 
-    def append(self, child, *args, **kwargs):
-        """This method is not implemented on purpose"""
-        raise NotImplementedError #on purpose
-
+    #append is implemented, the default suffices
 
     def postappend(self):
         """(Method for internal usage, see ``AbstractElement.postappend()``)"""
@@ -2089,14 +2176,11 @@ class TextContent(AbstractElement):
 
         return False
 
+    #Change in behaviour (FoLiA 0.10), iter() no longer iterates over the text itself!!
 
-    def __iter__(self):
-        """Iterate over the text string (character by character)"""
-        return iter(self.value)
 
-    def __len__(self):
-        """Get the length of the text"""
-        return len(self.value)
+    #Change in behaviour (FoLiA 0.10), len() no longer return the length of the text!!
+
 
     @classmethod
     def findreplacables(Class, parent, set, **kwargs):
@@ -2114,22 +2198,14 @@ class TextContent(AbstractElement):
     def parsexml(Class, node, doc):
         """(Method for internal usage, see AbstractElement)"""
         global NSFOLIA
-        args = []
-        kwargs = {}
-        if 'class' in node.attrib:
-                kwargs['cls'] = node.attrib['class']
 
+        e = super(TextContent,Class).parsexml(node,doc)
         if 'offset' in node.attrib:
-            kwargs['offset'] = int(node.attrib['offset'])
-        elif 'ref' in node.attrib:
-            kwargs['ref'] = node.attrib['ref']
+            e.offset = int(node.attrib['offset'])
+        if 'ref' in node.attrib:
+            e.ref = node.attrib['ref']
+        return e
 
-        if node.text:
-            kwargs['value'] = node.text
-        else:
-            kwargs['value'] = ""
-
-        return TextContent(doc, **kwargs)
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
@@ -2149,7 +2225,9 @@ class TextContent(AbstractElement):
             if '{' + NSFOLIA + '}class' in attribs:
                 del attribs['{' + NSFOLIA + '}class']
 
-        return E.t(self.value, **attribs)
+
+        #return E.t(self.value, **attribs)
+        return super(TextContent,self).xml(attribs,elements,skipchildren)
 
 
     @classmethod
@@ -2157,6 +2235,7 @@ class TextContent(AbstractElement):
             global NSFOLIA
             E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
             return E.define( E.element(E.text(), E.optional( E.attribute(name='offset')), E.optional( E.attribute(name='class')),name=cls.XMLTAG ), name=cls.XMLTAG, ns=NSFOLIA)
+            #TODO
 
 
 
@@ -2235,7 +2314,7 @@ class Gap(AbstractElement):
         return ""
 
 
-class Linebreak(AbstractStructureElement):
+class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has a double role!!
     """Line break element, signals a line break"""
     REQUIRED_ATTRIBS = ()
     ACCEPTED_DATA = ()
@@ -4984,10 +5063,10 @@ class SetDefinition(AbstractDefinition):
 
         return SetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],classes, subsets, constraintindex)
 
-    def testclass(cls):
+    def testclass(self,cls):
         raise NotImplementedError #TODO, IMPLEMENT!
 
-    def testsubclass(cls, subset, subclass):
+    def testsubclass(self, cls, subset, subclass):
         raise NotImplementedError #TODO, IMPLEMENT!
 
 
