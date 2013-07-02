@@ -1354,6 +1354,8 @@ class AbstractElement(object):
 
 
             elements = [] #(including attributes)
+            if cls.TEXTCONTAINER:
+                elements.append( E.text() )
             done = {}
             if includechildren:
                 for c in cls.ACCEPTED_DATA:
@@ -1573,12 +1575,6 @@ class Description(AbstractElement):
         kwargs = {}
         kwargs['value'] = node.text
         return Description(doc, **kwargs)
-
-    @classmethod
-    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
-        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
 
 class AllowCorrections(object):
@@ -2016,6 +2012,14 @@ class AbstractTextMarkup(AbstractAnnotation):
             instance.idref = idref
         return instance
 
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
+        if not extraattribs: extraattribs = []
+        extraattribs.append( E.optional(E.attribute(name='id' ))) #id reference
+        return super(AbstractTextMarkup, cls).relaxng(includechildren, extraattribs, extraelements)
+
 AbstractTextMarkup.ACCEPTED_DATA = (AbstractTextMarkup,)
 
 class TextMarkupString(AbstractTextMarkup):
@@ -2055,6 +2059,14 @@ class TextMarkupCorrection(AbstractTextMarkup):
         if original:
             instance.original = original
         return instance
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
+        if not extraattribs: extraattribs = []
+        extraattribs.append( E.optional(E.attribute(name='original' )))
+        return super(TextMarkupError, cls).relaxng(includechildren, extraattribs, extraelements)
 
 
 class TextMarkupError(AbstractTextMarkup):
@@ -2270,10 +2282,12 @@ class TextContent(AbstractElement):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-            global NSFOLIA
-            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-            return E.define( E.element(E.text(), E.optional( E.attribute(name='offset')), E.optional( E.attribute(name='class')),name=cls.XMLTAG ), name=cls.XMLTAG, ns=NSFOLIA)
-            #TODO
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
+        if not extraattribs: extraattribs = []
+        extraattribs.append( E.optional(E.attribute(name='offset' )))
+        extraattribs.append( E.optional(E.attribute(name='ref' )))
+        return super(TextContent, cls).relaxng(includechildren, extraattribs, extraelements)
 
 
 
