@@ -2400,6 +2400,8 @@ class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has
     ANNOTATIONTYPE = AnnotationType.LINEBREAK
     TEXTDELIMITER = "\n"
 
+TextContent.ACCEPTED_DATA = TextContent.ACCEPTED_DATA + (Linebreak,) #shouldn't be necessary because of the multiple inheritance, but something's wrong and this quickly patches it
+
 class Whitespace(AbstractStructureElement):
     """Whitespace element, signals a vertical whitespace"""
     REQUIRED_ATTRIBS = ()
