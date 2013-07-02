@@ -2030,6 +2030,11 @@ class TextMarkupCorrection(AbstractTextMarkup):
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 't-correction'
 
+
+class TextMarkupError(AbstractTextMarkup):
+    ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
+    XMLTAG = 't-error'
+
 class TextMarkupStyle(AbstractTextMarkup):
     ANNOTATIONTYPE = AnnotationType.STYLE
     XMLTAG = 't-style'
