@@ -2030,6 +2030,32 @@ class TextMarkupCorrection(AbstractTextMarkup):
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 't-correction'
 
+    def __init__(self, doc, *args, **kwargs):
+        if 'original' in kwargs:
+            self.original = kwargs['original']
+            del kwargs['original']
+        else:
+            self.original = None
+        super(TextMarkupCorrection,self).__init__(doc, *args, **kwargs)
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        if self.original:
+            attribs['original'] = self.original
+        return super(TextMarkupCorrection,self).xml(attribs,elements, skipchildren)
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        if 'original' in node.attrib:
+            original = node.attrib['original']
+            del node.attrib['original']
+        else:
+            original = None
+        instance = super(TextMarkupCorrection,Class).parsexml(node, doc)
+        if original:
+            instance.original = original
+        return instance
+
 
 class TextMarkupError(AbstractTextMarkup):
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
