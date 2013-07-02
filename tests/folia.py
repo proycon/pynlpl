@@ -775,6 +775,9 @@ class Test2Sanity(unittest.TestCase):
 
         self.assertEqual( st.resolve(), self.doc['sandbox.3.str']) #testing resolving references
 
+
+        self.assertTrue( isinstance( self.doc['WR-P-E-J-0000000001.p.1.s.6'].textcontent()[-1], folia.Linebreak) )  #did we get the linebreak properly?
+
         #testing nesting
         self.assertEqual( len(st), 2)
         self.assertEqual( st[0], self.doc['sandbox.3.str.bold'])
