@@ -408,10 +408,10 @@ def xmltreefromstring(s, bypassleak=False):
             if isinstance(s,str):
                 if bypassleak:
                     s = unicode(s,'utf-8')
-                    s = s.replace(' xml:id=', ' id=')
+                    s = s.replace(' xml:id=', ' XMLid=')
                     s = s.encode('utf-8')
             elif isinstance(s,unicode):
-                if bypassleak: s = s.replace(' xml:id=', ' id=')
+                if bypassleak: s = s.replace(' xml:id=', ' XMLid=')
                 s = s.encode('utf-8')
             else:
                 raise Exception("Expected string, got " + type(s))
@@ -421,10 +421,10 @@ def xmltreefromstring(s, bypassleak=False):
             if isinstance(s,bytes):
                 if bypassleak:
                     s = str(s,'utf-8')
-                    s = s.replace(' xml:id=', ' id=')
+                    s = s.replace(' xml:id=', ' XMLid=')
                     s = s.encode('utf-8')
             elif isinstance(s,str):
-                if bypassleak: s = s.replace(' xml:id=', ' id=')
+                if bypassleak: s = s.replace(' xml:id=', ' XMLid=')
                 s = s.encode('utf-8')
             return ElementTree.parse(BytesIO(s))
 
@@ -1445,12 +1445,15 @@ class AbstractElement(object):
         if dcoi:
             dcoipos = dcoilemma = dcoicorrection = dcoicorrectionoriginal = None
         for key, value in node.attrib.items():
-            if key[0] == '{':
-                if key == '{http://www.w3.org/XML/1998/namespace}id':
+            if key[0] == '{' or key =='XMLid':
+                if key == '{http://www.w3.org/XML/1998/namespace}id' or key == 'XMLid':
                     id = value
                     key = 'id'
                 elif key.startswith( '{' + NSFOLIA + '}'):
                     key = key[nslen:]
+                    if key == 'id':
+                        #ID in FoLiA namespace is always a reference, passed in kwargs as follows:
+                        key = 'idref'
                 elif key.startswith('{' + NSDCOI + '}'):
                     key = key[nslendcoi:]
 
@@ -1998,15 +2001,19 @@ class AbstractTextMarkup(AbstractAnnotation):
         if not attribs: attribs = {}
         if self.idref:
             attribs['id'] = self.idref
-        elements = []
         return super(AbstractTextMarkup,self).xml(attribs,elements, skipchildren)
 
     @classmethod
     def parsexml(Class, node, doc):
         global NSFOLIA
-        instance = super(AbstractTextMarkup,Class).parsexml(node, doc)
         if 'id' in node.attrib:
-            instance.idref = node.attrib['id']
+            idref = node.attrib['id']
+            del node.attrib['id']
+        else:
+            idref = None
+        instance = super(AbstractTextMarkup,Class).parsexml(node, doc)
+        if idref:
+            instance.idref = idref
         return instance
 
 AbstractTextMarkup.ACCEPTED_DATA = (AbstractTextMarkup,)
@@ -3203,11 +3210,14 @@ class WordReference(AbstractElement):
 
     def __init__(self, doc, *args, **kwargs):
         #Special constructor, not calling super constructor
-        if not 'id' in kwargs:
+        if not 'idref' in kwargs and not 'id' in kwargs:
             raise Exception("ID required for WordReference")
         assert(isinstance(doc,Document))
         self.doc = doc
-        self.id = kwargs['id']
+        if 'idref' in kwargs:
+            self.id = kwargs['idref']
+        else:
+            self.id = kwargs['id']
         self.annotator = None
         self.annotatortype = None
         self.confidence = None
@@ -4633,9 +4643,12 @@ class Document(object):
                     self.id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
                 except KeyError:
                     try:
-                        self.id = node.attrib['id']
+                        self.id = node.attrib['XMLid']
                     except KeyError:
-                        raise Exception("FoLiA Document has no ID!")
+                        try:
+                            self.id = node.attrib['id']
+                        except KeyError:
+                            raise Exception("FoLiA Document has no ID!")
                 if 'version' in node.attrib:
                     self.version = node.attrib['version']
                 else:
