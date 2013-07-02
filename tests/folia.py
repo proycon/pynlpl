@@ -815,7 +815,8 @@ class Test2Sanity(unittest.TestCase):
         f.close()
         #use xmldiff to compare the two:
         self.doc.save('/tmp/foliatest100.xml')
-        retcode = os.system('xmldiff /tmp/foliatest.xml /tmp/foliatest100.xml')
+        #retcode = os.system('xmldiff /tmp/foliatest.xml /tmp/foliatest100.xml')
+        retcode = 1 #disabled (memory hog)
         self.assertEqual( retcode, 0)
 
     def test101a_metadataextref(self):

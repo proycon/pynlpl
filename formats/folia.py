@@ -337,7 +337,8 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
 
     if 'text' in kwargs:
-        object.settext(kwargs['text'])
+        if kwargs['text']:
+            object.settext(kwargs['text'])
         del kwargs['text']
 
     if doc and doc.debug >= 2:
@@ -992,6 +993,16 @@ class AbstractElement(object):
         return parent.select(Class,set,False)
 
 
+    def recomputevalue(self):
+        """Internal method, recompute textual value. Only for elements that are a TEXTCONTAINER"""
+        if self.TEXTCONTAINER:
+            self.value = ""
+            for child in self:
+                if isinstance(child, AbstractElement):
+                    child.recomputevalue()
+                    self.value += child.value
+                elif isstring(child):
+                    self.value += child
 
     def replace(self, child, *args, **kwargs):
         """Appends a child element like ``append()``, but replaces any existing child element of the same type and set. If no such child element exists, this will act the same as append()
@@ -1014,6 +1025,10 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             replace = Class.findreplacables(self,set,**kwargs)
+        elif self.TEXTCONTAINER and isstring(child):
+            #replace will replace ALL text content, removing text markup along the way!
+            self.data = []
+            return self.append(child, *args,**kwargs)
         else:
             Class = child.__class__
             kwargs['instance'] = child
@@ -1040,7 +1055,9 @@ class AbstractElement(object):
             else:
                 #remove old version competely
                 self.remove(replace[0])
-            return self.append(child, *args, **kwargs)
+            e = self.append(child, *args, **kwargs)
+            self.recomputevalue()
+            return e
 
     def ancestors(self, Class=None):
         """Generator yielding all ancestors of this element, effectively back-tracing its path to the root element."""
@@ -1577,6 +1594,12 @@ class Description(AbstractElement):
         return Description(doc, **kwargs)
 
 
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+
 class AllowCorrections(object):
     def correct(self, **kwargs):
         """Apply a correction (TODO: documentation to be written still)"""
@@ -2043,6 +2066,7 @@ class TextMarkupCorrection(AbstractTextMarkup):
         super(TextMarkupCorrection,self).__init__(doc, *args, **kwargs)
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        if not attribs: attribs = {}
         if self.original:
             attribs['original'] = self.original
         return super(TextMarkupCorrection,self).xml(attribs,elements, skipchildren)
@@ -2066,7 +2090,7 @@ class TextMarkupCorrection(AbstractTextMarkup):
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
         if not extraattribs: extraattribs = []
         extraattribs.append( E.optional(E.attribute(name='original' )))
-        return super(TextMarkupError, cls).relaxng(includechildren, extraattribs, extraelements)
+        return super(TextMarkupCorrection, cls).relaxng(includechildren, extraattribs, extraelements)
 
 
 class TextMarkupError(AbstractTextMarkup):
@@ -2268,17 +2292,19 @@ class TextContent(AbstractElement):
         if self.parent and self.ref:
             attribs['{' + NSFOLIA + '}ref'] = self.ref.id
 
-
-        if self.cls != 'current' and not (self.cls == 'original' and any( isinstance(x, Original) for x in self.ancestors() )  ):
-            attribs['{' + NSFOLIA + '}class'] = self.cls
-        else:
-            if '{' + NSFOLIA + '}class' in attribs:
-                del attribs['{' + NSFOLIA + '}class']
-
-
+        #if self.cls != 'current' and not (self.cls == 'original' and any( isinstance(x, Original) for x in self.ancestors() )  ):
+        #    attribs['{' + NSFOLIA + '}class'] = self.cls
+        #else:
+        #    if '{' + NSFOLIA + '}class' in attribs:
+        #        del attribs['{' + NSFOLIA + '}class']
         #return E.t(self.value, **attribs)
-        return super(TextContent,self).xml(attribs,elements,skipchildren)
 
+        e = super(TextContent,self).xml(attribs,elements,skipchildren)
+        if '{' + NSFOLIA + '}class' in e.attrib and e.attrib['{' + NSFOLIA + '}class'] == "current":
+            #delete 'class=current'
+            del e.attrib['{' + NSFOLIA + '}class']
+
+        return e
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -4720,7 +4746,10 @@ class Document(object):
                 try:
                     self.id = node.attrib['id']
                 except KeyError:
-                    raise Exception("D-Coi Document has no ID!")
+                    try:
+                        self.id = node.attrib['XMLid']
+                    except KeyError:
+                        raise Exception("D-Coi Document has no ID!")
             for subnode in node:
                 if subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
                     self.metadatatype = MetaDataType.IMDI
@@ -5061,12 +5090,13 @@ class ClassDefinition(AbstractDefinition):
         return ClassDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type, label, constraints)
 
 class SubsetDefinition(AbstractDefinition):
-    def __init__(self, id, type, classes = [], subsets = []):
+    def __init__(self, id, type, classes = [], constraints = []):
         self.id = id
         self.type = type
         self.classes = classes
         self.constraints = constraints
 
+    @classmethod
     def parsexml(Class, node, constraintindex= {}):
         global NSFOLIA
         assert node.tag == '{' + NSFOLIA + '}subset'
