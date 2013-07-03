@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.10.0'
-LIBVERSION = '0.10.0.40' #== FoLiA version + library revision
+LIBVERSION = '0.10.0.41' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -149,11 +149,20 @@ class ModeError(Exception):
 
 #There is a leak in lxml :( , specialise file handler to replace xml:id to id, ugly hack (especially for Python2)
 if sys.version < '3':
-    if hasattr(io,'FileIO'):
+    if 1 == 2 and hasattr(io,'FileIO'): #DISABLED
         #Python 2.6 with io, 2.7
         class BypassLeakFile(io.FileIO):
             def read(self,n=0):
-                s = unicode(super(BypassLeakFile,self).read(n),'utf-8')
+                try:
+                    s = unicode(super(BypassLeakFile,self).read(n),'utf-8')
+                except UnicodeDecodeError as e:
+                    byte = str(e).split()[5]
+                    position = int(str(e).split()[8].strip(':'))
+                    self.seek(0)
+                    s = super(BypassLeakFile,self).read(position)
+                    linenum = s.count("\n") + 1
+                    print("In line " + str(linenum) +" : ... ", repr(s[-25:]),file=stderr)
+                    raise e
                 return s.replace('xml:id','id').encode('utf-8')
 
             def readline(self):
@@ -5391,10 +5400,10 @@ class Reader(object):
             yield x
 
     def openstream(self, filename):
-        if self.bypassleak:
+        if sys.version < '3' or not self.bypassleak:
+            self.stream = io.open(filename,'rb') #no bypassleak!!!!
+        elif self.bypassleak:
             self.stream = BypassLeakFile(filename,'rb')
-        else:
-            self.stream = io.open(filename,'rb')
 
     def initdoc(self):
         self.doc = None
