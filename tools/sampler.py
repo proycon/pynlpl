@@ -14,13 +14,13 @@
 # files, such as a parallel corpus) into a train, test and development
 # set.
 #
-###############################################################   
+###############################################################
 
 
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
-from __future__ import absolute_import  
+from __future__ import absolute_import
 
 import getopt
 import sys
@@ -29,14 +29,14 @@ from pynlpl.evaluation import filesampler
 
 
 def usage():
-    print >>sys.stderr,"sampler.py [ -t testsetsize ] [ -d devsetsize ] file1 (file2) etc.."
-    print >>sys.stderr,"\tNote: testsetsize and devsetsize may be fractions (< 1) or absolute (>=1)"
+    print("sampler.py [ -t testsetsize ] [ -d devsetsize ] file1 (file2) etc..",file=sys.stderr)
+    print("\tNote: testsetsize and devsetsize may be fractions (< 1) or absolute (>=1)",file=sys.stderr)
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "ht:d:", ["help"])
 except getopt.GetoptError as err:
     # print help information and exit:
-    print(str(err))
+    print(str(err),file=sys.stderr)
     usage()
     sys.exit(2)
 
