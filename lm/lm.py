@@ -153,7 +153,7 @@ class ARPALanguageModel(object):
         self.base_e = base_e
         self.debug = False
 
-        if encoder == None:
+        if encoder is None:
             self.encoder = lambda x: x
         else:
             self.encoder = encoder
@@ -179,7 +179,7 @@ class ARPALanguageModel(object):
                             logprob = float(fields[0]) * math.log(10)   # * log(10) does log10 to log_e conversion
                         else:
                             logprob = float(fields[0])
-                        ngram = encoder(tuple(fields[1].split()))
+                        ngram = self.encoder(tuple(fields[1].split()))
                         self.ngrams[ngram] = logprob
                         if len(fields) > 2:
                             if base_e:
