@@ -146,11 +146,12 @@ class SimpleLanguageModel:
 class ARPALanguageModel(object):
     """Full back-off language model, loaded from file in ARPA format. This class does not build the model but allows you to use a pre-computed one. You can use the tool ngram-count from for instance SRILM to actually build the model. """
 
-    def __init__(self, filename, encoding = 'utf-8', encoder=None, base_e=True, debug=False):
+    def __init__(self, filename, encoding = 'utf-8', encoder=None, base_e=True, dounknown=True,debug=False):
         self.ngrams = {}
         self.backoff = {}
         self.total = {}
         self.base_e = base_e
+        self.dounknown = dounknown
         self.debug = False
 
         if encoder is None:
@@ -222,10 +223,15 @@ class ARPALanguageModel(object):
         try:
             return self.ngrams[lookup]
         except KeyError:
-
             #not found, back off
             if not history:
-                raise KeyError("Word " + str(word) + " not found. And no history specified")
+                if self.dounknown:
+                    try:
+                        return self.ngrams[('<unk>',)]
+                    except KeyError:
+                        raise KeyError("Word " + str(word) + " not found. And no history specified and model has no <unk>")
+                else:
+                    raise KeyError("Word " + str(word) + " not found. And no history specified")
 
             try:
                 backoffweight = self.backoff[history]
