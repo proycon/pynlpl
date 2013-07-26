@@ -163,7 +163,7 @@ class ARPALanguageModel(object):
                 line = line.strip()
                 if line == '\\data\\':
                     order = 0
-                elif line[0] == '\\' and line[-1] == ':':
+                elif line and line[0] == '\\' and line[-1] == ':':
                     for i in range(1,10):
                         if line == '\\' + str(i) + '-grams:':
                             order = i
