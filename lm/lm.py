@@ -158,7 +158,7 @@ class ARPALanguageModel(object):
         else:
             self.encoder = encoder
 
-        with io.open(filename,'r',encoding) as f:
+        with io.open(filename,'r',encoding=encoding) as f:
             for line in f:
                 line = line.strip()
                 if line == '\\data\\':
