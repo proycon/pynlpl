@@ -209,6 +209,8 @@ class ARPALanguageModel(object):
         return result
 
     def scoreword(self, word, history=None):
+        if isinstance(word, str) or (sys.version < '3' and isinstance(word, unicode)):
+            word = (word,)
         if history:
             lookup = history + word
         else:
