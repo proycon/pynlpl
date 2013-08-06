@@ -289,6 +289,7 @@ class Tokenizer(object):
         self.onesentenceperline = onesentenceperline
 
     def __iter__(self):
+        buffer = ""
         for line in self.stream:
             line = line.strip()
             if line:
@@ -301,6 +302,7 @@ class Tokenizer(object):
                 else:
                     for token in tokenize(buffer, self.regexps):
                         yield token
+                buffer = ""
 
         if buffer:
             if self.splitsentences:
