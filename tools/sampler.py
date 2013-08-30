@@ -34,7 +34,7 @@ def usage():
     print("\tNote: testsetsize and devsetsize may be fractions (< 1) or absolute (>=1)",file=sys.stderr)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "ht:d:", ["help"])
+    opts, args = getopt.getopt(sys.argv[1:], "ht:d:S:", ["help"])
 except getopt.GetoptError as err:
     # print help information and exit:
     print(str(err),file=sys.stderr)
