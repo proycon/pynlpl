@@ -25,11 +25,12 @@ from __future__ import absolute_import
 import getopt
 import sys
 
+import random
 from pynlpl.evaluation import filesampler
 
 
 def usage():
-    print("sampler.py [ -t testsetsize ] [ -d devsetsize ] file1 (file2) etc..",file=sys.stderr)
+    print("sampler.py [ -t testsetsize ] [ -d devsetsize ] [ -S seed] file1 (file2) etc..",file=sys.stderr)
     print("\tNote: testsetsize and devsetsize may be fractions (< 1) or absolute (>=1)",file=sys.stderr)
 
 try:
@@ -61,6 +62,8 @@ for o, a in opts:
             except:
                 print("ERROR: Invalid devsetsize",file=sys.stderr)
                 sys.exit(2)
+    elif o == "-S":
+        random.seed(int(a))
     elif o == "-h":
         usage()
         sys.exit(0)
