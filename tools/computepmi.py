@@ -92,6 +92,10 @@ def main():
 
     if args.sorted:
         print("Outputting " + str(len(output)) + " pairs",file=sys.stderr)
+        if args.adjacency:
+            print("#WORD\tWORD2\tSCORE\tJOINTCOUNT\tBIGRAMCOUNT\tBIGRAMRATIO")
+        else:
+            print("#WORD\tWORD2\tSCORE\tJOINTCOUNT\tBIGRAMCOUNT\tBIGRAMRATIO")
         if args.npmi:
             sign = 1
         else:
