@@ -31,13 +31,16 @@ if sys.version > '3':
     entry_points = {    'console_scripts': [
             'pynlpl-classencoder = pynlpl.tools.classencoder:main',
             'pynlpl-classdecoder = pynlpl.tools.classdecoder:main',
+            'pynlpl-computepmi = pynlpl.tools.computepmi:main',
+            'pynlpl-sampler = pynlpl.tools.sampler:main',
+            'pynlpl-makefreqlist = pynlpl.tools.freqlist:main',
         ]
     }
 
 
 setup(
     name = "PyNLPl",
-    version = "0.6.5.3", #edit version in __init__.py as well!
+    version = "0.6.6", #edit version in __init__.py as well!
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
     description = ("PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl can be used for example the computation of n-grams, frequency lists and distributions, language models. There are also more complex data types, such as Priority Queues, and search algorithms, such as Beam Search."),
