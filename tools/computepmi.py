@@ -96,11 +96,13 @@ def main():
     del freqlist
 
     if args.sorted:
+        print("Outputting...",file=sys.stderr)
         for word,word2,score,jointcount,adjratio in sorted(output, key=lambda x: -1 * x[2]):
             if adjratio:
                 print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + str(adjratio))
             else:
                 print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount))
+
 
 
 if __name__ == '__main__':
