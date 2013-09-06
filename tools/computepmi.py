@@ -59,8 +59,13 @@ def main():
         print("Computing mutual information @" + str(i+1) + "/" + str(l) + ": \"" + word + "\" , co-occurs with " + str(len(coocdata)) + " words",file=sys.stderr)
         for word2, jointcount in coocdata.items():
             if jointcount> args.threshold:
-                if args.discountadjacency and word in adjacent and word2 in adjacent[word]:
-                    discount = adjacent[word][word2]
+                if args.adjacency and word in adjacent and word2 in adjacent[word]:
+                    adjcount = adjacent[word][word2]
+                else:
+                    adjcount = 0
+
+                if args.discountadjacency:
+                    discount = adjcount
                 else:
                     discount = 0
 
@@ -70,20 +75,20 @@ def main():
                     score = log( (jointcount-discount) / (count[word] * count[word2])) / -log(jointcount-discount)
 
                 if args.sorted:
-                    outputdata = (word,word2,score, jointcount, discount / jointcount if args.adjacency else None)
+                    outputdata = (word,word2,score, jointcount, adjcount, adjcount / jointcount if args.adjacency else None)
                     output.append(outputdata)
                 else:
                     if args.adjacency:
-                        print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + str(discount / jointcount))
+                        print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + str(adjcount) + "\t" + str(adjcount / jointcount))
                     else:
                         print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount))
 
 
     if args.sorted:
         print("Outputting " + str(len(output)) + " pairs",file=sys.stderr)
-        for word,word2,score,jointcount,adjratio in sorted(output, key=lambda x: -1 * x[2]):
-            if adjratio:
-                print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + str(adjratio))
+        for word,word2,score,jointcount,adjcount, adjratio in sorted(output, key=lambda x: -1 * x[2]):
+            if args.adjacency:
+                print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + adjcount + "\t" + str(adjratio) )
             else:
                 print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount))
 
