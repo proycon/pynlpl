@@ -51,7 +51,7 @@ def main():
     l = len(index)
     adjacent = defaultdict(lambda: defaultdict(int))
     if args.adjacency:
-        for i, (pos, word) in enumerate(index):
+        for i, word in enumerate(index):
             print("Computing adjacency @" + str(i+1) + "/" + str(l),file=sys.stderr)
             for sentence in index[word]:
                 for pos2, word2 in reverseindex[sentence]:
