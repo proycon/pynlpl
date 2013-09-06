@@ -60,7 +60,7 @@ def main():
                         score = npmi(index[(pos,word)], index[(pos2,word2)])
                     if not (score is None):
                         if args.sorted:
-                            output.append(word,word2,score)
+                            output.append((word,word2,score))
                         else:
                             print(word + "\t" + word2 + "\t" + str(score))
 
