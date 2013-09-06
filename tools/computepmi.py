@@ -34,8 +34,9 @@ def main():
     if not args.pmi and not args.npmi:
         args.pmi = True
 
-    index = defaultdict(set)
+    index = defaultdict(list)
     reverseindex = defaultdict(set)
+    s_index = defaultdict(set)
 
     f = open(args.inputtext,'r',encoding='utf-8')
     for i, line in enumerate(f):
@@ -44,7 +45,8 @@ def main():
         if line:
             for pos, word in enumerate(line.split()):
                 if word:
-                    index[word].add(sentence)
+                    index[word].append( (sentence,pos) )
+                    s_index[word].add( sentence )
                     reverseindex[sentence].add((pos,word))
     f.close()
 
@@ -61,32 +63,30 @@ def main():
     output = []
     #compute co-occurence
     for i, word in enumerate(index):
-        print("Computing mutual information @" + str(i+1) + "/" + str(l),file=sys.stderr)
-        for sentence in index[word]:
-            for pos, refword in reverseindex[sentence]: #needed to get associated position
-                if word == refword:
-                    for pos2, word2 in reverseindex[sentence]:
-                        if args.unidirectional and pos2 < pos:
-                            continue
-                        if (pos != pos2) or (word != word2):
-                            adjcount = 0
+        print("Computing mutual information @" + str(i+1) + "/" + str(l) + ": \"" + word + "\" ... occurs in " + len(index[word]) + " sentences",file=sys.stderr)
+        for sentence, pos in index[word]:
+            for pos2, word2 in reverseindex[sentence]:
+                if args.unidirectional and pos2 < pos:
+                    continue
+                if (pos != pos2) or (word != word2):
+                    adjcount = 0
+                    if args.adjacency:
+                        if word in adjacent and word2 in adjacent[word]:
+                            adjcount = adjacent[word][word2]
+                    if args.pmi:
+                        score, jointcount = pmi(s_index[word], s_index[word2], adjcount if args.discountadjacency else 0 )
+                    elif args.npmi:
+                        score, jointcount = npmi(s_index[word], s_index[word2], adjcount if args.discountadjacency else 0 )
+                    if not (score is None) and jointcount >= args.threshold:
+                        if args.sorted:
+                            outputdata = (word,word2,score, jointcount, adjcount / jointcount if args.adjacency else None)
+                            output.append(outputdata)
+                        else:
                             if args.adjacency:
-                                if word in adjacent and word2 in adjacent[word]:
-                                    adjcount = adjacent[word][word2]
-                            if args.pmi:
-                                score, jointcount = pmi(index[word], index[word2], adjcount if args.discountadjacency else 0 )
-                            elif args.npmi:
-                                score, jointcount = npmi(index[word], index[word2], adjcount if args.discountadjacency else 0 )
-                            if not (score is None) and jointcount >= args.threshold:
-                                if args.sorted:
-                                    outputdata = (word,word2,score, jointcount, adjcount / jointcount if args.adjacency else None)
-                                    output.append(outputdata)
-                                else:
-                                    if args.adjacency:
-                                        print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + str(adjcount / jointcount))
-                                    else:
-                                        print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount))
-                    break #prevent duplicates if the same word occurs multiple times in a sentence
+                                print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + str(adjcount / jointcount))
+                            else:
+                                print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount))
+            break #prevent duplicates if the same word occurs multiple times in a sentence
 
     del index
     del reverseindex
