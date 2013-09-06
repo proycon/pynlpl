@@ -63,7 +63,7 @@ def main():
     output = []
     #compute co-occurence
     for i, word in enumerate(index):
-        print("Computing mutual information @" + str(i+1) + "/" + str(l) + ": \"" + word + "\" ... occurs in " + len(index[word]) + " sentences",file=sys.stderr)
+        print("Computing mutual information @" + str(i+1) + "/" + str(l) + ": \"" + word + "\" ... occurs in " + str(len(index[word])) + " sentences",file=sys.stderr)
         for sentence, pos in index[word]:
             for pos2, word2 in reverseindex[sentence]:
                 if args.unidirectional and pos2 < pos:
