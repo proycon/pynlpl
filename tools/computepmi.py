@@ -38,6 +38,7 @@ def main():
     count = defaultdict(int)
     cooc = defaultdict(lambda: defaultdict(int))
     adjacent = defaultdict(lambda: defaultdict(int))
+    total = 0
 
     f = open(args.inputtext,'r',encoding='utf-8')
     for i, line in enumerate(f):
@@ -47,6 +48,7 @@ def main():
             words = list(enumerate(line.split()))
             for pos, word in words:
                 count[word] += 1
+                total += 1
                 for pos2, word2 in words:
                     if pos2 > pos:
                         cooc[word][word2] += 1
@@ -72,9 +74,9 @@ def main():
                     discount = 0
 
                 if args.pmi:
-                    score = log( (jointcount-discount) / (count[word] * count[word2]))
+                    score = log( ((jointcount-discount)/total)  / ((count[word]/total) * (count[word2]/total)))
                 elif args.npmi:
-                    score = log( (jointcount-discount) / (count[word] * count[word2])) / -log(jointcount-discount)
+                    score = log( ((jointcount-discount)/total) / ((count[word]/total) * (count[word2]/total))) / -log((jointcount-discount)/total)
                 elif args.jaccard or args.dice:
                     score = (jointcount-discount) / (count[word] + count[word2] - (jointcount - discount) )
                     if args.dice:
