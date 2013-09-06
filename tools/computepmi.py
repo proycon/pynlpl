@@ -88,7 +88,7 @@ def main():
         print("Outputting " + str(len(output)) + " pairs",file=sys.stderr)
         for word,word2,score,jointcount,adjcount, adjratio in sorted(output, key=lambda x: -1 * x[2]):
             if args.adjacency:
-                print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + adjcount + "\t" + str(adjratio) )
+                print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + str(adjcount) + "\t" + str(adjratio) )
             else:
                 print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount))
 
