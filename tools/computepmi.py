@@ -86,19 +86,19 @@ def main():
                                 print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + str(adjcount / jointcount))
                             else:
                                 print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount))
-            break #prevent duplicates if the same word occurs multiple times in a sentence
 
     del index
     del reverseindex
     del adjacent
 
     if args.sorted:
-        print("Outputting...",file=sys.stderr)
+        print("Outputting " + len(output) + " pairs",file=sys.stderr)
         for word,word2,score,jointcount,adjratio in sorted(output, key=lambda x: -1 * x[2]):
             if adjratio:
                 print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + str(adjratio))
             else:
                 print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount))
+
 
 
 
