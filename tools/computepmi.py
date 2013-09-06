@@ -67,7 +67,7 @@ def main():
                             print(word + "\t" + word2 + "\t" + str(score))
 
     if args.sorted:
-        for word,word2,score in sorted(output, key=lambda x: x[2]):
+        for word,word2,score in sorted(output, key=lambda x: -1 * x[2]):
             print(word + "\t" + word2 + "\t" + str(score))
 
 
