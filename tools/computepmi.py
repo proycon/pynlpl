@@ -53,6 +53,8 @@ def main():
         print("Computing cooc @" + str(i+1) + "/" + str(l),file=sys.stderr)
         for sentence in index[(pos,word)]:
             for pos2, word2 in reverseindex[sentence]:
+                if args.unidirectional and pos2 < pos:
+                    continue
                 if (pos != pos2) or (word != word2):
                     if args.pmi:
                         score = pmi(index[(pos,word)], index[(pos2,word2)])
