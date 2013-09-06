@@ -24,7 +24,7 @@ def main():
     parser.add_argument('-f','--inputtext', type=str,help="Input file (plaintext, tokenised, utf-8, one sentence per line)", action='store',default="",required=True)
     parser.add_argument('-u','--unidirectional', help="Compute unidirectionally, i.e. the left word will always occur before the right word", action='store_true',default=False)
     parser.add_argument('-s','--sorted', help="Output sorted by co-occurrence score", action='store_true',default=False)
-    parser.add_argument('-t','--threshold', help="Occurrence threshold, do not consider words occuring less than this", type="int", action='store',default=1)
+    parser.add_argument('-t','--threshold', help="Occurrence threshold, do not consider words occuring less than this", type=int, action='store',default=1)
     parser.add_argument('-a','--adjacency', help="Compute the adjacency fraction (how many co-occurrence are immediate bigrams)", action='store_true',default=False)
     parser.add_argument('-A','--discountadjacency', help="Do not take immediately adjacent fragments (bigrams) into account when computing mutual information (requires -a)", action='store_true',default=False)
     parser.add_argument('--pmi',help="Compute pointwise mutual information", action='store_true',default=False)
