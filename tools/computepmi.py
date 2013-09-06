@@ -28,9 +28,11 @@ def main():
     parser.add_argument('-A','--discountadjacency', help="Do not take immediately adjacent fragments (bigrams) into account when computing mutual information (requires -a)", action='store_true',default=False)
     parser.add_argument('--pmi',help="Compute pointwise mutual information", action='store_true',default=False)
     parser.add_argument('--npmi',help="Compute normalised pointwise mutual information", action='store_true',default=False)
+    parser.add_argument('--jaccard',help="Compute jaccard similarity coefficient", action='store_true',default=False)
+    parser.add_argument('--dice',help="Compute dice coefficient", action='store_true',default=False)
 
     args = parser.parse_args()
-    if not args.pmi and not args.npmi:
+    if not args.pmi and not args.npmi and not args.jaccard and not args.dice:
         args.pmi = True
 
     count = defaultdict(int)
@@ -71,8 +73,12 @@ def main():
 
                 if args.pmi:
                     score = log( (jointcount-discount) / (count[word] * count[word2]))
-                if args.npmi:
+                elif args.npmi:
                     score = log( (jointcount-discount) / (count[word] * count[word2])) / -log(jointcount-discount)
+                elif args.jaccard or args.dice:
+                    score = (jointcount-discount) / (count[word] + count[word2] - (jointcount - discount) )
+                    if args.dice:
+                        score = 2*score / (1+score)
 
                 if args.sorted:
                     outputdata = (word,word2,score, jointcount, adjcount, adjcount / jointcount if args.adjacency else None)
@@ -86,7 +92,11 @@ def main():
 
     if args.sorted:
         print("Outputting " + str(len(output)) + " pairs",file=sys.stderr)
-        for word,word2,score,jointcount,adjcount, adjratio in sorted(output, key=lambda x: -1 * x[2]):
+        if args.npmi:
+            sign = 1
+        else:
+            sign = -1
+        for word,word2,score,jointcount,adjcount, adjratio in sorted(output, key=lambda x: sign * x[2]):
             if args.adjacency:
                 print(word + "\t" + word2 + "\t" + str(score) + "\t" + str(jointcount) + "\t" + str(adjcount) + "\t" + str(adjratio) )
             else:
