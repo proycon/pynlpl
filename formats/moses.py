@@ -144,6 +144,12 @@ class PhraseTable(object):
         for phrase, targets in self.phrasetable.items():
             yield phrase, targets
 
+    def __len__(self):
+        return len(self.phrasetable)
+
+    def __bool__(self):
+        return bool(self.phrasetable)
+
     def __getitem__(self, phrase): #same as translations
         """Return a list of (translation, scores) tuples"""
         if self.sourceencoder: phrase = self.sourceencoder(phrase)
