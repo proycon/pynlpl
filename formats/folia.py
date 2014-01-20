@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.10.0'
-LIBVERSION = '0.10.0.41' #== FoLiA version + library revision
+LIBVERSION = '0.10.0.42' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -1205,6 +1205,48 @@ class AbstractElement(object):
                 e.append(e2)
         return e
 
+
+    def json(self, attribs=None):
+        jsonnode = {}
+
+        jsonnode['type'] = self.XMLTAG
+        if self.id:
+            jsonnode['id'] = self.id
+        if self.set:
+            jsonnode['set'] = self.id
+        if self.cls:
+            jsonnode['class'] = self.cls
+        if self.annotator:
+            jsonnode['annotator'] = self.annotator
+        if self.annotatortype:
+            if self.annotatortype == AnnotatorType.AUTO:
+                jsonnode['annotatortype'] = "auto"
+            elif self.annotatortype == AnnotatorType.MANUAL:
+                jsonnode['annotatortype'] = "manual"
+        if self.confidence:
+            jsonnode['confidence'] = self.confidence
+        if self.n:
+            jsonnode['n'] = self.n
+        if self.auth:
+            jsonnode['auth'] = self.auth
+        if self.datetime:
+            jsonnode['datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
+
+        jsonnode['children'] = []
+        for child in self:
+            if self.TEXTCONTAINER and isstring(child):
+                jsonnode['text'] = child
+            else:
+                jsonnode['children'].append(child)
+
+        if attribs:
+            for attrib in attribs:
+                jsonnode[attrib] = attribs
+
+        return jsonnode
+
+
+
     def xmlstring(self, pretty_print=False):
         """Serialises this FoLiA element to XML, returns a (unicode) string with XML representation for this element and all its children."""
         global LXE
@@ -1594,6 +1636,13 @@ class Description(AbstractElement):
             attribs = {}
 
         return E.desc(self.value, **attribs)
+
+    def json(self,attribs =None):
+        jsonnode = {'type': self.XMLTAG, 'value': self.value}
+        if not attribs:
+            for attrib in attribs:
+                jsonnode[attrib] = attrib
+        return jsonnode
 
     @classmethod
     def parsexml(Class, node, doc):
@@ -2031,6 +2080,12 @@ class AbstractTextMarkup(AbstractAnnotation):
             attribs['id'] = self.idref
         return super(AbstractTextMarkup,self).xml(attribs,elements, skipchildren)
 
+    def json(self,attribs =None):
+        if not attribs: attribs = {}
+        if self.idref:
+            attribs['id'] = self.idref
+        return super(AbstractTextMarkup,self).json(attribs)
+
     @classmethod
     def parsexml(Class, node, doc):
         global NSFOLIA
@@ -2079,6 +2134,12 @@ class TextMarkupCorrection(AbstractTextMarkup):
         if self.original:
             attribs['original'] = self.original
         return super(TextMarkupCorrection,self).xml(attribs,elements, skipchildren)
+
+    def json(self,attribs =None):
+        if not attribs: attribs = {}
+        if self.original:
+            attribs['original'] = self.original
+        return super(TextMarkupCorrection,self).json(attribs)
 
     @classmethod
     def parsexml(Class, node, doc):
@@ -2315,6 +2376,15 @@ class TextContent(AbstractElement):
 
         return e
 
+    def json(self, attribs =None):
+        attribs = {}
+        if not self.offset is None:
+            attribs['offset'] = self.offset
+        if self.parent and self.ref:
+            attribs['ref'] = self.ref.id
+        return super(TextContent,self).json(attribs)
+
+
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
         global NSFOLIA
@@ -2364,6 +2434,14 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
             attribs = {}
 
         return E.content(self.value, **attribs)
+
+    def json(self,attribs =None):
+        jsonnode = {'type': self.XMLTAG, 'value': self.value}
+        if not attribs:
+            for attrib in attribs:
+                jsonnode[attrib] = attrib
+        return jsonnode
+
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -2572,6 +2650,11 @@ class Word(AbstractStructureElement, AllowCorrections):
             attribs['space'] = 'no'
         return super(Word,self).xml(attribs,elements, False)
 
+    def json(self,attribs =None):
+        if not attribs: attribs = {}
+        if not self.space:
+            attribs['space'] = 'no'
+        return super(Word,self).json(attribs)
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -2705,6 +2788,12 @@ class Feature(AbstractElement):
         attribs['{' + NSFOLIA + '}class'] =  self.cls
         return makeelement(E,'{' + NSFOLIA + '}' + self.XMLTAG, **attribs)
 
+    def json(self,attribs=None):
+        jsonnode= {'type': self.XMLTAG}
+        jsonnode['subset'] = self.subset
+        jsonnode['class'] = self.cls
+        return jsonnode
+
     @classmethod
     def relaxng(cls, includechildren=True, extraattribs = None, extraelements=None):
         global NSFOLIA
@@ -2758,6 +2847,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
             elif not (isinstance(child, Feature) and child.SUBSET): #Don't add pre-defined features, they are already added as attributes
                 e.append( child.xml() )
         return e
+
 
 
     def append(self, child, *args, **kwargs):
@@ -3013,6 +3103,9 @@ class AlignReference(AbstractElement):
 
         return E.aref( **attribs)
 
+    def json(self, attribs=None):
+        return {} #alignment not supported yet, TODO
+
 class Alignment(AbstractElement):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = Attrib.ALL
@@ -3050,6 +3143,9 @@ class Alignment(AbstractElement):
             attribs['{http://www.w3.org/1999/xlink}href'] = self.href
             attribs['{http://www.w3.org/1999/xlink}type'] = 'simple'
         return super(Alignment,self).xml(attribs,elements, False)
+
+    def json(self, attribs =None):
+        return {} #alignment not supported yet, TODO
 
     def resolve(self):
         l = []
@@ -3800,6 +3896,12 @@ class Figure(AbstractStructureElement):
             attribs['{' + NSFOLIA + '}src'] = self.src
         return super(Figure, self).xml(attribs, elements, skipchildren)
 
+    def json(self, attribs = None):
+        if self.src:
+            if not attribs: attribs = {}
+            attribs['src'] = self.src
+        return super(Figure, self).json(attribs)
+
     def caption(self):
         try:
             caption = self.select(Caption)[0]
@@ -4388,6 +4490,42 @@ class Document(object):
                 raise Exception("Invalid annotation type")
         return l
 
+    def jsondeclarations(self):
+        l = []
+        for annotationtype, set in self.annotations:
+            label = None
+            #Find the 'label' for the declarations dynamically (aka: AnnotationType --> String)
+            for key, value in vars(AnnotationType).items():
+                if value == annotationtype:
+                    label = key
+                    break
+            #gather attribs
+
+            if annotationtype == AnnotationType.TEXT and set == 'undefined' and len(self.annotationdefaults[annotationtype][set]) == 0:
+                #this is the implicit TextContent declaration, no need to output it explicitly
+                continue
+
+            jsonnode = {'annotationtype': label.lower()}
+            if set and set != 'undefined':
+                jsonnode['set'] = set
+
+
+            for key, value in self.annotationdefaults[annotationtype][set].items():
+                if key == 'annotatortype':
+                    if value == AnnotatorType.MANUAL:
+                        jsonnode[key] = 'manual'
+                    elif value == AnnotatorType.AUTO:
+                        jsonnode[key] = 'auto'
+                elif key == 'datetime':
+                     jsonnode[key] = value.strftime("%Y-%m-%dT%H:%M:%S") #proper iso-formatting
+                elif value:
+                    jsonnode[key] = value
+            if label:
+                l.append( jsonnode  )
+            else:
+                raise Exception("Invalid annotation type")
+        return l
+
     def xml(self):
         global LIBVERSION, FOLIAVERSION
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
@@ -4427,6 +4565,18 @@ class Document(object):
         for text in self.data:
             e.append(text.xml())
         return e
+
+    def json(self):
+        jsondoc = {'id': self.id, 'children': [], 'declarations': self.jsondeclarations() }
+        if self.version:
+            jsondoc['version'] = self.version
+        else:
+            jsondoc['version'] = FOLIAVERSION
+        jsondoc['generator'] = 'pynlpl.formats.folia-v' + LIBVERSION
+
+        for text in self.data:
+            jsondoc['children'].append(text.json())
+        return jsondoc
 
     def xmlmetadata(self):
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
