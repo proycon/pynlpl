@@ -1237,7 +1237,7 @@ class AbstractElement(object):
             if self.TEXTCONTAINER and isstring(child):
                 jsonnode['text'] = child #TODO: won't work in text <x/> text scenarios
             else:
-                jsonnode['children'].append(child)
+                jsonnode['children'].append(child.json())
 
         if attribs:
             for attrib in attribs:
