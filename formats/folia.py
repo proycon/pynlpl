@@ -1639,7 +1639,7 @@ class Description(AbstractElement):
 
     def json(self,attribs =None):
         jsonnode = {'type': self.XMLTAG, 'value': self.value}
-        if not attribs:
+        if attribs:
             for attrib in attribs:
                 jsonnode[attrib] = attrib
         return jsonnode
@@ -2437,7 +2437,7 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
 
     def json(self,attribs =None):
         jsonnode = {'type': self.XMLTAG, 'value': self.value}
-        if not attribs:
+        if attribs:
             for attrib in attribs:
                 jsonnode[attrib] = attrib
         return jsonnode
