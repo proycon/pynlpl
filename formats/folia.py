@@ -5658,6 +5658,7 @@ def validate(filename,schema=None,deep=False):
 XML2CLASS = {}
 ANNOTATIONTYPE2CLASS = {}
 ANNOTATIONTYPE2XML = {}
+ANNOTATIONTYPE2LAYERCLASS = {}
 for c in list(vars().values()):
     try:
         if c.XMLTAG:
@@ -5665,6 +5666,8 @@ for c in list(vars().values()):
             if c.ROOTELEMENT:
                 ANNOTATIONTYPE2CLASS[c.ANNOTATIONTYPE] = c
                 ANNOTATIONTYPE2XML[c.ANNOTATIONTYPE] = c.XMLTAG
+            if isinstance(c,AbstractAnnotationLayer):
+                ANNOTATIONTYPE2LAYERCLASS[c.ANNOTATIONTYPE] = c
     except:
         continue
 
