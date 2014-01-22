@@ -1004,6 +1004,7 @@ class AbstractElement(object):
         return parent.select(Class,set,False)
 
 
+
     def recomputevalue(self):
         """Internal method, recompute textual value. Only for elements that are a TEXTCONTAINER"""
         if self.TEXTCONTAINER:
@@ -1027,6 +1028,7 @@ class AbstractElement(object):
 
         if 'set' in kwargs:
             set = kwargs['set']
+            del kwargs['set']
         else:
             try:
                 set = child.set
@@ -1035,7 +1037,7 @@ class AbstractElement(object):
 
         if inspect.isclass(child):
             Class = child
-            replace = Class.findreplacables(self,set,**kwargs)
+            replace = Class.findreplacables(self, set, **kwargs)
         elif self.TEXTCONTAINER and isstring(child):
             #replace will replace ALL text content, removing text markup along the way!
             self.data = []
@@ -1046,7 +1048,7 @@ class AbstractElement(object):
             replace = Class.findreplacables(self,set,**kwargs)
             del kwargs['instance']
 
-
+        kwargs['set'] = set #was deleted temporarily for findreplacables
 
         if len(replace) == 0:
             #nothing to replace, simply call append
