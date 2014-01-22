@@ -2862,6 +2862,18 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
         else:
             return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)
 
+    def hasannotation(self,Class,set=None):
+        """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
+        l = self.select(Class,set,True,defaultignorelist_annotations)
+        return len(l)
+
+    def annotation(self, type, set=None):
+        """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
+        l = self.select(type,set,True,defaultignorelist_annotations)
+        if len(l) >= 1:
+            return l[0]
+        else:
+            raise NoSuchAnnotation()
 
     def _helper_wrefs(self, targets):
         """Internal helper function"""
