@@ -1215,7 +1215,7 @@ class AbstractElement(object):
         if self.id:
             jsonnode['id'] = self.id
         if self.set:
-            jsonnode['set'] = self.id
+            jsonnode['set'] = self.set
         if self.cls:
             jsonnode['class'] = self.cls
         if self.annotator:
@@ -2888,6 +2888,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
     OPTIONAL_ATTRIBS = (Attrib.SETONLY,)
     PRINTABLE = False
+    ROOTELEMENT = False #only annotation elements are considered
 
     def __init__(self, doc, *args, **kwargs):
         if 'set' in kwargs:
@@ -3029,6 +3030,7 @@ class AbstractCorrectionChild(AbstractElement):
     ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, String, Description, Metric)
     TEXTDELIMITER = None
     PRINTABLE = True
+    ROOTELEMENT = False
 
 class AlignReference(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
