@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.10.0'
-LIBVERSION = '0.10.0.42' #== FoLiA version + library revision
+LIBVERSION = '0.10.0.43' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -487,6 +487,8 @@ class AbstractElement(object):
     PRINTABLE = False #Is this element printable (aka, can its text method be called?)
     AUTH = True #Authoritative by default. Elements the parser should skip on normal queries are non-authoritative (such as original, alternative)
     TEXTCONTAINER = False #Text containers directly take textual content. (t is a TEXTCONTAINER)
+
+    ROOTELEMENT = True #Is this the main/root element representaive of the annotation type? Not including annotation layers
 
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document) and not doc is None:
@@ -3456,6 +3458,7 @@ class Headspan(AbstractSpanAnnotation): #generic head element
     ACCEPTED_DATA = (WordReference,Description, Feature, Alignment, Metric)
     #ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'hd'
+    ROOTELEMENT = False
 
 DependencyHead = Headspan #alias, backwards compatibility with FoLiA 0.8
 
@@ -3466,6 +3469,7 @@ class DependencyDependent(AbstractSpanAnnotation):
     ACCEPTED_DATA = (WordReference,Description, Feature, Alignment, Metric)
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'dep'
+    ROOTELEMENT = False
 
 class Dependency(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
@@ -3504,6 +3508,7 @@ class CoreferenceLink(AbstractSpanAnnotation):
     ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, ModalityFeature, TimeFeature,LevelFeature, Metric)
     ANNOTATIONTYPE = AnnotationType.COREFERENCE
     XMLTAG = 'coreferencelink'
+    ROOTELEMENT = False
 
 class CoreferenceChain(AbstractSpanAnnotation):
     """Coreference chain. Consists of coreference links."""
@@ -5649,10 +5654,15 @@ def validate(filename,schema=None,deep=False):
         doc = Document(tree=doc, deepvalidation=True)
 
 XML2CLASS = {}
+ANNOTATIONTYPE2CLASS = {}
+ANNOTATIONTYPE2XML = {}
 for c in list(vars().values()):
     try:
         if c.XMLTAG:
             XML2CLASS[c.XMLTAG] = c
+            if c.ROOTELEMENT:
+                ANNOTATIONTYPE2CLASS[c.ANNOTATIONTYPE] = c
+                ANNOTATIONTYPE2XML[c.ANNOTATIONTYPE] = c.XMLTAG
     except:
         continue
 
@@ -5660,4 +5670,3 @@ defaultignorelist = [Original,Suggestion,Alternative, AlternativeLayers]
 #default ignore list for token annotation
 defaultignorelist_annotations = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer]
 defaultignorelist_structure = [Original,Suggestion,Alternative, AlternativeLayers,AbstractAnnotationLayer]
-
