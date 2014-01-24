@@ -5329,9 +5329,9 @@ class SubsetDefinition(AbstractDefinition):
         jsonnode['constraints'] = []
         for constraint in self.constraints:
             jsonnode['constraints'].append(constraint.json())
-        jsonnode['classes'] = []
+        jsonnode['classes'] = {}
         for c in self.classes:
-            jsonnode['classes'].append(c.json())
+            jsonnode['classes'][c] = c.json()
         return jsonnode
 
 class SetDefinition(AbstractDefinition):
@@ -5387,12 +5387,12 @@ class SetDefinition(AbstractDefinition):
             jsonnode['type'] = 'closed'
         elif self.type == SetType.MIXED:
             jsonnode['type'] = 'mixed'
-        jsonnode['subsets'] = []
+        jsonnode['subsets'] = {}
         for subset in self.subsets:
-            jsonnode['subsets'].append(subset.json())
-        jsonnode['classes'] = []
+            jsonnode['subsets'][subset] = subset.json()
+        jsonnode['classes'] = {}
         for c in self.classes:
-            jsonnode['classes'].append(c.json())
+            jsonnode['classes'][c] = c.json()
         return jsonnode
 
 
