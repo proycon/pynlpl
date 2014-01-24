@@ -2044,11 +2044,15 @@ class Test8Validation(unittest.TestCase):
         """Validation - Shallow validation against automatically generated RelaxNG schema"""
         folia.validate('/tmp/foliasavetest.xml')
 
-      def test002_setdefinitions(self):
+      def test002_loadsetdefinitions(self):
         """Validation - Loading of set definitions"""
-        doc = folia.Document(file='/tmp/foliatest.xml', deepvalidation=True)
+        doc = folia.Document(file='/tmp/foliatest.xml', loadsetdefinitions=True)
         assert isinstance( doc.setdefinitions["http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"], folia.SetDefinition)
 
+      def test003_deepvalidation(self):
+        """Validation - Deep Validation"""
+        doc = folia.Document(file='/tmp/foliatest.xml', deepvalidation=True, allowadhocsets=True)
+        assert isinstance( doc.setdefinitions["http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"], folia.SetDefinition)
 
 f = io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8')
 FOLIAEXAMPLE = f.read()

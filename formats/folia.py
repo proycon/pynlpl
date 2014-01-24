@@ -847,7 +847,8 @@ class AbstractElement(object):
             try:
                 self.doc.setdefinitions[self.set].testclass(self.cls)
             except KeyError:
-                raise DeepValidationError("Set definition for " + self.set + " not loaded!")
+                if not self.doc.allowadhocsets:
+                    raise DeepValidationError("Set definition for " + self.set + " not loaded!")
 
     def append(self, child, *args, **kwargs):
         """Append a child element. Returns the added element
@@ -4300,11 +4301,24 @@ class Document(object):
         else:
             self.mode = Mode.MEMORY #Load all in memory
 
+        if 'loadsetdefinitions' in kwargs:
+            self.loadsetdefinitions = bool(kwargs['loadsetdefinitions'])
+        else:
+            self.loadsetdefinitions = False
 
         if 'deepvalidation' in kwargs:
             self.deepvalidation = bool(kwargs['deepvalidation'])
+            self.loadsetdefinitions = True
         else:
             self.deepvalidation = False
+
+        if 'allowadhocsets' in kwargs:
+            self.allowadhocsets = bool(kwargs['allowadhocsets'])
+        else:
+            if self.deepvalidation:
+                self.allowadhocsets = False
+            else:
+                self.allowadhocsets = True
 
         if 'autodeclare' in kwargs:
             self.autodeclare = True
@@ -4650,11 +4664,9 @@ class Document(object):
                     self.annotations.append( (type, set) )
 
                 #Load set definition
-                if set and self.deepvalidation and not set in self.setdefinitions:
+                if set and self.loadsetdefinitions and not set in self.setdefinitions:
                     if set[:7] == "http://" or set[:8] == "https://" or set[:6] == "ftp://":
                         self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
-                    else:
-                        print("DEEP VALIDATION WARNING: Set " + set + " is ad-hoc and undefined, should be a URL referring to a set definition file" ,file=sys.stderr)
 
                 #Set defaults
                 if type in self.annotationdefaults and set in self.annotationdefaults[type]:
@@ -5349,7 +5361,7 @@ def loadsetdefinition(filename):
     else:
         f = urlopen(filename)
         try:
-            tree = xmltreefromstring("\n".join(f.readlines()))
+            tree = xmltreefromstring(u(f.read()))
         except IOError:
             raise DeepValidationError("Unable to download " + set)
         f.close()
