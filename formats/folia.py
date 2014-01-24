@@ -5247,6 +5247,9 @@ class ConstraintDefinition(object):
         return instance
 
 
+    def json(self):
+        return {'id': self.id} #TODO: Implement
+
 class ClassDefinition(AbstractDefinition):
     def __init__(self,id, label, constraints=[]):
         self.id = id
@@ -5270,6 +5273,13 @@ class ClassDefinition(AbstractDefinition):
                 raise Exception("Invalid tag in Class definition: " + subnode.tag)
 
         return ClassDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],label, constraints)
+
+    def json(self):
+        jsonnode = {'id': self.id, 'label': self.label}
+        jsonnode['constraints'] = []
+        for constraint in self.constraints:
+            jsonnode['constaints'].append(constraint.json())
+        return jsonnode
 
 class SubsetDefinition(AbstractDefinition):
     def __init__(self, id, type, classes = [], constraints = []):
@@ -5307,6 +5317,22 @@ class SubsetDefinition(AbstractDefinition):
 
         return SubsetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type,classes, constraints)
 
+
+    def json(self):
+        jsonnode = {'id': self.id}
+        if self.type == SetType.OPEN:
+            jsonnode['type'] = 'open'
+        elif self.type == SetType.CLOSED:
+            jsonnode['type'] = 'closed'
+        elif self.type == SetType.MIXED:
+            jsonnode['type'] = 'mixed'
+        jsonnode['constraints'] = []
+        for constraint in self.constraints:
+            jsonnode['constraints'].append(constraint.json())
+        jsonnode['classes'] = []
+        for c in self.classes:
+            jsonnode['classes'].append(c.json())
+        return jsonnode
 
 class SetDefinition(AbstractDefinition):
     def __init__(self, id, type, classes = [], subsets = [], constraintindex = {}):
@@ -5352,6 +5378,23 @@ class SetDefinition(AbstractDefinition):
 
     def testsubclass(self, cls, subset, subclass):
         raise NotImplementedError #TODO, IMPLEMENT!
+
+    def json(self):
+        jsonnode = {'id': self.id}
+        if self.type == SetType.OPEN:
+            jsonnode['type'] = 'open'
+        elif self.type == SetType.CLOSED:
+            jsonnode['type'] = 'closed'
+        elif self.type == SetType.MIXED:
+            jsonnode['type'] = 'mixed'
+        jsonnode['subsets'] = []
+        for subset in self.subsets:
+            jsonnode['subsets'].append(subset.json())
+        jsonnode['classes'] = []
+        for c in self.classes:
+            jsonnode['classes'].append(c.json())
+        return jsonnode
+
 
 
 def loadsetdefinition(filename):
