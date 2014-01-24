@@ -4281,11 +4281,10 @@ class Document(object):
 
         self.autodeclare = False #Automatic declarations in case of undeclared elements (will be enabled for DCOI, since DCOI has no declarations)
 
-        self.setdefinitions = {} #key: set name, value: SetDefinition instance (only used when deepvalidation=True)
-
-
-
-
+        if 'setdefinitions' in kwargs:
+            self.setdefinitions = kwargs['setdefinitions'] #to re-use a shared store
+        else:
+            self.setdefinitions = {} #key: set name, value: SetDefinition instance (only used when deepvalidation=True)
 
         #The metadata fields FoLiA is directly aware of:
         self._title = self._date = self._publisher = self._license = self._language = None
@@ -4652,8 +4651,10 @@ class Document(object):
 
                 #Load set definition
                 if set and self.deepvalidation and not set in self.setdefinitions:
-                    if set != 'undefined' and set[0] != '_': #ignore sets starting with an underscore, they are ad-hoc sets by definition
+                    if set[:7] == "http://" or set[:8] == "https://" or set[:6] == "ftp://":
                         self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
+                    else:
+                        print("DEEP VALIDATION WARNING: Set " + set + " is ad-hoc and undefined, should be a URL referring to a set definition file" ,file=sys.stderr)
 
                 #Set defaults
                 if type in self.annotationdefaults and set in self.annotationdefaults[type]:
@@ -5343,15 +5344,15 @@ class SetDefinition(AbstractDefinition):
 
 def loadsetdefinition(filename):
     global NSFOLIA
-    if filename[0:7] == 'http://':
+    if filename[0] == '/' or filename[0] == '.':
+        tree = ElementTree.parse(filename)
+    else:
         f = urlopen(filename)
         try:
             tree = xmltreefromstring("\n".join(f.readlines()))
         except IOError:
             raise DeepValidationError("Unable to download " + set)
         f.close()
-    else:
-        tree = ElementTree.parse(filename)
     root = tree.getroot()
     if root.tag != '{' + NSFOLIA + '}set':
         raise SetDefinitionError("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
