@@ -5227,17 +5227,16 @@ class ConstraintDefinition(object):
 
         if '{http://www.w3.org/XML/1998/namespace}id' in node.attrib:
             id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
-            instance = Constraint(id, restrictions,exceptions)
+            instance = ConstraintDefinition(id, restrictions,exceptions)
             constraintindex[id] = instance
         else:
-            instance = Constraint(None, restrictions,exceptions)
+            instance = ConstraintDefinition(None, restrictions,exceptions)
         return instance
 
 
 class ClassDefinition(AbstractDefinition):
-    def __init__(self,id, type,label, constraints=[]):
+    def __init__(self,id, label, constraints=[]):
         self.id = id
-        self.type = type
         self.label = label
         self.constraints = constraints
 
@@ -5250,26 +5249,14 @@ class ClassDefinition(AbstractDefinition):
         else:
             label = ""
 
-        if 'type' in node.attrib:
-            if node.attrib['type'] == 'open':
-                type = SetType.OPEN
-            elif node.attrib['type'] == 'closed':
-                type = SetType.CLOSED
-            elif node.attrib['type'] == 'mixed':
-                type = SetType.MIXED
-            else:
-                raise Exception("Invalid set type: ", type)
-        else:
-            type = SetType.MIXED
-
         constraints = []
         for subnode in node:
             if subnode.tag == '{' + NSFOLIA + '}constraint':
-                constraints.append( Constraint.parsexml(subnode, constraintindex) )
+                constraints.append( ConstraintDefinition.parsexml(subnode, constraintindex) )
             elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
                 raise Exception("Invalid tag in Class definition: " + subnode.tag)
 
-        return ClassDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type, label, constraints)
+        return ClassDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],label, constraints)
 
 class SubsetDefinition(AbstractDefinition):
     def __init__(self, id, type, classes = [], constraints = []):
@@ -5301,7 +5288,7 @@ class SubsetDefinition(AbstractDefinition):
             if subnode.tag == '{' + NSFOLIA + '}class':
                 classes.append( ClassDefinition.parsexml(subnode, constraintindex) )
             elif subnode.tag == '{' + NSFOLIA + '}constraint':
-                constraints.append( Constraint.parsexml(subnode, constraintindex) )
+                constraints.append( ConstraintDefinition.parsexml(subnode, constraintindex) )
             elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
                 raise Exception("Invalid tag in Set definition: " + subnode.tag)
 
@@ -5309,12 +5296,14 @@ class SubsetDefinition(AbstractDefinition):
 
 
 class SetDefinition(AbstractDefinition):
-    def __init__(self, id, classes = [], subsets = [], constraintindex = {}):
+    def __init__(self, id, type, classes = [], subsets = [], constraintindex = {}):
         isncname(id)
         self.id = id
+        self.type = type
         self.classes = classes
         self.subsets = subsets
         self.constraintindex = constraintindex
+
 
     @classmethod
     def parsexml(Class, node):
@@ -5322,16 +5311,28 @@ class SetDefinition(AbstractDefinition):
         assert node.tag == '{' + NSFOLIA + '}set'
         classes = []
         subsets= []
-        contstraintindex = {}
+        constraintindex = {}
+        if 'type' in node.attrib:
+            if node.attrib['type'] == 'open':
+                type = SetType.OPEN
+            elif node.attrib['type'] == 'closed':
+                type = SetType.CLOSED
+            elif node.attrib['type'] == 'mixed':
+                type = SetType.MIXED
+            else:
+                raise Exception("Invalid set type: ", type)
+        else:
+            type = SetType.MIXED
+
         for subnode in node:
             if subnode.tag == '{' + NSFOLIA + '}class':
-                classes.append( ClassDefinition.parsexml(subnode) )
+                classes.append( ClassDefinition.parsexml(subnode, constraintindex) )
             elif subnode.tag == '{' + NSFOLIA + '}subset':
-                subsets.append( ClassDefinition.parsexml(subnode) )
+                subsets.append( ClassDefinition.parsexml(subnode, constraintindex) )
             elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
                 raise SetDefinitionError("Invalid tag in Set definition: " + subnode.tag)
 
-        return SetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],classes, subsets, constraintindex)
+        return SetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type,classes, subsets, constraintindex)
 
     def testclass(self,cls):
         raise NotImplementedError #TODO, IMPLEMENT!
@@ -5355,7 +5356,7 @@ def loadsetdefinition(filename):
     if root.tag != '{' + NSFOLIA + '}set':
         raise SetDefinitionError("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
 
-    return Set.parsexml(root)
+    return SetDefinition.parsexml(root)
 
 
 def relaxng_declarations():
