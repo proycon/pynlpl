@@ -213,7 +213,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     else:
         object.id = None
 
-    if 'set' in kwargs:
+    if 'set' in kwargs and kwargs['set']:
         if not Attrib.CLASS in supported and not Attrib.SETONLY in supported:
             raise ValueError("Set is not supported on " + object.__class__.__name__)
         object.set = kwargs['set']
@@ -2197,6 +2197,7 @@ class TextContent(AbstractElement):
 
     TEXTCONTAINER = True #This element is a direct text container
     ACCEPTED_DATA = (AbstractTextMarkup,)
+    ROOTELEMENT = True
 
 
     def __init__(self, doc, *args, **kwargs):
