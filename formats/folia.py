@@ -1211,7 +1211,7 @@ class AbstractElement(object):
         return e
 
 
-    def json(self, attribs=None):
+    def json(self, attribs=None, recurse=True):
         jsonnode = {}
 
         jsonnode['type'] = self.XMLTAG
@@ -1237,12 +1237,13 @@ class AbstractElement(object):
         if self.datetime:
             jsonnode['datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
 
-        jsonnode['children'] = []
-        for child in self:
-            if self.TEXTCONTAINER and isstring(child):
-                jsonnode['text'] = child #TODO: won't work in text <x/> text scenarios
-            else:
-                jsonnode['children'].append(child.json())
+        if recurse:
+            jsonnode['children'] = []
+            for child in self:
+                if self.TEXTCONTAINER and isstring(child):
+                    jsonnode['text'] = child #TODO: won't work in text <x/> text scenarios
+                else:
+                    jsonnode['children'].append(child.json())
 
         if attribs:
             for attrib in attribs:
@@ -1642,7 +1643,7 @@ class Description(AbstractElement):
 
         return E.desc(self.value, **attribs)
 
-    def json(self,attribs =None):
+    def json(self,attribs =None, recurse=True):
         jsonnode = {'type': self.XMLTAG, 'value': self.value}
         if attribs:
             for attrib in attribs:
@@ -2085,11 +2086,11 @@ class AbstractTextMarkup(AbstractAnnotation):
             attribs['id'] = self.idref
         return super(AbstractTextMarkup,self).xml(attribs,elements, skipchildren)
 
-    def json(self,attribs =None):
+    def json(self,attribs =None, recurse=True):
         if not attribs: attribs = {}
         if self.idref:
             attribs['id'] = self.idref
-        return super(AbstractTextMarkup,self).json(attribs)
+        return super(AbstractTextMarkup,self).json(attribs,recurse)
 
     @classmethod
     def parsexml(Class, node, doc):
@@ -2140,11 +2141,11 @@ class TextMarkupCorrection(AbstractTextMarkup):
             attribs['original'] = self.original
         return super(TextMarkupCorrection,self).xml(attribs,elements, skipchildren)
 
-    def json(self,attribs =None):
+    def json(self,attribs =None, recurse=True):
         if not attribs: attribs = {}
         if self.original:
             attribs['original'] = self.original
-        return super(TextMarkupCorrection,self).json(attribs)
+        return super(TextMarkupCorrection,self).json(attribs,recurse)
 
     @classmethod
     def parsexml(Class, node, doc):
@@ -2381,13 +2382,13 @@ class TextContent(AbstractElement):
 
         return e
 
-    def json(self, attribs =None):
+    def json(self, attribs =None, recurse =True):
         attribs = {}
         if not self.offset is None:
             attribs['offset'] = self.offset
         if self.parent and self.ref:
             attribs['ref'] = self.ref.id
-        return super(TextContent,self).json(attribs)
+        return super(TextContent,self).json(attribs, recurse)
 
 
     @classmethod
@@ -2440,7 +2441,7 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
 
         return E.content(self.value, **attribs)
 
-    def json(self,attribs =None):
+    def json(self,attribs =None, recurse=True):
         jsonnode = {'type': self.XMLTAG, 'value': self.value}
         if attribs:
             for attrib in attribs:
@@ -2655,11 +2656,11 @@ class Word(AbstractStructureElement, AllowCorrections):
             attribs['space'] = 'no'
         return super(Word,self).xml(attribs,elements, False)
 
-    def json(self,attribs =None):
+    def json(self,attribs =None, recurse=True):
         if not attribs: attribs = {}
         if not self.space:
             attribs['space'] = 'no'
-        return super(Word,self).json(attribs)
+        return super(Word,self).json(attribs, recurse)
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -2793,7 +2794,7 @@ class Feature(AbstractElement):
         attribs['{' + NSFOLIA + '}class'] =  self.cls
         return makeelement(E,'{' + NSFOLIA + '}' + self.XMLTAG, **attribs)
 
-    def json(self,attribs=None):
+    def json(self,attribs=None, recurse=True):
         jsonnode= {'type': self.XMLTAG}
         jsonnode['subset'] = self.subset
         jsonnode['class'] = self.cls
@@ -3122,7 +3123,7 @@ class AlignReference(AbstractElement):
 
         return E.aref( **attribs)
 
-    def json(self, attribs=None):
+    def json(self, attribs=None, recurse=True):
         return {} #alignment not supported yet, TODO
 
 class Alignment(AbstractElement):
@@ -3179,6 +3180,8 @@ class ErrorDetection(AbstractExtendedTokenAnnotation):
     ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
     XMLTAG = 'errordetection'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
+    ROOTELEMENT = True
+
 
 
 class Suggestion(AbstractCorrectionChild):
@@ -3248,6 +3251,7 @@ class Correction(AbstractExtendedTokenAnnotation):
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     TEXTDELIMITER = None
     PRINTABLE = True
+    ROOTELEMENT = True
 
     def hasnew(self):
         return bool(self.select(New,None,False, False))
@@ -3918,11 +3922,11 @@ class Figure(AbstractStructureElement):
             attribs['{' + NSFOLIA + '}src'] = self.src
         return super(Figure, self).xml(attribs, elements, skipchildren)
 
-    def json(self, attribs = None):
+    def json(self, attribs = None, recurse=True):
         if self.src:
             if not attribs: attribs = {}
             attribs['src'] = self.src
-        return super(Figure, self).json(attribs)
+        return super(Figure, self).json(attribs, recurse)
 
     def caption(self):
         try:
