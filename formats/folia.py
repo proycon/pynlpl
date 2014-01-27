@@ -213,18 +213,19 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     else:
         object.id = None
 
-    if 'set' in kwargs and kwargs['set']:
+    if 'set' in kwargs:
         if not Attrib.CLASS in supported and not Attrib.SETONLY in supported:
             raise ValueError("Set is not supported on " + object.__class__.__name__)
         object.set = kwargs['set']
         del kwargs['set']
 
-        if doc and (not (annotationtype in doc.annotationdefaults) or not (object.set in doc.annotationdefaults[annotationtype])):
-            if doc.autodeclare:
-                doc.annotations.append( (annotationtype, object.set ) )
-                doc.annotationdefaults[annotationtype] = {object.set: {} }
-            else:
-                raise ValueError("Set '" + object.set + "' is used for " + object.__class__.__name__ + ", but has no declaration!")
+        if object.set:
+            if doc and (not (annotationtype in doc.annotationdefaults) or not (object.set in doc.annotationdefaults[annotationtype])):
+                if doc.autodeclare:
+                    doc.annotations.append( (annotationtype, object.set ) )
+                    doc.annotationdefaults[annotationtype] = {object.set: {} }
+                else:
+                    raise ValueError("Set '" + object.set + "' is used for " + object.__class__.__name__ + ", but has no declaration!")
     elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
         object.set = list(doc.annotationdefaults[annotationtype].keys())[0]
     elif Attrib.CLASS in required or Attrib.SETONLY in required:
