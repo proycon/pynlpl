@@ -2063,6 +2063,7 @@ class AbstractTextMarkup(AbstractAnnotation):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = Attrib.ALL
     TEXTCONTAINER = True #This element is a direct text container
+    ROOTELEMENT = False
 
     def __init__(self, doc, *args, **kwargs):
         if 'idref' in kwargs:
