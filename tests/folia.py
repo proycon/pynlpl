@@ -1391,7 +1391,18 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).new(0).text() ,'stippellijn' )
         self.assertEqual( w.text(), 'stippellijn')
 
-        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t class="original">stippelijn</t></original></correction></w>'))
+
+    def test006b_addcorrection(self):
+        """Edit Check - Correcting Text (2)"""
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
+
+        w.correct(new=folia.TextContent(self.doc,value='stippellijn',set='undefined',cls='current'), set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+        self.assertEqual( w.annotation(folia.Correction).original(0).text() ,'stippelijn' )
+        self.assertEqual( w.annotation(folia.Correction).new(0).text() ,'stippellijn' )
+        self.assertEqual( w.text(), 'stippellijn')
+
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t class="original">stippelijn</t></original></correction></w>'))
 
     def test007_addcorrection2(self):
         """Edit Check - Correcting a Token Annotation element"""
@@ -1416,40 +1427,40 @@ class Test4Edit(unittest.TestCase):
 
         self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><suggestion auth="no"><t>stippellijn</t></suggestion></correction></w>'))
 
-    def test009a_idclash(self):
-        """Edit Check - Checking for exception on adding a duplicate ID"""
-        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
+def test009a_idclash(self):
+    """Edit Check - Checking for exception on adding a duplicate ID"""
+    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
 
-        self.assertRaises( folia.DuplicateIDError,  w.sentence().append, folia.Word, id='WR-P-E-J-0000000001.p.1.s.8.w.11', text='stippellijn')
+    self.assertRaises( folia.DuplicateIDError,  w.sentence().append, folia.Word, id='WR-P-E-J-0000000001.p.1.s.8.w.11', text='stippellijn')
 
 
-    #def test009b_textcorrectionlevel(self):
-    #    """Edit Check - Checking for exception on an adding TextContent of wrong level"""
-    #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
-    #
-    #    self.assertRaises(  ValueError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.ORIGINAL )
-    #
+#def test009b_textcorrectionlevel(self):
+#    """Edit Check - Checking for exception on an adding TextContent of wrong level"""
+#    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
+#
+#    self.assertRaises(  ValueError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.ORIGINAL )
+#
 
-    #def test009c_duptextcontent(self):
-    #    """Edit Check - Checking for exception on an adding duplicate textcontent"""
-    #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
-    #
-    #    self.assertRaises(  folia.DuplicateAnnotationError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.PROCESSED )
+#def test009c_duptextcontent(self):
+#    """Edit Check - Checking for exception on an adding duplicate textcontent"""
+#    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
+#
+#    self.assertRaises(  folia.DuplicateAnnotationError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.PROCESSED )
 
-    def test010_documentlesselement(self):
-        """Edit Check - Creating an initially document-less tokenannotation element and adding it to a word"""
+def test010_documentlesselement(self):
+    """Edit Check - Creating an initially document-less tokenannotation element and adding it to a word"""
 
-        #not associated with any document yet (first argument is None instead of Document instance)
-        pos = folia.PosAnnotation(None, set='fakecgn', cls='N')
+    #not associated with any document yet (first argument is None instead of Document instance)
+    pos = folia.PosAnnotation(None, set='fakecgn', cls='N')
 
-        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
-        w.append(pos)
+    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
+    w.append(pos)
 
-        self.assertEqual( w.annotation(folia.PosAnnotation,'fakecgn'), pos)
-        self.assertEqual( pos.parent, w)
-        self.assertEqual( pos.doc, w.doc)
+    self.assertEqual( w.annotation(folia.PosAnnotation,'fakecgn'), pos)
+    self.assertEqual( pos.parent, w)
+    self.assertEqual( pos.doc, w.doc)
 
-        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>'))
+    self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>'))
 
     def test011_subtokenannot(self):
         """Edit Check - Adding morphemes"""
@@ -1800,7 +1811,7 @@ class Test5Correction(unittest.TestCase):
             self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
             self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
 
-            self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" auth="no" annotatortype="auto"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
+            self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" auth="no" annotatortype="auto"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original auth="no"><t class="original">stippelijn</t></original></correction></w>'))
 
 
 class Test6Query(unittest.TestCase):

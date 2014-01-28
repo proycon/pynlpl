@@ -1757,6 +1757,7 @@ class AllowCorrections(object):
                     set = new.set
                 except:
                     set = None
+                print("DEBUG: Finding replacables within " + str(repr(self)) + " for ", str(repr(new)), " set " ,set , " args " ,repr(kwargs2),file=sys.stderr)
                 original += new.__class__.findreplacables(self, set, **kwargs2)
             if not original:
                 raise Exception("No original= specified and unable to automatically infer")
