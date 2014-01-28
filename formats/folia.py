@@ -216,7 +216,10 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'set' in kwargs:
         if not Attrib.CLASS in supported and not Attrib.SETONLY in supported:
             raise ValueError("Set is not supported on " + object.__class__.__name__)
-        object.set = kwargs['set']
+        if not kwargs['set']:
+            object.set ="undefined";
+        else:
+            object.set = kwargs['set']
         del kwargs['set']
 
         if object.set:
@@ -228,6 +231,8 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
                     raise ValueError("Set '" + object.set + "' is used for " + object.__class__.__name__ + ", but has no declaration!")
     elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
         object.set = list(doc.annotationdefaults[annotationtype].keys())[0]
+    elif object.ANNOTATIONTYPE == AnnotationType.TEXT:
+        object.set = "undefined"; #text content needs never be declared (for backward compatibility) and is in set 'undefined'
     elif Attrib.CLASS in required or Attrib.SETONLY in required:
         raise ValueError("Set is required for " + object.__class__.__name__)
     else:
@@ -955,9 +960,9 @@ class AbstractElement(object):
 
             word.insert( 3, folia.LemmaAnnotation, cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL )
 
-        Generic example, setting text of a specific correctionlevel::
+        Generic example, setting text::
 
-            word.insert( 3, "house", corrected=folia.TextCorrectionLevel.CORRECTED )
+            word.insert( 3, "house" )
 
 
         """
@@ -1272,7 +1277,7 @@ class AbstractElement(object):
         return s
 
 
-    def select(self, Class, set=None, recursive=True,  ignorelist=True, node=None):
+    def select(self, Class, set=None, recursive=True,  ignore=True, node=None):
         """Select child elements of the specified class.
 
         A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into.
@@ -1281,12 +1286,13 @@ class AbstractElement(object):
             * ``Class``: The class to select; any python class subclassed off `'AbstractElement``
             * ``set``: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
             * ``recursive``: Select recursively? Descending into child elements? Boolean defaulting to True.
-            * ``ignorelist``: A list of Classes (subclassed off
-            * ``AbstractElement``) not to recurse into. It is common not to
+            * ``ignore``: A list of Classes to ignore, if set to True instead
+                of a list, all non-authoritative elements will be skipped.
+                It is common not to
                want to recurse into the following elements:
                ``folia.Alternative``, ``folia.AlternativeLayer``,
-               ``folia.Suggestion``, and ``folia.Original``. As elements
-               contained in these are never *authorative*. If ignorelist is
+               ``folia.Suggestion``, and ``folia.Original``. These elements
+               contained in these are never *authorative*.
                set to the boolean True rather than a list, this will be the default list.
             * ``node``: Reserved for internal usage, used in recursion.
 
@@ -1299,21 +1305,28 @@ class AbstractElement(object):
 
         """
 
-        if ignorelist is True:
-            ignorelist = defaultignorelist
+        #if ignorelist is True:
+        #    ignorelist = defaultignorelist
 
         l = []
         if not node:
             node = self
         for e in self.data:
             if not self.TEXTCONTAINER or isinstance(e, AbstractElement):
-                if ignorelist:
-                    ignore = False
-                    for c in ignorelist:
+                if ignore is True:
+                    try:
+                        if not e.auth:
+                            continue
+                    except AttributeError:
+                        #not all elements have auth attribute..
+                        pass
+                elif ignore: #list
+                    doignore = False
+                    for c in ignore:
                         if c == e.__class__ or issubclass(e.__class__,c):
-                            ignore = True
+                            doignore = True
                             break
-                    if ignore:
+                    if doignore:
                         continue
 
                 if isinstance(e, Class):
@@ -1325,7 +1338,7 @@ class AbstractElement(object):
                             continue
                     l.append(e)
                 if recursive:
-                    for e2 in e.select(Class, set, recursive, ignorelist, e):
+                    for e2 in e.select(Class, set, recursive, ignore, e):
                         if not set is None:
                             try:
                                 if e2.set != set:
@@ -2184,7 +2197,7 @@ class TextMarkupStyle(AbstractTextMarkup):
 class TextContent(AbstractElement):
     """Text content element (``t``), holds text to be associated with whatever element the text content element is a child of.
 
-    Text content elements have an associated correction level, indicating whether the text they hold is in a pre-corrected or post-corrected state. There can be only once of each level. Text content elements
+    Text content elements
     on structure elements like ``Paragraph`` and ``Sentence`` are by definition untokenised. Only on ``Word`` level and deeper they are by definition tokenised.
 
     Text content elements can specify offset that refer to text at a higher parent level. Use the following keyword arguments:
@@ -3172,7 +3185,7 @@ class Alignment(AbstractElement):
 
     def resolve(self):
         l = []
-        for x in self.select(AlignReference):
+        for x in self.select(AlignReference,None,True,False):
             l.append( x.resolve(self) )
         return l
 
@@ -3362,19 +3375,20 @@ class Correction(AbstractExtendedTokenAnnotation):
                 return str(e)
 
 
-    def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
-        """Select on Correction only descends in either "NEW" or "CURRENT" branch"""
-        if ignorelist is False:
-            #to override and go into all branches, set ignorelist explictly to False
-            return super(Correction,self).select(cls,set,recursive, ignorelist, node)
-        else:
-            if ignorelist is True:
-                ignorelist = copy(defaultignorelist)
-            else:
-                ignorelist = copy(ignorelist) #we don't want to alter a passed ignorelist (by ref)
-            ignorelist.append(Original)
-            ignorelist.append(Suggestion)
-            return super(Correction,self).select(cls,set,recursive, ignorelist, node)
+    #obsolete
+    #def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
+    #    """Select on Correction only descends in either "NEW" or "CURRENT" branch"""
+    #    if ignorelist is False:
+    #        #to override and go into all branches, set ignorelist explictly to False
+    #        return super(Correction,self).select(cls,set,recursive, ignorelist, node)
+    #    else:
+    #        if ignorelist is True:
+    #            ignorelist = copy(defaultignorelist)
+    #        else:
+    #            ignorelist = copy(ignorelist) #we don't want to alter a passed ignorelist (by ref)
+    #        ignorelist.append(Original)
+    #        ignorelist.append(Suggestion)
+    #        return super(Correction,self).select(cls,set,recursive, ignorelist, node)
 
 Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent,String, Correction, Description, Metric)
 
