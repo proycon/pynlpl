@@ -357,8 +357,8 @@ class Test2Sanity(unittest.TestCase):
     def test019_alignment(self):
         """Sanity Check - Alignment in same document"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.10']
-        aref = w.annotation(folia.Alignment)
-        target = aref.resolve()[0]
+        a = w.annotation(folia.Alignment)
+        target = a.resolve()[0]
         self.assertEqual( target, self.doc['WR-P-E-J-0000000001.p.1.s.3.w.5'] )
 
 
@@ -1966,7 +1966,7 @@ class Test9Reader(unittest.TestCase):
         count = 0
         for word in self.reader:
             count += 1
-        self.assertEqual(count, 177)
+        self.assertEqual(count, 178)
 
     def test001_findwords_simple(self):
         """Querying using stream reader - Find words (simple)"""
