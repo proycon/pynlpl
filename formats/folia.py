@@ -216,7 +216,10 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'set' in kwargs:
         if not Attrib.CLASS in supported and not Attrib.SETONLY in supported:
             raise ValueError("Set is not supported on " + object.__class__.__name__)
-        object.set = kwargs['set']
+        if not kwargs['set']:
+            object.set ="undefined";
+        else:
+            object.set = kwargs['set']
         del kwargs['set']
 
         if object.set:
@@ -228,6 +231,8 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
                     raise ValueError("Set '" + object.set + "' is used for " + object.__class__.__name__ + ", but has no declaration!")
     elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
         object.set = list(doc.annotationdefaults[annotationtype].keys())[0]
+    elif object.ANNOTATIONTYPE == AnnotationType.TEXT:
+        object.set = "undefined"; #text content needs never be declared (for backward compatibility) and is in set 'undefined'
     elif Attrib.CLASS in required or Attrib.SETONLY in required:
         raise ValueError("Set is required for " + object.__class__.__name__)
     else:
@@ -955,9 +960,9 @@ class AbstractElement(object):
 
             word.insert( 3, folia.LemmaAnnotation, cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL )
 
-        Generic example, setting text of a specific correctionlevel::
+        Generic example, setting text::
 
-            word.insert( 3, "house", corrected=folia.TextCorrectionLevel.CORRECTED )
+            word.insert( 3, "house" )
 
 
         """
@@ -2184,7 +2189,7 @@ class TextMarkupStyle(AbstractTextMarkup):
 class TextContent(AbstractElement):
     """Text content element (``t``), holds text to be associated with whatever element the text content element is a child of.
 
-    Text content elements have an associated correction level, indicating whether the text they hold is in a pre-corrected or post-corrected state. There can be only once of each level. Text content elements
+    Text content elements
     on structure elements like ``Paragraph`` and ``Sentence`` are by definition untokenised. Only on ``Word`` level and deeper they are by definition tokenised.
 
     Text content elements can specify offset that refer to text at a higher parent level. Use the following keyword arguments:
