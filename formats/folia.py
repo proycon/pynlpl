@@ -1678,7 +1678,7 @@ class AllowCorrections(object):
                     c = self.doc.index[kwargs['reuse']]
                     assert isinstance(c, Correction)
                 except:
-                    raise ValueError("reuse= must point to an existing correction (id or instance)!")
+                    raise ValueError("reuse= must point to an existing correction (id or instance)! Got " + str(kwargs['reuse']))
 
             suggestionsonly = (not c.hasnew() and not c.hasoriginal() and c.hassuggestions())
 
