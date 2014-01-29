@@ -1605,7 +1605,8 @@ class AbstractElement(object):
         """Removes the child element"""
         if not isinstance(child, AbstractElement):
             raise ValueError("Expected AbstractElement, got " + str(type(child)))
-        child.parent = None
+        if child.parent == self:
+            child.parent = None
         self.data.remove(child)
         #delete from index
         if child.id and self.doc and child.id in self.doc.index:
@@ -1762,7 +1763,7 @@ class AllowCorrections(object):
             if not original:
                 raise Exception("No original= specified and unable to automatically infer")
             else:
-                c.replace(Original(self.doc, *original))
+                c.replace( Original(self.doc, *original))
                 for current in c.select(Current):  #delete current if present
                     c.remove(current)
 
