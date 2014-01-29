@@ -1006,8 +1006,8 @@ class AbstractElement(object):
 
 
     @classmethod
-    def findreplacables(Class, parent, set=None,**kwargs):
-        """Find replacable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control. Mostly for internal use."""
+    def findreplaceables(Class, parent, set=None,**kwargs):
+        """Find replaceable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control. Mostly for internal use."""
         return parent.select(Class,set,False)
 
 
@@ -1044,7 +1044,7 @@ class AbstractElement(object):
 
         if inspect.isclass(child):
             Class = child
-            replace = Class.findreplacables(self, set, **kwargs)
+            replace = Class.findreplaceables(self, set, **kwargs)
         elif self.TEXTCONTAINER and isstring(child):
             #replace will replace ALL text content, removing text markup along the way!
             self.data = []
@@ -1052,10 +1052,10 @@ class AbstractElement(object):
         else:
             Class = child.__class__
             kwargs['instance'] = child
-            replace = Class.findreplacables(self,set,**kwargs)
+            replace = Class.findreplaceables(self,set,**kwargs)
             del kwargs['instance']
 
-        kwargs['set'] = set #was deleted temporarily for findreplacables
+        kwargs['set'] = set #was deleted temporarily for findreplaceables
 
         if len(replace) == 0:
             #nothing to replace, simply call append
@@ -1758,8 +1758,10 @@ class AllowCorrections(object):
                     set = new.set
                 except:
                     set = None
-                print("DEBUG: Finding replacables within " + str(repr(self)) + " for ", str(repr(new)), " set " ,set , " args " ,repr(kwargs2),file=sys.stderr)
-                original += new.__class__.findreplacables(self, set, **kwargs2)
+                print("DEBUG: Finding replaceables within " + str(repr(self)) + " for ", str(repr(new)), " set " ,set , " args " ,repr(kwargs2),file=sys.stderr)
+                replaceables = new.__class__.findreplaceables(self, set, **kwargs2)
+                print("DEBUG: " , len(replaceables) , " found",file=sys.stderr)
+                original += replaceables
             if not original:
                 raise Exception("No original= specified and unable to automatically infer")
             else:
@@ -2351,12 +2353,12 @@ class TextContent(AbstractElement):
 
 
     @classmethod
-    def findreplacables(Class, parent, set, **kwargs):
+    def findreplaceables(Class, parent, set, **kwargs):
         """(Method for internal usage, see AbstractElement)"""
         #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
         if not 'cls' in kwargs:
             kwargs['cls'] = 'current'
-        replace = super(TextContent, Class).findreplacables(parent, set, **kwargs)
+        replace = super(TextContent, Class).findreplaceables(parent, set, **kwargs)
         replace = [ x for x in replace if x.cls == kwargs['cls']]
         del kwargs['cls'] #always delete what we processed
         return replace
