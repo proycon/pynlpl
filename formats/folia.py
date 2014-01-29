@@ -1763,7 +1763,7 @@ class AllowCorrections(object):
                 print("DEBUG: " , len(replaceables) , " found",file=sys.stderr)
                 original += replaceables
             if not original:
-                raise Exception("No original= specified and unable to automatically infer")
+                raise Exception("No original= specified and unable to automatically infer on " + str(repr(self)) + " for " + str(repr(new)) + " with set " + set)
             else:
                 c.replace( Original(self.doc, *original))
                 for current in c.select(Current):  #delete current if present
