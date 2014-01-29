@@ -1090,6 +1090,13 @@ class AbstractElement(object):
             else:
                 break
 
+    def ancestor(self, Class):
+        """Find the nearest ancestor of the specified type"""
+        for e in self.ancestors():
+            if isinstance(e, Class):
+                return e
+        raise NoSuchAnnotation
+
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
         """Serialises the FoLiA element to XML, by returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead."""
