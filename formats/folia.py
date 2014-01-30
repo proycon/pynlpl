@@ -3895,6 +3895,19 @@ class Sentence(AbstractStructureElement):
         return self.correctwords([], [newword], **kwargs)
 
 
+    def insertwordleft(self, newword, nextword, **kwargs):
+        if nextword:
+            if isstring(nextword):
+                nextword = self.doc[u(nextword)]
+            if not nextword in self or not isinstance(nextword, Word):
+                raise Exception("Next word not found or not instance of Word!")
+            if not isinstance(nextword, Word):
+                raise Exception("New word no instance of Word!")
+
+            kwargs['insertindex'] = self.data.index(nextword)
+        else:
+            kwargs['insertindex'] = 0
+        return self.correctwords([], [newword], **kwargs)
 
 Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
 
