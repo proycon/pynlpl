@@ -1091,7 +1091,7 @@ class AbstractElement(object):
                 break
 
     def ancestor(self, Class):
-        """Find the nearest ancestor of the specified type"""
+        """Find the most immediate ancestor of the specified type"""
         for e in self.ancestors():
             if isinstance(e, Class):
                 return e
