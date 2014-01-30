@@ -3892,7 +3892,10 @@ class Sentence(AbstractStructureElement):
             kwargs['insertindex'] = self.data.index(prevword) + 1
         else:
             kwargs['insertindex'] = 0
-        return self.correctwords([], [newword], **kwargs)
+        if isinstance(newword, list) or isinstance(newword, tuple):
+            return self.correctwords([], newword, **kwargs)
+        else:
+            return self.correctwords([], [newword], **kwargs)
 
 
     def insertwordleft(self, newword, nextword, **kwargs):
@@ -3907,7 +3910,10 @@ class Sentence(AbstractStructureElement):
             kwargs['insertindex'] = self.data.index(nextword)
         else:
             kwargs['insertindex'] = 0
-        return self.correctwords([], [newword], **kwargs)
+        if isinstance(newword, list) or isinstance(newword, tuple):
+            return self.correctwords([], newword, **kwargs)
+        else:
+            return self.correctwords([], [newword], **kwargs)
 
 Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
 
