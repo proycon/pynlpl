@@ -3886,7 +3886,10 @@ class Sentence(AbstractStructureElement):
                 prevword = self.doc[u(prevword)]
             if not prevword in self or not isinstance(prevword, Word):
                 raise Exception("Previous word not found or not instance of Word!")
-            if not isinstance(newword, Word):
+            if isinstance(newword, list) or isinstance(newword, tuple):
+                if not all([ isinstance(x, Word) for x in newword ]):
+                    raise Exception("New word (iterable) constains non-Word instances!")
+            elif not isinstance(newword, Word):
                 raise Exception("New word no instance of Word!")
 
             kwargs['insertindex'] = self.data.index(prevword) + 1
@@ -3904,7 +3907,10 @@ class Sentence(AbstractStructureElement):
                 nextword = self.doc[u(nextword)]
             if not nextword in self or not isinstance(nextword, Word):
                 raise Exception("Next word not found or not instance of Word!")
-            if not isinstance(nextword, Word):
+            if isinstance(newword, list) or isinstance(newword, tuple):
+                if not all([ isinstance(x, Word) for x in newword ]):
+                    raise Exception("New word (iterable) constains non-Word instances!")
+            elif not isinstance(newword, Word):
                 raise Exception("New word no instance of Word!")
 
             kwargs['insertindex'] = self.data.index(nextword)
