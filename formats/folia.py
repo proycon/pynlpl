@@ -709,6 +709,12 @@ class AbstractElement(object):
     def __bool__(self):
         return True
 
+    def __hash__(self):
+        if self.id:
+            return hash(self.id)
+        else:
+            raise TypeError("FoLiA elements are only hashable if they have an ID")
+
     def __iter__(self):
         """Iterate over all children of this element"""
         return iter(self.data)
