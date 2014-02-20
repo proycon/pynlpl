@@ -102,8 +102,8 @@ class FrogClient:
         for i, _ in enumerate(inputwords):
             targetindex = alignment[i]
             if targetindex == None:
-                if self.parser:
-                    yield (None,None,None,None,None,None)
+                if self.returnall:
+                    yield (None,None,None,None,None,None,None,None)
                 else:
                     yield (None,None,None,None)
             else:
