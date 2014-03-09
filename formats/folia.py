@@ -820,7 +820,7 @@ class AbstractElement(object):
             count = len(parent.select(Class,None,True,True))
             if count >= Class.OCCURRENCES:
                 if raiseexceptions:
-                    raise DuplicateAnnotationError("Unable to add another object of type " + child.__class__.__name__ + " to " + __name__ + ". There are already " + str(count) + " instances of this class, which is the maximum.")
+                    raise DuplicateAnnotationError("Unable to add another object of type " + Class.__name__ + " to " + parent.__class__.__name__ + ". There are already " + str(count) + " instances of this class, which is the maximum.")
                 else:
                     return False
 
@@ -5466,11 +5466,14 @@ def loadsetdefinition(filename):
     if filename[0] == '/' or filename[0] == '.':
         tree = ElementTree.parse(filename)
     else:
-        f = urlopen(filename)
+        try:
+            f = urlopen(filename)
+        except:
+            raise DeepValidationError("Unable to download " + filename)
         try:
             tree = xmltreefromstring(u(f.read()))
         except IOError:
-            raise DeepValidationError("Unable to download " + set)
+            raise DeepValidationError("Unable to download " + filename)
         f.close()
     root = tree.getroot()
     if root.tag != '{' + NSFOLIA + '}set':
