@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.10.0'
-LIBVERSION = '0.10.0.43' #== FoLiA version + library revision
+LIBVERSION = '0.10.0.44' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -4795,6 +4795,9 @@ class Document(object):
             annotationtype = annotationtype.ANNOTATIONTYPE
         if not (annotationtype, set) in self.annotations:
             self.annotations.append( (annotationtype,set) )
+            if set and self.loadsetdefinitions and not set in self.setdefinitions:
+                if set[:7] == "http://" or set[:8] == "https://" or set[:6] == "ftp://":
+                    self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
         if not annotationtype in self.annotationdefaults:
             self.annotationdefaults[annotationtype] = {}
         self.annotationdefaults[annotationtype][set] = kwargs
