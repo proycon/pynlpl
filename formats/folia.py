@@ -809,7 +809,11 @@ class AbstractElement(object):
                 pass
             if not found:
                 if raiseexceptions:
-                    raise ValueError("Unable to add object of type " + Class.__name__ + " to " + parent.__class__.__name__ + ". Type not allowed as child.")
+                    if parent.id:
+                        extra = ' (id=' + parent.id + ')'
+                    else:
+                        extra = ''
+                    raise ValueError("Unable to add object of type " + Class.__name__ + " to " + parent.__class__.__name__ + " " + extra + ". Type not allowed as child.")
                 else:
                     return False
 
@@ -820,7 +824,11 @@ class AbstractElement(object):
             count = len(parent.select(Class,None,True,True))
             if count >= Class.OCCURRENCES:
                 if raiseexceptions:
-                    raise DuplicateAnnotationError("Unable to add another object of type " + Class.__name__ + " to " + parent.__class__.__name__ + ". There are already " + str(count) + " instances of this class, which is the maximum.")
+                    if parent.id:
+                        extra = ' (id=' + parent.id + ')'
+                    else:
+                        extra = ''
+                    raise DuplicateAnnotationError("Unable to add another object of type " + Class.__name__ + " to " + parent.__class__.__name__ + " " + extra + ". There are already " + str(count) + " instances of this class, which is the maximum.")
                 else:
                     return False
 
