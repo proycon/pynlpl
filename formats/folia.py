@@ -1346,9 +1346,13 @@ class AbstractElement(object):
                     doignore = False
                     for c in ignore:
                         if c is True:
-                            if not e.auth:
-                                doignore =True
-                                break
+                            try:
+                                if not e.auth:
+                                    doignore =True
+                                    break
+                            except AttributeError:
+                                #not all elements have auth attribute..
+                                pass
                         elif c == e.__class__ or issubclass(e.__class__,c):
                             doignore = True
                             break
