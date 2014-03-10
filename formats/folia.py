@@ -821,7 +821,7 @@ class AbstractElement(object):
 
         if Class.OCCURRENCES > 0:
             #check if the parent doesn't have too many already
-            count = len(parent.select(Class,None,True,True))
+            count = len(parent.select(Class,None,True,[True, AbstractStructureElement])) #never descend into embedded structure annotatioton
             if count >= Class.OCCURRENCES:
                 if raiseexceptions:
                     if parent.id:
@@ -833,7 +833,7 @@ class AbstractElement(object):
                     return False
 
         if Class.OCCURRENCESPERSET > 0 and set and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
-            count = len(parent.select(Class,set,True, True))
+            count = len(parent.select(Class,set,True, [True, AbstractStructureElement]))
             if count >= Class.OCCURRENCESPERSET:
                 if raiseexceptions:
                     if parent.id:
@@ -1306,7 +1306,8 @@ class AbstractElement(object):
         Arguments:
             * ``Class``: The class to select; any python class subclassed off `'AbstractElement``
             * ``set``: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
-            * ``recursive``: Select recursively? Descending into child elements? Boolean defaulting to True.
+            * ``recursive``: Select recursively? Descending into child
+              elements? Boolean defaulting to True.
             * ``ignore``: A list of Classes to ignore, if set to True instead
                 of a list, all non-authoritative elements will be skipped.
                 It is common not to
@@ -1314,7 +1315,7 @@ class AbstractElement(object):
                ``folia.Alternative``, ``folia.AlternativeLayer``,
                ``folia.Suggestion``, and ``folia.Original``. These elements
                contained in these are never *authorative*.
-               set to the boolean True rather than a list, this will be the default list.
+               set to the boolean True rather than a list, this will be the default list. You may also include the boolean True as a member of a list, if you want to skip additional tags along non-authoritative ones.
             * ``node``: Reserved for internal usage, used in recursion.
 
         Returns:
@@ -1344,7 +1345,11 @@ class AbstractElement(object):
                 elif ignore: #list
                     doignore = False
                     for c in ignore:
-                        if c == e.__class__ or issubclass(e.__class__,c):
+                        if c is True:
+                            if not e.auth:
+                                doignore =True
+                                break
+                        elif c == e.__class__ or issubclass(e.__class__,c):
                             doignore = True
                             break
                     if doignore:
