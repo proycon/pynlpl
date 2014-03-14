@@ -4747,7 +4747,11 @@ class Document(object):
                 #Load set definition
                 if set and self.loadsetdefinitions and not set in self.setdefinitions:
                     if set[:7] == "http://" or set[:8] == "https://" or set[:6] == "ftp://":
-                        self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
+                        try:
+                            self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
+                        except DeepValidationError:
+                            print("WARNING: Set " + set + " could not be downloaded, ignoring!",file=sys.stderr) #warning and ignore
+                            pass
 
                 #Set defaults
                 if type in self.annotationdefaults and set in self.annotationdefaults[type]:
