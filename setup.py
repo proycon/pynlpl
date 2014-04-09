@@ -8,7 +8,8 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-os.chdir(os.path.dirname(sys.argv[0]))
+if os.path.dirname(__file__) != "":
+    os.chdir(os.path.dirname(__file__))
 if not os.path.exists('pynlpl'):
     print("Preparing build",file=sys.stderr)
     if os.path.exists('build'):
