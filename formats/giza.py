@@ -134,7 +134,7 @@ class GizaModel(object):
         elif filename.split(".")[-1] == "gz":
             self.f = gzip.GzipFile(filename,'r')
         else:
-            self.f = io.open(filename,'r',encoding)
+            self.f = io.open(filename,'r',encoding=encoding)
         self.nextlinebuffer = None
 
 
