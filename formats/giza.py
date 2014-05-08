@@ -106,6 +106,7 @@ class GizaSentenceAlignment(object):
 
 
     def getalignedtarget(self, index):
+        """Returns target range only if source index aligns to a single consecutive range of target tokens."""
         targetindices = []
         target = None
         foundindex = -1
@@ -113,14 +114,11 @@ class GizaSentenceAlignment(object):
             if sourceindex == index:
                 targetindices.append(targetindex)
         if len(targetindices) > 1:
-            consecutive = True
             for i in range(1,len(targetindices)):
                 if abs(targetindices[i] - targetindices[i-1]) != 1:
-                    consecutive  = False
-                    break
-            if consecutive:
-                foundindex = (min(targetindices), max(targetindices))
-                target = ' '.join(self.target[min(targetindices):max(targetindices)+1])
+                    break  # not consecutive
+            foundindex = (min(targetindices), max(targetindices))
+            target = ' '.join(self.target[min(targetindices):max(targetindices)+1])
         elif targetindices:
             foundindex = targetindices[0]
             target = self.target[foundindex]
