@@ -5313,9 +5313,10 @@ class Document(object):
                 s = str(s,'utf-8')
 
         if self.bypassleak:
-            return s.replace('XMLid=','xml:id=')
-        else:
-            return s
+            s = s.replace('XMLid=','xml:id=')
+        s = s.replace('ns0:','') #ugly patch to get rid of namespace prefix
+        s = s.replace(':ns0','')
+        return s
 
 
     def __unicode__(self):
