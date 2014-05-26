@@ -170,7 +170,7 @@ class Test2Sanity(unittest.TestCase):
 
     def test002_count_sentences(self):
         """Sanity check - Sentences count"""
-        self.assertEqual( len(self.doc.sentences()) , 13)
+        self.assertEqual( len(self.doc.sentences()) , 14)
 
     def test003a_count_words(self):
         """Sanity check - Word count"""

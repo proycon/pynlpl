@@ -1791,12 +1791,12 @@ class AllowCorrections(object):
                     set = new.set
                 except:
                     set = None
-                print("DEBUG: Finding replaceables within " + str(repr(self)) + " for ", str(repr(new)), " set " ,set , " args " ,repr(kwargs2),file=sys.stderr)
+                #print("DEBUG: Finding replaceables within " + str(repr(self)) + " for ", str(repr(new)), " set " ,set , " args " ,repr(kwargs2),file=sys.stderr)
                 replaceables = new.__class__.findreplaceables(self, set, **kwargs2)
-                print("DEBUG: " , len(replaceables) , " found",file=sys.stderr)
+                #print("DEBUG: " , len(replaceables) , " found",file=sys.stderr)
                 original += replaceables
             if not original:
-                print("DEBUG: ", self.xmlstring(),file=sys.stderr)
+                #print("DEBUG: ", self.xmlstring(),file=sys.stderr)
                 raise Exception("No original= specified and unable to automatically infer on " + str(repr(self)) + " for " + str(repr(new)) + " with set " + set)
             else:
                 c.replace( Original(self.doc, *original))
@@ -3146,15 +3146,15 @@ class Reference(AbstractStructureElement):
         else:
             idref = None
         if 'type' in node.attrib:
-            idref = node.attrib['type']
+            t = node.attrib['type']
             del node.attrib['type']
         else:
             idref = None
         instance = super(Reference,Class).parsexml(node, doc)
         if idref:
             instance.idref = idref
-        if type:
-            instance.type = type
+        if t:
+            instance.type =  t
         return instance
 
 
@@ -3520,7 +3520,7 @@ class AlternativeLayers(AbstractElement):
     PRINTABLE = False
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent,String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent,String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
 
 
 class External(AbstractElement):
@@ -3904,13 +3904,13 @@ class StyleFeature(Feature):
     SUBSET = "style"
 
 class Event(AbstractStructureElement):
-    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent,String, Metric,AbstractExtendedTokenAnnotation)
+    #ACCEPTED_DATA set at bottom
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'
     OCCURRENCESPERSET = 0
 
 class Note(AbstractStructureElement):
-    ACCEPTED_DATA = (AbstractStructureElement, Feature, TextContent,String, Metric,AbstractExtendedTokenAnnotation)
+    #ACCEPTED_DATA set at bottom
     ANNOTATIONTYPE = AnnotationType.NOTE
     XMLTAG = 'note'
     OCCURRENCESPERSET = 0
@@ -3983,7 +3983,7 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
 
-    ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, String,Gap, Description,  Linebreak, Whitespace, Event, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, String,Gap, Description,  Linebreak, Whitespace, Event, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 's'
     TEXTDELIMITER = ' '
     ANNOTATIONTYPE = AnnotationType.SENTENCE
@@ -4124,14 +4124,14 @@ Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, String,Gap, Descripti
 
 class Caption(AbstractStructureElement):
     """Element used for captions for figures or tables, contains sentences"""
-    ACCEPTED_DATA = (Sentence, Description, TextContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     OCCURRENCES = 1
     XMLTAG = 'caption'
 
 
 class Label(AbstractStructureElement):
     """Element used for labels. Mostly in within list item. Contains words."""
-    ACCEPTED_DATA = (Word, Description, TextContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Word, Reference, Description, TextContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
     XMLTAG = 'label'
 
 
@@ -4144,12 +4144,12 @@ class ListItem(AbstractStructureElement):
 
 class List(AbstractStructureElement):
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
-    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent, String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
     XMLTAG = 'list'
     TEXTDELIMITER = '\n'
     ANNOTATIONTYPE = AnnotationType.LIST
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Reference, TextContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
 
 class Figure(AbstractStructureElement):
     """Element for the representation of a graphical figure. Structure element."""
@@ -4202,7 +4202,7 @@ class Figure(AbstractStructureElement):
 class Paragraph(AbstractStructureElement):
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n\n"
     ANNOTATIONTYPE = AnnotationType.PARAGRAPH
@@ -4210,13 +4210,13 @@ class Paragraph(AbstractStructureElement):
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
 
-    ACCEPTED_DATA = (Sentence, Word, Description, Event, TextContent,String,Alignment, Metric, Linebreak, Whitespace,Gap,  Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Sentence, Word, Description, Event, Reference, TextContent,String,Alignment, Metric, Linebreak, Whitespace,Gap,  Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'
 
 class Cell(AbstractStructureElement):
-    ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Note, Reference, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation)
     XMLTAG = 'cell'
     TEXTDELIMITER = " | "
     REQUIRED_ATTRIBS = (),
@@ -5420,6 +5420,7 @@ class Document(object):
 
 class Division(AbstractStructureElement):
     """Structure element representing some kind of division. Divisions may be nested at will, and may include almost all kinds of other structure elements."""
+    #Accepted_data set later
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.N)
     XMLTAG = 'div'
@@ -5432,7 +5433,6 @@ class Division(AbstractStructureElement):
                 return e
         raise NoSuchAnnotation()
 
-Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer)
 
 
 class Text(AbstractStructureElement):
@@ -5440,13 +5440,20 @@ class Text(AbstractStructureElement):
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, Word,  List, Figure, Table, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric)
     XMLTAG = 'text'
     TEXTDELIMITER = "\n\n\n"
 
 
+#==============================================================================
+#Setting Accepted data that has been postponed earlier (to allow circular references)
+
+Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+Event.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, String, Metric,AbstractExtendedTokenAnnotation)
+Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head, List, Figure, Table, Reference, Feature, TextContent,String, Metric,AbstractExtendedTokenAnnotation)
 
 
+#==============================================================================
 
 class Corpus:
     """A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing."""
