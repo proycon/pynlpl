@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.11.0'
-LIBVERSION = '0.11.0.45' #== FoLiA version + library revision
+LIBVERSION = '0.11.0.46' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -102,7 +102,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE = range(36)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE = range(37)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -3102,6 +3102,71 @@ class AbstractCorrectionChild(AbstractElement):
     PRINTABLE = True
     ROOTELEMENT = False
 
+
+class Reference(AbstractStructureElement):
+    ACCEPTED_DATA = (TextContent, String, Description, Metric)
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
+    PRINTABLE = True
+    XMLTAG = 'ref'
+
+    def __init__(self, doc, *args, **kwargs):
+        if 'idref' in kwargs:
+            self.idref = kwargs['idref']
+            del kwargs['idref']
+        else:
+            self.idref = None
+        if 'type' in kwargs:
+            self.type = kwargs['type']
+            del kwargs['type']
+        else:
+            self.type = None
+        super(Reference,self).__init__(doc, *args, **kwargs)
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        if not attribs: attribs = {}
+        if self.idref:
+            attribs['id'] = self.idref
+        if self.type:
+            attribs['type'] = self.type
+        return super(Reference,self).xml(attribs,elements, skipchildren)
+
+    def resolve(self):
+        if self.idref:
+            return self.doc[self.idref]
+        else:
+            return self
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        if 'id' in node.attrib:
+            idref = node.attrib['id']
+            del node.attrib['id']
+        else:
+            idref = None
+        if 'type' in node.attrib:
+            idref = node.attrib['type']
+            del node.attrib['type']
+        else:
+            idref = None
+        instance = super(Reference,Class).parsexml(node, doc)
+        if idref:
+            instance.idref = idref
+        if type:
+            instance.type = type
+        return instance
+
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
+        if not extraattribs: extraattribs = []
+        extraattribs.append( E.attribute(name='id'))
+        extraattribs.append( E.optional(E.attribute(name='type' ))) #id reference
+        return super(Reference, cls).relaxng(includechildren, extraattribs, extraelements)
+
 class AlignReference(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     XMLTAG = 'aref'
@@ -3844,6 +3909,11 @@ class Event(AbstractStructureElement):
     XMLTAG = 'event'
     OCCURRENCESPERSET = 0
 
+class Note(AbstractStructureElement):
+    ACCEPTED_DATA = (AbstractStructureElement, Feature, TextContent,String, Metric,AbstractExtendedTokenAnnotation)
+    ANNOTATIONTYPE = AnnotationType.NOTE
+    XMLTAG = 'note'
+    OCCURRENCESPERSET = 0
 
 class TimeSegment(AbstractSpanAnnotation):
     ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, Metric)
