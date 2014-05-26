@@ -4499,6 +4499,8 @@ class Document(object):
 
         if 'external' in kwargs:
             self.external = kwargs['external']
+        else:
+            self.external = False
 
         if self.external and not self.parentdoc:
             raise DeepValidationError("Document is marked as external and should not be loaded independently. However, no parentdoc= has been specified!")
