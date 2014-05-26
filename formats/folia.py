@@ -62,8 +62,9 @@ import bz2
 import gzip
 
 
-FOLIAVERSION = '0.10.0'
-LIBVERSION = '0.10.0.44' #== FoLiA version + library revision
+FOLIAVERSION = '0.11.0'
+LIBVERSION = '0.11.0.45' #== FoLiA version + library revision
+
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -71,6 +72,8 @@ NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 nslen = len(NSFOLIA) + 2
 nslendcoi = len(NSDCOI) + 2
+
+TMPDIR = "/tmp/" #will be used for downloading temporary data (external subdocuments)
 
 defaultignorelist = [] #Will be set at end of file! Only here so pylint won't complain
 #default ignore list for token annotation
@@ -3455,6 +3458,108 @@ class AlternativeLayers(AbstractElement):
 Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent,String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric)
 
 
+class External(AbstractElement):
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = ()
+    ACCEPTED_DATA = []
+    XMLTAG = 'external'
+    PRINTABLE = True
+    AUTH = True
+
+
+    def __init__(self, doc, *args, **kwargs):
+        #Special constructor, not calling super constructor
+        if not 'source' in kwargs:
+            raise Exception("Source required for External")
+        assert(isinstance(doc,Document))
+        self.doc = doc
+        self.id = None
+        self.source = kwargs['source']
+        if 'include' in kwargs and kwargs['include'] != 'no':
+            self.include = bool(kwargs['include'])
+        else:
+            self.include = False
+        self.annotator = None
+        self.annotatortype = None
+        self.confidence = None
+        self.n = None
+        self.datetime = None
+        self.auth = False
+        self.data = []
+        self.subdoc = None
+
+        if self.include:
+            if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Loading subdocument for inclusion: " + self.source,file=stderr)
+            #load subdocument
+
+            #check if it is already loaded, if multiple references are made to the same doc we reuse the instance
+            if self.source in self.doc.subdocs:
+                self.subdoc = self.doc.subdocs[self.source]
+            elif self.source[:7] == 'http://' or self.source[:8] == 'https://':
+                #document is remote, download (in memory)
+                try:
+                    f = urlopen(self.source)
+                except:
+                    raise DeepValidationError("Unable to download subdocument for inclusion: " + self.source)
+                try:
+                    content = u(f.read())
+                except IOError:
+                    raise DeepValidationError("Unable to download subdocument for inclusion: " + self.source)
+                f.close()
+                self.subdoc = Document(string=content, parentdoc = self.doc, setdefinitions=self.doc.setdefinitions)
+            elif os.path.exists(self.source):
+                #document is on disk:
+                self.subdoc = Document(file=self.source, parentdoc = self.doc, setdefinitions=self.doc.setdefinitions)
+            else:
+                #document not found
+                raise DeepValidationError("Unable to find subdocument for inclusion: " + self.source)
+
+            self.subdoc.parentdoc = self.doc
+            self.doc.subdocs[self.source] = self.subdoc
+            #TODO: verify there are no clashes in declarations between parent and child
+            #TODO: check validity of elements under subdoc/text with respect to self.parent
+
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        assert Class is External or issubclass(Class, External)
+        #special handling for external
+        source = node.attrib['src']
+        if 'include' in node.attrib:
+            include = node.attrib['include']
+        else:
+            include = False
+        if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found external",file=stderr)
+        return External(doc, source=source, include=include)
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        if not attribs:
+            attribs= {}
+
+        attribs['src'] = self.source
+
+        if self.include:
+            attribs['include']  = 'yes'
+        else:
+            attribs['include']  = 'no'
+
+        return super(External, self).xml(attribs, elements, skipchildren)
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.element(E.attribute(E.text(), name='src'), E.optional(E.attribute(E.text(), name='include')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+
+
+    def select(self, Class, set=None, recursive=True,  ignore=True, node=None):
+        if self.include:
+            return self.subdoc.data[0].select(Class,set,recursive, ignore, node) #pass it on to the text node of the subdoc
+        else:
+            return []
+
+
 class WordReference(AbstractElement):
     """Word reference. Use to refer to words or morphemes from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word or Morpheme objects will be used"""
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -3762,7 +3867,7 @@ class SenseAnnotation(AbstractTokenAnnotation):
     XMLTAG = 'sense'
 
 class SubjectivityAnnotation(AbstractTokenAnnotation):
-    """Subjectivity annotation: a token annotation element"""
+    """Subjectivity annotation/Sentiment analysis: a token annotation element"""
     ANNOTATIONTYPE = AnnotationType.SUBJECTIVITY
     ACCEPTED_DATA = (Feature, Description, Metric)
     XMLTAG = 'subjectivity'
@@ -4382,6 +4487,23 @@ class Document(object):
         else:
             self.mode = Mode.MEMORY #Load all in memory
 
+
+        if 'parentdoc' in kwargs:  #for subdocuments
+            assert isinstance(kwargs['parentdoc'], Document)
+            self.parentdoc = kwargs['parentdoc']
+        else:
+            self.parentdoc = None
+
+        self.subdocs = {} #will hold all subdocs (sourcestring => document) , needed so the index can resolve IDs in subdocs
+        self.standoffdocs = {} #will hold all standoffdocs (type => set => sourcestring => document)
+
+        if 'external' in kwargs:
+            self.external = kwargs['external']
+
+        if self.external and not self.parentdoc:
+            raise DeepValidationError("Document is marked as external and should not be loaded independently. However, no parentdoc= has been specified!")
+
+
         if 'loadsetdefinitions' in kwargs:
             self.loadsetdefinitions = bool(kwargs['loadsetdefinitions'])
         else:
@@ -4529,6 +4651,19 @@ class Document(object):
         for text in self.data:
             yield text
 
+
+    def __contains__(self, key):
+        """Tests if the specified ID is in the document index"""
+        if key in self.index:
+            return True
+        elif self.subdocs:
+            for subdoc in self.subdocs.values():
+                if key in subdoc:
+                    return True
+            return False
+        else:
+            return False
+
     def __getitem__(self, key):
         """Obtain an element by ID from the document index.
 
@@ -4536,13 +4671,21 @@ class Document(object):
 
             word = doc['example.p.4.s.10.w.3']
         """
-        try:
-            if isinstance(key, int):
-                return self.data[key]
-            else:
+        if isinstance(key, int):
+            return self.data[key]
+        else:
+            try:
                 return self.index[key]
-        except KeyError:
-            raise
+            except KeyError:
+                if self.subdocs: #perhaps the key is in one of our subdocs?
+                    for subdoc in self.subdocs.values():
+                        try:
+                            return subdoc[key]
+                        except KeyError:
+                            pass
+                else:
+                    raise
+
 
     def append(self,text):
         """Add a text to the document:
@@ -4785,6 +4928,48 @@ class Document(object):
                         self.annotationdefaults[type] = {}
                     self.annotationdefaults[type][set] = defaults
 
+
+                if 'external' in subnode.attrib and subnode.attrib['external']:
+                    if self.debug >= 1:
+                        print("[PyNLPl FoLiA DEBUG] Loading external document: " + subnode.attrib['external'],file=stderr)
+                    if not type in self.standoffdocs:
+                        self.standoffdocs[type] = {}
+                    self.standoffdocs[type][set] = {}
+
+                    #check if it is already loaded, if multiple references are made to the same doc we reuse the instance
+                    standoffdoc = None
+                    for t in self.standoffdocs:
+                        for s in self.standoffdocs[t]:
+                            for source in self.standoffdocs[t][s]:
+                                if source == subnode.attrib['external']:
+                                    standoffdoc = self.standoffdocs[t][s]
+                                    break
+                            if standoffdoc: break
+                        if standoffdoc: break
+
+                    if not standoffdoc:
+                        if subnode.attrib['external'][:7] == 'http://' or subnode.attrib['external'][:8] == 'https://':
+                            #document is remote, download (in memory)
+                            try:
+                                f = urlopen(subnode.attrib['external'])
+                            except:
+                                raise DeepValidationError("Unable to download standoff document: " + subnode.attrib['external'])
+                            try:
+                                content = u(f.read())
+                            except IOError:
+                                raise DeepValidationError("Unable to download standoff document: " + subnode.attrib['external'])
+                            f.close()
+                            standoffdoc = Document(string=content, parentdoc=self, setdefinitions=self.setdefinitions)
+                        elif os.path.exists(subnode.attrib['external']):
+                            #document is on disk:
+                            standoffdoc = Document(file=subnode.attrib['external'], parentdoc=self, setdefinitions=self.setdefinitions)
+                        else:
+                            #document not found
+                            raise DeepValidationError("Unable to find standoff document: " + subnode.attrib['external'])
+
+                    self.standoffdocs[type][set][subnode.attrib['external']] = standoffdoc
+                    standoffdoc.parentdoc = self
+
                 if self.debug >= 1:
                     print("[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults),file=stderr)
 
@@ -5008,6 +5193,16 @@ class Document(object):
                 else:
                     self.version = None
 
+                if 'external' in node.attrib:
+                    if node.attrib['external'] == 'yes':
+                        self.external = True
+                    else:
+                        self.external = False
+
+                    if self.external and not self.parentdoc:
+                        raise DeepValidationError("Document is marked as external and should not be loaded independently. However, no parentdoc= has been specified!")
+
+
                 for subnode in node:
                     if subnode.tag == '{' + NSFOLIA + '}metadata':
                         self.parsemetadata(subnode)
@@ -5166,12 +5361,13 @@ class Division(AbstractStructureElement):
 
 Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer)
 
+
 class Text(AbstractStructureElement):
     """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, Table, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, Word,  List, Figure, Table, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric)
     XMLTAG = 'text'
     TEXTDELIMITER = "\n\n\n"
 
