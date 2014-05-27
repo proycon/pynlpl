@@ -8,12 +8,18 @@
 #
 #----------------------------------------------------------------
 
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-#from pynlpl.common import u
+
+import io
+import math
 import sys
+
+from pynlpl.statistics import FrequencyList, product
+from pynlpl.textprocessors import Windower
+
 if sys.version < '3':
     from codecs import getwriter
     stderr = getwriter('utf-8')(sys.stderr)
@@ -21,12 +27,6 @@ if sys.version < '3':
 else:
     stderr = sys.stderr
     stdout = sys.stdout
-
-from pynlpl.statistics import FrequencyList, product
-from pynlpl.textprocessors import Windower
-import math
-import io
-
 
 
 class SimpleLanguageModel:
@@ -144,22 +144,28 @@ class SimpleLanguageModel:
 
 
 class ARPALanguageModel(object):
-    """Full back-off language model, loaded from file in ARPA format. This class does not build the model but allows you to use a pre-computed one. You can use the tool ngram-count from for instance SRILM to actually build the model. """
 
-    def __init__(self, filename, encoding = 'utf-8', encoder=None, base_e=True, dounknown=True,debug=False):
+    """Full back-off language model, loaded from file in ARPA format.
+
+    This class does not build the model but allows you to use a pre-computed one.
+    You can use the tool ngram-count from for instance SRILM to actually build the model.
+
+    """
+
+    def __init__(self, filename, encoding='utf-8', encoder=None, base_e=True, dounknown=True, debug=False):
         self.ngrams = {}
         self.backoff = {}
         self.total = {}
         self.base_e = base_e
         self.dounknown = dounknown
-        self.debug = False
+        self.debug = debug
 
         if encoder is None:
             self.encoder = lambda x: x
         else:
             self.encoder = encoder
 
-        with io.open(filename,'r',encoding=encoding) as f:
+        with io.open(filename, 'r', encoding=encoding) as f:
             for line in f:
                 line = line.strip()
                 if line == '\\data\\':
@@ -167,7 +173,7 @@ class ARPALanguageModel(object):
                 elif line == '\\end\\':
                     break
                 elif line and line[0] == '\\' and line[-1] == ':':
-                    for i in range(1,10):
+                    for i in range(1, 10):
                         if line == '\\' + str(i) + '-grams:':
                             order = i
                 elif line:
@@ -179,7 +185,8 @@ class ARPALanguageModel(object):
                     elif order > 0:
                         fields = line.split('\t')
                         if base_e:
-                            logprob = float(fields[0]) * math.log(10)   # * log(10) does log10 to log_e conversion
+                            # * log(10) does log10 to log_e conversion
+                            logprob = float(fields[0]) * math.log(10)
                         else:
                             logprob = float(fields[0])
                         ngram = self.encoder(tuple(fields[1].split()))
@@ -191,9 +198,11 @@ class ARPALanguageModel(object):
                                 backoffprob = float(fields[2])
                             self.backoff[ngram] = backoffprob
                             if self.debug:
-                                print("Adding to LM: " + str(ngram) + "\t" << str(logprob) + "\t" + str(backoffprob), file=stderr)
+                                msg = "Adding to LM: {}\t{}\t{}"
+                                print(msg.format(ngram, logprob, backoffprob), file=stderr)
                         elif self.debug:
-                            print("Adding to LM: " + str(ngram) + "\t" << str(logprob), file=stderr)
+                            msg = "Adding to LM: {}\t{}"
+                            print(msg.format(ngram, logprob), file=stderr)
                     elif self.debug:
                         print("Unable to parse ARPA LM line: " + line, file=stderr)
 
@@ -212,6 +221,7 @@ class ARPALanguageModel(object):
     def scoreword(self, word, history=None):
         if isinstance(word, str) or (sys.version < '3' and isinstance(word, unicode)):
             word = (word,)
+
         if history:
             lookup = history + word
         else:
@@ -223,27 +233,23 @@ class ARPALanguageModel(object):
         try:
             return self.ngrams[lookup]
         except KeyError:
-            #not found, back off
+            # not found, back off
             if not history:
                 if self.dounknown:
                     try:
                         return self.ngrams[('<unk>',)]
                     except KeyError:
-                        raise KeyError("Word " + str(word) + " not found. And no history specified and model has no <unk>")
+                        msg = "Word {} not found. And no history specified and model has no <unk>."
+                        raise KeyError(msg.format(word))
                 else:
-                    raise KeyError("Word " + str(word) + " not found. And no history specified")
+                    msg = "Word {} not found. And no history specified."
+                    raise KeyError(msg.format(word))
 
             try:
                 backoffweight = self.backoff[history]
             except KeyError:
-                backoffweight = 0 #backoff weight will be 0 if not found
+                backoffweight = 0  # backoff weight will be 0 if not found
             return backoffweight + self.scoreword(word, history[1:])
-
-
 
     def __len__(self):
         return len(self.ngrams)
-
-
-
-
