@@ -153,49 +153,48 @@ class ARPALanguageModel(object):
     """
 
     def __init__(self, filename, encoding='utf-8', encoder=None, base_e=True, dounknown=True, debug=False):
-        self.ngrams = {}
-        self.backoff = {}
-        self.total = {}
+        # parameters
+        self.encoder = (lambda x: x) if encoder is None else encoder
         self.base_e = base_e
         self.dounknown = dounknown
         self.debug = debug
+        # other attributes
+        self.backoff = {}
+        self.ngrams = {}
+        self.total = {}
 
-        if encoder is None:
-            self.encoder = lambda x: x
-        else:
-            self.encoder = encoder
-
-        with io.open(filename, 'r', encoding=encoding) as f:
+        with io.open(filename, 'rt', encoding=encoding) as f:
+            order = None
             for line in f:
                 line = line.strip()
                 if line == '\\data\\':
                     order = 0
                 elif line == '\\end\\':
                     break
-                elif line and line[0] == '\\' and line[-1] == ':':
+                elif line.startswith('\\') and line.endswith(':'):
                     for i in range(1, 10):
-                        if line == '\\' + str(i) + '-grams:':
+                        if line == '\\{}-grams:'.format(i):
                             order = i
+                            break
+                    else:
+                        raise ValueError("Order of n-gram is not supported!")
                 elif line:
-                    if order == 0:
-                        if line[0:6] == "ngram":
+                    if order == 0:  # still in \data\ section
+                        if line.startswith('ngram'):
                             n = int(line[6])
-                            v = int(line[8])
+                            v = int(line[8:])
                             self.total[n] = v
                     elif order > 0:
                         fields = line.split('\t')
-                        if base_e:
-                            # * log(10) does log10 to log_e conversion
-                            logprob = float(fields[0]) * math.log(10)
-                        else:
-                            logprob = float(fields[0])
+                        logprob = float(fields[0])
+                        if base_e:  # * log(10) does log10 to log_e conversion
+                            logprob *= math.log(10)
                         ngram = self.encoder(tuple(fields[1].split()))
                         self.ngrams[ngram] = logprob
                         if len(fields) > 2:
-                            if base_e:
-                                backoffprob = float(fields[2]) * math.log(10)
-                            else:
-                                backoffprob = float(fields[2])
+                            backoffprob = float(fields[2])
+                            if base_e:  # * log(10) does log10 to log_e conversion
+                                backoffprob *= math.log(10)
                             self.backoff[ngram] = backoffprob
                             if self.debug:
                                 msg = "Adding to LM: {}\t{}\t{}"
@@ -205,7 +204,6 @@ class ARPALanguageModel(object):
                             print(msg.format(ngram, logprob), file=stderr)
                     elif self.debug:
                         print("Unable to parse ARPA LM line: " + line, file=stderr)
-
         self.order = order
 
     def score(self, data, history=None):
@@ -232,8 +230,7 @@ class ARPALanguageModel(object):
 
         try:
             return self.ngrams[lookup]
-        except KeyError:
-            # not found, back off
+        except KeyError:  # not found, back off
             if not history:
                 if self.dounknown:
                     try:
@@ -244,12 +241,12 @@ class ARPALanguageModel(object):
                 else:
                     msg = "Word {} not found. And no history specified."
                     raise KeyError(msg.format(word))
-
-            try:
-                backoffweight = self.backoff[history]
-            except KeyError:
-                backoffweight = 0  # backoff weight will be 0 if not found
-            return backoffweight + self.scoreword(word, history[1:])
+            else:
+                try:
+                    backoffweight = self.backoff[history]
+                except KeyError:
+                    backoffweight = 0  # backoff weight will be 0 if not found
+                return backoffweight + self.scoreword(word, history[1:])
 
     def __len__(self):
         return len(self.ngrams)
