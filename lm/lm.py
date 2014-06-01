@@ -152,16 +152,57 @@ class ARPALanguageModel(object):
 
     """
 
-    def __init__(self, filename, encoding='utf-8', encoder=None, base_e=True, dounknown=True, debug=False):
+    class NgramsProbs(object):
+        """Store Ngrams with their probabilities and backoffs.
+
+        This class is used in order to abstract the physical storage layout,
+        and enable memory/speed tradeoffs.
+
+        """
+
+        def __init__(self, data, mode='simple', delim=' '):
+            """Create an ngrams storage with the given method:
+
+            'simple' method is a Python dictionary (quick, takes much memory).
+            'trie' method is more space-efficient (~35% reduction) but slower.
+            data is a dictionary of ngram-tuple => (probability, backoff).
+            delim is the strings which converts ngrams between tuple and
+            unicode string (for saving in trie mode).
+
+            """
+            self.delim = delim
+            self.mode = mode
+            if mode == 'simple':
+                self._data = data
+            elif mode == 'trie':
+                import marisa_trie
+                self._data = marisa_trie.RecordTrie("@dd", [(self.delim.join(k), v) for k, v in data.items()])
+            else:
+                raise ValueError("mode {} is not supported for NgramsProbs".format(mode))
+
+        def prob(self, ngram):
+            """Return probability of given ngram tuple"""
+            return self._data[ngram][0] if self.mode == 'simple' else self._data[self.delim.join(ngram)][0][0]
+
+        def backoff(self, ngram):
+            """Return backoff value of a given ngram tuple"""
+            return self._data[ngram][1] if self.mode == 'simple' else self._data[self.delim.join(ngram)][0][1]
+
+        def __len__(self):
+            return len(self._data)
+
+
+    def __init__(self, filename, encoding='utf-8', encoder=None, base_e=True, dounknown=True, debug=False, mode='simple'):
         # parameters
         self.encoder = (lambda x: x) if encoder is None else encoder
         self.base_e = base_e
         self.dounknown = dounknown
         self.debug = debug
+        self.mode = mode
         # other attributes
-        self.backoff = {}
-        self.ngrams = {}
         self.total = {}
+
+        data = {}
 
         with io.open(filename, 'rt', encoding=encoding) as f:
             order = None
@@ -190,21 +231,23 @@ class ARPALanguageModel(object):
                         if base_e:  # * log(10) does log10 to log_e conversion
                             logprob *= math.log(10)
                         ngram = self.encoder(tuple(fields[1].split()))
-                        self.ngrams[ngram] = logprob
                         if len(fields) > 2:
                             backoffprob = float(fields[2])
                             if base_e:  # * log(10) does log10 to log_e conversion
                                 backoffprob *= math.log(10)
-                            self.backoff[ngram] = backoffprob
                             if self.debug:
                                 msg = "Adding to LM: {}\t{}\t{}"
                                 print(msg.format(ngram, logprob, backoffprob), file=stderr)
-                        elif self.debug:
-                            msg = "Adding to LM: {}\t{}"
-                            print(msg.format(ngram, logprob), file=stderr)
+                        else:
+                            backoffprob = 0.0
+                            if self.debug:
+                                msg = "Adding to LM: {}\t{}"
+                                print(msg.format(ngram, logprob), file=stderr)
+                        data[ngram] = (logprob, backoffprob)
                     elif self.debug:
                         print("Unable to parse ARPA LM line: " + line, file=stderr)
         self.order = order
+        self.ngrams = self.NgramsProbs(data, mode)
 
     def score(self, data, history=None):
         result = 0
@@ -229,12 +272,12 @@ class ARPALanguageModel(object):
             lookup = lookup[-self.order:]
 
         try:
-            return self.ngrams[lookup]
+            return self.ngrams.prob(lookup)
         except KeyError:  # not found, back off
             if not history:
                 if self.dounknown:
                     try:
-                        return self.ngrams[('<unk>',)]
+                        return self.ngrams.prob(('<unk>',))
                     except KeyError:
                         msg = "Word {} not found. And no history specified and model has no <unk>."
                         raise KeyError(msg.format(word))
@@ -243,7 +286,7 @@ class ARPALanguageModel(object):
                     raise KeyError(msg.format(word))
             else:
                 try:
-                    backoffweight = self.backoff[history]
+                    backoffweight = self.ngrams.backoff(history)
                 except KeyError:
                     backoffweight = 0  # backoff weight will be 0 if not found
                 return backoffweight + self.scoreword(word, history[1:])
