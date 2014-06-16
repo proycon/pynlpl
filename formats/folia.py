@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.11.0'
-LIBVERSION = '0.11.0.46' #== FoLiA version + library revision
+LIBVERSION = '0.11.0.47' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -5081,7 +5081,7 @@ class Document(object):
         self.annotationdefaults[annotationtype][set] = kwargs
 
     def declared(self, annotationtype, set):
-        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
         return ( (annotationtype,set) in self.annotations)
 
 
