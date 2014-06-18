@@ -1233,7 +1233,9 @@ class AbstractElement(object):
                             e[-1].tail = child
 
                 else:
-                    e.append(child.xml())
+                    xml = child.xml() #may return None in rare occassions, meaning we wan to skip
+                    if not (xml is None):
+                        e.append(xml)
 
         if elements: #extra elements
             for e2 in elements:
@@ -2974,7 +2976,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
     def xml(self, attribs = None,elements = None, skipchildren = False):
         if self.set is False or self.set is None:
             if len(self.data) == 0: #just skip if there are no children
-                return ""
+                return None
             else:
                 raise ValueError("No set specified or derivable for annotation layer " + self.__class__.__name__)
         return super(AbstractAnnotationLayer, self).xml(attribs, elements, skipchildren)
