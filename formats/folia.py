@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.10.0'
-LIBVERSION = '0.10.0.44' #== FoLiA version + library revision
+LIBVERSION = '0.10.0.45' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -3670,7 +3670,7 @@ class SemanticRolesLayer(AbstractAnnotationLayer):
     ANNOTATIONTYPE = AnnotationType.SEMROLE
 
 class HeadFeature(Feature):
-    """Synset feature, to be used within PosAnnotation"""
+    """Head feature, to be used within PosAnnotation"""
     SUBSET = 'head' #associated subset
     XMLTAG = None
 
@@ -3963,7 +3963,7 @@ class Label(AbstractStructureElement):
 class ListItem(AbstractStructureElement):
     """Single element in a List. Structure element. Contained within List element."""
     #ACCEPTED_DATA = (List, Sentence) #Defined below
-    XMLTAG = 'listitem'
+    XMLTAG = 'item'   #(xmltag differs from tagname because I screwed up, this used to be 'listitem' but was inconsistent with the manual, in reading xml it will be translated on the fly to item)
     ANNOTATIONTYPE = AnnotationType.LIST
 
 
@@ -5832,6 +5832,8 @@ for c in list(vars().values()):
                 ANNOTATIONTYPE2LAYERCLASS[c.ANNOTATIONTYPE] = c
     except:
         continue
+
+XML2CLASS['listitem'] = ListItem #backward compatibility (XML tag is 'item' now, consistent with manual)
 
 defaultignorelist = [Original,Suggestion,Alternative, AlternativeLayers]
 #default ignore list for token annotation
