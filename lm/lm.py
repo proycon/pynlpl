@@ -8,12 +8,18 @@
 #
 #----------------------------------------------------------------
 
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-#from pynlpl.common import u
+
+import io
+import math
 import sys
+
+from pynlpl.statistics import FrequencyList, product
+from pynlpl.textprocessors import Windower
+
 if sys.version < '3':
     from codecs import getwriter
     stderr = getwriter('utf-8')(sys.stderr)
@@ -21,12 +27,6 @@ if sys.version < '3':
 else:
     stderr = sys.stderr
     stdout = sys.stdout
-
-from pynlpl.statistics import FrequencyList, product
-from pynlpl.textprocessors import Windower
-import math
-import io
-
 
 
 class SimpleLanguageModel:
@@ -144,60 +144,110 @@ class SimpleLanguageModel:
 
 
 class ARPALanguageModel(object):
-    """Full back-off language model, loaded from file in ARPA format. This class does not build the model but allows you to use a pre-computed one. You can use the tool ngram-count from for instance SRILM to actually build the model. """
 
-    def __init__(self, filename, encoding = 'utf-8', encoder=None, base_e=True, dounknown=True,debug=False):
-        self.ngrams = {}
-        self.backoff = {}
-        self.total = {}
+    """Full back-off language model, loaded from file in ARPA format.
+
+    This class does not build the model but allows you to use a pre-computed one.
+    You can use the tool ngram-count from for instance SRILM to actually build the model.
+
+    """
+
+    class NgramsProbs(object):
+        """Store Ngrams with their probabilities and backoffs.
+
+        This class is used in order to abstract the physical storage layout,
+        and enable memory/speed tradeoffs.
+
+        """
+
+        def __init__(self, data, mode='simple', delim=' '):
+            """Create an ngrams storage with the given method:
+
+            'simple' method is a Python dictionary (quick, takes much memory).
+            'trie' method is more space-efficient (~35% reduction) but slower.
+            data is a dictionary of ngram-tuple => (probability, backoff).
+            delim is the strings which converts ngrams between tuple and
+            unicode string (for saving in trie mode).
+
+            """
+            self.delim = delim
+            self.mode = mode
+            if mode == 'simple':
+                self._data = data
+            elif mode == 'trie':
+                import marisa_trie
+                self._data = marisa_trie.RecordTrie("@dd", [(self.delim.join(k), v) for k, v in data.items()])
+            else:
+                raise ValueError("mode {} is not supported for NgramsProbs".format(mode))
+
+        def prob(self, ngram):
+            """Return probability of given ngram tuple"""
+            return self._data[ngram][0] if self.mode == 'simple' else self._data[self.delim.join(ngram)][0][0]
+
+        def backoff(self, ngram):
+            """Return backoff value of a given ngram tuple"""
+            return self._data[ngram][1] if self.mode == 'simple' else self._data[self.delim.join(ngram)][0][1]
+
+        def __len__(self):
+            return len(self._data)
+
+
+    def __init__(self, filename, encoding='utf-8', encoder=None, base_e=True, dounknown=True, debug=False, mode='simple'):
+        # parameters
+        self.encoder = (lambda x: x) if encoder is None else encoder
         self.base_e = base_e
         self.dounknown = dounknown
-        self.debug = False
+        self.debug = debug
+        self.mode = mode
+        # other attributes
+        self.total = {}
 
-        if encoder is None:
-            self.encoder = lambda x: x
-        else:
-            self.encoder = encoder
+        data = {}
 
-        with io.open(filename,'r',encoding=encoding) as f:
+        with io.open(filename, 'rt', encoding=encoding) as f:
+            order = None
             for line in f:
                 line = line.strip()
                 if line == '\\data\\':
                     order = 0
                 elif line == '\\end\\':
                     break
-                elif line and line[0] == '\\' and line[-1] == ':':
-                    for i in range(1,10):
-                        if line == '\\' + str(i) + '-grams:':
+                elif line.startswith('\\') and line.endswith(':'):
+                    for i in range(1, 10):
+                        if line == '\\{}-grams:'.format(i):
                             order = i
+                            break
+                    else:
+                        raise ValueError("Order of n-gram is not supported!")
                 elif line:
-                    if order == 0:
-                        if line[0:6] == "ngram":
+                    if order == 0:  # still in \data\ section
+                        if line.startswith('ngram'):
                             n = int(line[6])
-                            v = int(line[8])
+                            v = int(line[8:])
                             self.total[n] = v
                     elif order > 0:
                         fields = line.split('\t')
-                        if base_e:
-                            logprob = float(fields[0]) * math.log(10)   # * log(10) does log10 to log_e conversion
-                        else:
-                            logprob = float(fields[0])
+                        logprob = float(fields[0])
+                        if base_e:  # * log(10) does log10 to log_e conversion
+                            logprob *= math.log(10)
                         ngram = self.encoder(tuple(fields[1].split()))
-                        self.ngrams[ngram] = logprob
                         if len(fields) > 2:
-                            if base_e:
-                                backoffprob = float(fields[2]) * math.log(10)
-                            else:
-                                backoffprob = float(fields[2])
-                            self.backoff[ngram] = backoffprob
+                            backoffprob = float(fields[2])
+                            if base_e:  # * log(10) does log10 to log_e conversion
+                                backoffprob *= math.log(10)
                             if self.debug:
-                                print("Adding to LM: " + str(ngram) + "\t" << str(logprob) + "\t" + str(backoffprob), file=stderr)
-                        elif self.debug:
-                            print("Adding to LM: " + str(ngram) + "\t" << str(logprob), file=stderr)
+                                msg = "Adding to LM: {}\t{}\t{}"
+                                print(msg.format(ngram, logprob, backoffprob), file=stderr)
+                        else:
+                            backoffprob = 0.0
+                            if self.debug:
+                                msg = "Adding to LM: {}\t{}"
+                                print(msg.format(ngram, logprob), file=stderr)
+                        data[ngram] = (logprob, backoffprob)
                     elif self.debug:
                         print("Unable to parse ARPA LM line: " + line, file=stderr)
-
         self.order = order
+        self.ngrams = self.NgramsProbs(data, mode)
 
     def score(self, data, history=None):
         result = 0
@@ -212,6 +262,7 @@ class ARPALanguageModel(object):
     def scoreword(self, word, history=None):
         if isinstance(word, str) or (sys.version < '3' and isinstance(word, unicode)):
             word = (word,)
+
         if history:
             lookup = history + word
         else:
@@ -221,29 +272,24 @@ class ARPALanguageModel(object):
             lookup = lookup[-self.order:]
 
         try:
-            return self.ngrams[lookup]
-        except KeyError:
-            #not found, back off
+            return self.ngrams.prob(lookup)
+        except KeyError:  # not found, back off
             if not history:
                 if self.dounknown:
                     try:
-                        return self.ngrams[('<unk>',)]
+                        return self.ngrams.prob(('<unk>',))
                     except KeyError:
-                        raise KeyError("Word " + str(word) + " not found. And no history specified and model has no <unk>")
+                        msg = "Word {} not found. And no history specified and model has no <unk>."
+                        raise KeyError(msg.format(word))
                 else:
-                    raise KeyError("Word " + str(word) + " not found. And no history specified")
-
-            try:
-                backoffweight = self.backoff[history]
-            except KeyError:
-                backoffweight = 0 #backoff weight will be 0 if not found
-            return backoffweight + self.scoreword(word, history[1:])
-
-
+                    msg = "Word {} not found. And no history specified."
+                    raise KeyError(msg.format(word))
+            else:
+                try:
+                    backoffweight = self.ngrams.backoff(history)
+                except KeyError:
+                    backoffweight = 0  # backoff weight will be 0 if not found
+                return backoffweight + self.scoreword(word, history[1:])
 
     def __len__(self):
         return len(self.ngrams)
-
-
-
-

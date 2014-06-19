@@ -62,8 +62,9 @@ import bz2
 import gzip
 
 
-FOLIAVERSION = '0.10.0'
-LIBVERSION = '0.10.0.45' #== FoLiA version + library revision
+FOLIAVERSION = '0.11.0'
+LIBVERSION = '0.11.0.48' #== FoLiA version + library revision
+
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -71,6 +72,8 @@ NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 nslen = len(NSFOLIA) + 2
 nslendcoi = len(NSDCOI) + 2
+
+TMPDIR = "/tmp/" #will be used for downloading temporary data (external subdocuments)
 
 defaultignorelist = [] #Will be set at end of file! Only here so pylint won't complain
 #default ignore list for token annotation
@@ -99,7 +102,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE = range(36)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE = range(37)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -1230,7 +1233,9 @@ class AbstractElement(object):
                             e[-1].tail = child
 
                 else:
-                    e.append(child.xml())
+                    xml = child.xml() #may return None in rare occassions, meaning we wan to skip
+                    if not (xml is None):
+                        e.append(xml)
 
         if elements: #extra elements
             for e2 in elements:
@@ -1788,12 +1793,12 @@ class AllowCorrections(object):
                     set = new.set
                 except:
                     set = None
-                print("DEBUG: Finding replaceables within " + str(repr(self)) + " for ", str(repr(new)), " set " ,set , " args " ,repr(kwargs2),file=sys.stderr)
+                #print("DEBUG: Finding replaceables within " + str(repr(self)) + " for ", str(repr(new)), " set " ,set , " args " ,repr(kwargs2),file=sys.stderr)
                 replaceables = new.__class__.findreplaceables(self, set, **kwargs2)
-                print("DEBUG: " , len(replaceables) , " found",file=sys.stderr)
+                #print("DEBUG: " , len(replaceables) , " found",file=sys.stderr)
                 original += replaceables
             if not original:
-                print("DEBUG: ", self.xmlstring(),file=sys.stderr)
+                #print("DEBUG: ", self.xmlstring(),file=sys.stderr)
                 raise Exception("No original= specified and unable to automatically infer on " + str(repr(self)) + " for " + str(repr(new)) + " with set " + set)
             else:
                 c.replace( Original(self.doc, *original))
@@ -2971,7 +2976,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
     def xml(self, attribs = None,elements = None, skipchildren = False):
         if self.set is False or self.set is None:
             if len(self.data) == 0: #just skip if there are no children
-                return ""
+                return None
             else:
                 raise ValueError("No set specified or derivable for annotation layer " + self.__class__.__name__)
         return super(AbstractAnnotationLayer, self).xml(attribs, elements, skipchildren)
@@ -3098,6 +3103,71 @@ class AbstractCorrectionChild(AbstractElement):
     TEXTDELIMITER = None
     PRINTABLE = True
     ROOTELEMENT = False
+
+
+class Reference(AbstractStructureElement):
+    ACCEPTED_DATA = (TextContent, String, Description, Metric)
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
+    PRINTABLE = True
+    XMLTAG = 'ref'
+
+    def __init__(self, doc, *args, **kwargs):
+        if 'idref' in kwargs:
+            self.idref = kwargs['idref']
+            del kwargs['idref']
+        else:
+            self.idref = None
+        if 'type' in kwargs:
+            self.type = kwargs['type']
+            del kwargs['type']
+        else:
+            self.type = None
+        super(Reference,self).__init__(doc, *args, **kwargs)
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        if not attribs: attribs = {}
+        if self.idref:
+            attribs['id'] = self.idref
+        if self.type:
+            attribs['type'] = self.type
+        return super(Reference,self).xml(attribs,elements, skipchildren)
+
+    def resolve(self):
+        if self.idref:
+            return self.doc[self.idref]
+        else:
+            return self
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        if 'id' in node.attrib:
+            idref = node.attrib['id']
+            del node.attrib['id']
+        else:
+            idref = None
+        if 'type' in node.attrib:
+            t = node.attrib['type']
+            del node.attrib['type']
+        else:
+            idref = None
+        instance = super(Reference,Class).parsexml(node, doc)
+        if idref:
+            instance.idref = idref
+        if t:
+            instance.type =  t
+        return instance
+
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
+        if not extraattribs: extraattribs = []
+        extraattribs.append( E.attribute(name='id'))
+        extraattribs.append( E.optional(E.attribute(name='type' ))) #id reference
+        return super(Reference, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class AlignReference(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
@@ -3452,7 +3522,109 @@ class AlternativeLayers(AbstractElement):
     PRINTABLE = False
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent,String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent,String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
+
+
+class External(AbstractElement):
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = ()
+    ACCEPTED_DATA = []
+    XMLTAG = 'external'
+    PRINTABLE = True
+    AUTH = True
+
+
+    def __init__(self, doc, *args, **kwargs):
+        #Special constructor, not calling super constructor
+        if not 'source' in kwargs:
+            raise Exception("Source required for External")
+        assert(isinstance(doc,Document))
+        self.doc = doc
+        self.id = None
+        self.source = kwargs['source']
+        if 'include' in kwargs and kwargs['include'] != 'no':
+            self.include = bool(kwargs['include'])
+        else:
+            self.include = False
+        self.annotator = None
+        self.annotatortype = None
+        self.confidence = None
+        self.n = None
+        self.datetime = None
+        self.auth = False
+        self.data = []
+        self.subdoc = None
+
+        if self.include:
+            if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Loading subdocument for inclusion: " + self.source,file=stderr)
+            #load subdocument
+
+            #check if it is already loaded, if multiple references are made to the same doc we reuse the instance
+            if self.source in self.doc.subdocs:
+                self.subdoc = self.doc.subdocs[self.source]
+            elif self.source[:7] == 'http://' or self.source[:8] == 'https://':
+                #document is remote, download (in memory)
+                try:
+                    f = urlopen(self.source)
+                except:
+                    raise DeepValidationError("Unable to download subdocument for inclusion: " + self.source)
+                try:
+                    content = u(f.read())
+                except IOError:
+                    raise DeepValidationError("Unable to download subdocument for inclusion: " + self.source)
+                f.close()
+                self.subdoc = Document(string=content, parentdoc = self.doc, setdefinitions=self.doc.setdefinitions)
+            elif os.path.exists(self.source):
+                #document is on disk:
+                self.subdoc = Document(file=self.source, parentdoc = self.doc, setdefinitions=self.doc.setdefinitions)
+            else:
+                #document not found
+                raise DeepValidationError("Unable to find subdocument for inclusion: " + self.source)
+
+            self.subdoc.parentdoc = self.doc
+            self.doc.subdocs[self.source] = self.subdoc
+            #TODO: verify there are no clashes in declarations between parent and child
+            #TODO: check validity of elements under subdoc/text with respect to self.parent
+
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        assert Class is External or issubclass(Class, External)
+        #special handling for external
+        source = node.attrib['src']
+        if 'include' in node.attrib:
+            include = node.attrib['include']
+        else:
+            include = False
+        if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found external",file=stderr)
+        return External(doc, source=source, include=include)
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        if not attribs:
+            attribs= {}
+
+        attribs['src'] = self.source
+
+        if self.include:
+            attribs['include']  = 'yes'
+        else:
+            attribs['include']  = 'no'
+
+        return super(External, self).xml(attribs, elements, skipchildren)
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.element(E.attribute(E.text(), name='src'), E.optional(E.attribute(E.text(), name='include')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+
+
+    def select(self, Class, set=None, recursive=True,  ignore=True, node=None):
+        if self.include:
+            return self.subdoc.data[0].select(Class,set,recursive, ignore, node) #pass it on to the text node of the subdoc
+        else:
+            return []
 
 
 class WordReference(AbstractElement):
@@ -3734,11 +3906,16 @@ class StyleFeature(Feature):
     SUBSET = "style"
 
 class Event(AbstractStructureElement):
-    ACCEPTED_DATA = (AbstractStructureElement,Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent,String, Metric,AbstractExtendedTokenAnnotation)
+    #ACCEPTED_DATA set at bottom
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'
     OCCURRENCESPERSET = 0
 
+class Note(AbstractStructureElement):
+    #ACCEPTED_DATA set at bottom
+    ANNOTATIONTYPE = AnnotationType.NOTE
+    XMLTAG = 'note'
+    OCCURRENCESPERSET = 0
 
 class TimeSegment(AbstractSpanAnnotation):
     ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, Metric)
@@ -3762,7 +3939,7 @@ class SenseAnnotation(AbstractTokenAnnotation):
     XMLTAG = 'sense'
 
 class SubjectivityAnnotation(AbstractTokenAnnotation):
-    """Subjectivity annotation: a token annotation element"""
+    """Subjectivity annotation/Sentiment analysis: a token annotation element"""
     ANNOTATIONTYPE = AnnotationType.SUBJECTIVITY
     ACCEPTED_DATA = (Feature, Description, Metric)
     XMLTAG = 'subjectivity'
@@ -3808,7 +3985,7 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
 
-    ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, String,Gap, Description,  Linebreak, Whitespace, Event, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, String,Gap, Description,  Linebreak, Whitespace, Event, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 's'
     TEXTDELIMITER = ' '
     ANNOTATIONTYPE = AnnotationType.SENTENCE
@@ -3949,14 +4126,14 @@ Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, String,Gap, Descripti
 
 class Caption(AbstractStructureElement):
     """Element used for captions for figures or tables, contains sentences"""
-    ACCEPTED_DATA = (Sentence, Description, TextContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     OCCURRENCES = 1
     XMLTAG = 'caption'
 
 
 class Label(AbstractStructureElement):
     """Element used for labels. Mostly in within list item. Contains words."""
-    ACCEPTED_DATA = (Word, Description, TextContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Word, Reference, Description, TextContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
     XMLTAG = 'label'
 
 
@@ -3969,12 +4146,12 @@ class ListItem(AbstractStructureElement):
 
 class List(AbstractStructureElement):
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
-    ACCEPTED_DATA = (ListItem,Description, Caption, Event, TextContent, String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
     XMLTAG = 'list'
     TEXTDELIMITER = '\n'
     ANNOTATIONTYPE = AnnotationType.LIST
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, TextContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Reference, TextContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
 
 class Figure(AbstractStructureElement):
     """Element for the representation of a graphical figure. Structure element."""
@@ -4027,7 +4204,7 @@ class Figure(AbstractStructureElement):
 class Paragraph(AbstractStructureElement):
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n\n"
     ANNOTATIONTYPE = AnnotationType.PARAGRAPH
@@ -4035,13 +4212,13 @@ class Paragraph(AbstractStructureElement):
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
 
-    ACCEPTED_DATA = (Sentence, Word, Description, Event, TextContent,String,Alignment, Metric, Linebreak, Whitespace,Gap,  Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Sentence, Word, Description, Event, Reference, TextContent,String,Alignment, Metric, Linebreak, Whitespace,Gap,  Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'
 
 class Cell(AbstractStructureElement):
-    ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Note, Reference, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation)
     XMLTAG = 'cell'
     TEXTDELIMITER = " | "
     REQUIRED_ATTRIBS = (),
@@ -4382,6 +4559,25 @@ class Document(object):
         else:
             self.mode = Mode.MEMORY #Load all in memory
 
+
+        if 'parentdoc' in kwargs:  #for subdocuments
+            assert isinstance(kwargs['parentdoc'], Document)
+            self.parentdoc = kwargs['parentdoc']
+        else:
+            self.parentdoc = None
+
+        self.subdocs = {} #will hold all subdocs (sourcestring => document) , needed so the index can resolve IDs in subdocs
+        self.standoffdocs = {} #will hold all standoffdocs (type => set => sourcestring => document)
+
+        if 'external' in kwargs:
+            self.external = kwargs['external']
+        else:
+            self.external = False
+
+        if self.external and not self.parentdoc:
+            raise DeepValidationError("Document is marked as external and should not be loaded independently. However, no parentdoc= has been specified!")
+
+
         if 'loadsetdefinitions' in kwargs:
             self.loadsetdefinitions = bool(kwargs['loadsetdefinitions'])
         else:
@@ -4529,6 +4725,19 @@ class Document(object):
         for text in self.data:
             yield text
 
+
+    def __contains__(self, key):
+        """Tests if the specified ID is in the document index"""
+        if key in self.index:
+            return True
+        elif self.subdocs:
+            for subdoc in self.subdocs.values():
+                if key in subdoc:
+                    return True
+            return False
+        else:
+            return False
+
     def __getitem__(self, key):
         """Obtain an element by ID from the document index.
 
@@ -4536,13 +4745,21 @@ class Document(object):
 
             word = doc['example.p.4.s.10.w.3']
         """
-        try:
-            if isinstance(key, int):
-                return self.data[key]
-            else:
+        if isinstance(key, int):
+            return self.data[key]
+        else:
+            try:
                 return self.index[key]
-        except KeyError:
-            raise
+            except KeyError:
+                if self.subdocs: #perhaps the key is in one of our subdocs?
+                    for subdoc in self.subdocs.values():
+                        try:
+                            return subdoc[key]
+                        except KeyError:
+                            pass
+                else:
+                    raise
+
 
     def append(self,text):
         """Add a text to the document:
@@ -4785,6 +5002,48 @@ class Document(object):
                         self.annotationdefaults[type] = {}
                     self.annotationdefaults[type][set] = defaults
 
+
+                if 'external' in subnode.attrib and subnode.attrib['external']:
+                    if self.debug >= 1:
+                        print("[PyNLPl FoLiA DEBUG] Loading external document: " + subnode.attrib['external'],file=stderr)
+                    if not type in self.standoffdocs:
+                        self.standoffdocs[type] = {}
+                    self.standoffdocs[type][set] = {}
+
+                    #check if it is already loaded, if multiple references are made to the same doc we reuse the instance
+                    standoffdoc = None
+                    for t in self.standoffdocs:
+                        for s in self.standoffdocs[t]:
+                            for source in self.standoffdocs[t][s]:
+                                if source == subnode.attrib['external']:
+                                    standoffdoc = self.standoffdocs[t][s]
+                                    break
+                            if standoffdoc: break
+                        if standoffdoc: break
+
+                    if not standoffdoc:
+                        if subnode.attrib['external'][:7] == 'http://' or subnode.attrib['external'][:8] == 'https://':
+                            #document is remote, download (in memory)
+                            try:
+                                f = urlopen(subnode.attrib['external'])
+                            except:
+                                raise DeepValidationError("Unable to download standoff document: " + subnode.attrib['external'])
+                            try:
+                                content = u(f.read())
+                            except IOError:
+                                raise DeepValidationError("Unable to download standoff document: " + subnode.attrib['external'])
+                            f.close()
+                            standoffdoc = Document(string=content, parentdoc=self, setdefinitions=self.setdefinitions)
+                        elif os.path.exists(subnode.attrib['external']):
+                            #document is on disk:
+                            standoffdoc = Document(file=subnode.attrib['external'], parentdoc=self, setdefinitions=self.setdefinitions)
+                        else:
+                            #document not found
+                            raise DeepValidationError("Unable to find standoff document: " + subnode.attrib['external'])
+
+                    self.standoffdocs[type][set][subnode.attrib['external']] = standoffdoc
+                    standoffdoc.parentdoc = self
+
                 if self.debug >= 1:
                     print("[PyNLPl FoLiA DEBUG] Found declared annotation " + subnode.tag + ". Defaults: " + repr(defaults),file=stderr)
 
@@ -4824,7 +5083,7 @@ class Document(object):
         self.annotationdefaults[annotationtype][set] = kwargs
 
     def declared(self, annotationtype, set):
-        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
         return ( (annotationtype,set) in self.annotations)
 
 
@@ -5008,6 +5267,16 @@ class Document(object):
                 else:
                     self.version = None
 
+                if 'external' in node.attrib:
+                    if node.attrib['external'] == 'yes':
+                        self.external = True
+                    else:
+                        self.external = False
+
+                    if self.external and not self.parentdoc:
+                        raise DeepValidationError("Document is marked as external and should not be loaded independently. However, no parentdoc= has been specified!")
+
+
                 for subnode in node:
                     if subnode.tag == '{' + NSFOLIA + '}metadata':
                         self.parsemetadata(subnode)
@@ -5116,9 +5385,10 @@ class Document(object):
                 s = str(s,'utf-8')
 
         if self.bypassleak:
-            return s.replace('XMLid=','xml:id=')
-        else:
-            return s
+            s = s.replace('XMLid=','xml:id=')
+        s = s.replace('ns0:','') #ugly patch to get rid of namespace prefix
+        s = s.replace(':ns0','')
+        return s
 
 
     def __unicode__(self):
@@ -5152,6 +5422,7 @@ class Document(object):
 
 class Division(AbstractStructureElement):
     """Structure element representing some kind of division. Divisions may be nested at will, and may include almost all kinds of other structure elements."""
+    #Accepted_data set later
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.N)
     XMLTAG = 'div'
@@ -5164,20 +5435,27 @@ class Division(AbstractStructureElement):
                 return e
         raise NoSuchAnnotation()
 
-Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+
 
 class Text(AbstractStructureElement):
     """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, List, Figure, Table, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric)
     XMLTAG = 'text'
     TEXTDELIMITER = "\n\n\n"
 
 
+#==============================================================================
+#Setting Accepted data that has been postponed earlier (to allow circular references)
+
+Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+Event.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, String, Metric,AbstractExtendedTokenAnnotation)
+Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head, List, Figure, Table, Reference, Feature, TextContent,String, Metric,AbstractExtendedTokenAnnotation)
 
 
+#==============================================================================
 
 class Corpus:
     """A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing."""

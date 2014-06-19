@@ -170,7 +170,7 @@ class Test2Sanity(unittest.TestCase):
 
     def test002_count_sentences(self):
         """Sanity check - Sentences count"""
-        self.assertEqual( len(self.doc.sentences()) , 13)
+        self.assertEqual( len(self.doc.sentences()) , 14)
 
     def test003a_count_words(self):
         """Sanity check - Word count"""
@@ -822,8 +822,8 @@ class Test2Sanity(unittest.TestCase):
         f.close()
         #use xmldiff to compare the two:
         self.doc.save('/tmp/foliatest100.xml')
-        #retcode = os.system('xmldiff /tmp/foliatest.xml /tmp/foliatest100.xml')
-        retcode = 1 #disabled (memory hog)
+        retcode = os.system('xmldiff /tmp/foliatest.xml /tmp/foliatest100.xml')
+        #retcode = 1 #disabled (memory hog)
         self.assertEqual( retcode, 0)
 
     def test101a_metadataextref(self):
