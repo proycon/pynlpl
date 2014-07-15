@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.11.0'
-LIBVERSION = '0.11.0.48' #== FoLiA version + library revision
+LIBVERSION = '0.11.0.49' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -2128,6 +2128,10 @@ class AbstractTextMarkup(AbstractAnnotation):
 
         if self.value and (self.value != self.value.translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
             raise ValueError("There are illegal unicode control characters present in Text Markup Content: " + repr(self.value))
+
+
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter=""):
+        return self.value #(no strip)
 
     def resolve(self):
         if self.idref:
