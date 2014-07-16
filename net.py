@@ -45,7 +45,14 @@ class GWSNetProtocol(basic.LineReceiver):
             print("Client in: " + line,file=stderr)
         except UnicodeDecodeError:
             print("Client in: (unicodeerror)",file=stderr)
-        self.factory.processprotocol.transport.write(b(line +'\n'))
+        if sys.version < '3':
+            if isinstance(line,unicode):
+                self.factory.processprotocol.transport.write(line.encode('utf-8'))
+            else:
+                self.factory.processprotocol.transport.write(line)
+            self.factory.processprotocol.transport.write(b('\n'))
+        else:
+            self.factory.processprotocol.transport.write(b(line + '\n'))
         self.factory.processprotocol.currentclient = self
 
     def connectionLost(self, reason):
