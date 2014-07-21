@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.11.0'
-LIBVERSION = '0.11.0.49' #== FoLiA version + library revision
+LIBVERSION = '0.11.0.50' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -383,8 +383,9 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     #Parse feature attributes (shortcut for feature specification for some elements)
     for c in object.ACCEPTED_DATA:
         if issubclass(c, Feature):
-            if c.SUBSET in kwargs and kwargs[c.SUBSET]:
-                object.append(c,cls=kwargs[c.SUBSET])
+            if c.SUBSET in kwargs:
+                if kwargs[c.SUBSET]:
+                    object.append(c,cls=kwargs[c.SUBSET])
                 del kwargs[c.SUBSET]
 
     return kwargs
