@@ -793,6 +793,13 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( self.doc['sandbox.3.str.bold'].resolve(), self.doc['sandbox.3.str.bold'])
 
 
+    def test045_spancorrection(self):
+        """Sanity Check - Corrections over span elements"""
+        s = self.doc['example.last.cell']
+        entities = list(s.select(folia.Entity,set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"))
+        self.assertEqual( len(entities),1 )
+        self.assertEqual( entities[0].id , "example.tilburg.university.org" )
+
     def test099_write(self):
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
