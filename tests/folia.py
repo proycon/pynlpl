@@ -1535,6 +1535,14 @@ class Test4Edit(unittest.TestCase):
 
         self.assertTrue( xmlcheck(layer.xmlstring(),'<syntax xmlns="http://ilk.uvt.nl/folia"><su class="s"><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.1" t="De"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.2" t="hoofdletter"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.3" t="A"/></su></su><su class="vp"><su class="vp"><su class="v"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.4" t="wordt"/></su><su class="participle"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.5" t="gebruikt"/></su></su><su class="pp"><su class="prep"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.6" t="voor"/></su><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.7" t="het"/></su><su class="adj"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.8" t="originele"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.9" t="handschrift"/></su></su></su></su></su></syntax>'))
 
+    def test013_spanannotcorrection(self):
+        """Edit Check - Correcting Span Annotation"""
+        s = self.doc['example.cell']
+        l = s.annotation(folia.EntitiesLayer)
+        l.correct(original=self.doc['example.radboud.university.nijmegen.org'], new=folia.Entity(self.doc, *self.doc['example.radboud.university.nijmegen.org'].wrefs(), cls="loc",set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml") ,set='corrections',cls='wrongclass')
+
+        self.assertTrue( xmlcheck(l.xmlstring(), '<entities xmlns="http://ilk.uvt.nl/folia" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><correction xml:id="example.cell.correction.1" class="wrongclass"><new><entity class="loc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="Radboud" id="example.table.1.w.6"/><wref t="University" id="example.table.1.w.7"/><wref t="Nijmegen" id="example.table.1.w.8"/></entity></new><original auth="no"><entity xml:id="example.radboud.university.nijmegen.org" class="org" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="Radboud" id="example.table.1.w.6"/><wref t="University" id="example.table.1.w.7"/><wref t="Nijmegen" id="example.table.1.w.8"/></entity></original></correction></entities>'))
+
     def test014_replace(self):
         """Edit Check - Replacing an annotation"""
         word = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.14']
