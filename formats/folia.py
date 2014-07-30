@@ -1858,6 +1858,7 @@ class AllowCorrections(object):
         return c
 
 
+
 class AllowTokenAnnotation(AllowCorrections):
     """Elements that allow token annotation (including extended annotation) must inherit from this class"""
 
@@ -2894,7 +2895,7 @@ class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID):
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
     PRINTABLE = True
 
-class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
+class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrections):
     """Abstract element, all span annotation elements are derived from this class"""
 
     REQUIRED_ATTRIBS = ()
@@ -2965,11 +2966,11 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
 
 
 
-class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
+class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
     OPTIONAL_ATTRIBS = (Attrib.SETONLY,)
     PRINTABLE = False
-    ROOTELEMENT = False #only annotation elements are considered
+    ROOTELEMENT = False #only annotation elements are considered root elements
 
     def __init__(self, doc, *args, **kwargs):
         if 'set' in kwargs:
