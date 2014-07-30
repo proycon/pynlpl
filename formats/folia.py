@@ -64,7 +64,7 @@ import gzip
 
 
 FOLIAVERSION = '0.11.1'
-LIBVERSION = '0.11.1.51' #== FoLiA version + library revision
+LIBVERSION = '0.11.1.52' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -5644,7 +5644,7 @@ class ClassDefinition(AbstractDefinition):
         self.id = id
         self.label = label
         self.constraints = constraints
-        self.subclasses = []
+        self.subclasses = subclasses
 
     @classmethod
     def parsexml(Class, node, constraintindex):
