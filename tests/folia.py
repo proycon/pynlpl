@@ -1434,40 +1434,40 @@ class Test4Edit(unittest.TestCase):
 
         self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><suggestion auth="no"><t>stippellijn</t></suggestion></correction></w>'))
 
-def test009a_idclash(self):
-    """Edit Check - Checking for exception on adding a duplicate ID"""
-    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
+    def test009a_idclash(self):
+        """Edit Check - Checking for exception on adding a duplicate ID"""
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
 
-    self.assertRaises( folia.DuplicateIDError,  w.sentence().append, folia.Word, id='WR-P-E-J-0000000001.p.1.s.8.w.11', text='stippellijn')
+        self.assertRaises( folia.DuplicateIDError,  w.sentence().append, folia.Word, id='WR-P-E-J-0000000001.p.1.s.8.w.11', text='stippellijn')
 
 
-#def test009b_textcorrectionlevel(self):
-#    """Edit Check - Checking for exception on an adding TextContent of wrong level"""
-#    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
-#
-#    self.assertRaises(  ValueError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.ORIGINAL )
-#
+    #def test009b_textcorrectionlevel(self):
+    #    """Edit Check - Checking for exception on an adding TextContent of wrong level"""
+    #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
+    #
+    #    self.assertRaises(  ValueError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.ORIGINAL )
+    #
 
-#def test009c_duptextcontent(self):
-#    """Edit Check - Checking for exception on an adding duplicate textcontent"""
-#    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
-#
-#    self.assertRaises(  folia.DuplicateAnnotationError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.PROCESSED )
+    #def test009c_duptextcontent(self):
+    #    """Edit Check - Checking for exception on an adding duplicate textcontent"""
+    #    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
+    #
+    #    self.assertRaises(  folia.DuplicateAnnotationError, w.append, folia.TextContent, value='blah', corrected=folia.TextCorrectionLevel.PROCESSED )
 
-def test010_documentlesselement(self):
-    """Edit Check - Creating an initially document-less tokenannotation element and adding it to a word"""
+    def test010_documentlesselement(self):
+        """Edit Check - Creating an initially document-less tokenannotation element and adding it to a word"""
 
-    #not associated with any document yet (first argument is None instead of Document instance)
-    pos = folia.PosAnnotation(None, set='fakecgn', cls='N')
+        #not associated with any document yet (first argument is None instead of Document instance)
+        pos = folia.PosAnnotation(None, set='fakecgn', cls='N')
 
-    w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
-    w.append(pos)
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11']
+        w.append(pos)
 
-    self.assertEqual( w.annotation(folia.PosAnnotation,'fakecgn'), pos)
-    self.assertEqual( pos.parent, w)
-    self.assertEqual( pos.doc, w.doc)
+        self.assertEqual( w.annotation(folia.PosAnnotation,'fakecgn'), pos)
+        self.assertEqual( pos.parent, w)
+        self.assertEqual( pos.doc, w.doc)
 
-    self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>'))
 
     def test011_subtokenannot(self):
         """Edit Check - Adding morphemes"""
