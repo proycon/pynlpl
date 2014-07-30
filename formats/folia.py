@@ -6135,16 +6135,13 @@ ANNOTATIONTYPE2CLASS = {}
 ANNOTATIONTYPE2XML = {}
 ANNOTATIONTYPE2LAYERCLASS = {}
 for c in list(vars().values()):
-    try:
-        if c.XMLTAG:
-            XML2CLASS[c.XMLTAG] = c
-            if c.ROOTELEMENT:
-                ANNOTATIONTYPE2CLASS[c.ANNOTATIONTYPE] = c
-                ANNOTATIONTYPE2XML[c.ANNOTATIONTYPE] = c.XMLTAG
-            if isinstance(c,AbstractAnnotationLayer):
-                ANNOTATIONTYPE2LAYERCLASS[c.ANNOTATIONTYPE] = c
-    except:
-        continue
+    if hasattr(c,'XMLTAG') and hasattr(c,'ANNOTATIONTYPE'):
+        XML2CLASS[c.XMLTAG] = c
+        if issubclass(c,AbstractAnnotationLayer):
+            ANNOTATIONTYPE2LAYERCLASS[c.ANNOTATIONTYPE] = c
+        if c.ROOTELEMENT:
+            ANNOTATIONTYPE2CLASS[c.ANNOTATIONTYPE] = c
+            ANNOTATIONTYPE2XML[c.ANNOTATIONTYPE] = c.XMLTAG
 
 XML2CLASS['listitem'] = ListItem #backward compatibility (XML tag is 'item' now, consistent with manual)
 
