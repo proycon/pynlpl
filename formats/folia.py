@@ -63,7 +63,7 @@ import bz2
 import gzip
 
 
-FOLIAVERSION = '0.11.2'
+FOLIAVERSION = '0.11.1'
 LIBVERSION = '0.11.1.53' #== FoLiA version + library revision
 
 
