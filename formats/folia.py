@@ -48,6 +48,7 @@ from datetime import datetime
 #from dateutil.parser import parse as parse_datetime
 import pynlpl.algorithms
 import inspect
+import itertools
 import glob
 import os
 import re
@@ -62,8 +63,8 @@ import bz2
 import gzip
 
 
-FOLIAVERSION = '0.11.0'
-LIBVERSION = '0.11.0.50' #== FoLiA version + library revision
+FOLIAVERSION = '0.11.1'
+LIBVERSION = '0.11.1.52' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -347,7 +348,10 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.datetime = None
 
     if 'auth' in kwargs:
-        object.auth = bool(kwargs['auth'])
+        if kwargs['auth'] in ('no','false'):
+            object.auth = False
+        else:
+            object.auth = bool(kwargs['auth'])
         del kwargs['auth']
     else:
         object.auth = True
@@ -1315,7 +1319,7 @@ class AbstractElement(object):
             * ``recursive``: Select recursively? Descending into child
               elements? Boolean defaulting to True.
             * ``ignore``: A list of Classes to ignore, if set to True instead
-                of a list, all non-authoritative elements will be skipped.
+                of a list, all non-authoritative elements will be skipped (this is the default behaviour).
                 It is common not to
                want to recurse into the following elements:
                ``folia.Alternative``, ``folia.AlternativeLayer``,
@@ -1852,6 +1856,7 @@ class AllowCorrections(object):
             else:
                 self.insert(insertindex, c)
         return c
+
 
 
 class AllowTokenAnnotation(AllowCorrections):
@@ -2890,7 +2895,7 @@ class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID):
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
     PRINTABLE = True
 
-class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
+class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrections):
     """Abstract element, all span annotation elements are derived from this class"""
 
     REQUIRED_ATTRIBS = ()
@@ -2961,11 +2966,11 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID):
 
 
 
-class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
+class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
     OPTIONAL_ATTRIBS = (Attrib.SETONLY,)
     PRINTABLE = False
-    ROOTELEMENT = False #only annotation elements are considered
+    ROOTELEMENT = False #only annotation elements are considered root elements
 
     def __init__(self, doc, *args, **kwargs):
         if 'set' in kwargs:
@@ -2987,14 +2992,22 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
         return super(AbstractAnnotationLayer, self).xml(attribs, elements, skipchildren)
 
     def append(self, child, *args, **kwargs):
+        #if no set is associated with the layer yet, we learn it from span annotation elements that are added
         if self.set is False or self.set is None:
             if inspect.isclass(child):
-                if 'set' in kwargs:
-                    self.set = kwargs['set']
-            elif isinstance(child, AbstractElement):
+                if issubclass(child,AbstractSpanAnnotation):
+                    if 'set' in kwargs:
+                        self.set = kwargs['set']
+            elif isinstance(child, AbstractSpanAnnotation):
                 if child.set:
                     self.set = child.set
-            #print "DEBUG AFTER APPEND: set=", self.set
+            elif isinstance(child, Correction):
+                #descend into corrections to find the proper set for this layer (derived from span annotation elements)
+                for e in itertools.chain( child.new(), child.original(), child.suggestions() ):
+                    if isinstance(e, AbstractSpanAnnotation) and e.set:
+                        self.set = e.set
+                        break
+
         return super(AbstractAnnotationLayer, self).append(child, *args, **kwargs)
 
     def annotations(self,Class,set=None):
@@ -3050,7 +3063,6 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID):
                         if isinstance(e2, Class):
                             try:
                                 if set is None or e2.set == set:
-                                    found = True
                                     l.append(e) #not e2
                                     break #yield an alternative only once (in case there are multiple matches)
                             except AttributeError:
@@ -3104,7 +3116,7 @@ class String(AbstractElement, AllowTokenAnnotation):
 
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME,Attrib.N)
-    ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent, String, Description, Metric)
+    ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, TextContent, String, Description, Metric)
     TEXTDELIMITER = None
     PRINTABLE = True
     ROOTELEMENT = False
@@ -3369,8 +3381,9 @@ class Current(AbstractCorrectionChild):
                 return False
         return True
 
-class Correction(AbstractExtendedTokenAnnotation):
+class Correction(AbstractAnnotation, AllowGenerateID):
     REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = Attrib.ALL
     ACCEPTED_DATA = (New,Original,Current, Suggestion, Description, Metric)
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
@@ -3378,6 +3391,12 @@ class Correction(AbstractExtendedTokenAnnotation):
     TEXTDELIMITER = None
     PRINTABLE = True
     ROOTELEMENT = True
+
+    def append(self, child, *args, **kwargs):
+        """See ``AbstractElement.append()``"""
+        e = super(AbstractAnnotation,self).append(child, *args, **kwargs)
+        self._setmaxid(e)
+        return e
 
     def hasnew(self):
         return bool(self.select(New,None,False, False))
@@ -3500,7 +3519,7 @@ class Correction(AbstractExtendedTokenAnnotation):
     #        ignorelist.append(Suggestion)
     #        return super(Correction,self).select(cls,set,recursive, ignorelist, node)
 
-Original.ACCEPTED_DATA = (AbstractTokenAnnotation, Word, TextContent,String, Correction, Description, Metric)
+Original.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, TextContent,String, Correction, Description, Metric)
 
 
 
@@ -3527,7 +3546,7 @@ class AlternativeLayers(AbstractElement):
     PRINTABLE = False
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, TextContent,String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
 
 
 class External(AbstractElement):
@@ -3779,7 +3798,7 @@ class Morpheme(AbstractStructureElement):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
     REQUIRED_ATTRIBS = (),
     OPTIONAL_ATTRIBS = Attrib.ALL
-    ACCEPTED_DATA = (FunctionFeature, Feature,TextContent, String,Metric, Alignment, AbstractTokenAnnotation, Description)
+    ACCEPTED_DATA = (FunctionFeature, Feature,TextContent, String,Metric, Alignment, AbstractTokenAnnotation, Correction, Description)
     ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
     XMLTAG = 'morpheme'
 
@@ -3796,31 +3815,31 @@ class Morpheme(AbstractStructureElement):
 
 class SyntaxLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
-    ACCEPTED_DATA = (SyntacticUnit,Description)
+    ACCEPTED_DATA = (SyntacticUnit,Description, Correction)
     XMLTAG = 'syntax'
     ANNOTATIONTYPE = AnnotationType.SYNTAX
 
 class ChunkingLayer(AbstractAnnotationLayer):
     """Chunking Layer: Annotation layer for Chunk span annotation elements"""
-    ACCEPTED_DATA = (Chunk,Description)
+    ACCEPTED_DATA = (Chunk,Description, Correction)
     XMLTAG = 'chunking'
     ANNOTATIONTYPE = AnnotationType.CHUNKING
 
 class EntitiesLayer(AbstractAnnotationLayer):
     """Entities Layer: Annotation layer for Entity span annotation elements. For named entities."""
-    ACCEPTED_DATA = (Entity,Description)
+    ACCEPTED_DATA = (Entity,Description, Correction)
     XMLTAG = 'entities'
     ANNOTATIONTYPE = AnnotationType.ENTITY
 
 class DependenciesLayer(AbstractAnnotationLayer):
     """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
-    ACCEPTED_DATA = (Dependency,Description)
+    ACCEPTED_DATA = (Dependency,Description, Correction)
     XMLTAG = 'dependencies'
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
 
 class MorphologyLayer(AbstractAnnotationLayer):
     """Morphology Layer: Annotation layer for Morpheme subtoken annotation elements. For morphological analysis."""
-    ACCEPTED_DATA = (Morpheme,)
+    ACCEPTED_DATA = (Morpheme, Correction)
     XMLTAG = 'morphology'
     ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
 
@@ -3832,13 +3851,13 @@ Alternative.ACCEPTED_DATA.append( MorphologyLayer)
 
 class CoreferenceLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
-    ACCEPTED_DATA = (CoreferenceChain,Description)
+    ACCEPTED_DATA = (CoreferenceChain,Description, Correction)
     XMLTAG = 'coreferences'
     ANNOTATIONTYPE = AnnotationType.COREFERENCE
 
 class SemanticRolesLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SemnaticRole span annotation elements"""
-    ACCEPTED_DATA = (SemanticRole,Description)
+    ACCEPTED_DATA = (SemanticRole,Description, Correction)
     XMLTAG = 'semroles'
     ANNOTATIONTYPE = AnnotationType.SEMROLE
 
@@ -3929,7 +3948,7 @@ TimedEvent = TimeSegment #alias for FoLiA 0.8 compatibility
 class TimingLayer(AbstractAnnotationLayer):
     """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
     ANNOTATIONTYPE = AnnotationType.TIMESEGMENT
-    ACCEPTED_DATA = (TimedEvent,Description)
+    ACCEPTED_DATA = (TimedEvent,Description, Correction)
     XMLTAG = 'timing'
 
 
@@ -4122,19 +4141,19 @@ class Sentence(AbstractStructureElement):
         else:
             return self.correctwords([], [newword], **kwargs)
 
-Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction)
 
 
 class Caption(AbstractStructureElement):
     """Element used for captions for figures or tables, contains sentences"""
-    ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction)
     OCCURRENCES = 1
     XMLTAG = 'caption'
 
 
 class Label(AbstractStructureElement):
     """Element used for labels. Mostly in within list item. Contains words."""
-    ACCEPTED_DATA = (Word, Reference, Description, TextContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Word, Reference, Description, TextContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction)
     XMLTAG = 'label'
 
 
@@ -4147,16 +4166,16 @@ class ListItem(AbstractStructureElement):
 
 class List(AbstractStructureElement):
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
-    ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction)
     XMLTAG = 'list'
     TEXTDELIMITER = '\n'
     ANNOTATIONTYPE = AnnotationType.LIST
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Reference, TextContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Reference, TextContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction)
 
 class Figure(AbstractStructureElement):
     """Element for the representation of a graphical figure. Structure element."""
-    ACCEPTED_DATA = (Sentence, Description, Caption, TextContent,String, Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    ACCEPTED_DATA = (Sentence, Description, Caption, TextContent,String, Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction)
     XMLTAG = 'figure'
     ANNOTATIONTYPE = AnnotationType.FIGURE
 
@@ -4213,20 +4232,20 @@ class Paragraph(AbstractStructureElement):
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
 
-    ACCEPTED_DATA = (Sentence, Word, Description, Event, Reference, TextContent,String,Alignment, Metric, Linebreak, Whitespace,Gap,  Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Sentence, Word, Description, Event, Reference, TextContent,String,Alignment, Metric, Linebreak, Whitespace,Gap,  Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction)
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'
 
 class Cell(AbstractStructureElement):
-    ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Note, Reference, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Note, Reference, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation, Correction)
     XMLTAG = 'cell'
     TEXTDELIMITER = " | "
     REQUIRED_ATTRIBS = (),
     ANNOTATIONTYPE = AnnotationType.TABLE
 
 class Row(AbstractStructureElement):
-    ACCEPTED_DATA = (Cell,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Cell,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction)
     XMLTAG = 'row'
     TEXTDELIMITER = "\n"
     REQUIRED_ATTRIBS = (),
@@ -4234,14 +4253,14 @@ class Row(AbstractStructureElement):
 
 
 class TableHead(AbstractStructureElement):
-    ACCEPTED_DATA = (Row,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (Row,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction)
     XMLTAG = 'tablehead'
     REQUIRED_ATTRIBS = (),
     ANNOTATIONTYPE = AnnotationType.TABLE
 
 
 class Table(AbstractStructureElement):
-    ACCEPTED_DATA = (TableHead, Row, AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation)
+    ACCEPTED_DATA = (TableHead, Row, AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction)
     XMLTAG = 'table'
     ANNOTATIONTYPE = AnnotationType.TABLE
 
@@ -5443,7 +5462,7 @@ class Text(AbstractStructureElement):
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric, Correction)
     XMLTAG = 'text'
     TEXTDELIMITER = "\n\n\n"
 
@@ -5451,9 +5470,9 @@ class Text(AbstractStructureElement):
 #==============================================================================
 #Setting Accepted data that has been postponed earlier (to allow circular references)
 
-Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer)
-Event.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, String, Metric,AbstractExtendedTokenAnnotation)
-Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head, List, Figure, Table, Reference, Feature, TextContent,String, Metric,AbstractExtendedTokenAnnotation)
+Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction)
+Event.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, String, Metric,AbstractExtendedTokenAnnotation, Correction)
+Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head, List, Figure, Table, Reference, Feature, TextContent,String, Metric,AbstractExtendedTokenAnnotation, Correction)
 
 
 #==============================================================================
@@ -5618,10 +5637,11 @@ class ConstraintDefinition(object):
         return {'id': self.id} #TODO: Implement
 
 class ClassDefinition(AbstractDefinition):
-    def __init__(self,id, label, constraints=[]):
+    def __init__(self,id, label, constraints=[], subclasses=[]):
         self.id = id
         self.label = label
         self.constraints = constraints
+        self.subclasses = subclasses
 
     @classmethod
     def parsexml(Class, node, constraintindex):
@@ -5633,19 +5653,30 @@ class ClassDefinition(AbstractDefinition):
             label = ""
 
         constraints = []
+        subclasses= []
         for subnode in node:
             if subnode.tag == '{' + NSFOLIA + '}constraint':
                 constraints.append( ConstraintDefinition.parsexml(subnode, constraintindex) )
+            elif subnode.tag == '{' + NSFOLIA + '}class':
+                subclasses.append( ClassDefinition.parsexml(subnode, constraintindex) )
             elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
                 raise Exception("Invalid tag in Class definition: " + subnode.tag)
 
-        return ClassDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],label, constraints)
+        return ClassDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],label, constraints, subclasses)
+
+
+    def __iter__(self):
+        for c in self.subclasses:
+            yield c
 
     def json(self):
         jsonnode = {'id': self.id, 'label': self.label}
         jsonnode['constraints'] = []
+        jsonnode['subclasses'] = []
         for constraint in self.constraints:
             jsonnode['constaints'].append(constraint.json())
+        for subclass in self.subclasses:
+            jsonnode['subclasses'].append(subclass.json())
         return jsonnode
 
 class SubsetDefinition(AbstractDefinition):
@@ -6101,16 +6132,13 @@ ANNOTATIONTYPE2CLASS = {}
 ANNOTATIONTYPE2XML = {}
 ANNOTATIONTYPE2LAYERCLASS = {}
 for c in list(vars().values()):
-    try:
-        if c.XMLTAG:
-            XML2CLASS[c.XMLTAG] = c
-            if c.ROOTELEMENT:
-                ANNOTATIONTYPE2CLASS[c.ANNOTATIONTYPE] = c
-                ANNOTATIONTYPE2XML[c.ANNOTATIONTYPE] = c.XMLTAG
-            if isinstance(c,AbstractAnnotationLayer):
-                ANNOTATIONTYPE2LAYERCLASS[c.ANNOTATIONTYPE] = c
-    except:
-        continue
+    if hasattr(c,'XMLTAG') and hasattr(c,'ANNOTATIONTYPE'):
+        XML2CLASS[c.XMLTAG] = c
+        if issubclass(c,AbstractAnnotationLayer):
+            ANNOTATIONTYPE2LAYERCLASS[c.ANNOTATIONTYPE] = c
+        if c.ROOTELEMENT:
+            ANNOTATIONTYPE2CLASS[c.ANNOTATIONTYPE] = c
+            ANNOTATIONTYPE2XML[c.ANNOTATIONTYPE] = c.XMLTAG
 
 XML2CLASS['listitem'] = ListItem #backward compatibility (XML tag is 'item' now, consistent with manual)
 
