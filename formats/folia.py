@@ -3699,27 +3699,23 @@ class Entity(AbstractSpanAnnotation):
     ANNOTATIONTYPE = AnnotationType.ENTITY
     XMLTAG = 'entity'
 
-
-
-
-class Headspan(AbstractSpanAnnotation): #generic head element
+class AbstractSpanRole(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
+    ROOTELEMENT = False
+
+class Headspan(AbstractSpanRole): #generic head element
     ACCEPTED_DATA = (WordReference,Description, Feature, Alignment, Metric)
     #ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'hd'
-    ROOTELEMENT = False
 
 DependencyHead = Headspan #alias, backwards compatibility with FoLiA 0.8
 
 
-class DependencyDependent(AbstractSpanAnnotation):
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = ()
+class DependencyDependent(AbstractSpanRole):
     ACCEPTED_DATA = (WordReference,Description, Feature, Alignment, Metric)
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'dep'
-    ROOTELEMENT = False
 
 class Dependency(AbstractSpanAnnotation):
     REQUIRED_ATTRIBS = ()
@@ -3751,7 +3747,7 @@ class LevelFeature(Feature):
     SUBSET = 'level' #associated subset
     XMLTAG = None
 
-class CoreferenceLink(AbstractSpanAnnotation):
+class CoreferenceLink(AbstractSpanRole):
     """Coreference link. Used in coreferencechain."""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
