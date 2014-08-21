@@ -64,7 +64,7 @@ import gzip
 
 
 FOLIAVERSION = '0.11.1'
-LIBVERSION = '0.11.1.53' #== FoLiA version + library revision
+LIBVERSION = '0.11.1.54' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -2968,7 +2968,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
-    OPTIONAL_ATTRIBS = (Attrib.SETONLY,)
+    OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.SETONLY,)
     PRINTABLE = False
     ROOTELEMENT = False #only annotation elements are considered root elements
 
