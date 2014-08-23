@@ -872,9 +872,12 @@ class AbstractElement(object):
     def addtoindex(self):
         """Makes sure this element (and all subelements), are properly added to the index"""
         if self.id:
-            self.doc[self.id] = self
+            self.doc.index[self.id] = self
         for e in self.data:
-            e.addtoindex()
+            try:
+                e.addtoindex()
+            except AttributeError:
+                pass
 
     def deepvalidation(self):
         if self.doc and self.doc.deepvalidation and self.set and self.set[0] != '_':
