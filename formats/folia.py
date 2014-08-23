@@ -64,7 +64,7 @@ import gzip
 
 
 FOLIAVERSION = '0.11.1'
-LIBVERSION = '0.11.1.54' #== FoLiA version + library revision
+LIBVERSION = '0.11.1.55' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -869,6 +869,12 @@ class AbstractElement(object):
         if self.doc and self.doc.deepvalidation:
             self.deepvalidation()
 
+    def addtoindex(self):
+        """Makes sure this element (and all subelements), are properly added to the index"""
+        if self.id:
+            self.doc[self.id] = self
+        for e in self.data:
+            e.addtoindex()
 
     def deepvalidation(self):
         if self.doc and self.doc.deepvalidation and self.set and self.set[0] != '_':
@@ -1784,6 +1790,8 @@ class AllowCorrections(object):
                 if o in self and isinstance(o, AbstractElement):
                     if insertindex == -1: insertindex = self.data.index(o)
                     self.remove(o)
+            for o in kwargs['original']: #make sure IDs are still properly set after removal
+                o.addtoindex()
             for current in c.select(Current):  #delete current if present
                 c.remove(current)
             del kwargs['original']
@@ -1849,8 +1857,10 @@ class AllowCorrections(object):
                 c.annotatortype = kwargs['annotatortype']
             if 'confidence' in kwargs:
                 c.confidence = float(kwargs['confidence'])
+            c.addtoindex()
             del kwargs['reuse']
         else:
+            c.addtoindex()
             if insertindex == -1:
                 self.append(c)
             else:
