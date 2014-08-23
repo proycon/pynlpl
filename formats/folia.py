@@ -1986,9 +1986,11 @@ class AllowGenerateID(object):
                     break
                 e = e.parent
 
+        origid = id
+
         while True:
             maxid += 1
-            id = id + '.' + xmltag + '.' + str(maxid)
+            id = origid + '.' + xmltag + '.' + str(maxid)
             if not self.doc or id not in self.doc.index: #extra check
                 break
 
