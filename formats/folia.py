@@ -5486,7 +5486,7 @@ class Text(AbstractStructureElement):
 #Setting Accepted data that has been postponed earlier (to allow circular references)
 
 Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction)
-Event.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, String, Metric,AbstractExtendedTokenAnnotation, Correction)
+Event.ACCEPTED_DATA = (Paragraph, Sentence, Division, Word, Head,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, String, Metric,AbstractExtendedTokenAnnotation, Correction)
 Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head, List, Figure, Table, Reference, Feature, TextContent,String, Metric,AbstractExtendedTokenAnnotation, Correction)
 
 
