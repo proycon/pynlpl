@@ -643,7 +643,7 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outp
             if total == 0:
                 total = count
             elif total != count:
-                raise Exception("Size mismatch, when multiple files are specified they must contain the exact same amount of lines!")
+                raise Exception("Size mismatch, when multiple files are specified they must contain the exact same amount of lines! (" +str(count)  + " vs " + str(total) +")")
 
         #support for relative values:
         if testsetsize < 1:
