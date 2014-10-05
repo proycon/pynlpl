@@ -64,7 +64,7 @@ import gzip
 
 
 FOLIAVERSION = '0.11.1'
-LIBVERSION = '0.11.1.54' #== FoLiA version + library revision
+LIBVERSION = '0.11.1.55' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -869,6 +869,15 @@ class AbstractElement(object):
         if self.doc and self.doc.deepvalidation:
             self.deepvalidation()
 
+    def addtoindex(self):
+        """Makes sure this element (and all subelements), are properly added to the index"""
+        if self.id:
+            self.doc.index[self.id] = self
+        for e in self.data:
+            try:
+                e.addtoindex()
+            except AttributeError:
+                pass
 
     def deepvalidation(self):
         if self.doc and self.doc.deepvalidation and self.set and self.set[0] != '_':
@@ -1784,6 +1793,8 @@ class AllowCorrections(object):
                 if o in self and isinstance(o, AbstractElement):
                     if insertindex == -1: insertindex = self.data.index(o)
                     self.remove(o)
+            for o in kwargs['original']: #make sure IDs are still properly set after removal
+                o.addtoindex()
             for current in c.select(Current):  #delete current if present
                 c.remove(current)
             del kwargs['original']
@@ -1849,8 +1860,10 @@ class AllowCorrections(object):
                 c.annotatortype = kwargs['annotatortype']
             if 'confidence' in kwargs:
                 c.confidence = float(kwargs['confidence'])
+            c.addtoindex()
             del kwargs['reuse']
         else:
+            c.addtoindex()
             if insertindex == -1:
                 self.append(c)
             else:
@@ -1986,9 +1999,11 @@ class AllowGenerateID(object):
                     break
                 e = e.parent
 
+        origid = id
+
         while True:
             maxid += 1
-            id = id + '.' + xmltag + '.' + str(maxid)
+            id = origid + '.' + xmltag + '.' + str(maxid)
             if not self.doc or id not in self.doc.index: #extra check
                 break
 
@@ -5471,7 +5486,7 @@ class Text(AbstractStructureElement):
 #Setting Accepted data that has been postponed earlier (to allow circular references)
 
 Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction)
-Event.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, String, Metric,AbstractExtendedTokenAnnotation, Correction)
+Event.ACCEPTED_DATA = (Paragraph, Sentence, Division, Word, Head,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, String, Metric,AbstractExtendedTokenAnnotation, Correction)
 Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head, List, Figure, Table, Reference, Feature, TextContent,String, Metric,AbstractExtendedTokenAnnotation, Correction)
 
 
