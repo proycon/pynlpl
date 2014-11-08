@@ -34,8 +34,15 @@ import io
 import gzip
 import bz2
 
+if os.path.exists('../../FoLiA'):
+    FOLIAPATH = '../../FoLiA/'
+elif os.path.exists('../FoLiA'):
+    FOLIAPATH = '../FoLiA/'
+else:
+    FOLIAPATH = 'FoLiA'
+    print("Downloading FoLiA",file=sys.stderr)
+    os.system("git clone https://github.com/proycon/folia.git FoLiA")
 
-FOLIAPATH = '../../FoLiA/'
 if sys.version < '3':
     from StringIO import StringIO
 else:
