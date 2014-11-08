@@ -11,4 +11,8 @@ before_install:
 install: 
     - pip install -r requirements.txt
     - python setup.py install
-script:  bash tests/test.sh
+before-script:
+    - git clone https://github.com/proycon/folia.git FoLiA
+    - mv FoLiA ../
+script:  
+    - bash tests/test.sh
