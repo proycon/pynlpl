@@ -1,0 +1,3 @@
+lxml>=2.2
+httplib2>=0.6
+numpy
