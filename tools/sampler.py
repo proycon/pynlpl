@@ -35,14 +35,14 @@ def usage():
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ht:d:S:", ["help"])
+        opts, args = getopt.getopt(sys.argv[1:], "ht:d:S:T:", ["help"])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(str(err),file=sys.stderr)
         usage()
         sys.exit(2)
 
-    testsetsize = devsetsize = 0
+    trainsetsize = testsetsize = devsetsize = 0
 
     for o, a in opts:
         if o == "-t":
@@ -63,6 +63,15 @@ def main():
                 except:
                     print("ERROR: Invalid devsetsize",file=sys.stderr)
                     sys.exit(2)
+        elif o == '-T':
+            try:
+                trainsetsize = int(a)
+            except:
+                try:
+                    trainsetsize = float(a)
+                except:
+                    print("ERROR: Invalid trainsetsize",file=sys.stderr)
+                    sys.exit(2)
         elif o == "-S":
             random.seed(int(a))
         elif o == "-h":
@@ -81,7 +90,7 @@ def main():
         usage()
         sys.exit(2)
 
-    filesampler(args, testsetsize, devsetsize)
+    filesampler(args, testsetsize, devsetsize, trainsetsize)
 
 if __name__ == '__main__':
     main()
