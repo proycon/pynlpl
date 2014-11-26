@@ -58,7 +58,6 @@ except ImportError:
     #old-Python 2.6 fallback
     import codecs as io
 import multiprocessing
-import threading
 import bz2
 import gzip
 
@@ -2543,6 +2542,11 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
         kwargs['value'] = node.text
         return Content(doc, **kwargs)
 
+class Part(AbstractStructureElement):
+    #ACCEPTED_DATA defined later
+    XMLTAG = 'part'
+    ANNOTATIONTYPE = AnnotationType.PART
+
 class Gap(AbstractElement):
     """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
     ACCEPTED_DATA = (Content, Description, Part)
@@ -2566,10 +2570,6 @@ class Gap(AbstractElement):
         return ""
 
 
-class Part(AbstractStructureElement):
-    #ACCEPTED_DATA defined later
-    XMLTAG = 'part'
-    ANNOTATIONTYPE = AnnotationType.PART
 
 class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has a double role!!
     """Line break element, signals a line break"""
