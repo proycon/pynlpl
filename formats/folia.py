@@ -4236,13 +4236,6 @@ class Figure(AbstractStructureElement):
 
 
 
-class Paragraph(AbstractStructureElement):
-    """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
-
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
-    XMLTAG = 'p'
-    TEXTDELIMITER = "\n\n"
-    ANNOTATIONTYPE = AnnotationType.PARAGRAPH
 
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
@@ -4251,6 +4244,14 @@ class Head(AbstractStructureElement):
     OCCURRENCES = 1
     TEXTDELIMITER = ' '
     XMLTAG = 'head'
+
+class Paragraph(AbstractStructureElement):
+    """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
+
+    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Head, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer)
+    XMLTAG = 'p'
+    TEXTDELIMITER = "\n\n"
+    ANNOTATIONTYPE = AnnotationType.PARAGRAPH
 
 class Cell(AbstractStructureElement):
     ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Note, Reference, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation, Correction)
