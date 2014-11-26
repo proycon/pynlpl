@@ -4179,6 +4179,12 @@ class Sentence(AbstractStructureElement):
 Quote.ACCEPTED_DATA = (Word, Sentence, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction)
 
 
+class Event(AbstractStructureElement):
+    #ACCEPTED_DATA set at bottom
+    ANNOTATIONTYPE = AnnotationType.EVENT
+    XMLTAG = 'event'
+    OCCURRENCESPERSET = 0
+
 class Caption(AbstractStructureElement):
     """Element used for captions for figures or tables, contains sentences"""
     ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction)
@@ -4300,6 +4306,9 @@ class Table(AbstractStructureElement):
     XMLTAG = 'table'
     ANNOTATIONTYPE = AnnotationType.TABLE
 
+class Part(AbstractStructureElement):
+    ACCEPTED_DATA = (AbstractStructureElement, AbstractExtendedTokenAnnotation, AlternativeLayers, AbstractAnnotationLayer, Correction)
+    XMLTAG = 'part'
 
 class Query(object):
     """An XPath query on one or more FoLiA documents"""
