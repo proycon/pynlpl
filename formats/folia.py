@@ -63,8 +63,8 @@ import bz2
 import gzip
 
 
-FOLIAVERSION = '0.11.1'
-LIBVERSION = '0.11.1.56' #== FoLiA version + library revision
+FOLIAVERSION = '0.11.2'
+LIBVERSION = '0.11.2.56' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
