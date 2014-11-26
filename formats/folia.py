@@ -3301,12 +3301,25 @@ class Alignment(AbstractElement):
         global NSFOLIA
         assert Class is Alignment or issubclass(Class, Alignment)
 
-        instance = super(Alignment,Class).parsexml(node, doc)
-
         if '{http://www.w3.org/1999/xlink}href' in node.attrib:
-            instance.href = node.attrib['{http://www.w3.org/1999/xlink}href']
+            href = node.attrib['{http://www.w3.org/1999/xlink}href']
+            del node.attrib['{http://www.w3.org/1999/xlink}href']
         else:
-            instance.href = None
+            href = None
+
+        if '{http://www.w3.org/1999/xlink}type' in node.attrib:
+            type = node.attrib['{http://www.w3.org/1999/xlink}type']
+            del node.attrib['{http://www.w3.org/1999/xlink}type']
+        else:
+            type = None
+
+        instance = super(Alignment,Class).parsexml(node, doc)
+        if href:
+            instance.href = href
+            instance.type = 'simple'
+        if type:
+            instance.type = type
+
 
         return instance
 
@@ -3327,6 +3340,13 @@ class Alignment(AbstractElement):
         return l
 
 
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        if not extraattribs:
+            extraattribs = [ E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ) ]
+        return AbstractStructureElement.relaxng(includechildren, extraattribs, extraelements, cls)
 
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
