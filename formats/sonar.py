@@ -14,7 +14,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
-from __future__ import absolute_import    
+from __future__ import absolute_import
 
 
 import io
@@ -25,7 +25,10 @@ import sys
 
 from lxml import etree as ElementTree
 
-from StringIO import StringIO
+if sys.version < '3':
+    from StringIO import StringIO
+else:
+    from io import StringIO
 
 
 namespaces = {
@@ -55,10 +58,10 @@ class CorpusDocument(object):
             if matches:
                 self.metadata['date'] = matches[0]
 
-        
+
     def __iter__(self):
         """Iterate over all words, a four-tuple (word,id,pos,lemma), in the document"""
-        
+
         r = re.compile('<w.*xml:id="([^"]*)"(.*)>(.*)</w>')
         for line in self.f.readlines():
             matches = r.findall(line)
@@ -69,14 +72,14 @@ class CorpusDocument(object):
 
                 m = re.findall('lemma="([^"]+)"', attribs)
                 if m: lemma = m[0]
-        
+
                 yield word, id, pos, lemma
             if line.find('imdi:') != -1:
                 self._parseimdi(line)
-    
+
     def words(self):
         #alias
-        return iter(self) 
+        return iter(self)
 
 
     def sentences(self):
@@ -87,23 +90,23 @@ class CorpusDocument(object):
         sentence_id = ""
         for word, id, pos, lemma in iter(self):
             try:
-                doc_id, ptype, p, s, w = re.findall('([\w\d-]+)\.(p|head)\.(\d+)\.s\.(\d+)\.w\.(\d+)',id)[0]            
+                doc_id, ptype, p, s, w = re.findall('([\w\d-]+)\.(p|head)\.(\d+)\.s\.(\d+)\.w\.(\d+)',id)[0]
                 if ((p != prevp) or (s != prevs)) and sentence:
                     yield sentence_id, sentence
                     sentence = []
                     sentence_id = doc_id + '.' + ptype + '.' + str(p) + '.s.' + str(s)
                 prevp = p
             except IndexError:
-                doc_id, s, w = re.findall('([\w\d-]+)\.s\.(\d+)\.w\.(\d+)',id)[0]            
+                doc_id, s, w = re.findall('([\w\d-]+)\.s\.(\d+)\.w\.(\d+)',id)[0]
                 if s != prevs and sentence:
                     yield sentence_id, sentence
                     sentence = []
                     sentence_id = doc_id + '.s.' + str(s)
-            sentence.append( (word,id,pos,lemma) )     
+            sentence.append( (word,id,pos,lemma) )
             prevs = s
         if sentence:
-            yield sentence_id, sentence 
-            
+            yield sentence_id, sentence
+
     def paragraphs(self, with_id = False):
         """Extracts paragraphs, returns list of plain-text(!) paragraphs"""
         prevp = 0
@@ -114,10 +117,10 @@ class CorpusDocument(object):
                     yield ( doc_id + "." + ptype + "." + prevp , " ".join(partext) )
                     partext = []
             partext.append(word)
-            prevp = p   
+            prevp = p
         if partext:
             yield (doc_id + "." + ptype + "." + prevp, " ".join(partext) )
-                
+
 class Corpus:
     def __init__(self,corpusdir, extension = 'pos', restrict_to_collection = "", conditionf=lambda x: True, ignoreerrors=False):
         self.corpusdir = corpusdir
@@ -151,7 +154,7 @@ class Corpus:
 #######################################################
 
 def ns(namespace):
-    """Resolves the namespace identifier to a full URL""" 
+    """Resolves the namespace identifier to a full URL"""
     global namespaces
     return '{'+namespaces[namespace]+'}'
 
@@ -167,8 +170,8 @@ class CorpusFiles(Corpus):
                 for f in glob.glob(d+ "/*." + self.extension):
                     if self.conditionf(f):
                         yield f
-                        
-                        
+
+
 class CorpusX(Corpus):
     def __iter__(self):
         if not self.restrict_to_collection:
@@ -179,7 +182,7 @@ class CorpusX(Corpus):
                     except:
                         print("Error, unable to parse " + f,file=sys.stderr)
                         if not self.ignoreerrors:
-                            raise 
+                            raise
         for d in glob.glob(self.corpusdir+"/*"):
             if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
                 for f in glob.glob(d+ "/*." + self.extension):
@@ -190,7 +193,7 @@ class CorpusX(Corpus):
                             print("Error, unable to parse " + f,file=sys.stderr)
                             if not self.ignoreerrors:
                                 raise
-                               
+
 
 
 class CorpusDocumentX:
@@ -209,14 +212,14 @@ class CorpusDocumentX:
         #Grab root element and determine if we run inline or standalone
         self.root =  self.xpath("/dcoi:DCOI")
         if self.root:
-            self.root = self.root[0] 
+            self.root = self.root[0]
             self.inline = True
         else:
             raise Exception("Not in DCOI/SoNaR format!")
             #self.root = self.xpath("/standalone:text")
             #self.inline = False
             #if not self.root:
-            #    raise FormatError()            
+            #    raise FormatError()
 
         #build an index
         self.index = {}
