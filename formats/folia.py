@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.11.2'
-LIBVERSION = '0.11.2.57' #== FoLiA version + library revision
+LIBVERSION = '0.11.2.56' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -301,7 +301,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.annotatortype = None
 
 
-    if 'confidence' in kwargs and not (kwargs['confidence'] is None):
+    if 'confidence' in kwargs:
         if not Attrib.CONFIDENCE in supported:
             raise ValueError("Confidence is not supported")
         try:
@@ -1730,6 +1730,9 @@ class Description(AbstractElement):
 class AllowCorrections(object):
     def correct(self, **kwargs):
         """Apply a correction (TODO: documentation to be written still)"""
+
+        if 'confidence' in kwargs and kwargs['confidence'] is None:
+            del kwargs['confidence']
 
         if 'reuse' in kwargs:
             #reuse an existing correction instead of making a new one
