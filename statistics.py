@@ -5,7 +5,7 @@
 #   Radboud University Nijmegen
 #   http://www.github.com/proycon/pynlpl
 #   proycon AT anaproy DOT nl
-#       
+#
 #       Also contains MIT licensed code from
 #        AI: A Modern Appproach : http://aima.cs.berkeley.edu/python/utils.html
 #        Peter Norvig
@@ -50,16 +50,16 @@ class FrequencyList(object):
         self.dovalidation = dovalidation
         if tokens: self.append(tokens)
 
-    
+
     def load(self, filename):
         """Load a frequency list from file (in the format produced by the save method)"""
         f = io.open(filename,'r',encoding='utf-8')
-        for line in f:            
+        for line in f:
             data = line.strip().split("\t")
-            type, count = data[:2]            
+            type, count = data[:2]
             self.count(type,count)
         f.close()
-            
+
 
     def save(self, filename, addnormalised=False):
         """Save a frequency list to file, can be loaded later using the load method"""
@@ -72,12 +72,12 @@ class FrequencyList(object):
         if isinstance(type,list):
             type = tuple(type)
         if isinstance(type,tuple):
-            if not self.casesensitive: 
+            if not self.casesensitive:
                 return tuple([x.lower() for x in type])
             else:
                 return type
         else:
-            if not self.casesensitive: 
+            if not self.casesensitive:
                 return type.lower()
             else:
                 return type
@@ -89,7 +89,7 @@ class FrequencyList(object):
 
 
     def count(self, type, amount = 1):
-        """Count a certain type. The counter will increase by the amount specified (defaults to one)"""        
+        """Count a certain type. The counter will increase by the amount specified (defaults to one)"""
         if self.dovalidation: type = self._validate(type)
         if self._ranked: self._ranked = None
         if type in self._count:
@@ -127,16 +127,16 @@ class FrequencyList(object):
         """alias for count, but can only be called once"""
         if self.dovalidation: type = self._validate(type)
         if not type in self._count:
-            self.count(type,value)     
+            self.count(type,value)
         else:
             raise ValueError("This type is already set!")
-            
+
     def __delitem__(self, type):
         if self.dovalidation: type = self._validate(type)
         del self._count[type]
         if self._ranked: self._ranked = None
-        
-    
+
+
     def typetokenratio(self):
         """Computes the type/token ratio"""
         return len(self._count) / float(self.total)
@@ -155,7 +155,7 @@ class FrequencyList(object):
         return self._ranked[0][0]
 
 
-    def p(self, type): 
+    def p(self, type):
         """Returns the probability (relative frequency) of the token"""
         if self.dovalidation: type = self._validate(type)
         return self._count[type] / float(self.total)
@@ -174,9 +174,9 @@ class FrequencyList(object):
         assert isinstance(otherfreqlist,FrequencyList)
         product = FrequencyList(None,)
         for type, count in self.items():
-            product.count(type,count)        
+            product.count(type,count)
         for type, count in otherfreqlist.items():
-            product.count(type,count)        
+            product.count(type,count)
         return product
 
     def output(self,delimiter = '\t', addnormalised=False):
@@ -200,31 +200,31 @@ class FrequencyList(object):
 
     def __repr__(self):
         return repr(self._count)
-        
+
     def __unicode__(self): #Python 2
-        return str(self)   
-        
+        return str(self)
+
     def __str__(self):
-        return "\n".join(self.output())        
-        
+        return "\n".join(self.output())
+
     def values(self):
         return self._count.values()
 
     def dict(self):
         return self._count
-    
+
 
 #class FrequencyTrie:
 #    def __init__(self):
 #        self.data = Tree()
-#        
+#
 #    def count(self, sequence):
-#            
-#        
+#
+#
 #        self.data.append( Tree(item) )
-    
-    
-        
+
+
+
 
 class Distribution(object):
     """A distribution can be created over a FrequencyList or a plain dictionary with numeric values. It will be normalized automatically. This implemtation uses dictionaries/hashing"""
@@ -241,16 +241,16 @@ class Distribution(object):
                 for key,value in data:
                     self._dist[key] = float(value)
             else:
-                self._dist = data 
+                self._dist = data
             total = sum(self._dist.values())
             if total < 0.999 or total > 1.000:
                 #normalize again
                 for key, value in self._dist.items():
-                    self._dist[key] = value / total                       
+                    self._dist[key] = value / total
         else:
             raise Exception("Can't create distribution")
         self._ranked = None
-        
+
 
 
     def _rank(self):
@@ -273,9 +273,9 @@ class Distribution(object):
         if not base and self.base: base = self.base
         for type in self._dist:
             if not base:
-                entropy += self._dist[type] * -math.log(self._dist[type])     
+                entropy += self._dist[type] * -math.log(self._dist[type])
             else:
-                entropy += self._dist[type] * -math.log(self._dist[type], base)     
+                entropy += self._dist[type] * -math.log(self._dist[type], base)
         return entropy
 
     def perplexity(self, base=2):
@@ -286,8 +286,8 @@ class Distribution(object):
         self._rank()
         return self._ranked[0][0]
 
-    def maxentropy(self, base = 2):     
-        """Compute the maximum entropy of the distribution: log_e(N)"""   
+    def maxentropy(self, base = 2):
+        """Compute the maximum entropy of the distribution: log_e(N)"""
         if not base and self.base: base = self.base
         if not base:
             return math.log(len(self._dist))
@@ -303,7 +303,7 @@ class Distribution(object):
         return self._dist[type]
 
     def __iter__(self):
-        """Iterate over the *ranked* distribution, returns (type, probability) pairs"""       
+        """Iterate over the *ranked* distribution, returns (type, probability) pairs"""
         self._rank()
         for type, p in self._ranked:
             yield type, p
@@ -315,7 +315,7 @@ class Distribution(object):
 
     def output(self,delimiter = '\t', freqlist = None):
         """Generator yielding formatted strings expressing the time and probabily for each item in the distribution"""
-        for type, prob in self:   
+        for type, prob in self:
             if freqlist:
                 if isinstance(type,list) or isinstance(type, tuple):
                     yield " ".join(type) + delimiter + str(freqlist[type]) + delimiter + str(prob)
@@ -326,7 +326,7 @@ class Distribution(object):
                     yield " ".join(type) + delimiter + str(prob)
                 else:
                     yield type + delimiter + str(prob)
-                
+
 
     def __unicode__(self):
         return str(self)
@@ -336,39 +336,39 @@ class Distribution(object):
 
     def __repr__(self):
         return repr(self._dist)
-    
+
     def keys(self):
-        return self._dist.keys()    
-        
+        return self._dist.keys()
+
     def values(self):
         return self._dist.values()
-        
-        
+
+
 class MarkovChain(object):
     def __init__(self, startstate, endstate = None):
         self.nodes = set()
         self.edges_out = {}
         self.startstate = startstate
         self.endstate = endstate
-        
+
     def settransitions(self, state, distribution):
         self.nodes.add(state)
         if not isinstance(distribution, Distribution):
             distribution = Distribution(distribution)
         self.edges_out[state] = distribution
         self.nodes.update(distribution.keys())
-        
+
     def __iter__(self):
         for state, distribution in self.edges_out.items():
             yield state, distribution
-            
+
     def __getitem__(self, state):
         for distribution in self.edges_out[state]:
             yield distribution
-        
+
     def size(self):
         return len(self.nodes)
-        
+
     def accessible(self,fromstate, tostate):
         """Is state tonode directly accessible (in one step) from state fromnode? (i.e. is there an edge between the nodes). If so, return the probability, else zero"""
         if (not (fromstate in self.nodes)) or (not (tostate in self.nodes)) or not (fromstate in self.edges_out):
@@ -377,22 +377,22 @@ class MarkovChain(object):
             return self.edges_out[fromstate][tostate]
         else:
             return 0
-        
-        
+
+
     def communicates(self,fromstate, tostate, maxlength=999999):
         """See if a node communicates (directly or indirectly) with another. Returns the probability of the *shortest* path (probably, but not necessarily the highest probability)"""
         if (not (fromstate in self.nodes)) or (not (tostate in self.nodes)):
             return 0
-        assert (fromstate != tostate)   
-        
-            
-        def _test(node,length,prob):            
+        assert (fromstate != tostate)
+
+
+        def _test(node,length,prob):
             if length > maxlength:
                 return 0
             if node == tostate:
                 prob *= self.edges_out[node][tostate]
                 return True
-            
+
             for child in self.edges_out[node].keys():
                 if not child in visited:
                     visited.add(child)
@@ -400,13 +400,13 @@ class MarkovChain(object):
                         return prob * self.edges_out[node][tostate]
                     else:
                         r = _test(child, length+1, prob * self.edges_out[node][tostate])
-                        if r: 
+                        if r:
                             return r
             return 0
-                            
+
         visited = set(fromstate)
         return _test(fromstate,1,1)
-            
+
     def p(self, sequence, subsequence=True):
         """Returns the probability of the given sequence or subsequence (if subsequence=True, default)."""
         if sequence[0] != self.startstate:
@@ -417,17 +417,17 @@ class MarkovChain(object):
         if self.endstate:
             if sequence[-1] != self.endstate:
                 if isinstance(sequence, tuple):
-                    sequence = sequence + (self.endstate,) 
-                else:    
-                    sequence = tuple(sequence) + (self.endstate,) 
-        
+                    sequence = sequence + (self.endstate,)
+                else:
+                    sequence = tuple(sequence) + (self.endstate,)
+
         prevnode = None
         prob = 1
         for node in sequence:
             if prevnode:
                 try:
                     prob *= self.edges_out[prevnode][node]
-                except: 
+                except:
                     return 0
         return prob
 
@@ -435,47 +435,47 @@ class MarkovChain(object):
     def __contains__(self, sequence):
         """Is the given sequence generated by the markov model? Does not work for subsequences!"""
         return bool(self.p(sequence,False))
-    
-    
-    
+
+
+
     def reducible(self):
         #TODO: implement
         raise NotImplementedError
 
-        
-        
-        
+
+
+
 class HiddenMarkovModel(MarkovChain):
     def __init__(self, startstate, endstate = None):
         self.observablenodes = set()
         self.edges_toobservables = {}
         super(HiddenMarkovModel, self).__init__(startstate,endstate)
-        
+
     def setemission(self, state, distribution):
         self.nodes.add(state)
         if not isinstance(distribution, Distribution):
             distribution = Distribution(distribution)
         self.edges_toobservables[state] = distribution
-        self.observablenodes.update(distribution.keys())        
+        self.observablenodes.update(distribution.keys())
 
     def print_dptable(self, V):
         print("    ",end="",file=stdout)
         for i in range(len(V)): print("%7s" % ("%d" % i),end="",file=stdout)
         print(file=stdout)
-     
+
         for y in V[0].keys():
             print("%.5s: " % y, end="",file=stdout)
             for t in range(len(V)):
                 print("%.7s" % ("%f" % V[t][y]),end="",file=stdout)
             print(file=stdout)
-     
-    #Adapted from: http://en.wikipedia.org/wiki/Viterbi_algorithm 
+
+    #Adapted from: http://en.wikipedia.org/wiki/Viterbi_algorithm
     def viterbi(self,observations, doprint=False):
         #states, start_p, trans_p, emit_p):
-        
+
         V = [{}] #Viterbi matrix
         path = {}
-     
+
         # Initialize base cases (t == 0)
         for node in self.edges_out[self.startstate].keys():
             try:
@@ -483,37 +483,37 @@ class HiddenMarkovModel(MarkovChain):
                 path[node] = [node]
             except KeyError:
                 pass #will be 0, don't store
-     
+
         # Run Viterbi for t > 0
         for t in range(1,len(observations)):
             V.append({})
             newpath = {}
-     
+
             for node in self.nodes:
                 column = []
                 for prevnode in V[t-1].keys():
                     try:
                         column.append( (V[t-1][prevnode] * self.edges_out[prevnode][node] * self.edges_toobservables[node][observations[t]],  prevnode ) )
                     except KeyError:
-                        pass #will be 0 
-                
+                        pass #will be 0
+
                 if column:
                     (prob, state) = max(column)
                     V[t][node] = prob
                     newpath[node] = path[state] + [node]
-     
+
             # Don't need to remember the old paths
             path = newpath
-     
+
         if doprint: self.print_dptable(V)
-        
+
         if not V[len(observations) - 1]:
             return (0,[])
         else:
             (prob, state) = max([(V[len(observations) - 1][node], node) for node in V[len(observations) - 1].keys()])
             return (prob, path[state])
 
-    
+
 
 # ********************* Common Functions ******************************
 
@@ -532,9 +532,9 @@ def product(seq):
 
 
 
-# All below functions are mathematical functions from  AI: A Modern Approach, see: http://aima.cs.berkeley.edu/python/utils.html 
+# All below functions are mathematical functions from  AI: A Modern Approach, see: http://aima.cs.berkeley.edu/python/utils.html
 
-def histogram(values, mode=0, bin_function=None): #from AI: A Modern Appproach 
+def histogram(values, mode=0, bin_function=None): #from AI: A Modern Appproach
     """Return a list of (value, count) pairs, summarizing the input values.
     Sorted by increasing value, or if mode=1, by decreasing count.
     If bin_function is given, map it over values first."""
@@ -546,22 +546,22 @@ def histogram(values, mode=0, bin_function=None): #from AI: A Modern Appproach
         return sorted(bins.items(), key=lambda v: v[1], reverse=True)
     else:
         return sorted(bins.items())
- 
-def log2(x):  #from AI: A Modern Appproach 
+
+def log2(x):  #from AI: A Modern Appproach
     """Base 2 logarithm.
     >>> log2(1024)
     10.0
     """
     return math.log(x, 2)
 
-def mode(values):  #from AI: A Modern Appproach 
+def mode(values):  #from AI: A Modern Appproach
     """Return the most common value in the list of values.
     >>> mode([1, 2, 3, 2])
     2
     """
     return histogram(values, mode=1)[0][0]
 
-def median(values):  #from AI: A Modern Appproach 
+def median(values):  #from AI: A Modern Appproach
     """Return the middle value, when the values are sorted.
     If there are an odd number of elements, try to average the middle two.
     If they can't be averaged (e.g. they are strings), choose one at random.
@@ -581,24 +581,24 @@ def median(values):  #from AI: A Modern Appproach
         except TypeError:
             return random.choice(middle2)
 
-def mean(values):  #from AI: A Modern Appproach 
+def mean(values):  #from AI: A Modern Appproach
     """Return the arithmetic average of the values."""
     return sum(values) / len(values)
 
-def stddev(values, meanval=None):  #from AI: A Modern Appproach 
+def stddev(values, meanval=None):  #from AI: A Modern Appproach
     """The standard deviation of a set of values.
     Pass in the mean if you already know it."""
     if meanval == None: meanval = mean(values)
     return math.sqrt( sum([(x - meanval)**2 for x in values]) / (len(values)-1) )
 
-def dotproduct(X, Y):  #from AI: A Modern Appproach 
+def dotproduct(X, Y):  #from AI: A Modern Appproach
     """Return the sum of the element-wise product of vectors x and y.
     >>> dotproduct([1, 2, 3], [1000, 100, 10])
     1230
     """
     return sum([x * y for x, y in zip(X, Y)])
 
-def vector_add(a, b):  #from AI: A Modern Appproach 
+def vector_add(a, b):  #from AI: A Modern Appproach
     """Component-wise addition of two vectors.
     >>> vector_add((0, 1), (8, 9))
     (8, 10)
@@ -607,7 +607,7 @@ def vector_add(a, b):  #from AI: A Modern Appproach
 
 
 
-def normalize(numbers, total=1.0):  #from AI: A Modern Appproach 
+def normalize(numbers, total=1.0):  #from AI: A Modern Appproach
     """Multiply each number by a constant such that the sum is 1.0 (or total).
     >>> normalize([1,2,1])
     [0.25, 0.5, 0.25]
@@ -623,8 +623,8 @@ def levenshtein(s1, s2):
         return levenshtein(s2, s1)
     if not s1:
         return len(s2)
- 
-    previous_row = xrange(len(s2) + 1)
+
+    previous_row = list(range(len(s2) + 1))
     for i, c1 in enumerate(s1):
         current_row = [i + 1]
         for j, c2 in enumerate(s2):
@@ -633,7 +633,7 @@ def levenshtein(s1, s2):
             substitutions = previous_row[j] + (c1 != c2)
             current_row.append(min(insertions, deletions, substitutions))
         previous_row = current_row
- 
+
     return previous_row[-1]
 
 
