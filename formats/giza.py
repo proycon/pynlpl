@@ -294,7 +294,7 @@ class IntersectionAlignment:
                 #keep only those alignments that are present in both
                 intersection = []
                 for i, x in enumerate(alignment):
-                    if revalignment[i] and revalignment[i] in x:
+                    if revalignment[i] in x:
                         intersection.append(revalignment[i])
                     else:
                         intersection.append(None)
