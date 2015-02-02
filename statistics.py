@@ -617,14 +617,20 @@ def normalize(numbers, total=1.0):  #from AI: A Modern Appproach
 
 ###########################################################################################
 
-def levenshtein(s1, s2, abortdistance=9999):
-    """Computes the levenshtein distance between two strings. From:  http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python"""
-    if len(s1) < len(s2):
+def levenshtein(s1, s2, maxdistance=9999):
+    """Computes the levenshtein distance between two strings. Adapted from:  http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python"""
+    l1 = len(s1)
+    l2 = len(s2)
+    if l1 < l2:
         return levenshtein(s2, s1)
     if not s1:
         return len(s2)
 
-    previous_row = list(range(len(s2) + 1))
+    #If the words differ too much in length,  (if  we have a low maxdistance) , we needn't bother compute distance:
+    if l1 > l2 + maxdistance:
+        return maxdistance+1
+
+    previous_row = list(range(l2 + 1))
     for i, c1 in enumerate(s1):
         current_row = [i + 1]
         for j, c2 in enumerate(s2):
@@ -632,9 +638,9 @@ def levenshtein(s1, s2, abortdistance=9999):
             deletions = current_row[j] + 1       # than s2
             substitutions = previous_row[j] + (c1 != c2)
             current_row.append(min(insertions, deletions, substitutions))
+        if current_row[-1] > maxdistance:
+            return current_row[-1]
         previous_row = current_row
-        if previous_row[-1] > abortdistance:
-            return abortdistance
 
     return previous_row[-1]
 
