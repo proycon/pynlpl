@@ -617,7 +617,7 @@ def normalize(numbers, total=1.0):  #from AI: A Modern Appproach
 
 ###########################################################################################
 
-def levenshtein(s1, s2):
+def levenshtein(s1, s2, abortdistance=9999):
     """Computes the levenshtein distance between two strings. From:  http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python"""
     if len(s1) < len(s2):
         return levenshtein(s2, s1)
@@ -633,6 +633,8 @@ def levenshtein(s1, s2):
             substitutions = previous_row[j] + (c1 != c2)
             current_row.append(min(insertions, deletions, substitutions))
         previous_row = current_row
+        if previous_row[-1] > abortdistance:
+            return abortdistance
 
     return previous_row[-1]
 
