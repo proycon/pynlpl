@@ -2755,7 +2755,7 @@ class Word(AbstractStructureElement, AllowCorrections):
     def next(self, scope=None ):
         """Returns the next word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,Event, ListItem,Caption by default)"""
         if scope is None: scope = STRUCTURESCOPE
-        words = self.ancestor(scope).select(folia.Word)
+        words = self.ancestor(scope).select(Word)
         i = words.index(self) + 1
         if i < len(words):
             return words[i]
@@ -2766,7 +2766,7 @@ class Word(AbstractStructureElement, AllowCorrections):
     def previous(self, scope=None):
         """Returns the previous word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,ListItem, Caption, Head, Event by default)"""
         if scope is None: scope = STRUCTURESCOPE
-        words = self.ancestor(scope).select(folia.Word)
+        words = self.ancestor(scope).select(Word)
         i = words.index(self) - 1
         if i >= 0:
             return words[i]
