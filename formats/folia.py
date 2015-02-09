@@ -1120,11 +1120,12 @@ class AbstractElement(object):
             else:
                 break
 
-    def ancestor(self, Class):
-        """Find the most immediate ancestor of the specified type"""
+    def ancestor(self, *Classes):
+        """Find the most immediate ancestor of the specified type, multiple classes may be specified"""
         for e in self.ancestors():
-            if isinstance(e, Class):
-                return e
+            for Class in Classes:
+                if isinstance(e, Class):
+                    return e
         raise NoSuchAnnotation
 
 
