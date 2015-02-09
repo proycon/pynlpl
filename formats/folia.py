@@ -72,6 +72,7 @@ NSFOLIA = "http://ilk.uvt.nl/folia"
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 nslen = len(NSFOLIA) + 2
 nslendcoi = len(NSDCOI) + 2
+STRUCTURESCOPE = [] #redefined later
 
 TMPDIR = "/tmp/" #will be used for downloading temporary data (external subdocuments)
 
@@ -2751,8 +2752,9 @@ class Word(AbstractStructureElement, AllowCorrections):
         self.sentence().splitword(self, *newwords, **kwargs)
 
 
-    def next(self, scope=(Sentence, Paragraph, Division, Event, Text, ListItem, Head, Caption) ):
+    def next(self, scope=None ):
         """Returns the next word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,Event, ListItem,Caption by default)"""
+        if scope is None: scope = STRUCTURESCOPE
         words = self.ancestor(scope).select(folia.Word)
         i = words.index(self) + 1
         if i < len(words):
@@ -2761,8 +2763,9 @@ class Word(AbstractStructureElement, AllowCorrections):
             return None
 
 
-    def previous(self, scope=(Sentence, Paragraph, Division, Event, Text, ListItem, Head, Caption) ):
+    def previous(self, scope=None):
         """Returns the previous word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,ListItem, Caption, Head, Event by default)"""
+        if scope is None: scope = STRUCTURESCOPE
         words = self.ancestor(scope).select(folia.Word)
         i = words.index(self) - 1
         if i >= 0:
@@ -6152,6 +6155,9 @@ def validate(filename,schema=None,deep=False):
 
     if deep:
         doc = Document(tree=doc, deepvalidation=True)
+
+#structure scope above the sentence level, used by next() and previous() methods
+STRUCTURESCOPE = (Sentence, Paragraph, Division, ListItem, Text, Event, Caption, Head)
 
 XML2CLASS = {}
 ANNOTATIONTYPE2CLASS = {}
