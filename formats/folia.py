@@ -2751,9 +2751,9 @@ class Word(AbstractStructureElement, AllowCorrections):
         self.sentence().splitword(self, *newwords, **kwargs)
 
 
-    def next(self):
-        """Returns the next word in the sentence, or None if no next word was found. This method does not cross sentence boundaries."""
-        words = self.sentence().words()
+    def next(self, scope=(Sentence, Paragraph, Division, Event, Text, ListItem, Head, Caption) ):
+        """Returns the next word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,Event, ListItem,Caption by default)"""
+        words = self.ancestor(scope).select(folia.Word)
         i = words.index(self) + 1
         if i < len(words):
             return words[i]
@@ -2761,9 +2761,9 @@ class Word(AbstractStructureElement, AllowCorrections):
             return None
 
 
-    def previous(self):
-        """Returns the previous word in the sentence, or None if no next word was found. This method does not cross sentence boundaries."""
-        words = self.sentence().words()
+    def previous(self, scope=(Sentence, Paragraph, Division, Event, Text, ListItem, Head, Caption) ):
+        """Returns the previous word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,ListItem, Caption, Head, Event by default)"""
+        words = self.ancestor(scope).select(folia.Word)
         i = words.index(self) - 1
         if i >= 0:
             return words[i]
