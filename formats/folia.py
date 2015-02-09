@@ -2625,33 +2625,16 @@ class Word(AbstractStructureElement, AllowCorrections):
 
     def sentence(self):
         """Obtain the sentence this word is a part of, otherwise return None"""
-        e = self;
-        while e.parent:
-            if isinstance(e, Sentence):
-                return e
-            e = e.parent
-        return None
+        return self.ancestor(Sentence)
 
 
     def paragraph(self):
         """Obtain the paragraph this word is a part of, otherwise return None"""
-        e = self;
-        while e.parent:
-            if isinstance(e, Paragraph):
-                return e
-            e = e.parent
-        return None
+        return self.ancestor(Paragraph)
 
     def division(self):
         """Obtain the deepest division this word is a part of, otherwise return None"""
-        e = self;
-        while e.parent:
-            if isinstance(e, Division):
-                return e
-            e = e.parent
-        return None
-
-
+        return self.ancestor(Division)
 
     def incorrection(self):
         """Is this word part of a correction? If it is, it returns the Correction element (evaluating to True), otherwise it returns None"""
@@ -4089,21 +4072,11 @@ class Sentence(AbstractStructureElement):
 
     def paragraph(self):
         """Obtain the paragraph this sentence is a part of (None otherwise)"""
-        e = self;
-        while e.parent:
-            if isinstance(e, Paragraph):
-                return e
-            e = e.parent
-        return None
+        return self.ancestor(Paragraph)
 
     def division(self):
         """Obtain the division this sentence is a part of (None otherwise)"""
-        e = self;
-        while e.parent:
-            if isinstance(e, Division):
-                return e
-            e = e.parent
-        return None
+        return self.ancestor(Division)
 
 
     def correctwords(self, originalwords, newwords, **kwargs):
