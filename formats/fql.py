@@ -123,42 +123,6 @@ class UnparsedQuery(object):
 
 
 
-class Actor(object):
-    def __init__(self, actor, set=None,id=None, filter=None):
-        try:
-            self.Class = folia.XML2CLASS[actor]
-        except:
-            raise SyntaxError("No such actor: " + actor)
-        self.set = set
-        self.id = id
-        self.filter = filter
-
-    @staticmethod
-    def parse(q, i=0):
-        if q[i] not in folia.XML2CLASS:
-            raise SyntaxError("Expected actor, got " + q[i])
-        actor = q[i]
-
-        l = len(q)
-        set = None
-        id = None
-        filter = None
-        while i < l:
-            if q.kw(i,"OF") and q[i+1]:
-                set = q[i+1]
-                i += 2
-            elif q.kw(i,"ID") and q[i+1]:
-                id = q[i+1]
-                i += 2
-            elif q.kw(i, "WHERE"):
-                #ok, big filter coming up!
-                filter, i = Filter.parse(Filter.parse(),i)
-                break
-            else:
-                #something we don't handle
-                return None, i
-
-        return Actor(actor,set,id,filter), i
 
 class Filter(object): #WHERE ....
     def __init__(self, filters, negation=False,disjunction=False):
@@ -223,14 +187,96 @@ class Filter(object): #WHERE ....
         return Filter(filters, negation, disjunction), i
 
 
-class Target(object):
+class Selector(object):
+    def __init__(self, Class, set=None,id=None, filter=None):
+        self.Class = Class
+        self.set = set
+        self.id = id
+        self.filter = filter
+
+    @staticmethod
+    def parse(q, i=0):
+        l = len(q)
+        set = None
+        id = None
+        filter = None
+
+        if q[i] == "ID":
+            id = q[i]
+            Class = None
+            i += 2
+        else:
+            if q[i] not in folia.XML2CLASS:
+                raise SyntaxError("Expected element type, got " + q[i])
+            Class = q[i]
+
+        while i < l:
+            if q.kw(i,"OF") and q[i+1]:
+                set = q[i+1]
+                i += 2
+            elif q.kw(i,"ID") and q[i+1]:
+                id = q[i+1]
+                i += 2
+            elif q.kw(i, "WHERE"):
+                #ok, big filter coming up!
+                filter, i = Filter.parse(Filter.parse(),i)
+                break
+            else:
+                #something we don't handle
+                break
+
+        return Selector(Class,set,id,filter), i
+
+
+class Span(object):
     pass #TODO
+
+class Target(object): #FOR/IN... expression
+    def __init__(self, targets, strict=False,nested = None):
+        self.targets = targets
+        self.strict = strict #True for IN
+        self.nested = nested #in a nested another target
+
+    @staticmethod
+    def parse(q, i=0):
+        if q.kw(i,'FOR'):
+            strict = False
+        elif q.kw(i,'IN'):
+            strict = True
+        else:
+            raise SyntaxError("Expected target expression, got " + q[i])
+        i += 1
+
+        targets = []
+        nested = None
+        l = len(q)
+        while i < l:
+            if q.kw(i,'SPAN'):
+                raise NotImplementedError #TODO
+            elif q.kw(i,"ID") or q[i] in folia.XML2CLASS:
+                target,i = Selector.parse(q,i)
+                targets.append(target)
+                continue
+            elif q.kw(i,","):
+                #we're gonna have more targets
+                i += 1
+            elif q.kw(i, ('FOR','IN')):
+                nested,i = Selector.parse(q,i)
+
+        if not targets:
+            raise SyntaxError("Expected one or more targets, got " + q[i])
+
+        return Target(targets,strict,nested)
+
+
+
+
 
 class Form(Object):  #AS... expression
     pass #TODO
 
 
-class Action(object): #Action
+class Action(object): #Action expression
     def __init__(self, action, actor, assignments={}):
         self.action = action
         self.actor = actor
@@ -249,7 +295,7 @@ class Action(object): #Action
             raise SyntaxError("Expected action, got " + q[i])
 
         try:
-            actor, i = Actor.parse(q,i)
+            actor, i = Selector.parse(q,i)
         except ParseError as e:
             raise SyntaxError(e)
 
