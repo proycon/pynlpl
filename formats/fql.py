@@ -32,7 +32,7 @@ class SyntaxError(Exception):
 
 class UnparsedQuery(object):
     """This class takes care of handling grouped blocks in parentheses and handling quoted values"""
-    def __init__(self, s, i):
+    def __init__(self, s, i=0):
         self.q = []
         self.mask = []
         l = len(s)
@@ -297,7 +297,7 @@ class Target(object): #FOR/IN... expression
 
 
 
-class Form(Object):  #AS... expression
+class Form(object):  #AS... expression
     pass #TODO
 
 
@@ -382,7 +382,7 @@ class Context(object):
         self.defaultsets = {}
 
 class Query(object):
-    def __init__(self, q, context):
+    def __init__(self, q, context=Context()):
         self.action = None
         self.targets = []
         self.format = context.format
