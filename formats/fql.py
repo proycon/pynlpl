@@ -43,6 +43,7 @@ class UnparsedQuery(object):
                 #process previous word
                 if begin < i:
                     self.q.append(s[begin:i])
+                    self.mask.append(MASK_NORMAL)
                 begin = i + 1
             elif i == l - 1:
                 #process last word
