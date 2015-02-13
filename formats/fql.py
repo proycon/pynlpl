@@ -16,6 +16,7 @@
 
 from pynlpl.formats import folia
 from copy import copy
+import json
 import re
 
 OPERATORS = ('=','==','!=','>','<','<=','>=')
@@ -25,6 +26,9 @@ MASK_EXPRESSION = 2
 
 
 class SyntaxError(Exception):
+    pass
+
+class QueryError(Exception):
     pass
 
 class UnparsedQuery(object):
@@ -306,6 +310,14 @@ class Target(object): #FOR/IN... expression
         return Target(targets,strict,nested), i
 
 
+    def __call__(self, query, selection):
+        for element in selection:
+
+            self.nested(selection)
+            for e in self.nested(element):
+
+
+
 
 
 
@@ -430,14 +442,62 @@ class Query(object):
 
     def __call__(self, doc):
         """Execute the query on the specified document"""
+        targetsselection = [ doc.data[0] ]
         if self.targets:
-            root = doc.data[0] #will select the text element
-            for e in self.targets(root):
-                raise NotImplementedError #TODO
+            targetselection = self.targets(self, targetselection)
 
+        actorselection = self.action(self, targetselection)
+
+        if self.returntype == "actor":
+            responseselection = actorselection
+        elif self.returntype == "target" or self.returntype == "inner-target":
+            responseselection = targetselection
+        elif self.returntype == "outer-target":
+            raise NotImplementedError
+        elif self.returntype == "ancestor-target":
+            raise NotImplementedError
         else:
-            #No targets, only actor
-            raise NotImplementedError #TODO
+            return QueryError("Invalid return type: " + self.returntype)
+
+
+        #convert response selection to proper format and return
+        if self.format.beginswith('single'):
+            if len(responseselection) > 1:
+                raise QueryError("A single response was expected, but multiple are returned")
+            if self.format == "single-xml":
+                if not responseselection:
+                    return ""
+                else:
+                    return responseselection[0].xmlstring(True)
+            elif self.format == "single-json":
+                if not responseselection:
+                    return "null"
+                else:
+                    return json.dumps(responseselection[0].json())
+            elif self.format == "single-python":
+                if not responseselection:
+                    return None
+                else:
+                    return responseselection[0]
+        else:
+            if self.format == "xml":
+                if not responseselection:
+                    return "<results></results>"
+                else:
+                    r = "<results>\n"
+                    for e in responseselection:
+                        r += "<result>\n" + e.xmlstring(True) + "\n</result>\n"
+                    r += "</results>\n"
+                    return r
+            elif self.format == "json":
+                if not responseselection:
+                    return "[]"
+                else:
+                    return json.dumps([ e.json() for e in responseselection)]
+            else self.format == "python":
+                return responseselection
+
+        return QueryError("Invalid format: " + self.format)
 
 
 
