@@ -30,7 +30,7 @@ import os
 import unittest
 from pynlpl.formats import fql
 
-Q1 = 'SELECT pos WHERE class = "n" FOR w WHERE text = "house" RETURN outer'
+Q1 = 'SELECT pos WHERE class = "n" FOR w WHERE text = "house" AND class != "punct" RETURN outer'
 Q2 = 'ADD w WITH text "house" (ADD pos WITH class "n") FOR ID sentence'
 
 class Test1UnparsedQuery(unittest.TestCase):
@@ -40,8 +40,8 @@ class Test1UnparsedQuery(unittest.TestCase):
         qs = Q1
         qu = fql.UnparsedQuery(qs)
 
-        self.assertEqual( qu.q, ['SELECT','pos','WHERE','class','=','n','FOR','w','WHERE','text','=','house','RETURN','outer'])
-        self.assertEqual( qu.mask, [0,0,0,0,0,1,0,0,0,0,0,1,0,0] )
+        self.assertEqual( qu.q, ['SELECT','pos','WHERE','class','=','n','FOR','w','WHERE','text','=','house','AND','class','!=','punct','RETURN','outer'])
+        self.assertEqual( qu.mask, [0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0] )
 
     def test2_paren(self):
         """Query with parentheses"""

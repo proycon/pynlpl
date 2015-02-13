@@ -162,7 +162,7 @@ class Filter(object): #WHERE ....
         while i < l:
             if q.kw(i, "NOT"):
                 negation = True
-
+                i += 1
             elif q[i+1] in OPERATORS and q[i] and q[i+2]:
                 operator = q[i+1]
                 if q[i] == "class":
@@ -172,27 +172,29 @@ class Filter(object): #WHERE ....
                 else:
                     v = lambda x,y=q[i]: getattr(x,y)
                 if operator == '=' or operator == '==':
-                    self.filters.append( lambda x,y=q[i+2],v=v : v(x) == y )
+                    filters.append( lambda x,y=q[i+2],v=v : v(x) == y )
                 elif operator == '!=':
-                    self.filters.append( lambda x,y=q[i+2],v=v : v(x) != y )
+                    filters.append( lambda x,y=q[i+2],v=v : v(x) != y )
                 elif operator == '>':
-                    self.filters.append( lambda x,y=q[i+2],v=v : v(x) > y )
+                    filters.append( lambda x,y=q[i+2],v=v : v(x) > y )
                 elif operator == '<':
-                    self.filters.append( lambda x,y=q[i+2],v=v : v(x) < y )
+                    filters.append( lambda x,y=q[i+2],v=v : v(x) < y )
                 elif operator == '>=':
-                    self.filters.append( lambda x,y=q[i+2],v=v : v(x) >= y )
+                    filters.append( lambda x,y=q[i+2],v=v : v(x) >= y )
                 elif operator == '<=':
-                    self.filters.append( lambda x,y=q[i+2],v=v : v(x) <= y )
+                    filters.append( lambda x,y=q[i+2],v=v : v(x) <= y )
                 elif operator == 'CONTAINS':
-                    self.filters.append( lambda x,y=q[i+2],v=v : v(x).find( y ) != -1 )
+                    filters.append( lambda x,y=q[i+2],v=v : v(x).find( y ) != -1 )
                 elif operator == 'MATCHES':
-                    self.filters.append( lambda x,y=re.compile(q[i+2]),v=v : y.search(v(x)) is not None  )
+                    filters.append( lambda x,y=re.compile(q[i+2]),v=v : y.search(v(x)) is not None  )
 
-                if q.kw(i+3,"AND") or q.kw(i+3,"OR"):
+                if q.kw(i+3,("AND","OR")):
                     if logop and q[i+3] != logop:
                         raise SyntaxError("Mixed logical operators, use parentheses: " + str(q))
                     logop = q[i+3]
+                    i += 4
                 else:
+                    i += 3
                     break #done
             elif 'HAS' in q:
                 #has statement (spans full UnparsedQuery by definition)
@@ -208,10 +210,10 @@ class Filter(object): #WHERE ....
                 i += 1
                 subfilter = Filter.parse(q,i)
                 subfilters.append( (selector,subfilter) )
-
-            elif isinstance(q, UnparsedQuery):
-                filter, i = Filter.parse(q,i)
+            elif isinstance(q[i], UnparsedQuery):
+                filter,_  = Filter.parse(q[i])
                 filters.append(filter)
+                i += 1
                 if q.kw(i,"AND") or q.kw(i, "OR"):
                     if logop and q[i] != logop:
                         raise SyntaxError("Mixed logical operators, use parentheses: " + str(q))
@@ -220,9 +222,8 @@ class Filter(object): #WHERE ....
                     break #done
             else:
                 raise SyntaxError("Expected comparison operator, got " + q[i+1] + " in: " + str(q))
-            i += 1
 
-        return Filter(filters, negation, disjunction,subfilters), i
+        return Filter(filters, negation, logop == "OR",subfilters), i
 
 
 class Selector(object):
@@ -239,14 +240,15 @@ class Selector(object):
         id = None
         filter = None
 
-        if q[i] == "ID":
-            id = q[i]
+        if q[i] == "ID" and q[i+1]:
+            id = q[i+1]
             Class = None
             i += 2
         else:
             if q[i] not in folia.XML2CLASS:
                 raise SyntaxError("Expected element type, got " + q[i] + " in: " + str(q))
             Class = q[i]
+            i += 1
 
         while i < l:
             if q.kw(i,"OF") and q[i+1]:
@@ -257,7 +259,7 @@ class Selector(object):
                 i += 2
             elif q.kw(i, "WHERE"):
                 #ok, big filter coming up!
-                filter, i = Filter.parse(Filter.parse(),i)
+                filter, i = Filter.parse(q,i+1)
                 break
             else:
                 #something we don't handle
@@ -294,17 +296,18 @@ class Target(object): #FOR/IN... expression
             elif q.kw(i,"ID") or q[i] in folia.XML2CLASS:
                 target,i = Selector.parse(q,i)
                 targets.append(target)
-                continue
             elif q.kw(i,","):
                 #we're gonna have more targets
                 i += 1
             elif q.kw(i, ('FOR','IN')):
                 nested,i = Selector.parse(q,i)
+            else:
+                break
 
         if not targets:
             raise SyntaxError("Expected one or more targets, got " + q[i] + " in: " + str(q))
 
-        return Target(targets,strict,nested)
+        return Target(targets,strict,nested), i
 
 
 
@@ -374,7 +377,6 @@ class Action(object): #Action expression
                     raise NotImplementedError #TODO
             else:
                 done = True
-            i += 1
 
         if q.kw(i, ('SELECT','EDIT','DELETE','ADD','APPEND','PREPEND','MERGE','SPLIT')):
             #We have another action!
@@ -411,17 +413,20 @@ class Query(object):
         self.action,i = Action.parse(q,i)
 
         if q.kw(i,("FOR","IN")):
-            self.targets,i = Target.parse(q,i)
+            self.targets, i = Target.parse(q,i)
 
         while i < l:
             if q.kw(i,"RETURN"):
-                raise NotImplementedError #TODO
+                self.returntype = q[i+1]
+                i+=2
             elif q.kw(i,"FORMAT"):
-                raise NotImplementedError #TODO
+                self.format = q[i+1]
+                i+=2
             elif q.kw(i,"REQUEST"):
-                raise NotImplementedError #TODO
+                self.request = q[i+1].split(",")
+                i+=2
             else:
-                raise SyntaxError("Unexpected " + q[i] + " in: " + str(q))
+                raise SyntaxError("Unexpected " + q[i] + " at position " + str(i) + " in: " + str(q))
 
 
         if i != l:
