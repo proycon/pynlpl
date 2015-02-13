@@ -115,6 +115,13 @@ class UnparsedQuery(object):
         else:
             return self.q[index] == value and self.mask[index] == MASK_NORMAL
 
+
+    def __exists__(self, keyword):
+        for k,m in zip(self.q,self.mask):
+            if keyword == k and m == MASK_NORMAL:
+                return True
+        return False
+
     def __setitem__(self, index, value):
         self.q[index] = value
 
@@ -125,14 +132,16 @@ class UnparsedQuery(object):
 
 
 class Filter(object): #WHERE ....
-    def __init__(self, filters, negation=False,disjunction=False):
+    def __init__(self, filters, negation=False,disjunction=False,subfilters=[]):
         self.filters = filters
         self.negation = negation
         self.disjunction = disjunction
+        self.subfilters = subfilters
 
     @staticmethod
     def parse(q, i=0):
         filters = []
+        subfilters = []
         negation = False
         logop = ""
 
@@ -140,6 +149,7 @@ class Filter(object): #WHERE ....
         while i < l:
             if q.kw(i, "NOT"):
                 negation = True
+
             elif q[i+1] in OPERATORS and q[i] and q[i+2]:
                 operator = q[i+1]
                 if q[i] == "class":
@@ -171,6 +181,21 @@ class Filter(object): #WHERE ....
                     logop = q[i+3]
                 else:
                     break #done
+            elif 'HAS' in q:
+                #has statement (spans full UnparsedQuery by definition)
+                #check for modifiers
+                modifier = None
+                if q[i].beginswith("PREVIOUS") or q[i].beginswith("NEXT") or  q.kw(i, ("LEFTCONTEXT","RIGHTCONTEXT","CONTEXT","PARENT","ANCESTOR") ):
+                    modifier = q[i]
+                    i += 1
+
+                selector,i =  Selector.parse(q,i)
+                if q[i] != "HAS":
+                    raise SyntaxError("Expected HAS, got " + q[i])
+                i += 1
+                subfilter = Filter.parse(q,i)
+                subfilters.append( (selector,subfilter) )
+
             elif isinstance(q, UnparsedQuery):
                 filter, i = Filter.parse(q,i)
                 filters.append(filter)
@@ -184,7 +209,7 @@ class Filter(object): #WHERE ....
                 raise SyntaxError("Expected comparison operator, got " + q[i+1])
             i += 1
 
-        return Filter(filters, negation, disjunction), i
+        return Filter(filters, negation, disjunction,subfilters), i
 
 
 class Selector(object):
@@ -290,7 +315,7 @@ class Action(object): #Action expression
     @staticmethod
     def parse(q,i=0):
         if q.kw(i, ('SELECT','EDIT','DELETE','ADD','APPEND','PREPEND','MERGE','SPLIT')):
-           action = q[i]
+            action = q[i]
         else:
             raise SyntaxError("Expected action, got " + q[i])
 
@@ -322,7 +347,7 @@ class Action(object): #Action expression
         action = Actions(action, actor, assignments)
 
         if action.action == "EDIT" and q.kw(i,"SPAN"):
-            pass #TODO
+            raise NotImplementedError #TODO
 
         done = False
         while not done:
@@ -334,7 +359,8 @@ class Action(object): #Action expression
                     action.subactions.append( subaction )
                 elif q.kw(i, 'AS'):
                     #It's an AS.. expression
-                    pass #self.form = #TODO
+                    #self.form = #TODO
+                    raise NotImplementedError #TODO
             else:
                 done = True
             i += 1
@@ -344,12 +370,6 @@ class Action(object): #Action expression
             action.nextaction, i = Action.parse(q,i)
 
         return action, i
-
-
-
-
-
-
 
 
 
@@ -380,18 +400,18 @@ class Query(object):
 
         while i < l:
             if q.kw(i,"RETURN"):
-                pass #TODO
+                raise NotImplementedError #TODO
             elif q.kw(i,"FORMAT"):
-                pass #TODO
+                raise NotImplementedError #TODO
             elif q.kw(i,"REQUEST"):
-                pass #TODO
+                raise NotImplementedError #TODO
 
         if i != l:
             raise SyntaxError("Expected end of query, got " + q[i])
 
     def __call__(self, doc):
         """Execute the query on the specified document"""
-        pass #TODO
+        raise NotImplementedError #TODO
 
 
 
