@@ -24,10 +24,6 @@ MASK_LITERAL = 1
 MASK_EXPRESSION = 2
 
 
-def query(doc, q):
-    q = Query.parse(UnparsedQuery(q))
-    return q(doc)
-
 class SyntaxError(Exception):
     pass
 
@@ -397,7 +393,7 @@ class Context(object):
 class Query(object):
     def __init__(self, q, context=Context()):
         self.action = None
-        self.targets = []
+        self.targets = None
         self.format = context.format
         self.returntype = context.returntype
         self.request = copy(context.request)
@@ -434,7 +430,14 @@ class Query(object):
 
     def __call__(self, doc):
         """Execute the query on the specified document"""
-        raise NotImplementedError #TODO
+        if self.targets:
+            root = doc.data[0] #will select the text element
+            for e in self.targets(root):
+                raise NotImplementedError #TODO
+
+        else:
+            #No targets, only actor
+            raise NotImplementedError #TODO
 
 
 
