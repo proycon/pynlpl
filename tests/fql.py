@@ -35,7 +35,7 @@ Q2 = 'ADD w WITH text "house" (ADD pos WITH class "n") FOR ID sentence'
 
 class Test1UnparsedQuery(unittest.TestCase):
 
-    def test1_basc(self):
+    def test1_basic(self):
         """Basic query with some literals"""
         qs = Q1
         qu = fql.UnparsedQuery(qs)
@@ -51,6 +51,12 @@ class Test1UnparsedQuery(unittest.TestCase):
         self.assertEqual( len(qu), 9 )
         self.assertTrue( isinstance(qu.q[5], fql.UnparsedQuery))
         self.assertEqual( qu.mask, [0,0,0,0,1,2,0,0,0] )
+
+
+class Test2Query(unittest.TestCase):
+    def test1(self):
+        q = fql.Query(Q1)
+
 
 if __name__ == '__main__':
     unittest.main()

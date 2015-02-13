@@ -15,6 +15,7 @@
 #----------------------------------------------------------------
 
 from pynlpl.formats import folia
+from copy import copy
 import re
 
 OPERATORS = ('=','==','!=','>','<','<=','>=')
@@ -127,6 +128,17 @@ class UnparsedQuery(object):
         self.q[index] = value
 
 
+    def __str__(self):
+        s = []
+        for w,m in zip(self.q,self.mask):
+            if m == MASK_NORMAL:
+                s.append(w)
+            elif m == MASK_LITERAL:
+                s.append('"' + w + '"')
+            elif m == MASK_EXPRESSION:
+                s.append('(' + str(w) + ')')
+        return " ".join(s)
+
 
 
 
@@ -178,7 +190,7 @@ class Filter(object): #WHERE ....
 
                 if q.kw(i+3,"AND") or q.kw(i+3,"OR"):
                     if logop and q[i+3] != logop:
-                        raise SyntaxError("Mixed logical operators, use parentheses")
+                        raise SyntaxError("Mixed logical operators, use parentheses: " + str(q))
                     logop = q[i+3]
                 else:
                     break #done
@@ -192,7 +204,7 @@ class Filter(object): #WHERE ....
 
                 selector,i =  Selector.parse(q,i)
                 if q[i] != "HAS":
-                    raise SyntaxError("Expected HAS, got " + q[i])
+                    raise SyntaxError("Expected HAS, got " + q[i] + " in: " + str(q))
                 i += 1
                 subfilter = Filter.parse(q,i)
                 subfilters.append( (selector,subfilter) )
@@ -202,12 +214,12 @@ class Filter(object): #WHERE ....
                 filters.append(filter)
                 if q.kw(i,"AND") or q.kw(i, "OR"):
                     if logop and q[i] != logop:
-                        raise SyntaxError("Mixed logical operators, use parentheses")
+                        raise SyntaxError("Mixed logical operators, use parentheses: " + str(q))
                     logop = q[i]
                 else:
                     break #done
             else:
-                raise SyntaxError("Expected comparison operator, got " + q[i+1])
+                raise SyntaxError("Expected comparison operator, got " + q[i+1] + " in: " + str(q))
             i += 1
 
         return Filter(filters, negation, disjunction,subfilters), i
@@ -233,7 +245,7 @@ class Selector(object):
             i += 2
         else:
             if q[i] not in folia.XML2CLASS:
-                raise SyntaxError("Expected element type, got " + q[i])
+                raise SyntaxError("Expected element type, got " + q[i] + " in: " + str(q))
             Class = q[i]
 
         while i < l:
@@ -270,7 +282,7 @@ class Target(object): #FOR/IN... expression
         elif q.kw(i,'IN'):
             strict = True
         else:
-            raise SyntaxError("Expected target expression, got " + q[i])
+            raise SyntaxError("Expected target expression, got " + q[i] + " in: " + str(q))
         i += 1
 
         targets = []
@@ -290,7 +302,7 @@ class Target(object): #FOR/IN... expression
                 nested,i = Selector.parse(q,i)
 
         if not targets:
-            raise SyntaxError("Expected one or more targets, got " + q[i])
+            raise SyntaxError("Expected one or more targets, got " + q[i] + " in: " + str(q))
 
         return Target(targets,strict,nested)
 
@@ -318,12 +330,10 @@ class Action(object): #Action expression
         if q.kw(i, ('SELECT','EDIT','DELETE','ADD','APPEND','PREPEND','MERGE','SPLIT')):
             action = q[i]
         else:
-            raise SyntaxError("Expected action, got " + q[i])
+            raise SyntaxError("Expected action, got " + q[i] + " in: " + str(q))
 
-        try:
-            actor, i = Selector.parse(q,i)
-        except ParseError as e:
-            raise SyntaxError(e)
+        i += 1
+        actor, i = Selector.parse(q,i)
 
         if action == "ADD" and actor.filters:
             raise SyntaxError("Actor has WHERE statement but ADD action does not support this")
@@ -331,7 +341,7 @@ class Action(object): #Action expression
         assignments = {}
         if q.kw(i,"WITH"):
             if action in ("SELECT", "DELETE"):
-                raise SyntaxError("Actor has WITH statement but " + action + " does not support this")
+                raise SyntaxError("Actor has WITH statement but " + action + " does not support this: " +str(q))
             i += 1
             l = len(q)
             while i < l:
@@ -340,12 +350,12 @@ class Action(object): #Action expression
                     i+=1
                 else:
                     if not assignments:
-                        raise SyntaxError("Expected assignments after WITH statement, but no valid attribute found")
+                        raise SyntaxError("Expected assignments after WITH statement, but no valid attribute found: " + str(q))
                     break
             i+=1
 
         #we have enough to set up the action now
-        action = Actions(action, actor, assignments)
+        action = Action(action, actor, assignments)
 
         if action.action == "EDIT" and q.kw(i,"SPAN"):
             raise NotImplementedError #TODO
@@ -391,8 +401,12 @@ class Query(object):
         self.request = copy(context.request)
         self.defaults = copy(context.defaults)
         self.defaultsets = copy(context.defaultsets)
+        self.parse(q)
 
     def parse(self, q, i=0):
+        if not isinstance(q,UnparsedQuery):
+            q = UnparsedQuery(q)
+
         l = len(q)
         self.action,i = Action.parse(q,i)
 
@@ -406,9 +420,12 @@ class Query(object):
                 raise NotImplementedError #TODO
             elif q.kw(i,"REQUEST"):
                 raise NotImplementedError #TODO
+            else:
+                raise SyntaxError("Unexpected " + q[i] + " in: " + str(q))
+
 
         if i != l:
-            raise SyntaxError("Expected end of query, got " + q[i])
+            raise SyntaxError("Expected end of query, got " + q[i] + " in: " + str(q))
 
     def __call__(self, doc):
         """Execute the query on the specified document"""
