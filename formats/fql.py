@@ -267,6 +267,47 @@ class Selector(object):
 
         return Selector(Class,set,id,filter), i
 
+    def __call__(self, query, selection): #generator, lazy evaluation!
+        if self.id:
+            try:
+                candidate = query.doc[self.id]
+                if not self.filter or  self.filter(candidate):
+                    yield candidate
+            except KeyError:
+                pass
+        elif self.Class:
+            for e in selection:
+                if self.Class.XMLTAG in query.defaultsets:
+                    self.set = query.defaultsets
+                e.select(self.Class, self.set)
+
+
+
+        if selected and self.filter:
+            if self.filter(selected):
+                return selected
+            else:
+                return None
+        elif selected:
+            return selected
+        else:
+            return None
+
+
+
+
+
+
+
+
+        if self.nested:
+            selection = self.nested(query, selection)
+
+        #TODO: handle self.strict
+
+        for target in self.targets:
+            for e in target(query, selection):
+                yield e
 
 class Span(object):
     pass #TODO
@@ -310,15 +351,15 @@ class Target(object): #FOR/IN... expression
         return Target(targets,strict,nested), i
 
 
-    def __call__(self, query, selection):
-        for element in selection:
+    def __call__(self, query, selection): #generator, lazy evaluation!
+        if self.nested:
+            selection = self.nested(query, selection)
 
-            self.nested(selection)
-            for e in self.nested(element):
+        #TODO: handle self.strict
 
-
-
-
+        for target in self.targets:
+            for e in target(query, selection):
+                yield e
 
 
 class Form(object):  #AS... expression
@@ -442,6 +483,9 @@ class Query(object):
 
     def __call__(self, doc):
         """Execute the query on the specified document"""
+
+        self.doc = doc
+
         targetsselection = [ doc.data[0] ]
         if self.targets:
             targetselection = self.targets(self, targetselection)
