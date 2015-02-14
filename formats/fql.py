@@ -243,7 +243,7 @@ class Filter(object): #WHERE ....
                 #we have a nested filter (parentheses)
                 match = filter(query, element)
             else:
-                #we have a function
+                #we have a condition function we can evaluate
                 match = filter(element)
             if self.negation:
                 match = not match
@@ -438,6 +438,32 @@ class Action(object): #Action expression
             action.nextaction, i = Action.parse(q,i)
 
         return action, i
+
+
+    def __call__(self, query, targetselection):
+        """Returns a list actorselection after having performed the desired action on each element therein"""
+
+        #select all actors, not lazy because we are going return them all by definition anyway
+        actorselection = []
+        for element in targetselection:
+            for e in self.actor(query, targetselection):
+                actorselection.append(e)
+
+        if self.action == "EDIT" or self.action == "ADD":
+            raise NotImplementedError #TODO
+        elif self.action == "PREPEND":
+            raise NotImplementedError #TODO
+        elif self.action == "APPEND":
+            raise NotImplementedError #TODO
+        elif self.action == "MERGE":
+            raise NotImplementedError #TODO
+        elif self.action == "SPLIT":
+            raise NotImplementedError #TODO
+        elif self.action == "SELECT":
+            #nothing to do
+            pass
+
+        return actorselection
 
 
 
