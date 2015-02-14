@@ -209,7 +209,7 @@ class Filter(object): #WHERE ....
                     raise SyntaxError("Expected HAS, got " + q[i] + " in: " + str(q))
                 i += 1
                 subfilter = Filter.parse(q,i)
-                subfilters.append( (selector,subfilter) )
+                filters.append( (selector,subfilter) )
             elif isinstance(q[i], UnparsedQuery):
                 filter,_  = Filter.parse(q[i])
                 filters.append(filter)
@@ -223,7 +223,40 @@ class Filter(object): #WHERE ....
             else:
                 raise SyntaxError("Expected comparison operator, got " + q[i+1] + " in: " + str(q))
 
+        if self.negation and len(filters) > 1:
+            raise SyntaxError("Expecting parentheses when NOT is used with multiple conditions")
+
         return Filter(filters, negation, logop == "OR",subfilters), i
+
+    def __call__(self, query, element):
+        """Tests the filter on the specified element, returns a boolean"""
+        match = True
+        for filter in self.filters:
+            if isinstance(filter,tuple):
+                #we have a subfilter, i.e. a HAS statement on a subelement
+                selector, filter = filter
+                for subelement in selector(query, [element]): #if there are multiple subelements, they are always treated disjunctly
+                    match = subfilter(query, subelement)
+                    if match:
+                        break #only one subelement has to match by definition, then the HAS statement is matched
+            elif isinstance(filter, Filter):
+                #we have a nested filter (parentheses)
+                match = filter(query, element)
+            else:
+                #we have a function
+                match = filter(element)
+            if self.negation:
+                match = not match
+            if match:
+                if self.disjunction:
+                    return True
+            else:
+                if not self.disjunction: #implies conjunction
+                    return False
+
+        return match
+
+
 
 
 class Selector(object):
@@ -267,47 +300,22 @@ class Selector(object):
 
         return Selector(Class,set,id,filter), i
 
-    def __call__(self, query, selection): #generator, lazy evaluation!
+    def __call__(self, query, selection, recurse=True): #generator, lazy evaluation!
         if self.id:
             try:
                 candidate = query.doc[self.id]
-                if not self.filter or  self.filter(candidate):
+                if not self.filter or  self.filter(query,candidate):
                     yield candidate
             except KeyError:
                 pass
         elif self.Class:
+            if self.Class.XMLTAG in query.defaultsets:
+                self.set = query.defaultsets
             for e in selection:
-                if self.Class.XMLTAG in query.defaultsets:
-                    self.set = query.defaultsets
-                e.select(self.Class, self.set)
+                for candidate in e.select(self.Class, self.set, recurse):
+                    if not self.filter or  self.filter(query,candidate):
+                        yield candidate
 
-
-
-        if selected and self.filter:
-            if self.filter(selected):
-                return selected
-            else:
-                return None
-        elif selected:
-            return selected
-        else:
-            return None
-
-
-
-
-
-
-
-
-        if self.nested:
-            selection = self.nested(query, selection)
-
-        #TODO: handle self.strict
-
-        for target in self.targets:
-            for e in target(query, selection):
-                yield e
 
 class Span(object):
     pass #TODO
@@ -355,10 +363,8 @@ class Target(object): #FOR/IN... expression
         if self.nested:
             selection = self.nested(query, selection)
 
-        #TODO: handle self.strict
-
         for target in self.targets:
-            for e in target(query, selection):
+            for e in target(query, selection, not self.strict):
                 yield e
 
 
