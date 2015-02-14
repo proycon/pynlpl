@@ -537,8 +537,8 @@ class Query(object):
                 if not responseselection:
                     return "[]"
                 else:
-                    return json.dumps([ e.json() for e in responseselection)]
-            else self.format == "python":
+                    return json.dumps([ e.json() for e in responseselection ] )
+            elif self.format == "python":
                 return responseselection
 
         return QueryError("Invalid format: " + self.format)
