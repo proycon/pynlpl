@@ -1,4 +1,4 @@
-#---------------------------------------------------------------
+
 # PyNLPl - FoLiA Format Module
 #   by Maarten van Gompel
 #   Centre for Language Studies
@@ -63,7 +63,7 @@ import gzip
 
 
 FOLIAVERSION = '0.11.2'
-LIBVERSION = '0.11.2.56' #== FoLiA version + library revision
+LIBVERSION = '0.11.2.57' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -149,6 +149,9 @@ class SetDefinitionError(DeepValidationError):
 
 class ModeError(Exception):
     pass
+
+
+
 
 
 #There is a leak in lxml :( , specialise file handler to replace xml:id to id, ugly hack (especially for Python2)
@@ -829,7 +832,7 @@ class AbstractElement(object):
 
         if Class.OCCURRENCES > 0:
             #check if the parent doesn't have too many already
-            count = len(parent.select(Class,None,True,[True, AbstractStructureElement])) #never descend into embedded structure annotatioton
+            count = parent.count(Class,None,True,[True, AbstractStructureElement]) #never descend into embedded structure annotatioton
             if count >= Class.OCCURRENCES:
                 if raiseexceptions:
                     if parent.id:
@@ -841,7 +844,7 @@ class AbstractElement(object):
                     return False
 
         if Class.OCCURRENCESPERSET > 0 and set and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
-            count = len(parent.select(Class,set,True, [True, AbstractStructureElement]))
+            count = parent.count(Class,set,True, [True, AbstractStructureElement])
             if count >= Class.OCCURRENCESPERSET:
                 if raiseexceptions:
                     if parent.id:
@@ -1039,7 +1042,7 @@ class AbstractElement(object):
     @classmethod
     def findreplaceables(Class, parent, set=None,**kwargs):
         """Find replaceable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control. Mostly for internal use."""
-        return parent.select(Class,set,False)
+        return list(parent.select(Class,set,False))
 
 
 
@@ -1339,7 +1342,7 @@ class AbstractElement(object):
             * ``node``: Reserved for internal usage, used in recursion.
 
         Returns:
-            A list of elements (instances)
+            A generator of elements (instances)
 
         Example::
 
@@ -1350,7 +1353,6 @@ class AbstractElement(object):
         #if ignorelist is True:
         #    ignorelist = defaultignorelist
 
-        l = []
         if not node:
             node = self
         for e in self.data:
@@ -1386,7 +1388,7 @@ class AbstractElement(object):
                                 continue
                         except:
                             continue
-                    l.append(e)
+                    yield e
                 if recursive:
                     for e2 in e.select(Class, set, recursive, ignore, e):
                         if not set is None:
@@ -1395,33 +1397,11 @@ class AbstractElement(object):
                                     continue
                             except:
                                 continue
-                        l.append(e2)
-        return l
-
-
-    def xselect(self, Class, recursive=True, node=None): #obsolete?
-        """Same as ``select()``, but this is a generator instead of returning a list"""
-        if not node:
-            node = self
-        for e in self:
-            if not self.TEXTCONTAINER or isinstance(e, AbstractElement):
-                if isinstance(e, Class):
-                    if not set is None:
-                        try:
-                            if e.set != set:
-                                continue
-                        except:
-                            continue
-                    yield e
-                elif recursive:
-                    for e2 in e.select(Class, recursive, e):
-                        if not set is None:
-                            try:
-                                if e2.set != set:
-                                    continue
-                            except:
-                                continue
                         yield e2
+
+    def count(self, Class, set=None, recursive=True,  ignore=True, node=None):
+        """Like select, but instead of returning the elements, it merely counts them"""
+        return sum(1 for i in self.select(Class,set,recursive,ignore,node) )
 
     def items(self, founditems=[]):
         """Returns a depth-first flat list of *all* items below this element (not limited to AbstractElement)"""
@@ -1888,29 +1868,27 @@ class AllowTokenAnnotation(AllowCorrections):
             * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
 
         Returns:
-            A list of elements
+            A generator of elements
 
         Raises:
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
-        l = self.select(Class,set,True,defaultignorelist_annotations)
-        if not l:
+        found = False
+        for e in self.select(Class,set,True,defaultignorelist_annotations):
+            found = True
+            yield e
+        if not found:
             raise NoSuchAnnotation()
-        else:
-            return l
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        l = self.select(Class,set,True,defaultignorelist_annotations)
-        return len(l)
+        return sum( 1 for _ in self.select(Class,set,True,defaultignorelist_annotations))
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.select(type,set,True,defaultignorelist_annotations)
-        if len(l) >= 1:
-            return l[0]
-        else:
-            raise NoSuchAnnotation()
+        for e in self.select(type,set,True,defaultignorelist_annotations):
+            return e
+        raise NoSuchAnnotation()
 
     def alternatives(self, Class=None, set=None):
         """Obtain a list of alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
@@ -2066,7 +2044,7 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
 
 
     def words(self, index = None):
-        """Returns a list of Word elements found (recursively) under this element.
+        """Returns a generator of Word elements found (recursively) under this element.
 
         Arguments:
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
@@ -2074,30 +2052,45 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         if index is None:
             return self.select(Word,None,True,defaultignorelist_structure)
         else:
-            return self.select(Word,None,True,defaultignorelist_structure)[index]
+            if index < 0:
+                index = self.count(Word,None,True,defaultignorelist_structure) + index
+            for i, e in enumerate(self.select(Word,None,True,defaultignorelist_structure)):
+                if i == index:
+                    return e
+            raise IndexError
 
 
     def paragraphs(self, index = None):
-        """Returns a list of Paragraph elements found (recursively) under this element.
+        """Returns a generator of Paragraph elements found (recursively) under this element.
 
         Arguments:
-            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
+            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the generator of all
         """
         if index is None:
             return self.select(Paragraph,None,True,defaultignorelist_structure)
         else:
-            return self.select(Paragraph,None,True,defaultignorelist_structure)[index]
+            if index < 0:
+                index = self.count(Paragraph,None,True,defaultignorelist_structure) + index
+            for i,e in enumerate(self.select(Paragraph,None,True,defaultignorelist_structure)):
+                if i == index:
+                    return e
+            raise IndexError
 
     def sentences(self, index = None):
-        """Returns a list of Sentence elements found (recursively) under this element
+        """Returns a generator of Sentence elements found (recursively) under this element
 
         Arguments:
-            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
+            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning a generator of all
         """
         if index is None:
             return self.select(Sentence,None,True,defaultignorelist_structure)
         else:
-            return self.select(Sentence,None,True,defaultignorelist_structure)[index]
+            if index < 0:
+                index = self.count(Sentence,None,True,defaultignorelist_structure) + index
+            for i,e in enumerate(self.select(Sentence,None,True,defaultignorelist_structure)):
+                if i == index:
+                    return e
+            raise IndexError
 
     def layers(self, annotationtype=None,set=None):
         """Returns a list of annotation layers found *directly* under this element, does not include alternative layers"""
@@ -2755,7 +2748,7 @@ class Word(AbstractStructureElement, AllowCorrections):
     def next(self, scope=None ):
         """Returns the next word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,Event, ListItem,Caption by default)"""
         if scope is None: scope = STRUCTURESCOPE
-        words = self.ancestor(scope).select(Word)
+        words = list(self.ancestor(scope).select(Word))
         i = words.index(self) + 1
         if i < len(words):
             return words[i]
@@ -2766,7 +2759,7 @@ class Word(AbstractStructureElement, AllowCorrections):
     def previous(self, scope=None):
         """Returns the previous word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,ListItem, Caption, Head, Event by default)"""
         if scope is None: scope = STRUCTURESCOPE
-        words = self.ancestor(scope).select(Word)
+        words = list(self.ancestor(scope).select(Word))
         i = words.index(self) - 1
         if i >= 0:
             return words[i]
@@ -2776,7 +2769,7 @@ class Word(AbstractStructureElement, AllowCorrections):
     def leftcontext(self, size, placeholder=None):
         """Returns the left context for a word. This method crosses sentence/paragraph boundaries"""
         if size == 0: return [] #for efficiency
-        words = self.doc.words()
+        words = list(self.doc.words())
         i = words.index(self)
         begin = i - size
         if begin < 0:
@@ -2787,7 +2780,7 @@ class Word(AbstractStructureElement, AllowCorrections):
     def rightcontext(self, size, placeholder=None):
         """Returns the right context for a word. This method crosses sentence/paragraph boundaries"""
         if size == 0: return [] #for efficiency
-        words = self.doc.words()
+        words = list(self.doc.words())
         i = words.index(self)
         begin = i+1
         end = begin + size
@@ -2804,7 +2797,6 @@ class Word(AbstractStructureElement, AllowCorrections):
     def findspans(self, type,set=None):
         """Find span annotation of the specified type that include this word"""
         assert issubclass(type, AbstractAnnotationLayer)
-        l = []
         e = self
         while True:
             if not e.parent: break
@@ -2813,8 +2805,7 @@ class Word(AbstractStructureElement, AllowCorrections):
                 for e2 in layer:
                     if isinstance(e2, AbstractSpanAnnotation):
                         if self in e2.wrefs():
-                            l.append(e2)
-        return l
+                            yield e2
 
 
 class Feature(AbstractElement):
@@ -2942,12 +2933,11 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        l = self.select(Class,set,True,defaultignorelist_annotations)
-        return len(l)
+        return self.count(Class,set,True,defaultignorelist_annotations)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.select(type,set,True,defaultignorelist_annotations)
+        l = self.count(type,set,True,defaultignorelist_annotations)
         if len(l) >= 1:
             return l[0]
         else:
@@ -3033,24 +3023,22 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
         Raises:
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
-        l = self.select(Class,set,True,defaultignorelist_annotations)
-        if not l:
+        found = False
+        for e in self.select(Class,set,True,defaultignorelist_annotations):
+            found = True
+            yield e
+        if not found:
             raise NoSuchAnnotation()
-        else:
-            return l
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        l = self.select(Class,set,True,defaultignorelist_annotations)
-        return len(l)
+        return self.count(Class,set,True,defaultignorelist_annotations)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.select(type,set,True,defaultignorelist_annotations)
-        if len(l) >= 1:
-            return l[0]
-        else:
-            raise NoSuchAnnotation()
+        for e in self.select(type,set,True,defaultignorelist_annotations):
+            return e
+        raise NoSuchAnnotation()
 
     def alternatives(self, Class=None, set=None):
         """Obtain a list of alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
@@ -3329,10 +3317,8 @@ class Alignment(AbstractElement):
         return {} #alignment not supported yet, TODO
 
     def resolve(self):
-        l = []
         for x in self.select(AlignReference,None,True,False):
-            l.append( x.resolve(self) )
-        return l
+            yield x.resolve(self)
 
 
     @classmethod
@@ -3429,16 +3415,24 @@ class Correction(AbstractAnnotation, AllowGenerateID):
         return e
 
     def hasnew(self):
-        return bool(self.select(New,None,False, False))
+        for _ in  self.select(New,None,False, False):
+            return True
+        return False
 
     def hasoriginal(self):
-        return bool(self.select(Original,None,False, False))
+        for _ in self.select(Original,None,False, False):
+            return True
+        return False
 
     def hascurrent(self):
-        return bool(self.select(Current,None,False, False))
+        for _ in self.select(Current,None,False, False):
+            return True
+        return False
 
     def hassuggestions(self):
-        return bool(self.select(Suggestion,None,False, False))
+        for _ in self.select(Suggestion,None,False, False):
+            return True
+        return False
 
     def textcontent(self, cls='current'):
         """Get the text explicitly associated with this element (of the specified class).
@@ -3482,47 +3476,44 @@ class Correction(AbstractAnnotation, AllowGenerateID):
     def new(self,index = None):
         if index is None:
             try:
-                return self.select(New,None,False)[0]
+                return next(self.select(New,None,False))
             except IndexError:
                 raise NoSuchAnnotation
         else:
-            l = self.select(New,None,False)
-            if len(l) == 0:
-                raise NoSuchAnnotation
-            else:
-                return l[0][index]
+            for e in self.select(New,None,False):
+                return e[index]
+            raise NoSuchAnnotation
 
     def original(self,index=None):
         if index is None:
             try:
-                return self.select(Original,None,False, False)[0]
+                return next(self.select(Original,None,False, False))
             except IndexError:
                 raise NoSuchAnnotation
         else:
-            l = self.select(Original,None,False, False)
-            if len(l) == 0:
-                raise NoSuchAnnotation
-            else:
-                return l[0][index]
+            for e in self.select(Original,None,False, False):
+                return e[index]
+            raise NoSuchAnnotation
 
     def current(self,index=None):
         if index is None:
             try:
-                return self.select(Current,None,False)[0]
+                return next(self.select(Current,None,False))
             except IndexError:
                 raise NoSuchAnnotation
         else:
-            l =  self.select(Current,None,False)
-            if len(l) == 0:
-                raise NoSuchAnnotation
-            else:
-                return l[0][index]
+            for e in self.select(Current,None,False):
+                return e[index]
+            raise NoSuchAnnotation
 
     def suggestions(self,index=None):
         if index is None:
             return self.select(Suggestion,None,False, False)
         else:
-            return self.select(Suggestion,None,False, False)[index]
+            for i, e in enumerate(self.select(Suggestion,None,False, False)):
+                if index == i:
+                    return e
+            raise IndexError
 
 
     def __unicode__(self):
@@ -3678,7 +3669,7 @@ class External(AbstractElement):
         if self.include:
             return self.subdoc.data[0].select(Class,set,recursive, ignore, node) #pass it on to the text node of the subdoc
         else:
-            return []
+            return iter([])
 
 
 class WordReference(AbstractElement):
@@ -3774,11 +3765,11 @@ class Dependency(AbstractSpanAnnotation):
 
     def head(self):
         """Returns the head of the dependency relation. Instance of DependencyHead"""
-        return self.select(DependencyHead)[0]
+        return next(self.select(DependencyHead))
 
     def dependent(self):
         """Returns the dependent of the dependency relation. Instance of DependencyDependent"""
-        return self.select(DependencyDependent)[0]
+        return next(self.select(DependencyDependent))
 
 
 class ModalityFeature(Feature):
@@ -4230,7 +4221,7 @@ class Figure(AbstractStructureElement):
 
     def caption(self):
         try:
-            caption = self.select(Caption)[0]
+            caption = next(self.select(Caption))
             return caption.text()
         except:
             raise NoSuchText
@@ -5378,39 +5369,62 @@ class Document(object):
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
 
 
-    def select(self, Class, set=None):
+    def select(self, Class, set=None, recursive=True,  ignore=True):
         if self.mode == Mode.MEMORY:
-            return sum([ t.select(Class,set,True ) for t in self.data ],[])
+            for t in self.data:
+                for e in t.select(Class,set,recursive,ignore):
+                    yield e
 
-
+    def count(self, Class, set=None):
+        if self.mode == Mode.MEMORY:
+            return sum( 1 for e in t.select(Class,set,True ) for t in self.data  )
 
     def paragraphs(self, index = None):
-        """Return a list of all paragraphs found in the document.
+        """Return a generator of all paragraphs found in the document.
 
         If an index is specified, return the n'th paragraph only (starting at 0)"""
         if index is None:
-            return sum([ t.select(Paragraph) for t in self.data ],[])
+            return self.select(Paragraph)
         else:
-            return sum([ t.select(Paragraph) for t in self.data ],[])[index]
+            if index < 0:
+                index = sum(t.count(Paragraph) for t in self.data) + index
+            for t in self.data:
+                for i,e in enumerate(t.select(Paragraph)) :
+                    if i == index:
+                        return e
+            raise IndexError
 
     def sentences(self, index = None):
-        """Return a list of all sentence found in the document. Except for sentences in quotes.
+        """Return a generator of all sentence found in the document. Except for sentences in quotes.
 
         If an index is specified, return the n'th sentence only (starting at 0)"""
         if index is None:
-            return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])
+            return self.select(Sentence,None,True,[Quote])
         else:
-            return sum([ t.select(Sentence,None,True,[Quote]) for t in self.data ],[])[index]
+            if index < 0:
+                index = sum(t.count(Sentence,None,True,[Quote]) for t in self.data) + index
+            for t in self.data:
+                for i,e in enumerate(t.select(Sentence,None,True,[Quote])) :
+                    if i == index:
+                        return e
+            raise IndexError
 
 
     def words(self, index = None):
-        """Return a list of all active words found in the document. Does not descend into annotation layers, alternatives, originals, suggestions.
+        """Return a generator of all active words found in the document. Does not descend into annotation layers, alternatives, originals, suggestions.
 
         If an index is specified, return the n'th word only (starting at 0)"""
         if index is None:
-            return sum([ t.select(Word,None,True,defaultignorelist_structure) for t in self.data ],[])
+            return self.select(Word,None,True,defaultignorelist_structure)
         else:
-            return sum([ t.select(Word,None,True,defaultignorelist_structure) for t in self.data ],[])[index]
+            if index < 0:
+                index = sum(t.count(Word,None,True,defaultignorelist_structure) for t in self.data)  + index
+            for t in self.data:
+                for i, e in enumerate(t.select(Word,None,True,defaultignorelist_structure)):
+                    if i == index:
+                        return e
+            raise IndexError
+
 
 
     def text(self, retaintokenisation=False):
@@ -5989,11 +6003,11 @@ def findwords(doc, worditerator, *args, **kwargs):
                         value = word.text()
                     else:
                         if pattern.matchannotationset:
-                            items = word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative])
+                            items = list(word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative]))
                         else:
                             try:
                                 set = doc.defaultset(pattern.matchannotation.ANNOTATIONTYPE)
-                                items = word.select(pattern.matchannotation, set, True, [Original, Suggestion, Alternative] )
+                                items = list(word.select(pattern.matchannotation, set, True, [Original, Suggestion, Alternative] ))
                             except KeyError:
                                 continue
                         if len(items) == 1:
