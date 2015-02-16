@@ -232,13 +232,13 @@ class Filter(object): #WHERE ....
     def __call__(self, query, element, debug=False):
         """Tests the filter on the specified element, returns a boolean"""
         match = True
-        if debug: print("[FQL EVALUATION DEBUG] Filter - Applying filter for ", element,file=sys.stderr)
+        if debug: print("[FQL EVALUATION DEBUG] Filter - Testing filter for ", repr(element),file=sys.stderr)
         for filter in self.filters:
             if isinstance(filter,tuple):
                 if debug: print("[FQL EVALUATION DEBUG] Filter - Filter is a subfilter, descending...",file=sys.stderr)
                 #we have a subfilter, i.e. a HAS statement on a subelement
                 selector, filter = filter
-                for subelement in selector(query, [element], debug): #if there are multiple subelements, they are always treated disjunctly
+                for subelement,_ in selector(query, [element], True, debug): #if there are multiple subelements, they are always treated disjunctly
                     match = subfilter(query, subelement, debug)
                     if match:
                         break #only one subelement has to match by definition, then the HAS statement is matched
@@ -306,22 +306,22 @@ class Selector(object):
 
     def __call__(self, query, selection, recurse=True, debug=False): #generator, lazy evaluation!
         if self.id:
-            if debug: print("[FQL EVALUATION DEBUG] Selector - Selecting ID " + self.id,file=sys.stderr)
+            if debug: print("[FQL EVALUATION DEBUG] Select - Selecting ID " + self.id,file=sys.stderr)
             try:
                 candidate = query.doc[self.id]
-                if not self.filter or  self.filter(query,candidate):
-                    yield candidate
+                if not self.filter or  self.filter(query,candidate, debug):
+                    yield candidate, None
             except KeyError:
                 pass
         elif self.Class:
             if self.Class.XMLTAG in query.defaultsets:
                 self.set = query.defaultsets
-            if debug: print("[FQL EVALUATION DEBUG] Selector -  Selecting ID " + self.Class.XMLTAG + " with set " + str(self.set),file=sys.stderr)
+            if debug: print("[FQL EVALUATION DEBUG] Select - Selecting Class " + self.Class.XMLTAG + " with set " + str(self.set),file=sys.stderr)
             for e in selection:
                 for candidate in e.select(self.Class, self.set, recurse):
-                    if not self.filter or  self.filter(query,candidate):
-                        if debug: print("[FQL EVALUATION DEBUG] Selector - Yielding candidate ", candidate,file=sys.stderr)
-                        yield candidate
+                    if not self.filter or  self.filter(query,candidate, debug):
+                        if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate),file=sys.stderr)
+                        yield candidate, e
 
 
 class Span(object):
@@ -371,11 +371,11 @@ class Target(object): #FOR/IN... expression
             if debug: print("[FQL EVALUATION DEBUG] Target - Deferring to nested target first",file=sys.stderr)
             selection = self.nested(query, selection)
 
+        if debug: print("[FQL EVALUATION DEBUG] Target - Calling target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
-        if debug: print("[FQL EVALUATION DEBUG] Target - Calling target selectors",file=sys.stderr)
         if len(self.targets) > 1: selection = list(selection) #multiple targets specified, one-pass won't do so convert generator to list
         for target in self.targets:
-            for e in target(query, selection, not self.strict, debug):
+            for e,_ in target(query, selection, not self.strict, debug):
                 if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
                 yield e
 
@@ -387,7 +387,7 @@ class Form(object):  #AS... expression
 class Action(object): #Action expression
     def __init__(self, action, focus, assignments={}):
         self.action = action
-        self.focus = focus
+        self.focus = focus #Selector
         self.assignments = assignments
         self.form = None
         self.subactions = []
@@ -459,9 +459,17 @@ class Action(object): #Action expression
         if debug: print("[FQL EVALUATION DEBUG] Action - Evaluation action ", self.action,file=sys.stderr)
         #select all focuss, not lazy because we are going return them all by definition anyway
         focusselection = []
-        for e in self.focus(query, targetselection):
-            if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, appending ", repr(e),file=sys.stderr)
-            focusselection.append(e)
+        constrainedtargetselection = [] #selecting focus elements constrains the target selection
+        for focus, target in self.focus(query, targetselection, True, debug):
+            if not any(x is focus for x in  focusselection):
+                if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
+                focusselection.append(focus)
+            elif debug:
+                print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
+
+            if target:
+                if not any(x is target for x in constrainedtargetselection):
+                    constrainedtargetselection.append(target)
 
         if self.action == "EDIT" or self.action == "ADD":
             raise NotImplementedError #TODO
@@ -477,7 +485,7 @@ class Action(object): #Action expression
             #nothing to do
             pass
 
-        return focusselection
+        return focusselection, constrainedtargetselection
 
 
 
@@ -542,12 +550,15 @@ class Query(object):
         if self.returntype == "target" or self.returntype == "inner-target" or self.returntype == "outer-target":
             targetselection = list(targetselection) #we need all in memory
 
-        focusselection = self.action(self, targetselection, debug)
+        focusselection, targetselection = self.action(self, targetselection, debug) #selecting focus elements further constrains the target selection (if any)
 
         if self.returntype == "focus":
-            responseselection = list(focusselection)
+            responseselection = focusselection
         elif self.returntype == "target" or self.returntype == "inner-target":
-            responseselection = list(targetselection)
+            responseselection = []
+            for e in targetselection:
+                if not any(x is e for x in responseselection): #filter out duplicates
+                    responseselection.append(e)
         elif self.returntype == "outer-target":
             raise NotImplementedError
         elif self.returntype == "ancestor-target":
