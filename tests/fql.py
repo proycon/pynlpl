@@ -80,27 +80,26 @@ class Test3Evaluation(unittest.TestCase):
 
     def test1_evaluate_select_focus(self):
         q = fql.Query(Qselect_focus)
-        results = q(self.doc, True)
+        results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
         self.assertEqual(len(results),2)
         self.assertTrue(isinstance(results[1], folia.LemmaAnnotation))
 
     def test2_evaluate_select_singlefocus(self):
         q = fql.Query(Qselect_singlefocus)
-        result = q(self.doc, False)
+        result = q(self.doc)
         self.assertTrue(isinstance(result, folia.LemmaAnnotation))
 
     def test3_evaluate_select_target(self):
         q = fql.Query(Qselect_target)
-        results = q(self.doc, False)
-        print(results)
+        results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.Word))
         self.assertEqual(len(results),2)
         self.assertTrue(isinstance(results[1], folia.Word))
 
     def test4_evaluate_select_singletarget(self):
         q = fql.Query(Qselect_singletarget)
-        result = q(self.doc, False)
+        result = q(self.doc)
         self.assertTrue(isinstance(result, folia.Word))
 
 if os.path.exists('../../FoLiA'):
