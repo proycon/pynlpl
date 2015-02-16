@@ -447,6 +447,7 @@ class Action(object): #Action expression
             else:
                 done = True
 
+
         if q.kw(i, ('SELECT','EDIT','DELETE','ADD','APPEND','PREPEND','MERGE','SPLIT')):
             #We have another action!
             action.nextaction, i = Action.parse(q,i)

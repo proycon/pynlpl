@@ -41,6 +41,8 @@ Qselect_singletarget = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdlette
 
 Qselect_nestedtargets = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\" RETURN target FORMAT single-python"
 
+Qedit = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class=\"blah\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
+
 class Test1UnparsedQuery(unittest.TestCase):
 
     def test1_basic(self):
@@ -106,6 +108,11 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qselect_nestedtargets)
         result = q(self.doc)
         self.assertTrue(isinstance(result, folia.Word))
+
+    def test6_evaluate_edit(self):
+        q = fql.Query(Qedit)
+        results = q(self.doc)
+        self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
