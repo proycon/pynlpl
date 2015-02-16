@@ -41,7 +41,7 @@ Qselect_singletarget = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdlette
 
 Qselect_nestedtargets = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\" RETURN target FORMAT single-python"
 
-Qedit = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class=\"blah\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
+Qedit = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
 
 class Test1UnparsedQuery(unittest.TestCase):
 

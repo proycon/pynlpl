@@ -304,7 +304,7 @@ class Selector(object):
 
         return Selector(Class,set,id,filter), i
 
-    def __call__(self, query, selection, recurse=True, debug=False): #generator, lazy evaluation!
+    def __call__(self, query, selector, recurse=True, debug=False): #generator, lazy evaluation!
         if self.id:
             if debug: print("[FQL EVALUATION DEBUG] Select - Selecting ID " + self.id,file=sys.stderr)
             try:
@@ -317,7 +317,7 @@ class Selector(object):
             if self.Class.XMLTAG in query.defaultsets:
                 self.set = query.defaultsets
             if debug: print("[FQL EVALUATION DEBUG] Select - Selecting Class " + self.Class.XMLTAG + " with set " + str(self.set),file=sys.stderr)
-            for e in selection:
+            for e in selector[0](*selector[1]):
                 if isinstance(e, tuple): e = e[0]
                 for candidate  in e.select(self.Class, self.set, recurse):
                     if not self.filter or  self.filter(query,candidate, debug):
@@ -367,16 +367,15 @@ class Target(object): #FOR/IN... expression
         return Target(targets,strict,nested), i
 
 
-    def __call__(self, query, selection, debug=False): #generator, lazy evaluation!
+    def __call__(self, query, selector, debug=False): #generator, lazy evaluation!
         if self.nested:
             if debug: print("[FQL EVALUATION DEBUG] Target - Deferring to nested target first",file=sys.stderr)
-            selection = self.nested(query, selection)
+            selector = (self.nested, (query, selector))
 
         if debug: print("[FQL EVALUATION DEBUG] Target - Calling target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
-        if len(self.targets) > 1: selection = list(selection) #multiple targets specified, one-pass won't do so convert generator to list
         for target in self.targets:
-            for e,_ in target(query, selection, not self.strict, debug):
+            for e,_ in target(query, selector, not self.strict, debug):
                 if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
                 yield e
 
@@ -455,37 +454,48 @@ class Action(object): #Action expression
         return action, i
 
 
-    def __call__(self, query, targetselection, debug=False):
+    def __call__(self, query, targetselector, debug=False):
         """Returns a list focusselection after having performed the desired action on each element therein"""
+
+        #targetseleciton is a two-tuple function recipe (f,args), so we can reobtain the generator which it returns
 
         if debug: print("[FQL EVALUATION DEBUG] Action - Evaluation action ", self.action,file=sys.stderr)
         #select all focuss, not lazy because we are going return them all by definition anyway
         focusselection = []
         constrainedtargetselection = [] #selecting focus elements constrains the target selection
-        for focus, target in self.focus(query, targetselection, True, debug):
-            if not any(x is focus for x in  focusselection):
-                if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
-                focusselection.append(focus)
-            elif debug:
-                print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
 
-            if target:
-                if not any(x is target for x in constrainedtargetselection):
-                    constrainedtargetselection.append(target)
+        if self.action != "ADD": #only for actions that operate on an existing focus
+            for focus, target in self.focus(query, targetselector, True, debug):
+                if target:
+                    if not any(x is target for x in constrainedtargetselection):
+                        constrainedtargetselection.append(target)
 
-        if self.action == "EDIT" or self.action == "ADD":
-            raise NotImplementedError #TODO
-        elif self.action == "PREPEND":
-            raise NotImplementedError #TODO
-        elif self.action == "APPEND":
-            raise NotImplementedError #TODO
-        elif self.action == "MERGE":
-            raise NotImplementedError #TODO
-        elif self.action == "SPLIT":
-            raise NotImplementedError #TODO
-        elif self.action == "SELECT":
-            #nothing to do
-            pass
+                if not any(x is focus for x in  focusselection):
+                    if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
+                    focusselection.append(focus)
+                elif debug:
+                    print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
+                    continue
+
+                if self.action == "EDIT":
+                    for attr, value in self.assignments.items():
+                        setattr(focus, attr, value)
+                elif self.action == "PREPEND":
+                    raise NotImplementedError #TODO
+                elif self.action == "APPEND":
+                    raise NotImplementedError #TODO
+                elif self.action == "MERGE":
+                    raise NotImplementedError #TODO
+                elif self.action == "SPLIT":
+                    raise NotImplementedError #TODO
+
+        if self.action == "ADD" or (self.action == "EDIT" and not focusselection):
+            for target in targetselector[0](*targetselector[1]):
+                if not self.action.focus.Class:
+                    raise QueryError("Focus of action has no class!")
+
+                target.append(self.action.focus.Class, **self.assignments)
+
 
         return focusselection, constrainedtargetselection
 
@@ -544,15 +554,11 @@ class Query(object):
 
         if debug: print("[FQL EVALUATION DEBUG] Query - Starting on document ", doc.id,file=sys.stderr)
 
-        targetselection = [ doc.data[0] ]
+        targetselector = (getattr, (doc, 'data') ) #function recipe to get all Text elements (f, *args), the root of all selectors
         if self.targets:
-            targetselection = self.targets(self, targetselection, debug)
+            targetselector = (self.targets, (self, targetselector, debug)) #function recipe to get the generator for the targets, (f, *args)
 
-
-        if self.returntype == "target" or self.returntype == "inner-target" or self.returntype == "outer-target":
-            targetselection = list(targetselection) #we need all in memory
-
-        focusselection, targetselection = self.action(self, targetselection, debug) #selecting focus elements further constrains the target selection (if any)
+        focusselection, targetselection = self.action(self, targetselector, debug) #selecting focus elements further constrains the target selection (if any), return values will be lists
 
         if self.returntype == "focus":
             responseselection = focusselection
