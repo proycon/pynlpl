@@ -497,7 +497,7 @@ class Action(object): #Action expression
 
 
         for action in actions:
-            if debug: print("[FQL EVALUATION DEBUG] Action - Evaluation action ", action.action,file=sys.stderr)
+            if debug: print("[FQL EVALUATION DEBUG] Action - Evaluating action ", action.action,file=sys.stderr)
             focusselection = []
             constrainedtargetselection = [] #selecting focus elements constrains the target selection
             processed = False
@@ -553,6 +553,7 @@ class Action(object): #Action expression
 
             if focusselection and action.subactions:
                 for subaction in action.subactions:
+                    if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction ", subaction.action,file=sys.stderr)
                     subaction(query, focusselection, debug ) #note: results of subactions will be silently discarded, they can never select anything
 
             if len(actions) > 1:

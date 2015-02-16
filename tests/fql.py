@@ -82,6 +82,12 @@ class Test2ParseQuery(unittest.TestCase):
         """Parsing """ + Qselect_target
         q = fql.Query(Qselect_target)
 
+    def test4_parse(self):
+        """Parsing """ + Qcomplexadd
+        q = fql.Query(Qcomplexadd)
+        self.assertEqual( len(q.action.subactions), 1) #test whether subaction is parsed
+        self.assertEqual( isinstance(q.action.subactions[0].nextaction), fql.Action ) #test whether subaction has proper chain of two actions
+
 class Test3Evaluation(unittest.TestCase):
     def setUp(self):
         self.doc = folia.Document(string=FOLIAEXAMPLE)
