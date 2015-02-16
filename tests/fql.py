@@ -39,7 +39,7 @@ Qselect_target = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w
 Qselect_singlefocus = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdletter\" FOR w RETURN focus FORMAT single-python"
 Qselect_singletarget = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdletter\" FOR w RETURN target FORMAT single-python"
 
-Qnestedtargets = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\" RETURN target"
+Qselect_nestedtargets = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\" RETURN target FORMAT single-python"
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -99,6 +99,11 @@ class Test3Evaluation(unittest.TestCase):
 
     def test4_evaluate_select_singletarget(self):
         q = fql.Query(Qselect_singletarget)
+        result = q(self.doc)
+        self.assertTrue(isinstance(result, folia.Word))
+
+    def test5_evaluate_select_nestedtargets(self):
+        q = fql.Query(Qselect_nestedtargets)
         result = q(self.doc)
         self.assertTrue(isinstance(result, folia.Word))
 

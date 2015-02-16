@@ -318,7 +318,8 @@ class Selector(object):
                 self.set = query.defaultsets
             if debug: print("[FQL EVALUATION DEBUG] Select - Selecting Class " + self.Class.XMLTAG + " with set " + str(self.set),file=sys.stderr)
             for e in selection:
-                for candidate in e.select(self.Class, self.set, recurse):
+                if isinstance(e, tuple): e = e[0]
+                for candidate  in e.select(self.Class, self.set, recurse):
                     if not self.filter or  self.filter(query,candidate, debug):
                         if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate),file=sys.stderr)
                         yield candidate, e
@@ -356,7 +357,7 @@ class Target(object): #FOR/IN... expression
                 #we're gonna have more targets
                 i += 1
             elif q.kw(i, ('FOR','IN')):
-                nested,i = Selector.parse(q,i)
+                nested,i = Selector.parse(q,i+1)
             else:
                 break
 
