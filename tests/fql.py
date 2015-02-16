@@ -76,9 +76,15 @@ class Test3Evaluation(unittest.TestCase):
 
     def test1_evaluate_select_actor(self):
         q = fql.Query(Qstamboom_actor)
-        results = q(self.doc, True)
+        results = q(self.doc, False)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
+        self.assertTrue(len(results),1)
 
+    def test2_evaluate_select_target(self):
+        q = fql.Query(Qstamboom_target)
+        results = q(self.doc, False)
+        self.assertTrue(isinstance(results[0], folia.Word))
+        self.assertTrue(len(results),1)
 
 
 if os.path.exists('../../FoLiA'):
