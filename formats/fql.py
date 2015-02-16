@@ -317,12 +317,28 @@ class Selector(object):
             if self.Class.XMLTAG in query.defaultsets:
                 self.set = query.defaultsets[self.Class.XMLTAG]
             if debug: print("[FQL EVALUATION DEBUG] Select - Selecting Class " + self.Class.XMLTAG + " with set " + str(self.set),file=sys.stderr)
-            for e in selector[0](*selector[1]):
+            if isinstance(selector,tuple) and len(selector) == 2:
+                selection = selector[0](*selector[1])
+            else:
+                selection = selector
+            for e in selection:
                 if isinstance(e, tuple): e = e[0]
                 for candidate  in e.select(self.Class, self.set, recurse):
                     if not self.filter or  self.filter(query,candidate, debug):
                         if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate),file=sys.stderr)
                         yield candidate, e
+
+    def match(self, query, candidate, debug = False):
+        if self.id:
+            if candidate.id != self.id:
+                return False
+        elif self.Class:
+            if not isinstance(candidate,self.Class):
+                return False
+        if self.filter and not self.filter(query,candidate, debug):
+            return False
+        if debug: print("[FQL EVALUATION DEBUG] Select.Match! ", repr(candidate),file=sys.stderr)
+        return True
 
 
 class Span(object):
@@ -457,53 +473,96 @@ class Action(object): #Action expression
     def __call__(self, query, targetselector, debug=False):
         """Returns a list focusselection after having performed the desired action on each element therein"""
 
-        #targetseleciton is a two-tuple function recipe (f,args), so we can reobtain the generator which it returns
+        #targetselector is a two-tuple function recipe (f,args), so we can reobtain the generator which it returns
 
-        if debug: print("[FQL EVALUATION DEBUG] Action - Evaluation action ", self.action,file=sys.stderr)
         #select all focuss, not lazy because we are going return them all by definition anyway
-        focusselection = []
-        constrainedtargetselection = [] #selecting focus elements constrains the target selection
 
-        if self.action != "ADD": #only for actions that operate on an existing focus
-            for focus, target in self.focus(query, targetselector, True, debug):
-                if target:
+
+        if debug: print("[FQL EVALUATION DEBUG] Action - Preparing to evaluation action chain starting with ", self.action,file=sys.stderr)
+
+        #handles all actions further in the chain, not just this one!!! This actual method is only called once
+        actions = [self]
+        a = self
+        while a.nextaction:
+            actions.append(a.nextaction)
+            a = a.nextaction
+
+        if len(actions) > 1:
+            #multiple actions to perform, apply targetselector once and load in memory    (will be quicker at higher memory cost, proportionate to the target selection size)
+            targetselector = list(targetselector[0](*targetselector[1]))
+            focusselection_all = []
+            constrainedtargetselection_all = []
+
+
+        for action in actions:
+            if debug: print("[FQL EVALUATION DEBUG] Action - Evaluation action ", action.action,file=sys.stderr)
+            focusselection = []
+            constrainedtargetselection = [] #selecting focus elements constrains the target selection
+            processed = False
+
+            if action.action not in ("ADD","APPEND","PREPEND"): #only for actions that operate on an existing focus
+                for focus, target in action.focus(query, targetselector, True, debug):
+                    if target:
+                        if not any(x is target for x in constrainedtargetselection):
+                            constrainedtargetselection.append(target)
+
+                    if action.action != "DELETE" and not any(x is focus for x in  focusselection):
+                        if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
+                        focusselection.append(focus)
+                    elif debug:
+                        print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
+                        continue
+
+                    if action.action == "EDIT":
+                        for attr, value in action.assignments.items():
+                            setattr(focus, attr, value)
+                    elif action.action == "DELETE":
+                        focus.parent.remove(focus)
+
+                    processed = True
+
+
+            if action.action in ("ADD","APPEND","PREPEND") or (action.action == "EDIT" and not focusselection):
+                if not 'set' in action.assignments:
+                    if action.focus.Class.XMLTAG in query.defaultsets:
+                        action.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
+                for target in targetselector[0](*targetselector[1]):
+                    if not action.focus.Class:
+                        raise QueryError("Focus of action has no class!")
+
+                    if action.action == "ADD" or action.action == "EDIT":
+                        focusselection.append( target.append(action.focus.Class, **action.assignments) )
+                    elif action.action == "APPEND":
+                        index = target.parent.data.index(target)
+                        focusselection.append( target.insert(index, action.focus.Class, **action.assignments) )
+                    elif action.action == "PREPEND":
+                        index = target.parent.data.index(target) - 1
+                        focusselection.append( target.insert(index, action.focus.Class, **action.assignments) )
+
                     if not any(x is target for x in constrainedtargetselection):
                         constrainedtargetselection.append(target)
 
-                if self.action != "DELETE" and not any(x is focus for x in  focusselection):
-                    if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
-                    focusselection.append(focus)
-                elif debug:
-                    print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
-                    continue
+                    processed = True
 
-                if self.action == "EDIT":
-                    for attr, value in self.assignments.items():
-                        setattr(focus, attr, value)
-                elif self.action == "DELETE":
-                    focus.parent.remove(focus)
-                elif self.action == "PREPEND":
-                    raise NotImplementedError #TODO
-                elif self.action == "APPEND":
-                    raise NotImplementedError #TODO
-                elif self.action == "MERGE":
-                    raise NotImplementedError #TODO
-                elif self.action == "SPLIT":
-                    raise NotImplementedError #TODO
+            if not processed:
+                raise QueryError("Action " + self.action + " was not processed in: " + str(query))
 
-        if self.action == "ADD" or (self.action == "EDIT" and not focusselection):
-            if not 'set' in self.assignments:
-                if self.focus.Class.XMLTAG in query.defaultsets:
-                    self.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
-            for target in targetselector[0](*targetselector[1]):
-                if not self.focus.Class:
-                    raise QueryError("Focus of action has no class!")
+            if len(actions) > 1:
+                #consolidate results:
+                focusselection_all = []
+                for e in focusselection:
+                    if not any(x is e for x in focusselection_all):
+                        focusselection_all.append(e)
+                constrainedtargetselection_all = []
+                for e in constrainedtargetselection:
+                    if not any(x is e for x in constrainedtargetselection_all):
+                        constrainedtargetselection_all.append(e)
 
-                focusselection.append( target.append(self.focus.Class, **self.assignments) )
-                if not any(x is target for x in constrainedtargetselection):
-                    constrainedtargetselection.append(target)
 
-        return focusselection, constrainedtargetselection
+        if len(actions) > 1:
+            return focusselection_all, constrainedtargetselection_all
+        else:
+            return focusselection, constrainedtargetselection
 
 
 
