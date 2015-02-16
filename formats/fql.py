@@ -18,6 +18,7 @@ from pynlpl.formats import folia
 from copy import copy
 import json
 import re
+import sys
 
 OPERATORS = ('=','==','!=','>','<','<=','>=')
 MASK_NORMAL = 0
@@ -200,7 +201,7 @@ class Filter(object): #WHERE ....
                 #has statement (spans full UnparsedQuery by definition)
                 #check for modifiers
                 modifier = None
-                if q[i].beginswith("PREVIOUS") or q[i].beginswith("NEXT") or  q.kw(i, ("LEFTCONTEXT","RIGHTCONTEXT","CONTEXT","PARENT","ANCESTOR") ):
+                if q[i].startswith("PREVIOUS") or q[i].startswith("NEXT") or  q.kw(i, ("LEFTCONTEXT","RIGHTCONTEXT","CONTEXT","PARENT","ANCESTOR") ):
                     modifier = q[i]
                     i += 1
 
@@ -228,20 +229,22 @@ class Filter(object): #WHERE ....
 
         return Filter(filters, negation, logop == "OR",subfilters), i
 
-    def __call__(self, query, element):
+    def __call__(self, query, element, debug=False):
         """Tests the filter on the specified element, returns a boolean"""
         match = True
+        if debug: print("[FQL EVALUATION DEBUG] Filter - Applying filter for ", element,file=sys.stderr)
         for filter in self.filters:
             if isinstance(filter,tuple):
+                if debug: print("[FQL EVALUATION DEBUG] Filter - Filter is a subfilter, descending...",file=sys.stderr)
                 #we have a subfilter, i.e. a HAS statement on a subelement
                 selector, filter = filter
-                for subelement in selector(query, [element]): #if there are multiple subelements, they are always treated disjunctly
-                    match = subfilter(query, subelement)
+                for subelement in selector(query, [element], debug): #if there are multiple subelements, they are always treated disjunctly
+                    match = subfilter(query, subelement, debug)
                     if match:
                         break #only one subelement has to match by definition, then the HAS statement is matched
             elif isinstance(filter, Filter):
                 #we have a nested filter (parentheses)
-                match = filter(query, element)
+                match = filter(query, element, debug)
             else:
                 #we have a condition function we can evaluate
                 match = filter(element)
@@ -278,9 +281,10 @@ class Selector(object):
             Class = None
             i += 2
         else:
-            if q[i] not in folia.XML2CLASS:
+            try:
+                Class = folia.XML2CLASS[q[i]]
+            except:
                 raise SyntaxError("Expected element type, got " + q[i] + " in: " + str(q))
-            Class = q[i]
             i += 1
 
         while i < l:
@@ -300,8 +304,9 @@ class Selector(object):
 
         return Selector(Class,set,id,filter), i
 
-    def __call__(self, query, selection, recurse=True): #generator, lazy evaluation!
+    def __call__(self, query, selection, recurse=True, debug=False): #generator, lazy evaluation!
         if self.id:
+            if debug: print("[FQL EVALUATION DEBUG] Selector - Selecting ID " + self.id,file=sys.stderr)
             try:
                 candidate = query.doc[self.id]
                 if not self.filter or  self.filter(query,candidate):
@@ -311,9 +316,11 @@ class Selector(object):
         elif self.Class:
             if self.Class.XMLTAG in query.defaultsets:
                 self.set = query.defaultsets
+            if debug: print("[FQL EVALUATION DEBUG] Selector -  Selecting ID " + self.Class.XMLTAG + " with set " + str(self.set),file=sys.stderr)
             for e in selection:
                 for candidate in e.select(self.Class, self.set, recurse):
                     if not self.filter or  self.filter(query,candidate):
+                        if debug: print("[FQL EVALUATION DEBUG] Selector - Yielding candidate ", candidate,file=sys.stderr)
                         yield candidate
 
 
@@ -322,7 +329,7 @@ class Span(object):
 
 class Target(object): #FOR/IN... expression
     def __init__(self, targets, strict=False,nested = None):
-        self.targets = targets
+        self.targets = targets #Selector instances
         self.strict = strict #True for IN
         self.nested = nested #in a nested another target
 
@@ -359,12 +366,17 @@ class Target(object): #FOR/IN... expression
         return Target(targets,strict,nested), i
 
 
-    def __call__(self, query, selection): #generator, lazy evaluation!
+    def __call__(self, query, selection, debug=False): #generator, lazy evaluation!
         if self.nested:
+            if debug: print("[FQL EVALUATION DEBUG] Target - Deferring to nested target first",file=sys.stderr)
             selection = self.nested(query, selection)
 
+
+        if debug: print("[FQL EVALUATION DEBUG] Target - Calling target selectors",file=sys.stderr)
+        if len(self.targets) > 1: selection = list(selection) #multiple targets specified, one-pass won't do so convert generator to list
         for target in self.targets:
-            for e in target(query, selection, not self.strict):
+            for e in target(query, selection, not self.strict, debug):
+                if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
                 yield e
 
 
@@ -441,14 +453,15 @@ class Action(object): #Action expression
         return action, i
 
 
-    def __call__(self, query, targetselection):
+    def __call__(self, query, targetselection, debug=False):
         """Returns a list actorselection after having performed the desired action on each element therein"""
 
+        if debug: print("[FQL EVALUATION DEBUG] Action - Evaluation action ", self.action,file=sys.stderr)
         #select all actors, not lazy because we are going return them all by definition anyway
         actorselection = []
-        for element in targetselection:
-            for e in self.actor(query, targetselection):
-                actorselection.append(e)
+        for e in self.actor(query, targetselection):
+            if debug: print("[FQL EVALUATION DEBUG] Action - Got actor result, appending ", repr(e),file=sys.stderr)
+            actorselection.append(e)
 
         if self.action == "EDIT" or self.action == "ADD":
             raise NotImplementedError #TODO
@@ -514,21 +527,27 @@ class Query(object):
         if i != l:
             raise SyntaxError("Expected end of query, got " + q[i] + " in: " + str(q))
 
-    def __call__(self, doc):
+    def __call__(self, doc, debug=False):
         """Execute the query on the specified document"""
 
         self.doc = doc
 
-        targetsselection = [ doc.data[0] ]
-        if self.targets:
-            targetselection = self.targets(self, targetselection)
+        if debug: print("[FQL EVALUATION DEBUG] Query - Starting on document ", doc.id,file=sys.stderr)
 
-        actorselection = self.action(self, targetselection)
+        targetselection = [ doc.data[0] ]
+        if self.targets:
+            targetselection = self.targets(self, targetselection, debug)
+
+
+        if self.returntype == "target" or self.returntype == "inner-target" or self.returntype == "outer-target":
+            targetselection = list(targetselection) #we need all in memory
+
+        actorselection = self.action(self, targetselection, debug)
 
         if self.returntype == "actor":
-            responseselection = actorselection
+            responseselection = list(actorselection)
         elif self.returntype == "target" or self.returntype == "inner-target":
-            responseselection = targetselection
+            responseselection = list(targetselection)
         elif self.returntype == "outer-target":
             raise NotImplementedError
         elif self.returntype == "ancestor-target":
@@ -538,26 +557,30 @@ class Query(object):
 
 
         #convert response selection to proper format and return
-        if self.format.beginswith('single'):
+        if self.format.startswith('single'):
             if len(responseselection) > 1:
                 raise QueryError("A single response was expected, but multiple are returned")
             if self.format == "single-xml":
+                if debug: print("[FQL EVALUATION DEBUG] Query - Returning single-xml",file=sys.stderr)
                 if not responseselection:
                     return ""
                 else:
                     return responseselection[0].xmlstring(True)
             elif self.format == "single-json":
+                if debug: print("[FQL EVALUATION DEBUG] Query - Returning single-json",file=sys.stderr)
                 if not responseselection:
                     return "null"
                 else:
                     return json.dumps(responseselection[0].json())
             elif self.format == "single-python":
+                if debug: print("[FQL EVALUATION DEBUG] Query - Returning single-python",file=sys.stderr)
                 if not responseselection:
                     return None
                 else:
                     return responseselection[0]
         else:
             if self.format == "xml":
+                if debug: print("[FQL EVALUATION DEBUG] Query - Returning xml",file=sys.stderr)
                 if not responseselection:
                     return "<results></results>"
                 else:
@@ -567,11 +590,13 @@ class Query(object):
                     r += "</results>\n"
                     return r
             elif self.format == "json":
+                if debug: print("[FQL EVALUATION DEBUG] Query - Returning json",file=sys.stderr)
                 if not responseselection:
                     return "[]"
                 else:
                     return json.dumps([ e.json() for e in responseselection ] )
             elif self.format == "python":
+                if debug: print("[FQL EVALUATION DEBUG] Query - Returning python",file=sys.stderr)
                 return responseselection
 
         return QueryError("Invalid format: " + self.format)
