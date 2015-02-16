@@ -144,7 +144,7 @@ class Test3Evaluation(unittest.TestCase):
 
     def test11_complexadd(self):
         q = fql.Query(Qcomplexadd)
-        results = q(self.doc)
+        results = q(self.doc, True)
         self.assertTrue(isinstance(results[0], folia.Word))
         self.assertTrue(isinstance(results[0][0], folia.TextContent))
         self.assertTrue(isinstance(results[0][1], folia.LemmaAnnotation))

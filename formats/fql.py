@@ -452,6 +452,8 @@ class Action(object): #Action expression
                 #we have a sub expression
                 if q.kw(i, ('EDIT','DELETE','ADD')):
                     #It's a sub-action!
+                    if action.action in ("DELETE","SPLIT","MERGE"):
+                        raise SyntaxError("Subactions are not allowed for action " + action.action + ", in: " + str(q))
                     subaction, _ = Action.parse(q[i])
                     action.subactions.append( subaction )
                 elif q.kw(i, 'AS'):
@@ -514,6 +516,7 @@ class Action(object): #Action expression
                         continue
 
                     if action.action == "EDIT":
+                        if debug: print("[FQL EVALUATION DEBUG] Action - Applying EDIT to focus ", repr(focus),file=sys.stderr)
                         for attr, value in action.assignments.items():
                             setattr(focus, attr, value)
                     elif action.action == "DELETE":
@@ -523,6 +526,7 @@ class Action(object): #Action expression
 
 
             if action.action in ("ADD","APPEND","PREPEND") or (action.action == "EDIT" and not focusselection):
+                if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " to targets",file=sys.stderr)
                 if not 'set' in action.assignments:
                     if action.focus.Class.XMLTAG in query.defaultsets:
                         action.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
@@ -534,10 +538,10 @@ class Action(object): #Action expression
                         focusselection.append( target.append(action.focus.Class, **action.assignments) )
                     elif action.action == "APPEND":
                         index = target.parent.data.index(target)
-                        focusselection.append( target.insert(index, action.focus.Class, **action.assignments) )
+                        focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
                     elif action.action == "PREPEND":
                         index = target.parent.data.index(target) - 1
-                        focusselection.append( target.insert(index, action.focus.Class, **action.assignments) )
+                        focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
 
                     if not any(x is target for x in constrainedtargetselection):
                         constrainedtargetselection.append(target)
@@ -546,6 +550,10 @@ class Action(object): #Action expression
 
             if not processed:
                 raise QueryError("Action " + self.action + " was not processed in: " + str(query))
+
+            if focusselection and action.subactions:
+                for subaction in action.subactions:
+                    subaction(query, focusselection, debug ) #note: results of subactions will be silently discarded, they can never select anything
 
             if len(actions) > 1:
                 #consolidate results:
