@@ -385,9 +385,9 @@ class Form(object):  #AS... expression
 
 
 class Action(object): #Action expression
-    def __init__(self, action, actor, assignments={}):
+    def __init__(self, action, focus, assignments={}):
         self.action = action
-        self.actor = actor
+        self.focus = focus
         self.assignments = assignments
         self.form = None
         self.subactions = []
@@ -403,15 +403,15 @@ class Action(object): #Action expression
             raise SyntaxError("Expected action, got " + q[i] + " in: " + str(q))
 
         i += 1
-        actor, i = Selector.parse(q,i)
+        focus, i = Selector.parse(q,i)
 
-        if action == "ADD" and actor.filter:
-            raise SyntaxError("Actor has WHERE statement but ADD action does not support this")
+        if action == "ADD" and focus.filter:
+            raise SyntaxError("Focus has WHERE statement but ADD action does not support this")
 
         assignments = {}
         if q.kw(i,"WITH"):
             if action in ("SELECT", "DELETE"):
-                raise SyntaxError("Actor has WITH statement but " + action + " does not support this: " +str(q))
+                raise SyntaxError("Focus has WITH statement but " + action + " does not support this: " +str(q))
             i += 1
             l = len(q)
             while i < l:
@@ -425,7 +425,7 @@ class Action(object): #Action expression
             i+=1
 
         #we have enough to set up the action now
-        action = Action(action, actor, assignments)
+        action = Action(action, focus, assignments)
 
         if action.action == "EDIT" and q.kw(i,"SPAN"):
             raise NotImplementedError #TODO
@@ -454,14 +454,14 @@ class Action(object): #Action expression
 
 
     def __call__(self, query, targetselection, debug=False):
-        """Returns a list actorselection after having performed the desired action on each element therein"""
+        """Returns a list focusselection after having performed the desired action on each element therein"""
 
         if debug: print("[FQL EVALUATION DEBUG] Action - Evaluation action ", self.action,file=sys.stderr)
-        #select all actors, not lazy because we are going return them all by definition anyway
-        actorselection = []
-        for e in self.actor(query, targetselection):
-            if debug: print("[FQL EVALUATION DEBUG] Action - Got actor result, appending ", repr(e),file=sys.stderr)
-            actorselection.append(e)
+        #select all focuss, not lazy because we are going return them all by definition anyway
+        focusselection = []
+        for e in self.focus(query, targetselection):
+            if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, appending ", repr(e),file=sys.stderr)
+            focusselection.append(e)
 
         if self.action == "EDIT" or self.action == "ADD":
             raise NotImplementedError #TODO
@@ -477,14 +477,14 @@ class Action(object): #Action expression
             #nothing to do
             pass
 
-        return actorselection
+        return focusselection
 
 
 
 class Context(object):
     def __init__(self):
         self.format = "python"
-        self.returntype = "actor"
+        self.returntype = "focus"
         self.request = "all"
         self.defaults = {}
         self.defaultsets = {}
@@ -542,10 +542,10 @@ class Query(object):
         if self.returntype == "target" or self.returntype == "inner-target" or self.returntype == "outer-target":
             targetselection = list(targetselection) #we need all in memory
 
-        actorselection = self.action(self, targetselection, debug)
+        focusselection = self.action(self, targetselection, debug)
 
-        if self.returntype == "actor":
-            responseselection = list(actorselection)
+        if self.returntype == "focus":
+            responseselection = list(focusselection)
         elif self.returntype == "target" or self.returntype == "inner-target":
             responseselection = list(targetselection)
         elif self.returntype == "outer-target":

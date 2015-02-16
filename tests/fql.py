@@ -31,10 +31,10 @@ import unittest
 import io
 from pynlpl.formats import fql, folia
 
-Q1 = 'SELECT pos WHERE class = "n" FOR w WHERE text = "house" AND class != "punct" RETURN actor'
+Q1 = 'SELECT pos WHERE class = "n" FOR w WHERE text = "house" AND class != "punct" RETURN focus'
 Q2 = 'ADD w WITH text "house" (ADD pos WITH class "n") FOR ID sentence'
 
-Qstamboom_actor = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w RETURN actor"
+Qstamboom_focus = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w RETURN focus"
 Qstamboom_target = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w RETURN target"
 
 class Test1UnparsedQuery(unittest.TestCase):
@@ -44,7 +44,7 @@ class Test1UnparsedQuery(unittest.TestCase):
         qs = Q1
         qu = fql.UnparsedQuery(qs)
 
-        self.assertEqual( qu.q, ['SELECT','pos','WHERE','class','=','n','FOR','w','WHERE','text','=','house','AND','class','!=','punct','RETURN','actor'])
+        self.assertEqual( qu.q, ['SELECT','pos','WHERE','class','=','n','FOR','w','WHERE','text','=','house','AND','class','!=','punct','RETURN','focus'])
         self.assertEqual( qu.mask, [0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0] )
 
     def test2_paren(self):
@@ -74,8 +74,8 @@ class Test3Evaluation(unittest.TestCase):
     def setUp(self):
         self.doc = folia.Document(string=FOLIAEXAMPLE)
 
-    def test1_evaluate_select_actor(self):
-        q = fql.Query(Qstamboom_actor)
+    def test1_evaluate_select_focus(self):
+        q = fql.Query(Qstamboom_focus)
         results = q(self.doc, False)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
         self.assertTrue(len(results),1)
