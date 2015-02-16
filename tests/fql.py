@@ -44,6 +44,8 @@ Qselect_nestedtargets = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\
 Qedit = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
 Qadd = "ADD lemma OF \"lemmas-nl\" WITH class \"hebben\" FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
 Qeditadd = "EDIT lemma OF \"lemmas-nl\" WITH class \"hebben\" FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
+Qdelete = "DELETE lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w"
+Qdelete_target = "DELETE lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w RETURN target"
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -82,49 +84,61 @@ class Test3Evaluation(unittest.TestCase):
     def setUp(self):
         self.doc = folia.Document(string=FOLIAEXAMPLE)
 
-    def test1_evaluate_select_focus(self):
+    def test01_evaluate_select_focus(self):
         q = fql.Query(Qselect_focus)
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
         self.assertEqual(len(results),2)
         self.assertTrue(isinstance(results[1], folia.LemmaAnnotation))
 
-    def test2_evaluate_select_singlefocus(self):
+    def test02_evaluate_select_singlefocus(self):
         q = fql.Query(Qselect_singlefocus)
         result = q(self.doc)
         self.assertTrue(isinstance(result, folia.LemmaAnnotation))
 
-    def test3_evaluate_select_target(self):
+    def test03_evaluate_select_target(self):
         q = fql.Query(Qselect_target)
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.Word))
         self.assertEqual(len(results),2)
         self.assertTrue(isinstance(results[1], folia.Word))
 
-    def test4_evaluate_select_singletarget(self):
+    def test04_evaluate_select_singletarget(self):
         q = fql.Query(Qselect_singletarget)
         result = q(self.doc)
         self.assertTrue(isinstance(result, folia.Word))
 
-    def test5_evaluate_select_nestedtargets(self):
+    def test05_evaluate_select_nestedtargets(self):
         q = fql.Query(Qselect_nestedtargets)
         result = q(self.doc)
         self.assertTrue(isinstance(result, folia.Word))
 
-    def test6_evaluate_edit(self):
+    def test06_evaluate_edit(self):
         q = fql.Query(Qedit)
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
 
-    def test6_evaluate_add(self):
+    def test07_evaluate_add(self):
         q = fql.Query(Qadd)
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
 
-    def test6_evaluate_editadd(self):
+    def test08_evaluate_editadd(self):
         q = fql.Query(Qeditadd)
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
+
+    def test09_evaluate_delete(self):
+        q = fql.Query(Qdelete)
+        results = q(self.doc)
+        self.assertEqual(len(results),0)
+
+    def test10_evaluate_delete(self):
+        q = fql.Query(Qdelete_target)
+        results = q(self.doc)
+        self.assertTrue(isinstance(results[0], folia.Word))
+        self.assertEqual(len(results),2)
+        self.assertTrue(isinstance(results[1], folia.Word))
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
