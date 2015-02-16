@@ -223,7 +223,7 @@ class Filter(object): #WHERE ....
             else:
                 raise SyntaxError("Expected comparison operator, got " + q[i+1] + " in: " + str(q))
 
-        if self.negation and len(filters) > 1:
+        if negation and len(filters) > 1:
             raise SyntaxError("Expecting parentheses when NOT is used with multiple conditions")
 
         return Filter(filters, negation, logop == "OR",subfilters), i
@@ -393,7 +393,7 @@ class Action(object): #Action expression
         i += 1
         actor, i = Selector.parse(q,i)
 
-        if action == "ADD" and actor.filters:
+        if action == "ADD" and actor.filter:
             raise SyntaxError("Actor has WHERE statement but ADD action does not support this")
 
         assignments = {}
@@ -430,6 +430,7 @@ class Action(object): #Action expression
                     #It's an AS.. expression
                     #self.form = #TODO
                     raise NotImplementedError #TODO
+                i+=1
             else:
                 done = True
 
