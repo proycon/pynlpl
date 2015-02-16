@@ -42,6 +42,7 @@ Qselect_singletarget = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdlette
 Qselect_nestedtargets = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\" RETURN target FORMAT single-python"
 
 Qedit = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
+Qadd = "ADD lemma OF \"lemmas-nl\" WITH class \"hebben\" FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -110,6 +111,11 @@ class Test3Evaluation(unittest.TestCase):
         self.assertTrue(isinstance(result, folia.Word))
 
     def test6_evaluate_edit(self):
+        q = fql.Query(Qedit)
+        results = q(self.doc)
+        self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
+
+    def test6_evaluate_add(self):
         q = fql.Query(Qedit)
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))

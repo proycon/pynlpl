@@ -315,7 +315,7 @@ class Selector(object):
                 pass
         elif self.Class:
             if self.Class.XMLTAG in query.defaultsets:
-                self.set = query.defaultsets
+                self.set = query.defaultsets[self.Class.XMLTAG]
             if debug: print("[FQL EVALUATION DEBUG] Select - Selecting Class " + self.Class.XMLTAG + " with set " + str(self.set),file=sys.stderr)
             for e in selector[0](*selector[1]):
                 if isinstance(e, tuple): e = e[0]
@@ -470,7 +470,7 @@ class Action(object): #Action expression
                     if not any(x is target for x in constrainedtargetselection):
                         constrainedtargetselection.append(target)
 
-                if not any(x is focus for x in  focusselection):
+                if self.action != "DELETE" and not any(x is focus for x in  focusselection):
                     if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
                     focusselection.append(focus)
                 elif debug:
@@ -480,6 +480,8 @@ class Action(object): #Action expression
                 if self.action == "EDIT":
                     for attr, value in self.assignments.items():
                         setattr(focus, attr, value)
+                elif self.action == "DELETE":
+                    focus.parent.remove(focus)
                 elif self.action == "PREPEND":
                     raise NotImplementedError #TODO
                 elif self.action == "APPEND":
@@ -490,12 +492,16 @@ class Action(object): #Action expression
                     raise NotImplementedError #TODO
 
         if self.action == "ADD" or (self.action == "EDIT" and not focusselection):
+            if not 'set' in self.assignments:
+                if focus.Class.XMLTAG in query.defaultsets:
+                    self.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
             for target in targetselector[0](*targetselector[1]):
                 if not self.action.focus.Class:
                     raise QueryError("Focus of action has no class!")
 
-                target.append(self.action.focus.Class, **self.assignments)
-
+                focusselection.append( target.append(self.action.focus.Class, **self.assignments) )
+                if not any(x is target for x in constrainedtargetselection):
+                    constrainedtargetselection.append(target)
 
         return focusselection, constrainedtargetselection
 
