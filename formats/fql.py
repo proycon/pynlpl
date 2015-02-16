@@ -493,13 +493,13 @@ class Action(object): #Action expression
 
         if self.action == "ADD" or (self.action == "EDIT" and not focusselection):
             if not 'set' in self.assignments:
-                if focus.Class.XMLTAG in query.defaultsets:
+                if self.focus.Class.XMLTAG in query.defaultsets:
                     self.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
             for target in targetselector[0](*targetselector[1]):
-                if not self.action.focus.Class:
+                if not self.focus.Class:
                     raise QueryError("Focus of action has no class!")
 
-                focusselection.append( target.append(self.action.focus.Class, **self.assignments) )
+                focusselection.append( target.append(self.focus.Class, **self.assignments) )
                 if not any(x is target for x in constrainedtargetselection):
                     constrainedtargetselection.append(target)
 

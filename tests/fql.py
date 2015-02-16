@@ -116,7 +116,7 @@ class Test3Evaluation(unittest.TestCase):
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
 
     def test6_evaluate_add(self):
-        q = fql.Query(Qedit)
+        q = fql.Query(Qadd)
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
 
