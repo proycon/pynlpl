@@ -109,14 +109,17 @@ class UnparsedQuery(object):
     def __getitem__(self, index):
         try:
             return self.q[index]
-        except KeyError:
+        except:
             return ""
 
     def kw(self, index, value):
-        if isinstance(value, tuple):
-            return self.q[index] in value and self.mask[index] == MASK_NORMAL
-        else:
-            return self.q[index] == value and self.mask[index] == MASK_NORMAL
+        try:
+            if isinstance(value, tuple):
+                return self.q[index] in value and self.mask[index] == MASK_NORMAL
+            else:
+                return self.q[index] == value and self.mask[index] == MASK_NORMAL
+        except:
+            return False
 
 
     def __exists__(self, keyword):
@@ -431,8 +434,15 @@ class Action(object): #Action expression
             i += 1
             l = len(q)
             while i < l:
-                if q.kw(i, ('annotator','annotatortype','class','confidence','n','text')):
+                if q.kw(i, ('annotator','annotatortype','class','confidence','n')):
                     assignments[q[i]] = q[i+1]
+                    i+=1
+                elif q.kw(i,'text'):
+                    if focus.Class is folia.TextContent:
+                        key = 'value'
+                    else:
+                        key = 'text'
+                    assignments[key] = q[i+1]
                     i+=1
                 else:
                     if not assignments:
@@ -450,13 +460,13 @@ class Action(object): #Action expression
         while not done:
             if isinstance(q[i], UnparsedQuery):
                 #we have a sub expression
-                if q.kw(i, ('EDIT','DELETE','ADD')):
+                if q[i].kw(0, ('EDIT','DELETE','ADD')):
                     #It's a sub-action!
                     if action.action in ("DELETE","SPLIT","MERGE"):
                         raise SyntaxError("Subactions are not allowed for action " + action.action + ", in: " + str(q))
                     subaction, _ = Action.parse(q[i])
                     action.subactions.append( subaction )
-                elif q.kw(i, 'AS'):
+                elif q[i].kw(0, 'AS'):
                     #It's an AS.. expression
                     #self.form = #TODO
                     raise NotImplementedError #TODO
@@ -491,9 +501,11 @@ class Action(object): #Action expression
 
         if len(actions) > 1:
             #multiple actions to perform, apply targetselector once and load in memory    (will be quicker at higher memory cost, proportionate to the target selection size)
-            targetselector = list(targetselector[0](*targetselector[1]))
+            if isinstance(targetselector, tuple) and len(targetselector) == 2:
+                targetselector = list(targetselector[0](*targetselector[1]))
             focusselection_all = []
             constrainedtargetselection_all = []
+
 
 
         for action in actions:
@@ -530,16 +542,23 @@ class Action(object): #Action expression
                 if not 'set' in action.assignments:
                     if action.focus.Class.XMLTAG in query.defaultsets:
                         action.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
-                for target in targetselector[0](*targetselector[1]):
+                if isinstance(targetselector, tuple) and len(targetselector) == 2:
+                    targetselection = targetselector[0](*targetselector[1])
+                else:
+                    targetselection = targetselector
+                for target in targetselection:
                     if not action.focus.Class:
                         raise QueryError("Focus of action has no class!")
 
                     if action.action == "ADD" or action.action == "EDIT":
+                        if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target " + repr(target),file=sys.stderr)
                         focusselection.append( target.append(action.focus.Class, **action.assignments) )
                     elif action.action == "APPEND":
+                        if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
                         index = target.parent.data.index(target)
                         focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
                     elif action.action == "PREPEND":
+                        if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
                         index = target.parent.data.index(target) - 1
                         focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
 

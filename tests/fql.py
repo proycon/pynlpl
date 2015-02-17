@@ -86,7 +86,7 @@ class Test2ParseQuery(unittest.TestCase):
         """Parsing """ + Qcomplexadd
         q = fql.Query(Qcomplexadd)
         self.assertEqual( len(q.action.subactions), 1) #test whether subaction is parsed
-        self.assertEqual( isinstance(q.action.subactions[0].nextaction), fql.Action ) #test whether subaction has proper chain of two actions
+        self.assertTrue( isinstance(q.action.subactions[0].nextaction, fql.Action) ) #test whether subaction has proper chain of two actions
 
 class Test3Evaluation(unittest.TestCase):
     def setUp(self):
@@ -150,7 +150,7 @@ class Test3Evaluation(unittest.TestCase):
 
     def test11_complexadd(self):
         q = fql.Query(Qcomplexadd)
-        results = q(self.doc, True)
+        results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.Word))
         self.assertTrue(isinstance(results[0][0], folia.TextContent))
         self.assertTrue(isinstance(results[0][1], folia.LemmaAnnotation))
