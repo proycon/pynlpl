@@ -746,13 +746,31 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual(t, ['ander','woord'])
 
     def test041_findspans(self):
-        """Sanity check - Find spans given words"""
+        """Sanity check - Find spans given words (no set)"""
         t = []
         word = self.doc["WR-P-E-J-0000000001.p.1.s.1.w.4"]
         for entity in word.findspans(folia.EntitiesLayer):
             for word in entity.wrefs():
                 t.append(word.text())
         self.assertEqual(t, ['ander','woord'])
+
+    def test041b_findspans(self):
+        """Sanity check - Find spans given words (specific set)"""
+        t = []
+        word = self.doc["example.table.1.w.3"]
+        for entity in word.findspans(folia.EntitiesLayer, "http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"):
+            for word in entity.wrefs():
+                t.append(word.text())
+        self.assertEqual(t, ['Maarten','van','Gompel'])
+
+    def test041c_findspans(self):
+        """Sanity check - Find spans given words (specific set, by SpanAnnotation class)"""
+        t = []
+        word = self.doc["example.table.1.w.3"]
+        for entity in word.findspans(folia.Entity, "http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"):
+            for word in entity.wrefs():
+                t.append(word.text())
+        self.assertEqual(t, ['Maarten','van','Gompel'])
 
     def test042_table(self):
         """Sanity check - Table"""
