@@ -303,6 +303,7 @@ class SpanSet(list):
         raise QueryError("Got a span set for a non-span element")
 
 
+
 class Selector(object):
     def __init__(self, Class, set=None,id=None, filter=None, nextselector=None):
         self.Class = Class
@@ -455,23 +456,14 @@ class Span(object):
 
         return Span(targets), i
 
-    def __call__(self, query, contextselector, debug=False): #returns a list of element in a span
+    def __call__(self, query, contextselector, recurse=True,debug=False): #returns a list of element in a span
         if debug: print("[FQL EVALUATION DEBUG] Span - Returning span from target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
-        if self.targets:
-            #chain selectors
-            selector = self.targets[0]
-            selector.chain(self.targets)
-
-            return SpanSet( e for e,_ in selector(query, contextselector, False, debug)  ) #TODO: efficiency
-        else:
-            return SpanSet()
-
-    def selector(self):
-        #returns a chained selectpr
+        #chain selectors
         selector = self.targets[0]
         selector.chain(self.targets)
-        return selector
+
+        return SpanSet( e for e,_ in selector(query, contextselector, recurse, debug)  )
 
 
 class Target(object): #FOR/IN... expression
@@ -523,19 +515,19 @@ class Target(object): #FOR/IN... expression
 
         if self.targets:
             if isinstance(self.targets[0], Span):
-                #chain selectors
-                selector = self.targets[0].selector()
-                selector.chain([x.selector() for x in self.targets])
+                for selector in self.targets:
+                    if not isinstance(selector, Span): raise ParseError("SPAN statement may not be mixed with non-span statements in a single selection")
+                    for e in selector(query, contextselector, not self.strict, debug):
+                        if debug: print("[FQL EVALUATION DEBUG] Target - Yielding spanset ",e, file=sys.stderr)
+                        yield e
             else:
-                #chain selectors
                 selector = self.targets[0]
                 selector.chain(self.targets)
 
-            for e,_ in selector(query, contextselector, not self.strict, debug):
-                if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
-                yield e
+                for e,_ in selector(query, contextselector, not self.strict, debug):
+                    if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
+                    yield e
 
-            if debug: print("[FQL EVALUATION DEBUG] Target - Done", file=sys.stderr)
 
 
 
@@ -630,7 +622,7 @@ class Action(object): #Action expression
         #select all focuss, not lazy because we are going return them all by definition anyway
 
 
-        if debug: print("[FQL EVALUATION DEBUG] Action - Preparing to evaluation action chain starting with ", self.action,file=sys.stderr)
+        if debug: print("[FQL EVALUATION DEBUG] Action - Preparing to evaluate action chain starting with ", self.action,file=sys.stderr)
 
         #handles all actions further in the chain, not just this one!!! This actual method is only called once
         actions = [self]
