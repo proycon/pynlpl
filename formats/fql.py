@@ -530,7 +530,10 @@ class Action(object): #Action expression
                     if action.action == "EDIT":
                         if debug: print("[FQL EVALUATION DEBUG] Action - Applying EDIT to focus ", repr(focus),file=sys.stderr)
                         for attr, value in action.assignments.items():
-                            setattr(focus, attr, value)
+                            if attr == "text":
+                                focus.settext(value)
+                            else:
+                                setattr(focus, attr, value)
                     elif action.action == "DELETE":
                         focus.parent.remove(focus)
 

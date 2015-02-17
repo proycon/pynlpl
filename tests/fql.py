@@ -49,6 +49,8 @@ Qdelete_target = "DELETE lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w
 
 Qcomplexadd = "APPEND w (ADD t WITH text \"gisteren\" ADD lemma OF \"lemmas-nl\" WITH class \"gisteren\") FOR ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
 
+Qedittext = "EDIT w WHERE text = \"terweil\" WITH text \"terwijl\""
+
 class Test1UnparsedQuery(unittest.TestCase):
 
     def test1_basic(self):
@@ -154,6 +156,13 @@ class Test3Evaluation(unittest.TestCase):
         self.assertTrue(isinstance(results[0], folia.Word))
         self.assertTrue(isinstance(results[0][0], folia.TextContent))
         self.assertTrue(isinstance(results[0][1], folia.LemmaAnnotation))
+
+    def test12_edittext(self):
+        q = fql.Query(Qedittext)
+        results = q(self.doc)
+        self.assertEqual(results[0].text(), "terwijl")
+
+
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
