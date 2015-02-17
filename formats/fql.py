@@ -200,7 +200,7 @@ class Filter(object): #WHERE ....
                 else:
                     i += 3
                     break #done
-            elif 'HAS' in q:
+            elif 'HAS' in q[i:]:
                 #has statement (spans full UnparsedQuery by definition)
                 #check for modifiers
                 modifier = None
@@ -209,11 +209,11 @@ class Filter(object): #WHERE ....
                     i += 1
 
                 selector,i =  Selector.parse(q,i)
-                if q[i] != "HAS":
-                    raise SyntaxError("Expected HAS, got " + q[i] + " in: " + str(q))
+                if not q.kw(i,"HAS"):
+                    raise SyntaxError("Expected HAS, got " + q[i] + " at position " + str(i) + " in: " + str(q))
                 i += 1
-                subfilter = Filter.parse(q,i)
-                filters.append( (selector,subfilter) )
+                subfilter,i = Filter.parse(q,i)
+                filters.append( (selector,subfilter, modifier) )
             elif isinstance(q[i], UnparsedQuery):
                 filter,_  = Filter.parse(q[i])
                 filters.append(filter)
@@ -240,7 +240,9 @@ class Filter(object): #WHERE ....
             if isinstance(filter,tuple):
                 if debug: print("[FQL EVALUATION DEBUG] Filter - Filter is a subfilter, descending...",file=sys.stderr)
                 #we have a subfilter, i.e. a HAS statement on a subelement
-                selector, filter = filter
+                selector, subfilter, modifier = filter
+                #TODO: process modifier
+                match = False
                 for subelement,_ in selector(query, [element], True, debug): #if there are multiple subelements, they are always treated disjunctly
                     match = subfilter(query, subelement, debug)
                     if match:

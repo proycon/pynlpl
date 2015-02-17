@@ -51,6 +51,10 @@ Qcomplexadd = "APPEND w (ADD t WITH text \"gisteren\" ADD lemma OF \"lemmas-nl\"
 
 Qedittext = "EDIT w WHERE text = \"terweil\" WITH text \"terwijl\""
 
+Qhas = "SELECT w WHERE (pos HAS class = \"LET()\")"
+
+#AND (lemma = \".\" OR lemma = \",\")) AND (NOT errordetection WHERE  \"blah\")"
+
 class Test1UnparsedQuery(unittest.TestCase):
 
     def test1_basic(self):
@@ -89,6 +93,14 @@ class Test2ParseQuery(unittest.TestCase):
         q = fql.Query(Qcomplexadd)
         self.assertEqual( len(q.action.subactions), 1) #test whether subaction is parsed
         self.assertTrue( isinstance(q.action.subactions[0].nextaction, fql.Action) ) #test whether subaction has proper chain of two actions
+
+    def test5_parse(self):
+        """Parsing """ + Qhas
+        q = fql.Query(Qhas)
+
+    #def test5_parse(self):
+    #    """Parsing """ + Qboolean
+    #    q = fql.Query(Qboolean)
 
 class Test3Evaluation(unittest.TestCase):
     def setUp(self):
@@ -153,9 +165,9 @@ class Test3Evaluation(unittest.TestCase):
     def test11_complexadd(self):
         q = fql.Query(Qcomplexadd)
         results = q(self.doc)
-        self.assertTrue(isinstance(results[0], folia.Word))
-        self.assertTrue(isinstance(results[0][0], folia.TextContent))
-        self.assertTrue(isinstance(results[0][1], folia.LemmaAnnotation))
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertIsInstance(results[0][0], folia.TextContent)
+        self.assertIsInstance(results[0][1], folia.LemmaAnnotation)
 
     def test12_edittext(self):
         q = fql.Query(Qedittext)
@@ -163,6 +175,11 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].text(), "terwijl")
 
 
+    def test13_subfilter(self):
+        q = fql.Query(Qhas)
+        results = q(self.doc)
+        for result in results:
+            self.assertIn(result.text(), (".",",","(",")"))
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
