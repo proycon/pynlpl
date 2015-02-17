@@ -39,6 +39,7 @@ Qselect_target = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w
 Qselect_singlefocus = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdletter\" FOR w RETURN focus FORMAT single-python"
 Qselect_singletarget = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdletter\" FOR w RETURN target FORMAT single-python"
 
+Qselect_multitarget = "SELECT lemma OF \"lemmas-nl\" FOR ID \"WR-P-E-J-0000000001.p.1.s.4.w.4\" , ID \"WR-P-E-J-0000000001.p.1.s.4.w.5\" RETURN target"
 Qselect_nestedtargets = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\" RETURN target FORMAT single-python"
 
 Qedit = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
@@ -59,6 +60,8 @@ Qboolean = "SELECT w WHERE (pos HAS class = \"LET()\") AND ((lemma HAS class = \
 Qcontext = "SELECT w WHERE (PREVIOUS w WHERE text = \"de\")"
 
 Qselect_span= "SELECT entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WHERE class = \"per\" FOR ID \"example.table.1.w.3\""
+
+Qadd_span= "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -153,6 +156,13 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qselect_nestedtargets)
         result = q(self.doc)
         self.assertTrue(isinstance(result, folia.Word))
+
+    def test05b_evaluate_select_multitarget(self):
+        q = fql.Query(Qselect_multitarget)
+        results = q(self.doc)
+        self.assertTrue(isinstance(results[0], folia.Word))
+        self.assertEqual(len(results),2)
+        self.assertTrue(isinstance(results[1], folia.Word))
 
     def test06_evaluate_edit(self):
         q = fql.Query(Qedit)
