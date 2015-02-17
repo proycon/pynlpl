@@ -44,12 +44,14 @@ class UnparsedQuery(object):
             if c == " ":
                 #process previous word
                 if begin < i:
-                    self.q.append(s[begin:i])
+                    w = s[begin:i]
+                    self.q.append(w)
                     self.mask.append(MASK_NORMAL)
                 begin = i + 1
             elif i == l - 1:
                 #process last word
-                self.q.append(s[begin:])
+                w = s[begin:]
+                self.q.append(w)
                 self.mask.append(MASK_NORMAL)
 
             if c == '(': #groups
@@ -97,6 +99,22 @@ class UnparsedQuery(object):
                         raise SyntaxError("Unterminated string literal at char " + str(i))
 
             i += 1
+
+        remove = []
+        #process shortcut notation
+        for i, (w,m) in enumerate(zip(self.q,self.mask)):
+            if m == MASK_NORMAL and w[0] == ':':
+                #we have shortcut notation for a HAS statement, rewrite:
+                self.q[i] = UnparsedQuery(w[1:] + " HAS class " + self.q[i+1] + " \"" + self.q[i+2] + "\"")
+                self.mask[i] = MASK_EXPRESSION
+                remove += [i+1,i+2]
+
+        if remove:
+            for index in reversed(remove):
+                del self.q[index]
+                del self.mask[index]
+
+
 
 
     def __iter__(self):

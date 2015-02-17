@@ -52,6 +52,9 @@ Qcomplexadd = "APPEND w (ADD t WITH text \"gisteren\" ADD lemma OF \"lemmas-nl\"
 Qedittext = "EDIT w WHERE text = \"terweil\" WITH text \"terwijl\""
 
 Qhas = "SELECT w WHERE (pos HAS class = \"LET()\")"
+Qhas_shortcut = "SELECT w WHERE :pos = \"LET()\""
+
+Qhasboolean = "SELECT w WHERE (pos HAS class = \"LET()\") AND ((lemma HAS class = \".\") OR (lemma HAS class = \",\")) )"
 
 #AND (lemma = \".\" OR lemma = \",\")) AND (NOT errordetection WHERE  \"blah\")"
 
@@ -97,6 +100,10 @@ class Test2ParseQuery(unittest.TestCase):
     def test5_parse(self):
         """Parsing """ + Qhas
         q = fql.Query(Qhas)
+
+    def test6_parse(self):
+        """Parsing """ + Qhas_shortcut
+        q = fql.Query(Qhas_shortcut)
 
     #def test5_parse(self):
     #    """Parsing """ + Qboolean
@@ -177,6 +184,12 @@ class Test3Evaluation(unittest.TestCase):
 
     def test13_subfilter(self):
         q = fql.Query(Qhas)
+        results = q(self.doc)
+        for result in results:
+            self.assertIn(result.text(), (".",",","(",")"))
+
+    def test14_subfilter_shortcut(self):
+        q = fql.Query(Qhas_shortcut)
         results = q(self.doc)
         for result in results:
             self.assertIn(result.text(), (".",",","(",")"))
