@@ -304,11 +304,20 @@ class SpanSet(list):
 
 
 class Selector(object):
-    def __init__(self, Class, set=None,id=None, filter=None):
+    def __init__(self, Class, set=None,id=None, filter=None, nextselector=None):
         self.Class = Class
         self.set = set
         self.id = id
         self.filter = filter
+        self.nextselector =  nextselector #selectors can be chained
+
+    def append(self, selector): # chains selectors *at query time*
+        s = self
+        while self.nextselector:
+            if self.nextselector is selector:
+                return #no duplicates in chain!
+            s = self.nextselector
+        s.nextselector = selector
 
     @staticmethod
     def parse(q, i=0):
@@ -362,33 +371,41 @@ class Selector(object):
                 selection = selector[0](*selector[1])
             else:
                 selection = selector
+
             isspan = issubclass(self.Class, folia.AbstractSpanAnnotation)
             for e in selection:
-                if isinstance(e, tuple): e = e[0]
-                if isspan and (isinstance(e, folia.Word) or isinstance(e, folia.Morpheme)):
-                    for candidate in e.findspans(self.Class, self.set):
-                        if not self.filter or  self.filter(query,candidate, debug):
-                            if debug: print("[FQL EVALUATION DEBUG] Select - Yielding span, single reference: ", repr(candidate),file=sys.stderr)
-                            yield candidate, e
-                elif isspan and isinstance(e, SpanSet):
-                    #we take the first item of the span to find the candidates
-                    for candidate in e[0].findspans(self.Class, self.set):
-                        if not self.filter or  self.filter(query,candidate, debug):
-                            #test if all the other elements in the span are in this candidate
-                            matched = True
-                            spanelements = list(candidate.wrefs())
-                            for e2 in e[1:]:
-                                if e2 not in spanelements:
-                                    matched = False
-                                    break
-                            if matched:
-                                if debug: print("[FQL EVALUATION DEBUG] Select - Yielding span, multiple references: ", repr(candidate),file=sys.stderr)
+                selector = self #redefining, selector is now instance of Selector()
+                while True: #will loop through the chain of selectors, only the first one is called explicitly
+                    if isinstance(e, tuple): e = e[0]
+                    if isspan and (isinstance(e, folia.Word) or isinstance(e, folia.Morpheme)):
+                        for candidate in e.findspans(selector.Class, selector.set):
+                            if not selector.filter or  selector.filter(query,candidate, debug):
+                                if debug: print("[FQL EVALUATION DEBUG] Select - Yielding span, single reference: ", repr(candidate),file=sys.stderr)
                                 yield candidate, e
-                else:
-                    for candidate  in e.select(self.Class, self.set, recurse):
-                        if not self.filter or  self.filter(query,candidate, debug):
-                            if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate),file=sys.stderr)
-                            yield candidate, e
+                    elif isspan and isinstance(e, SpanSet):
+                        #we take the first item of the span to find the candidates
+                        for candidate in e[0].findspans(selector.Class, selector.set):
+                            if not selector.filter or  selector.filter(query,candidate, debug):
+                                #test if all the other elements in the span are in this candidate
+                                matched = True
+                                spanelements = list(candidate.wrefs())
+                                for e2 in e[1:]:
+                                    if e2 not in spanelements:
+                                        matched = False
+                                        break
+                                if matched:
+                                    if debug: print("[FQL EVALUATION DEBUG] Select - Yielding span, multiple references: ", repr(candidate),file=sys.stderr)
+                                    yield candidate, e
+                    else:
+                        for candidate  in e.select(selector.Class, selector.set, recurse):
+                            if not selector.filter or  selector.filter(query,candidate, debug):
+                                if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate),file=sys.stderr)
+                                yield candidate, e
+
+                    if not selector.nextselector:
+                        break
+                    else:
+                        selector = selector.nextselector #end of chain
 
     def match(self, query, candidate, debug = False):
         if self.id:
@@ -433,7 +450,8 @@ class Span(object):
         if debug: print("[FQL EVALUATION DEBUG] Span - Returning span from target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
         for target in self.targets:
-            return SpanSet( e for e,_ in target(query, selector, False, debug)  )
+
+            return SpanSet( e for e,_ in target(query, selector, False, debug)  ) #TODO: efficiency
         return SpanSet()
 
 

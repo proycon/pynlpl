@@ -61,6 +61,7 @@ Qcontext = "SELECT w WHERE (PREVIOUS w WHERE text = \"de\")"
 
 Qselect_span = "SELECT entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WHERE class = \"per\" FOR ID \"example.table.1.w.3\""
 Qselect_span2 = "SELECT entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WHERE class = \"per\" FOR SPAN ID \"example.table.1.w.3\" & ID \"example.table.1.w.4\" & ID \"example.table.1.w.5\""
+Qselect_span2_returntarget = "SELECT entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WHERE class = \"per\" FOR SPAN ID \"example.table.1.w.3\" & ID \"example.table.1.w.4\" & ID \"example.table.1.w.5\" RETURN target"
 
 Qadd_span= "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
 
@@ -252,6 +253,14 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc, False)
         self.assertIsInstance(results[0], folia.Entity)
         self.assertEqual(len(list(results[0].wrefs())), 3)
+
+    def test18_select_span2_returntarget(self):
+        """Select span"""
+        q = fql.Query(Qselect_span2_returntarget)
+        results = q(self.doc, True)
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertIsInstance(results[1], folia.Word)
+        self.assertIsInstance(results[2], folia.Word)
 
     #def test19_add_span(self):
     #    "Add span"""
