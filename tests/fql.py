@@ -54,7 +54,7 @@ Qedittext = "EDIT w WHERE text = \"terweil\" WITH text \"terwijl\""
 Qhas = "SELECT w WHERE (pos HAS class = \"LET()\")"
 Qhas_shortcut = "SELECT w WHERE :pos = \"LET()\""
 
-Qhasboolean = "SELECT w WHERE (pos HAS class = \"LET()\") AND ((lemma HAS class = \".\") OR (lemma HAS class = \",\")) )"
+Qboolean = "SELECT w WHERE (pos HAS class = \"LET()\") AND ((lemma HAS class = \".\") OR (lemma HAS class = \",\"))"
 
 #AND (lemma = \".\" OR lemma = \",\")) AND (NOT errordetection WHERE  \"blah\")"
 
@@ -76,6 +76,12 @@ class Test1UnparsedQuery(unittest.TestCase):
         self.assertEqual( len(qu), 9 )
         self.assertTrue( isinstance(qu.q[5], fql.UnparsedQuery))
         self.assertEqual( qu.mask, [0,0,0,0,1,2,0,0,0] )
+
+    def test3_complex(self):
+        """Query with parentheses"""
+        qu = fql.UnparsedQuery(Qboolean)
+        self.assertEqual( len(qu.q), 6)
+
 
 
 class Test2ParseQuery(unittest.TestCase):
@@ -105,9 +111,9 @@ class Test2ParseQuery(unittest.TestCase):
         """Parsing """ + Qhas_shortcut
         q = fql.Query(Qhas_shortcut)
 
-    #def test5_parse(self):
-    #    """Parsing """ + Qboolean
-    #    q = fql.Query(Qboolean)
+    def test6_parse(self):
+        """Parsing """ + Qboolean
+        q = fql.Query(Qboolean)
 
 class Test3Evaluation(unittest.TestCase):
     def setUp(self):
@@ -191,8 +197,16 @@ class Test3Evaluation(unittest.TestCase):
     def test14_subfilter_shortcut(self):
         q = fql.Query(Qhas_shortcut)
         results = q(self.doc)
+        self.assertTrue( len(results) > 0 )
         for result in results:
             self.assertIn(result.text(), (".",",","(",")"))
+
+    def test13_boolean(self):
+        q = fql.Query(Qboolean)
+        results = q(self.doc)
+        self.assertTrue( len(results) > 0 )
+        for result in results:
+            self.assertIn(result.text(), (".",","))
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'

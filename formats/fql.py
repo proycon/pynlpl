@@ -167,16 +167,18 @@ class UnparsedQuery(object):
 
 
 class Filter(object): #WHERE ....
-    def __init__(self, filters, negation=False,disjunction=False,subfilters=[]):
+    def __init__(self, filters, negation=False,disjunction=False,subfilters=[], contextfilters = []):
         self.filters = filters
         self.negation = negation
         self.disjunction = disjunction
         self.subfilters = subfilters
+        self.contextfilters = contextfilters
 
     @staticmethod
     def parse(q, i=0):
         filters = []
         subfilters = []
+        contextfilters = []
         negation = False
         logop = ""
 
@@ -185,6 +187,20 @@ class Filter(object): #WHERE ....
             if q.kw(i, "NOT"):
                 negation = True
                 i += 1
+            elif isinstance(q[i], UnparsedQuery):
+                filter,_  = Filter.parse(q[i])
+                filters.append(filter)
+                i += 1
+                if q.kw(i,"AND") or q.kw(i, "OR"):
+                    if logop and q[i] != logop:
+                        raise SyntaxError("Mixed logical operators, use parentheses: " + str(q))
+                    logop = q[i]
+                    i += 1
+                else:
+                    break #done
+            elif q[i].startswith("PREVIOUS") or q[i].startswith("NEXT") or q.kw(i, ("LEFTCONTEXT","RIGHTCONTEXT","CONTEXT","PARENT","ANCESTOR") ):
+                #we have a context expression
+                raise NotImplementedError
             elif q[i+1] in OPERATORS and q[i] and q[i+2]:
                 operator = q[i+1]
                 if q[i] == "class":
@@ -220,30 +236,14 @@ class Filter(object): #WHERE ....
                     break #done
             elif 'HAS' in q[i:]:
                 #has statement (spans full UnparsedQuery by definition)
-                #check for modifiers
-                modifier = None
-                if q[i].startswith("PREVIOUS") or q[i].startswith("NEXT") or  q.kw(i, ("LEFTCONTEXT","RIGHTCONTEXT","CONTEXT","PARENT","ANCESTOR") ):
-                    modifier = q[i]
-                    i += 1
-
                 selector,i =  Selector.parse(q,i)
                 if not q.kw(i,"HAS"):
                     raise SyntaxError("Expected HAS, got " + q[i] + " at position " + str(i) + " in: " + str(q))
                 i += 1
                 subfilter,i = Filter.parse(q,i)
-                filters.append( (selector,subfilter, modifier) )
-            elif isinstance(q[i], UnparsedQuery):
-                filter,_  = Filter.parse(q[i])
-                filters.append(filter)
-                i += 1
-                if q.kw(i,"AND") or q.kw(i, "OR"):
-                    if logop and q[i] != logop:
-                        raise SyntaxError("Mixed logical operators, use parentheses: " + str(q))
-                    logop = q[i]
-                else:
-                    break #done
+                filters.append( (selector,subfilter) )
             else:
-                raise SyntaxError("Expected comparison operator, got " + q[i+1] + " in: " + str(q))
+                raise SyntaxError("Expected comparison operator, got " + str(q[i+1]) + " in: " + str(q))
 
         if negation and len(filters) > 1:
             raise SyntaxError("Expecting parentheses when NOT is used with multiple conditions")
@@ -258,7 +258,7 @@ class Filter(object): #WHERE ....
             if isinstance(filter,tuple):
                 if debug: print("[FQL EVALUATION DEBUG] Filter - Filter is a subfilter, descending...",file=sys.stderr)
                 #we have a subfilter, i.e. a HAS statement on a subelement
-                selector, subfilter, modifier = filter
+                selector, subfilter = filter
                 #TODO: process modifier
                 match = False
                 for subelement,_ in selector(query, [element], True, debug): #if there are multiple subelements, they are always treated disjunctly
