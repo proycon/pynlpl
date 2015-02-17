@@ -298,6 +298,9 @@ class Filter(object): #WHERE ....
         return match
 
 
+class SpanSet(list):
+    def select(self,*args):
+        raise QueryError("Got a span set for a non-span element")
 
 
 class Selector(object):
@@ -365,8 +368,22 @@ class Selector(object):
                 if isspan and (isinstance(e, folia.Word) or isinstance(e, folia.Morpheme)):
                     for candidate in e.findspans(self.Class, self.set):
                         if not self.filter or  self.filter(query,candidate, debug):
-                            if debug: print("[FQL EVALUATION DEBUG] Select - Yielding span ", repr(candidate),file=sys.stderr)
+                            if debug: print("[FQL EVALUATION DEBUG] Select - Yielding span, single reference: ", repr(candidate),file=sys.stderr)
                             yield candidate, e
+                elif isspan and isinstance(e, SpanSet):
+                    #we take the first item of the span to find the candidates
+                    for candidate in e[0].findspans(self.Class, self.set):
+                        if not self.filter or  self.filter(query,candidate, debug):
+                            #test if all the other elements in the span are in this candidate
+                            matched = True
+                            spanelements = list(candidate.wrefs())
+                            for e2 in e[1:]:
+                                if e2 not in spanelements:
+                                    matched = False
+                                    break
+                            if matched:
+                                if debug: print("[FQL EVALUATION DEBUG] Select - Yielding span, multiple references: ", repr(candidate),file=sys.stderr)
+                                yield candidate, e
                 else:
                     for candidate  in e.select(self.Class, self.set, recurse):
                         if not self.filter or  self.filter(query,candidate, debug):
@@ -386,8 +403,39 @@ class Selector(object):
         return True
 
 
+
+
+
 class Span(object):
-    pass #TODO
+    def __init__(self, targets):
+        self.targets = targets #Selector instances making up the span
+
+    @staticmethod
+    def parse(q, i=0):
+        targets = []
+        l = len(q)
+        while i < l:
+            if q.kw(i,"ID") or q[i] in folia.XML2CLASS:
+                target,i = Selector.parse(q,i)
+                targets.append(target)
+            elif q.kw(i,"&"):
+                #we're gonna have more targets
+                i += 1
+            else:
+                break
+
+        if not targets:
+            raise SyntaxError("Expected one or more span targets, got " + str(q[i]) + " in: " + str(q))
+
+        return Span(targets), i
+
+    def __call__(self, query, selector, debug=False): #returns a list of element in a span
+        if debug: print("[FQL EVALUATION DEBUG] Span - Returning span from target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
+
+        for target in self.targets:
+            return SpanSet( e for e,_ in target(query, selector, False, debug)  )
+        return SpanSet()
+
 
 class Target(object): #FOR/IN... expression
     def __init__(self, targets, strict=False,nested = None):
@@ -402,7 +450,7 @@ class Target(object): #FOR/IN... expression
         elif q.kw(i,'IN'):
             strict = True
         else:
-            raise SyntaxError("Expected target expression, got " + q[i] + " in: " + str(q))
+            raise SyntaxError("Expected target expression, got " + str(q[i]) + " in: " + str(q))
         i += 1
 
         targets = []
@@ -410,7 +458,8 @@ class Target(object): #FOR/IN... expression
         l = len(q)
         while i < l:
             if q.kw(i,'SPAN'):
-                raise NotImplementedError #TODO
+                target,i = Span.parse(q,i+1)
+                targets.append(target)
             elif q.kw(i,"ID") or q[i] in folia.XML2CLASS:
                 target,i = Selector.parse(q,i)
                 targets.append(target)
@@ -436,9 +485,14 @@ class Target(object): #FOR/IN... expression
         if debug: print("[FQL EVALUATION DEBUG] Target - Calling target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
         for target in self.targets:
-            for e,_ in target(query, selector, not self.strict, debug):
-                if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
-                yield e
+            if isinstance(target, Span):
+                for span in target(query, selector, debug):
+                    if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",span, file=sys.stderr)
+                    yield span
+            else:
+                for e,_ in target(query, selector, not self.strict, debug):
+                    if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
+                    yield e
 
 
 class Form(object):  #AS... expression
