@@ -315,9 +315,9 @@ class Selector(object):
     def chain(self, targets):
         assert targets[0] is self
         selector = self
-        selector.nexttarget = None
+        selector.nextselector = None
         for target in targets[1:]:
-            selector.nexttarget = target
+            selector.nextselector = target
             selector = target
 
     @staticmethod
@@ -356,28 +356,32 @@ class Selector(object):
         return Selector(Class,set,id,filter), i
 
     def __call__(self, query, contextselector, recurse=True, debug=False): #generator, lazy evaluation!
-        if self.id:
-            if debug: print("[FQL EVALUATION DEBUG] Select - Selecting ID " + self.id,file=sys.stderr)
-            try:
-                candidate = query.doc[self.id]
-                if not self.filter or  self.filter(query,candidate, debug):
-                    yield candidate, None
-            except KeyError:
-                pass
-        elif self.Class:
-            if self.Class.XMLTAG in query.defaultsets:
-                self.set = query.defaultsets[self.Class.XMLTAG]
-            if debug: print("[FQL EVALUATION DEBUG] Select - Selecting Class " + self.Class.XMLTAG + " with set " + str(self.set),file=sys.stderr)
-            if isinstance(contextselector,tuple) and len(contextselector) == 2:
-                selection = contextselector[0](*contextselector[1])
-            else:
-                selection = contextselector
+        if isinstance(contextselector,tuple) and len(contextselector) == 2:
+            selection = contextselector[0](*contextselector[1])
+        else:
+            selection = contextselector
 
-            isspan = issubclass(self.Class, folia.AbstractSpanAnnotation)
-            for e in selection:
-                selector = self
-                while True: #will loop through the chain of selectors, only the first one is called explicitly
-                    if debug: print("[FQL EVALUATION DEBUG] Running selector ", repr(selector), " on ", repr(e),file=sys.stderr)
+        count = 0
+
+        for e in selection:
+            selector = self
+            while True: #will loop through the chain of selectors, only the first one is called explicitly
+                if debug: print("[FQL EVALUATION DEBUG] Select - Running selector ", repr(selector), " on ", repr(e),file=sys.stderr)
+
+                if selector.id:
+                    if debug: print("[FQL EVALUATION DEBUG] Select - Selecting ID " + selector.id,file=sys.stderr)
+                    try:
+                        candidate = query.doc[selector.id]
+                        if not selector.filter or  selector.filter(query,candidate, debug):
+                            if debug: print("[FQL EVALUATION DEBUG] Select - Yielding (by ID) ", repr(candidate),file=sys.stderr)
+                            yield candidate, None
+                    except KeyError:
+                        pass #silently ignore ID mismatches
+                elif selector.Class:
+                    if debug: print("[FQL EVALUATION DEBUG] Select - Selecting Class " + selector.Class.XMLTAG + " with set " + str(selector.set),file=sys.stderr)
+                    if selector.Class.XMLTAG in query.defaultsets:
+                        selector.set = query.defaultsets[selector.Class.XMLTAG]
+                    isspan = issubclass(selector.Class, folia.AbstractSpanAnnotation)
                     if isinstance(e, tuple): e = e[0]
                     if isspan and (isinstance(e, folia.Word) or isinstance(e, folia.Morpheme)):
                         for candidate in e.findspans(selector.Class, selector.set):
@@ -404,14 +408,13 @@ class Selector(object):
                                 if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate),file=sys.stderr)
                                 yield candidate, e
 
-                    if selector.nextselector is None:
-                        if debug: print("[FQL EVALUATION DEBUG] Select - End of chain",file=sys.stderr)
-                        break # end of chain
-                    else:
-                        selector = selector.nextselector
+                if selector.nextselector is None:
+                    if debug: print("[FQL EVALUATION DEBUG] Select - End of chain",file=sys.stderr)
+                    break # end of chain
+                else:
+                    if debug: print("[FQL EVALUATION DEBUG] Select - Selecting next in chain",file=sys.stderr)
+                    selector = selector.nextselector
 
-
-        if debug: print("[FQL EVALUATION DEBUG] Select - Done ",file=sys.stderr)
 
     def match(self, query, candidate, debug = False):
         if self.id:
@@ -516,7 +519,7 @@ class Target(object): #FOR/IN... expression
             if debug: print("[FQL EVALUATION DEBUG] Target - Deferring to nested target first",file=sys.stderr)
             contextselector = (self.nested, (query, contextselector))
 
-        if debug: print("[FQL EVALUATION DEBUG] Target - Calling target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
+        if debug: print("[FQL EVALUATION DEBUG] Target - Chaining and calling target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
         if self.targets:
             if isinstance(self.targets[0], Span):
@@ -654,7 +657,10 @@ class Action(object): #Action expression
                 for focus, target in action.focus(query, contextselector, True, debug):
                     if target:
                         if not any(x is target for x in constrainedtargetselection):
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Got target result, adding ", repr(target),file=sys.stderr)
                             constrainedtargetselection.append(target)
+                        elif debug:
+                            print("[FQL EVALUATION DEBUG] Action - Target result already obtained, skipping... ", repr(target),file=sys.stderr)
 
                     if action.action != "DELETE" and not any(x is focus for x in  focusselection):
                         if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)

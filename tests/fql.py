@@ -39,6 +39,7 @@ Qselect_target = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w
 Qselect_singlefocus = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdletter\" FOR w RETURN focus FORMAT single-python"
 Qselect_singletarget = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdletter\" FOR w RETURN target FORMAT single-python"
 
+Qselect_multitarget_focus = "SELECT lemma OF \"lemmas-nl\" FOR ID \"WR-P-E-J-0000000001.p.1.s.4.w.4\" , ID \"WR-P-E-J-0000000001.p.1.s.4.w.5\""
 Qselect_multitarget = "SELECT lemma OF \"lemmas-nl\" FOR ID \"WR-P-E-J-0000000001.p.1.s.4.w.4\" , ID \"WR-P-E-J-0000000001.p.1.s.4.w.5\" RETURN target"
 Qselect_nestedtargets = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\" RETURN target FORMAT single-python"
 
@@ -159,9 +160,16 @@ class Test3Evaluation(unittest.TestCase):
         result = q(self.doc)
         self.assertTrue(isinstance(result, folia.Word))
 
+    def test05a_evaluate_select_multitarget_focus(self):
+        q = fql.Query(Qselect_multitarget_focus)
+        results = q(self.doc)
+        self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
+        self.assertEqual(len(results),2)
+        self.assertTrue(isinstance(results[1], folia.LemmaAnnotation))
+
     def test05b_evaluate_select_multitarget(self):
         q = fql.Query(Qselect_multitarget)
-        results = q(self.doc,True)
+        results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.Word))
         self.assertEqual(len(results),2)
         self.assertTrue(isinstance(results[1], folia.Word))
