@@ -262,7 +262,7 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Entity)
         self.assertEqual(len(list(results[0].wrefs())), 3)
 
-    def test18_select_span2_returntarget(self):
+    def test19_select_span2_returntarget(self):
         """Select span"""
         q = fql.Query(Qselect_span2_returntarget)
         results = q(self.doc)
