@@ -58,7 +58,7 @@ Qboolean = "SELECT w WHERE (pos HAS class = \"LET()\") AND ((lemma HAS class = \
 
 Qcontext = "SELECT w WHERE (PREVIOUS w WHERE text = \"de\")"
 
-#AND (lemma = \".\" OR lemma = \",\")) AND (NOT errordetection WHERE  \"blah\")"
+Qselect_span= "SELECT entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WHERE class = \"per\" FOR ID \"example.table.1.w.3\""
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -219,14 +219,22 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qcontext)
         results = q(self.doc)
         self.assertTrue( len(results) > 0 )
-        self.assertIn(results[0].text(), "historische")
-        self.assertIn(results[1].text(), "naam")
-        self.assertIn(results[2].text(), "verwantschap")
-        self.assertIn(results[3].text(), "handschriften")
-        self.assertIn(results[4].text(), "juiste")
-        self.assertIn(results[5].text(), "laatste")
-        self.assertIn(results[6].text(), "verwantschap")
-        self.assertIn(results[7].text(), "handschriften")
+        self.assertEqual(results[0].text(), "historische")
+        self.assertEqual(results[1].text(), "naam")
+        self.assertEqual(results[2].text(), "verwantschap")
+        self.assertEqual(results[3].text(), "handschriften")
+        self.assertEqual(results[4].text(), "juiste")
+        self.assertEqual(results[5].text(), "laatste")
+        self.assertEqual(results[6].text(), "verwantschap")
+        self.assertEqual(results[7].text(), "handschriften")
+
+    def test17_select_span(self):
+        """Select span"""
+        q = fql.Query(Qselect_span)
+        results = q(self.doc, False)
+        self.assertIsInstance(results[0], folia.Entity)
+        self.assertEqual(len(list(results[0].wrefs())), 3)
+
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'

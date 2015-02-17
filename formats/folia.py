@@ -2806,7 +2806,7 @@ class Word(AbstractStructureElement, AllowCorrections):
             e = e.parent
             for layer in e.select(layerclass,set,False):
                 for e2 in layer:
-                    if isinstance(e2, AbstractSpanAnnotation):
+                    if (type is layerclass and isinstance(e2, AbstractSpanAnnotation)) or (type is not layerclass and isinstance(e2, type)):
                         if self in e2.wrefs():
                             yield e2
 

@@ -285,6 +285,7 @@ class Filter(object): #WHERE ....
             else:
                 #we have a condition function we can evaluate
                 match = filter(element)
+
             if self.negation:
                 match = not match
             if match:
@@ -358,12 +359,19 @@ class Selector(object):
                 selection = selector[0](*selector[1])
             else:
                 selection = selector
+            isspan = issubclass(self.Class, folia.AbstractSpanAnnotation)
             for e in selection:
                 if isinstance(e, tuple): e = e[0]
-                for candidate  in e.select(self.Class, self.set, recurse):
-                    if not self.filter or  self.filter(query,candidate, debug):
-                        if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate),file=sys.stderr)
-                        yield candidate, e
+                if isspan and (isinstance(e, folia.Word) or isinstance(e, folia.Morpheme)):
+                    for candidate in e.findspans(self.Class, self.set):
+                        if not self.filter or  self.filter(query,candidate, debug):
+                            if debug: print("[FQL EVALUATION DEBUG] Select - Yielding span ", repr(candidate),file=sys.stderr)
+                            yield candidate, e
+                else:
+                    for candidate  in e.select(self.Class, self.set, recurse):
+                        if not self.filter or  self.filter(query,candidate, debug):
+                            if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate),file=sys.stderr)
+                            yield candidate, e
 
     def match(self, query, candidate, debug = False):
         if self.id:
@@ -546,7 +554,6 @@ class Action(object): #Action expression
             if debug: print("[FQL EVALUATION DEBUG] Action - Evaluating action ", action.action,file=sys.stderr)
             focusselection = []
             constrainedtargetselection = [] #selecting focus elements constrains the target selection
-            processed = False
 
             if action.action not in ("ADD","APPEND","PREPEND"): #only for actions that operate on an existing focus
                 for focus, target in action.focus(query, targetselector, True, debug):
@@ -571,7 +578,6 @@ class Action(object): #Action expression
                     elif action.action == "DELETE":
                         focus.parent.remove(focus)
 
-                    processed = True
 
 
             if action.action in ("ADD","APPEND","PREPEND") or (action.action == "EDIT" and not focusselection):
@@ -602,10 +608,6 @@ class Action(object): #Action expression
                     if not any(x is target for x in constrainedtargetselection):
                         constrainedtargetselection.append(target)
 
-                    processed = True
-
-            if not processed:
-                raise QueryError("Action " + self.action + " was not processed in: " + str(query))
 
             if focusselection and action.subactions:
                 for subaction in action.subactions:
