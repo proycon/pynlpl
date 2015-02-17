@@ -132,7 +132,7 @@ class Test3Evaluation(unittest.TestCase):
 
     def test01_evaluate_select_focus(self):
         q = fql.Query(Qselect_focus)
-        results = q(self.doc)
+        results = q(self.doc,True)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
         self.assertEqual(len(results),2)
         self.assertTrue(isinstance(results[1], folia.LemmaAnnotation))

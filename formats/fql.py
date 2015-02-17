@@ -311,13 +311,14 @@ class Selector(object):
         self.filter = filter
         self.nextselector =  nextselector #selectors can be chained
 
-    def append(self, selector): # chains selectors *at query time*
-        s = self
-        while self.nextselector:
-            if self.nextselector is selector:
-                return #no duplicates in chain!
-            s = self.nextselector
-        s.nextselector = selector
+
+    def chain(self, targets):
+        assert targets[0] is self
+        selector = self
+        selector.nexttarget = None
+        for target in targets[1:]:
+            selector.nexttarget = target
+            selector = target
 
     @staticmethod
     def parse(q, i=0):
@@ -354,7 +355,7 @@ class Selector(object):
 
         return Selector(Class,set,id,filter), i
 
-    def __call__(self, query, selector, recurse=True, debug=False): #generator, lazy evaluation!
+    def __call__(self, query, contextselector, recurse=True, debug=False): #generator, lazy evaluation!
         if self.id:
             if debug: print("[FQL EVALUATION DEBUG] Select - Selecting ID " + self.id,file=sys.stderr)
             try:
@@ -367,15 +368,16 @@ class Selector(object):
             if self.Class.XMLTAG in query.defaultsets:
                 self.set = query.defaultsets[self.Class.XMLTAG]
             if debug: print("[FQL EVALUATION DEBUG] Select - Selecting Class " + self.Class.XMLTAG + " with set " + str(self.set),file=sys.stderr)
-            if isinstance(selector,tuple) and len(selector) == 2:
-                selection = selector[0](*selector[1])
+            if isinstance(contextselector,tuple) and len(contextselector) == 2:
+                selection = contextselector[0](*contextselector[1])
             else:
-                selection = selector
+                selection = contextselector
 
             isspan = issubclass(self.Class, folia.AbstractSpanAnnotation)
             for e in selection:
-                selector = self #redefining, selector is now instance of Selector()
+                selector = self
                 while True: #will loop through the chain of selectors, only the first one is called explicitly
+                    if debug: print("[FQL EVALUATION DEBUG] Running selector ", repr(selector), " on ", repr(e),file=sys.stderr)
                     if isinstance(e, tuple): e = e[0]
                     if isspan and (isinstance(e, folia.Word) or isinstance(e, folia.Morpheme)):
                         for candidate in e.findspans(selector.Class, selector.set):
@@ -402,10 +404,14 @@ class Selector(object):
                                 if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate),file=sys.stderr)
                                 yield candidate, e
 
-                    if not selector.nextselector:
-                        break
+                    if selector.nextselector is None:
+                        if debug: print("[FQL EVALUATION DEBUG] Select - End of chain",file=sys.stderr)
+                        break # end of chain
                     else:
-                        selector = selector.nextselector #end of chain
+                        selector = selector.nextselector
+
+
+        if debug: print("[FQL EVALUATION DEBUG] Select - Done ",file=sys.stderr)
 
     def match(self, query, candidate, debug = False):
         if self.id:
@@ -446,13 +452,23 @@ class Span(object):
 
         return Span(targets), i
 
-    def __call__(self, query, selector, debug=False): #returns a list of element in a span
+    def __call__(self, query, contextselector, debug=False): #returns a list of element in a span
         if debug: print("[FQL EVALUATION DEBUG] Span - Returning span from target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
-        for target in self.targets:
+        if self.targets:
+            #chain selectors
+            selector = self.targets[0]
+            selector.chain(self.targets)
 
-            return SpanSet( e for e,_ in target(query, selector, False, debug)  ) #TODO: efficiency
-        return SpanSet()
+            return SpanSet( e for e,_ in selector(query, contextselector, False, debug)  ) #TODO: efficiency
+        else:
+            return SpanSet()
+
+    def selector(self):
+        #returns a chained selectpr
+        selector = self.targets[0]
+        selector.chain(self.targets)
+        return selector
 
 
 class Target(object): #FOR/IN... expression
@@ -495,22 +511,29 @@ class Target(object): #FOR/IN... expression
         return Target(targets,strict,nested), i
 
 
-    def __call__(self, query, selector, debug=False): #generator, lazy evaluation!
+    def __call__(self, query, contextselector, debug=False): #generator, lazy evaluation!
         if self.nested:
             if debug: print("[FQL EVALUATION DEBUG] Target - Deferring to nested target first",file=sys.stderr)
-            selector = (self.nested, (query, selector))
+            contextselector = (self.nested, (query, contextselector))
 
         if debug: print("[FQL EVALUATION DEBUG] Target - Calling target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
-        for target in self.targets:
-            if isinstance(target, Span):
-                for span in target(query, selector, debug):
-                    if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",span, file=sys.stderr)
-                    yield span
+        if self.targets:
+            if isinstance(self.targets[0], Span):
+                #chain selectors
+                selector = self.targets[0].selector()
+                selector.chain([x.selector() for x in self.targets])
             else:
-                for e,_ in target(query, selector, not self.strict, debug):
-                    if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
-                    yield e
+                #chain selectors
+                selector = self.targets[0]
+                selector.chain(self.targets)
+
+            for e,_ in selector(query, contextselector, not self.strict, debug):
+                if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
+                yield e
+
+            if debug: print("[FQL EVALUATION DEBUG] Target - Done", file=sys.stderr)
+
 
 
 class Form(object):  #AS... expression
@@ -596,10 +619,10 @@ class Action(object): #Action expression
         return action, i
 
 
-    def __call__(self, query, targetselector, debug=False):
+    def __call__(self, query, contextselector, debug=False):
         """Returns a list focusselection after having performed the desired action on each element therein"""
 
-        #targetselector is a two-tuple function recipe (f,args), so we can reobtain the generator which it returns
+        #contextselector is a two-tuple function recipe (f,args), so we can reobtain the generator which it returns
 
         #select all focuss, not lazy because we are going return them all by definition anyway
 
@@ -614,9 +637,9 @@ class Action(object): #Action expression
             a = a.nextaction
 
         if len(actions) > 1:
-            #multiple actions to perform, apply targetselector once and load in memory    (will be quicker at higher memory cost, proportionate to the target selection size)
-            if isinstance(targetselector, tuple) and len(targetselector) == 2:
-                targetselector = list(targetselector[0](*targetselector[1]))
+            #multiple actions to perform, apply contextselector once and load in memory    (will be quicker at higher memory cost, proportionate to the target selection size)
+            if isinstance(contextselector, tuple) and len(contextselector) == 2:
+                contextselector = list(contextselector[0](*contextselector[1]))
             focusselection_all = []
             constrainedtargetselection_all = []
 
@@ -628,7 +651,7 @@ class Action(object): #Action expression
             constrainedtargetselection = [] #selecting focus elements constrains the target selection
 
             if action.action not in ("ADD","APPEND","PREPEND"): #only for actions that operate on an existing focus
-                for focus, target in action.focus(query, targetselector, True, debug):
+                for focus, target in action.focus(query, contextselector, True, debug):
                     if target:
                         if not any(x is target for x in constrainedtargetselection):
                             constrainedtargetselection.append(target)
@@ -657,10 +680,10 @@ class Action(object): #Action expression
                 if not 'set' in action.assignments:
                     if action.focus.Class.XMLTAG in query.defaultsets:
                         action.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
-                if isinstance(targetselector, tuple) and len(targetselector) == 2:
-                    targetselection = targetselector[0](*targetselector[1])
+                if isinstance(contextselector, tuple) and len(contextselector) == 2:
+                    targetselection = contextselector[0](*contextselector[1])
                 else:
-                    targetselection = targetselector
+                    targetselection = contextselector
                 for target in targetselection:
                     if not action.focus.Class:
                         raise QueryError("Focus of action has no class!")
