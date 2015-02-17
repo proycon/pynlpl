@@ -66,6 +66,13 @@ if [ $? -ne 0 ]; then
     GOOD=0
 fi
 
+echo "Testing FQL">&2
+python fql.py
+if [ $? -ne 0 ]; then
+    echo "Test failed!!!" >&2
+    GOOD=0
+fi
+
 if [ $GOOD -eq 1 ]; then
     echo "Done, all tests passed!" >&2
     exit 0
