@@ -132,7 +132,7 @@ class Test3Evaluation(unittest.TestCase):
 
     def test01_evaluate_select_focus(self):
         q = fql.Query(Qselect_focus)
-        results = q(self.doc,True)
+        results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
         self.assertEqual(len(results),2)
         self.assertTrue(isinstance(results[1], folia.LemmaAnnotation))
@@ -161,7 +161,7 @@ class Test3Evaluation(unittest.TestCase):
 
     def test05b_evaluate_select_multitarget(self):
         q = fql.Query(Qselect_multitarget)
-        results = q(self.doc)
+        results = q(self.doc,True)
         self.assertTrue(isinstance(results[0], folia.Word))
         self.assertEqual(len(results),2)
         self.assertTrue(isinstance(results[1], folia.Word))
@@ -243,21 +243,21 @@ class Test3Evaluation(unittest.TestCase):
     def test17_select_span(self):
         """Select span"""
         q = fql.Query(Qselect_span)
-        results = q(self.doc, False)
+        results = q(self.doc)
         self.assertIsInstance(results[0], folia.Entity)
         self.assertEqual(len(list(results[0].wrefs())), 3)
 
     def test18_select_span2(self):
         """Select span"""
         q = fql.Query(Qselect_span2)
-        results = q(self.doc, False)
+        results = q(self.doc)
         self.assertIsInstance(results[0], folia.Entity)
         self.assertEqual(len(list(results[0].wrefs())), 3)
 
     def test18_select_span2_returntarget(self):
         """Select span"""
         q = fql.Query(Qselect_span2_returntarget)
-        results = q(self.doc, True)
+        results = q(self.doc)
         self.assertIsInstance(results[0], folia.Word)
         self.assertIsInstance(results[1], folia.Word)
         self.assertIsInstance(results[2], folia.Word)
