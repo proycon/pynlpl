@@ -167,18 +167,14 @@ class UnparsedQuery(object):
 
 
 class Filter(object): #WHERE ....
-    def __init__(self, filters, negation=False,disjunction=False,subfilters=[], contextfilters = []):
+    def __init__(self, filters, negation=False,disjunction=False):
         self.filters = filters
         self.negation = negation
         self.disjunction = disjunction
-        self.subfilters = subfilters
-        self.contextfilters = contextfilters
 
     @staticmethod
     def parse(q, i=0):
         filters = []
-        subfilters = []
-        contextfilters = []
         negation = False
         logop = ""
 
@@ -198,9 +194,13 @@ class Filter(object): #WHERE ....
                     i += 1
                 else:
                     break #done
-            elif q[i].startswith("PREVIOUS") or q[i].startswith("NEXT") or q.kw(i, ("LEFTCONTEXT","RIGHTCONTEXT","CONTEXT","PARENT","ANCESTOR") ):
-                #we have a context expression
-                raise NotImplementedError
+            elif i == 0 and (q[i].startswith("PREVIOUS") or q[i].startswith("NEXT") or q.kw(i, ("LEFTCONTEXT","RIGHTCONTEXT","CONTEXT","PARENT","ANCESTOR","CHILD") )):
+                #we have a context expression, always occuring in its own subquery
+                modifier = q[i]
+                i += 1
+                selector,i =  Selector.parse(q,i)
+                filters.append( (modifier, selector,None) )
+                break
             elif q[i+1] in OPERATORS and q[i] and q[i+2]:
                 operator = q[i+1]
                 if q[i] == "class":
@@ -241,14 +241,14 @@ class Filter(object): #WHERE ....
                     raise SyntaxError("Expected HAS, got " + q[i] + " at position " + str(i) + " in: " + str(q))
                 i += 1
                 subfilter,i = Filter.parse(q,i)
-                filters.append( (selector,subfilter) )
+                filters.append( ("CHILD",selector,subfilter) )
             else:
                 raise SyntaxError("Expected comparison operator, got " + str(q[i+1]) + " in: " + str(q))
 
         if negation and len(filters) > 1:
             raise SyntaxError("Expecting parentheses when NOT is used with multiple conditions")
 
-        return Filter(filters, negation, logop == "OR",subfilters), i
+        return Filter(filters, negation, logop == "OR"), i
 
     def __call__(self, query, element, debug=False):
         """Tests the filter on the specified element, returns a boolean"""
@@ -256,15 +256,29 @@ class Filter(object): #WHERE ....
         if debug: print("[FQL EVALUATION DEBUG] Filter - Testing filter for ", repr(element),file=sys.stderr)
         for filter in self.filters:
             if isinstance(filter,tuple):
-                if debug: print("[FQL EVALUATION DEBUG] Filter - Filter is a subfilter, descending...",file=sys.stderr)
+                modifier, selector, subfilter = filter
+                if debug: print("[FQL EVALUATION DEBUG] Filter - Filter is a subfilter of type " + modifier + ", descending...",file=sys.stderr)
                 #we have a subfilter, i.e. a HAS statement on a subelement
-                selector, subfilter = filter
-                #TODO: process modifier
                 match = False
-                for subelement,_ in selector(query, [element], True, debug): #if there are multiple subelements, they are always treated disjunctly
-                    match = subfilter(query, subelement, debug)
-                    if match:
-                        break #only one subelement has to match by definition, then the HAS statement is matched
+                if modifier == "CHILD":
+                    for subelement,_ in selector(query, [element], True, debug): #if there are multiple subelements, they are always treated disjunctly
+                        if not subfilter:
+                            match = True
+                        else:
+                            match = subfilter(query, subelement, debug)
+                        if match: break #only one subelement has to match by definition, then the HAS statement is matched
+                elif modifier == "PARENT":
+                    match = selector.match(query, element.parent)
+                elif modifier == "NEXT":
+                    neighbour = element.next()
+                    if neighbour:
+                        match = selector.match(query, neighbour)
+                elif modifier == "PREVIOUS":
+                    neighbour = element.previous()
+                    if neighbour:
+                        match = selector.match(query, neighbour)
+                else:
+                    raise NotImplementedError("Context keyword " + modifier + " not implemented yet")
             elif isinstance(filter, Filter):
                 #we have a nested filter (parentheses)
                 match = filter(query, element, debug)

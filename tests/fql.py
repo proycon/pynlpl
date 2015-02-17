@@ -56,6 +56,8 @@ Qhas_shortcut = "SELECT w WHERE :pos = \"LET()\""
 
 Qboolean = "SELECT w WHERE (pos HAS class = \"LET()\") AND ((lemma HAS class = \".\") OR (lemma HAS class = \",\"))"
 
+Qcontext = "SELECT w WHERE (PREVIOUS w WHERE text = \"de\")"
+
 #AND (lemma = \".\" OR lemma = \",\")) AND (NOT errordetection WHERE  \"blah\")"
 
 class Test1UnparsedQuery(unittest.TestCase):
@@ -114,6 +116,10 @@ class Test2ParseQuery(unittest.TestCase):
     def test6_parse(self):
         """Parsing """ + Qboolean
         q = fql.Query(Qboolean)
+
+    def test7_parse(self):
+        """Parsing """ + Qcontext
+        q = fql.Query(Qcontext)
 
 class Test3Evaluation(unittest.TestCase):
     def setUp(self):
@@ -201,12 +207,26 @@ class Test3Evaluation(unittest.TestCase):
         for result in results:
             self.assertIn(result.text(), (".",",","(",")"))
 
-    def test13_boolean(self):
+    def test15_boolean(self):
         q = fql.Query(Qboolean)
         results = q(self.doc)
         self.assertTrue( len(results) > 0 )
         for result in results:
             self.assertIn(result.text(), (".",","))
+
+    def test16_context(self):
+        """Obtaining all words following 'de'"""
+        q = fql.Query(Qcontext)
+        results = q(self.doc)
+        self.assertTrue( len(results) > 0 )
+        self.assertIn(results[0].text(), "historische")
+        self.assertIn(results[1].text(), "naam")
+        self.assertIn(results[2].text(), "verwantschap")
+        self.assertIn(results[3].text(), "handschriften")
+        self.assertIn(results[4].text(), "juiste")
+        self.assertIn(results[5].text(), "laatste")
+        self.assertIn(results[6].text(), "verwantschap")
+        self.assertIn(results[7].text(), "handschriften")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
