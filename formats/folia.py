@@ -2796,12 +2796,15 @@ class Word(AbstractStructureElement, AllowCorrections):
 
     def findspans(self, type,set=None):
         """Find span annotation of the specified type that include this word"""
-        assert issubclass(type, AbstractAnnotationLayer)
+        if issubclass(type, AbstractAnnotationLayer):
+           layerclass = type
+        else:
+           layerclass = ANNOTATIONTYPE2LAYERCLASS[type.ANNOTATIONTYPE]
         e = self
         while True:
             if not e.parent: break
             e = e.parent
-            for layer in e.select(type,set,False):
+            for layer in e.select(layerclass,set,False):
                 for e2 in layer:
                     if isinstance(e2, AbstractSpanAnnotation):
                         if self in e2.wrefs():
@@ -3823,6 +3826,21 @@ class Morpheme(AbstractStructureElement):
     ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
     XMLTAG = 'morpheme'
 
+    def findspans(self, type,set=None):
+        """Find span annotation of the specified type that include this word"""
+        if issubclass(type, AbstractAnnotationLayer):
+           layerclass = type
+        else:
+           layerclass = ANNOTATIONTYPE2LAYERCLASS[type.ANNOTATIONTYPE]
+        e = self
+        while True:
+            if not e.parent: break
+            e = e.parent
+            for layer in e.select(layerclass,set,False):
+                for e2 in layer:
+                    if isinstance(e2, AbstractSpanAnnotation):
+                        if self in e2.wrefs():
+                            yield e2
 
 
 #class Subentity(AbstractSubtokenAnnotation):
