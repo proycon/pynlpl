@@ -64,7 +64,8 @@ Qselect_span = "SELECT entity OF \"http://raw.github.com/proycon/folia/master/se
 Qselect_span2 = "SELECT entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WHERE class = \"per\" FOR SPAN ID \"example.table.1.w.3\" & ID \"example.table.1.w.4\" & ID \"example.table.1.w.5\""
 Qselect_span2_returntarget = "SELECT entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WHERE class = \"per\" FOR SPAN ID \"example.table.1.w.3\" & ID \"example.table.1.w.4\" & ID \"example.table.1.w.5\" RETURN target"
 
-Qadd_span= "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
+Qadd_span = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
+Qadd_span_returntarget = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" RETURN target"
 
 Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNATIVE WITH confidence 0.9)"
 Qcorrect1 = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
@@ -276,18 +277,45 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qselect_span2)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Entity)
-        self.assertEqual(len(list(results[0].wrefs())), 3)
+        results = list(results[0].wrefs())
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertEqual(results[0].text(), "Maarten")
+        self.assertIsInstance(results[1], folia.Word)
+        self.assertEqual(results[1].text(), "van")
+        self.assertIsInstance(results[2], folia.Word)
+        self.assertEqual(results[2].text(), "Gompel")
 
     def test19_select_span2_returntarget(self):
         """Select span"""
         q = fql.Query(Qselect_span2_returntarget)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Word)
+        self.assertEqual(results[0].text(), "Maarten")
         self.assertIsInstance(results[1], folia.Word)
+        self.assertEqual(results[1].text(), "van")
         self.assertIsInstance(results[2], folia.Word)
+        self.assertEqual(results[2].text(), "Gompel")
 
-    #def test19_add_span(self):
-    #    "Add span"""
+    def test20a_add_span(self):
+        "Add span"""
+        q = fql.Query(Qadd_span)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Entity)
+        self.assertEqual(results[0].cls, 'misc')
+        results = list(results[0].wrefs())
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertEqual(results[0].text(), "hoofdletter")
+        self.assertIsInstance(results[1], folia.Word)
+        self.assertEqual(results[1].text(), "A")
+
+    def test20b_add_span_returntarget(self):
+        "Add span"""
+        q = fql.Query(Qadd_span_returntarget)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertEqual(results[0].text(), "hoofdletter")
+        self.assertIsInstance(results[1], folia.Word)
+        self.assertEqual(results[1].text(), "A")
 
 
 if os.path.exists('../../FoLiA'):

@@ -886,24 +886,28 @@ class Action(object): #Action expression
 
             if action.action in ("ADD","APPEND","PREPEND") or (action.action == "EDIT" and not focusselection):
                 if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " to targets",file=sys.stderr)
+                if not action.focus.Class:
+                    raise QueryError("Focus of action has no class!")
+
+                isspan = issubclass(action.focus.Class, folia.AbstractSpanAnnotation)
+
                 if not 'set' in action.assignments:
                     if action.focus.Class.XMLTAG in query.defaultsets:
                         action.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
+
                 if isinstance(contextselector, tuple) and len(contextselector) == 2:
                     targetselection = contextselector[0](*contextselector[1])
                 else:
                     targetselection = contextselector
-                for target in targetselection:
-                    if not action.focus.Class:
-                        raise QueryError("Focus of action has no class!")
 
+                for target in targetselection:
                     if action.form:
                         #Delegate action to form (= correction or alternative)
                         focusselection += list( action.form(query, action,None,target,debug) )
                     else:
                         if action.action == "ADD" or action.action == "EDIT":
                             if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target " + repr(target),file=sys.stderr)
-                            focusselection.append( target.append(action.focus.Class, **action.assignments) )
+                            focusselection.append( target.add(action.focus.Class, **action.assignments) ) #handles span annotation too
                         elif action.action == "APPEND":
                             if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
                             index = target.parent.data.index(target)
