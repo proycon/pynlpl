@@ -1080,7 +1080,10 @@ class AbstractElement(object):
                         if 'set' in kwargs:
                             set = kwargs['set']
                         else:
-                            set = self.doc.defaultset(layerclass)
+                            try:
+                                set = self.doc.defaultset(layerclass)
+                            except KeyError:
+                                raise Exception("No set defined when adding span annotation and none could be inferred")
                         try:
                             layer = next(e.select(layerclass,set,True))
                         except StopIteration:

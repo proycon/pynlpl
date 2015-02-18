@@ -309,7 +309,7 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[1].text(), "A")
 
     def test20b_add_span_returntarget(self):
-        "Add span"""
+        "Add span (return target)"""
         q = fql.Query(Qadd_span_returntarget)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Word)

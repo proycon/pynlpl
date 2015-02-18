@@ -457,13 +457,15 @@ class Span(object):
         return Span(targets), i
 
     def __call__(self, query, contextselector, recurse=True,debug=False): #returns a list of element in a span
-        if debug: print("[FQL EVALUATION DEBUG] Span - Returning span from target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
+        if debug: print("[FQL EVALUATION DEBUG] Span   - Building span from target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
         #chain selectors
         selector = self.targets[0]
         selector.chain(self.targets)
 
-        return SpanSet( e for e,_ in selector(query, contextselector, recurse, debug)  )
+        spanset = SpanSet( e for e,_ in selector(query, contextselector, recurse, debug)  )
+        if debug: print("[FQL EVALUATION DEBUG] Span   - Returning spanset (" + str(len(spanset)) + ")",file=sys.stderr)
+        return spanset
 
 
 class Target(object): #FOR/IN... expression
@@ -517,9 +519,8 @@ class Target(object): #FOR/IN... expression
             if isinstance(self.targets[0], Span):
                 for selector in self.targets:
                     if not isinstance(selector, Span): raise ParseError("SPAN statement may not be mixed with non-span statements in a single selection")
-                    for e in selector(query, contextselector, not self.strict, debug):
-                        if debug: print("[FQL EVALUATION DEBUG] Target - Yielding spanset ",e, file=sys.stderr)
-                        yield e
+                    if debug: print("[FQL EVALUATION DEBUG] Target - Yielding spanset ",file=sys.stderr)
+                    yield selector(query, contextselector, not self.strict, debug)
             else:
                 selector = self.targets[0]
                 selector.chain(self.targets)
@@ -849,7 +850,11 @@ class Action(object): #Action expression
             if action.action not in ("ADD","APPEND","PREPEND"): #only for actions that operate on an existing focus
                 for focus, target in action.focus(query, contextselector, True, debug):
                     if target:
-                        if not any(x is target for x in constrainedtargetselection):
+                        if isinstance(target, SpanSet):
+                            for e in target:
+                                if not any(x is e for x in constrainedtargetselection):
+                                    constrainedtargetselection.append(e)
+                        elif not any(x is target for x in constrainedtargetselection):
                             if debug: print("[FQL EVALUATION DEBUG] Action - Got target result, adding ", repr(target),file=sys.stderr)
                             constrainedtargetselection.append(target)
                         elif debug:
@@ -891,9 +896,11 @@ class Action(object): #Action expression
 
                 isspan = issubclass(action.focus.Class, folia.AbstractSpanAnnotation)
 
+                #if not 'set' in action.assignments:
+                #    if action.focus.Class.XMLTAG in query.defaultsets:
+                #        action.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
                 if not 'set' in action.assignments:
-                    if action.focus.Class.XMLTAG in query.defaultsets:
-                        action.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
+                    action.assignments['set'] = action.focus.set
 
                 if isinstance(contextselector, tuple) and len(contextselector) == 2:
                     targetselection = contextselector[0](*contextselector[1])
@@ -905,20 +912,30 @@ class Action(object): #Action expression
                         #Delegate action to form (= correction or alternative)
                         focusselection += list( action.form(query, action,None,target,debug) )
                     else:
-                        if action.action == "ADD" or action.action == "EDIT":
-                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target " + repr(target),file=sys.stderr)
-                            focusselection.append( target.add(action.focus.Class, **action.assignments) ) #handles span annotation too
-                        elif action.action == "APPEND":
-                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
-                            index = target.parent.data.index(target)
-                            focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
-                        elif action.action == "PREPEND":
-                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
-                            index = target.parent.data.index(target) - 1
-                            focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
+                        if isinstance(target, SpanSet):
+                            if action.action == "ADD" or action.action == "EDIT":
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target spanset " + repr(target),file=sys.stderr)
+                                focusselection.append( target[0].add(action.focus.Class, *target, **action.assignments) ) #handles span annotation too
+                        else:
+                            if action.action == "ADD" or action.action == "EDIT":
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target " + repr(target),file=sys.stderr)
+                                focusselection.append( target.add(action.focus.Class, **action.assignments) ) #handles span annotation too
+                            elif action.action == "APPEND":
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
+                                index = target.parent.data.index(target)
+                                focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
+                            elif action.action == "PREPEND":
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
+                                index = target.parent.data.index(target) - 1
+                                focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
 
                     if not any(x is target for x in constrainedtargetselection):
-                        constrainedtargetselection.append(target)
+                        if isinstance(target, SpanSet):
+                            for e in target:
+                                if not any(x is e for x in constrainedtargetselection):
+                                    constrainedtargetselection.append(e)
+                        else:
+                            constrainedtargetselection.append(target)
 
 
             if focusselection and action.subactions:
@@ -996,7 +1013,7 @@ class Query(object):
 
         self.doc = doc
 
-        if debug: print("[FQL EVALUATION DEBUG] Query - Starting on document ", doc.id,file=sys.stderr)
+        if debug: print("[FQL EVALUATION DEBUG] Query  - Starting on document ", doc.id,file=sys.stderr)
 
         targetselector = (getattr, (doc, 'data') ) #function recipe to get all Text elements (f, *args), the root of all selectors
         if self.targets:
@@ -1024,26 +1041,26 @@ class Query(object):
             if len(responseselection) > 1:
                 raise QueryError("A single response was expected, but multiple are returned")
             if self.format == "single-xml":
-                if debug: print("[FQL EVALUATION DEBUG] Query - Returning single-xml",file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Query  - Returning single-xml",file=sys.stderr)
                 if not responseselection:
                     return ""
                 else:
                     return responseselection[0].xmlstring(True)
             elif self.format == "single-json":
-                if debug: print("[FQL EVALUATION DEBUG] Query - Returning single-json",file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Query  - Returning single-json",file=sys.stderr)
                 if not responseselection:
                     return "null"
                 else:
                     return json.dumps(responseselection[0].json())
             elif self.format == "single-python":
-                if debug: print("[FQL EVALUATION DEBUG] Query - Returning single-python",file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Query  - Returning single-python",file=sys.stderr)
                 if not responseselection:
                     return None
                 else:
                     return responseselection[0]
         else:
             if self.format == "xml":
-                if debug: print("[FQL EVALUATION DEBUG] Query - Returning xml",file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Query  - Returning xml",file=sys.stderr)
                 if not responseselection:
                     return "<results></results>"
                 else:
@@ -1053,13 +1070,13 @@ class Query(object):
                     r += "</results>\n"
                     return r
             elif self.format == "json":
-                if debug: print("[FQL EVALUATION DEBUG] Query - Returning json",file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Query  - Returning json",file=sys.stderr)
                 if not responseselection:
                     return "[]"
                 else:
                     return json.dumps([ e.json() for e in responseselection ] )
             elif self.format == "python":
-                if debug: print("[FQL EVALUATION DEBUG] Query - Returning python",file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Query  - Returning python",file=sys.stderr)
                 return responseselection
 
         return QueryError("Invalid format: " + self.format)
