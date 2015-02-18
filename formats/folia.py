@@ -1038,6 +1038,55 @@ class AbstractElement(object):
         child.postappend()
         return child
 
+    def add(self, child, *args, **kwargs):
+        """High level function that adds (appends) an annotation to an element, it will simply call append() for token annotation elements that fit within the scope. For span annotation, it will create and find or create the proper annotation layer and insert the element there"""
+        if inspect.isclass(child):
+            if issubclass(child, AbstractSpanAnnotation):
+                layerclass = ANNOTATIONTYPE2LAYERCLASS[child.ANNOTATIONTYPE]
+            isspan= True
+        elif isinstance(child, AbstractSpanAnnotation):
+            layerclass = ANNOTATIONTYPE2LAYERCLASS[child.ANNOTATIONTYPE]
+            isspan= True
+        else:
+            isspan = False
+
+        if not isspan:
+            return self.append(child,*args,**kwargs)
+        else:
+            #find common ancestors of self and structure element in the arguments, and check whether it has the required annotation layer, create one if necessary
+            for e in self.commonancestor(AbstractStructureElement,  *[ x for x in args if isinstance(x, AbstractStructureElement)] ):
+                if AbstractSpanAnnotation in e.ACCEPTED_DATA or layerclass in e.ACCEPTED_DATA:
+                    if 'set' in kwargs:
+                        set = kwargs['set']
+                    else:
+                        set = self.doc.defaultset(layerclass)
+                    try:
+                        layer = next(e.select(layerclass,set,True))
+                    except StopIteration:
+                        layer = e.append(layerclass)
+                    return layer.append(child,*args,**kwargs)
+
+            raise Exception("Unable to find suitable common ancestor to create annotation layer")
+
+    def commonancestor(self, Class, *args):
+        """Generator over common ancestors, of the Class specified, of the current element and the other specified elements"""
+        commonancestors = None
+        args = [self] + list(args)
+        for sibling in args:
+            ancestors = list( target.ancestors(Class) )
+            if commonancestors is None:
+                commonancestors = copy(ancestors)
+            else:
+                removeancestors = []
+                for a in commonancestors:
+                    if not (a in ancestors):
+                        removeancestors.append(a)
+                for a in removeancestors:
+                    commonancestors.remove(a)
+        for commonancestor in commonancestors:
+            yield commonancestor
+
+
 
     @classmethod
     def findreplaceables(Class, parent, set=None,**kwargs):
@@ -1114,22 +1163,24 @@ class AbstractElement(object):
             return e
 
     def ancestors(self, Class=None):
-        """Generator yielding all ancestors of this element, effectively back-tracing its path to the root element."""
+        """Generator yielding all ancestors of this element, effectively back-tracing its path to the root element. A tuple of multiple classes may be specified."""
         e = self
         while e:
             if e.parent:
                 e = e.parent
                 if not Class or isinstance(e,Class):
                     yield e
+                elif isinstance(Class, tuple):
+                    for C in Class:
+                        if isinstance(e,C):
+                            yield e
             else:
                 break
 
     def ancestor(self, *Classes):
         """Find the most immediate ancestor of the specified type, multiple classes may be specified"""
-        for e in self.ancestors():
-            for Class in Classes:
-                if isinstance(e, Class):
-                    return e
+        for e in self.ancestors(tuple(Classes)):
+            return e
         raise NoSuchAnnotation
 
 
@@ -2792,7 +2843,7 @@ class Word(AbstractStructureElement, AllowCorrections):
         return self.leftcontext(size, placeholder) + [self] + self.rightcontext(size, placeholder)
 
     def findspans(self, type,set=None):
-        """Find span annotation of the specified type that include this word"""
+        """Find span annotation of the specified type that includes this word"""
         if issubclass(type, AbstractAnnotationLayer):
            layerclass = type
         else:
@@ -2931,6 +2982,9 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
         else:
             return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)
 
+    def add(self, child, *args, **kwargs): #alias for append
+        return self.append(child, *args, **kwargs)
+
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
         return self.count(Class,set,True,defaultignorelist_annotations)
@@ -3009,6 +3063,9 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
                         break
 
         return super(AbstractAnnotationLayer, self).append(child, *args, **kwargs)
+
+    def add(self, child, *args, **kwargs): #alias for append
+        return self.append(child, *args, **kwargs)
 
     def annotations(self,Class,set=None):
         """Obtain annotations. Very similar to ``select()`` but raises an error if the annotation was not found.
