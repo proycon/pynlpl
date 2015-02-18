@@ -35,13 +35,20 @@ FoLiA documents this may consume quite some memory!
 
 Once you have loaded a document, all data is available for you to read and manipulate as you see fit. We will first illustrate some simple use cases:
 
+To save a document back the file it was loaded from, we do::
+
+    doc.save()
+
+Or we can specify a specific filename::
+
+    doc.save("/tmp/document.xml")
 
 Printing text
 ----------------------------------
 
 You may want to simply print all (plain) text contained in the document, which is as easy as::
 
-    print doc
+    print(doc)
     
 Alternatively, you can obtain a string representation of all text::
 
@@ -119,13 +126,20 @@ shortcuts that make use of the select method::
     for word in words:
         print(word)
 
+The ``select()`` method has a sibling ``count()``, invoked with the same
+arguments, which simply counts how many items it finds, without actually
+returning them::
+
+    word = sentence.count(folia.Word)
+
 **Advanced Notes**:
 
 The ``select()`` method and similar high-level methods derived from it, are
 generators.  This implies that the results of the selection are returned one by
 one in the iteration, as opposed to all stored in memory. This also implies
 that you can only iterate over it once, we can not do another iteration over
-the ``words`` in the above example, unless we re-call the select method. 
+the ``words`` variable in the above example, unless we reinvtoke the
+``select()`` method to get a new generator.
 
 If you want to have all results in memory in a list, you can simply do the following::
 
@@ -136,10 +150,14 @@ make it non-recursive. The second argument can be used for restricting matches
 to a specific set. The recursion will not go into any non-authoritative
 elements such as alternatives, originals of corrections. 
 
+
+
 Common attributes
 -----------------------
 
-As you know, the FoLiA paradigm introduces *sets*, *classes*, *annotator* with *annotator types* and *confidence* values. These attributes are easily accessible on any element that has them:
+As you know, the FoLiA paradigm introduces *sets*, *classes*, *annotator* with
+*annotator types* and *confidence* values. These attributes are easily
+accessible on any element that has them:
     
     * ``element.id``        (string)
     * ``element.set``       (string)
@@ -147,17 +165,18 @@ As you know, the FoLiA paradigm introduces *sets*, *classes*, *annotator* with *
     * ``element.annotator`` (string)
     * ``element.annotatortype`` (set to folia.AnnotatorType.MANUAL or  folia.AnnotatorType.AUTO)
     * ``element.confidence`` (float)
+    * ``element.n``         (string)
+    * ``element.datetime``  (datetime.datetime)
     
 Attributes that are not available for certain elements, or not set, default to None.
-
 
 Annotations
 --------------------
 
-FoLiA is of course a format for linguistic annotation. So let's see at how to
+FoLiA is of course a format for linguistic annotation. So let's see how to
 obtain annotations. This can be done using ``annotations()`` or
-``annotation()``, which is similar to the ``select()`` method, except that
-it will raise an exception when no such annotation is found. The difference
+``annotation()``, which is similar to the ``select()`` method, except that it
+will raise an exception when no such annotation is found. The difference
 between ``annotation()`` and ``annotations()`` is that the former will grab
 only one and raise an exception if there are more between which it can't
 disambiguate::
@@ -183,8 +202,8 @@ Span Annotation
 
 We will discuss three ways of accessing span annotation. Span annotation is
 contained within an annotation layer of a certain structure element, often a
-sentence. In the first way of accessing span annotation, we will first obtain
-the layer, then iterate over the span annotation elements within that layer,
+sentence. In the first way of accessing span annotation, we do everything explicitly. We
+first obtain the layer, then iterate over the span annotation elements within that layer,
 and finally iterate over the words to which the span applies. Assume we have a
 ``sentence`` and we want to print all the named entities in it::
 
@@ -200,10 +219,10 @@ The ``wrefs()`` method, available on all span annotation elements, will return
 a list of all words (as well as morphemes and phonemes) over which a span
 annotation element spans.
 
-The second way of accessing span annotation takes another approach, using the
-``findspans()`` method on Word instances. Here we start from a word and seek
-span annotations in which the word occurs. Assume we have a ``word`` and want
-to find chunks it occurs in::
+This first way is rather verbose. The second way of accessing span annotation
+takes another approach, using the ``findspans()`` method on Word instances.
+Here we start from a word and seek span annotations in which that word occurs.
+Assume we have a ``word`` and want to find chunks it occurs in::
 
     for chunk in word.findspans(folia.Chunk):
         print(" Chunk class=", chunk.cls, " words=")
@@ -214,7 +233,6 @@ to find chunks it occurs in::
 The ``findspans()`` method can be called with either the class of a Span
 Annotation Element, such as ``folia.Chunk``, or which the class of the layer,
 such as ``folia.ChunkingLayer``.
-
 
 The third way allows us to look for span elements given an annotation layer and
 words. In other words, it checks if one or more words form a span. This is an
@@ -261,54 +279,60 @@ Adding structure
 -------------------------
 
 Assuming we begin with an empty document, we should first add a Text element.
-Then we can append paragraphs, sentences, or other structural elements. The
-``append()`` is always used to append new children to an element::
+Then we can add paragraphs, sentences, or other structural elements. The
+``add()`` adds new children to an element::
     
-    text = doc.append(folia.Text)
-    paragraph = text.append(folia.Paragraph)
-    sentence = paragraph.append(folia.Sentence)
-    sentence.append(folia.Word, 'This')
-    sentence.append(folia.Word, 'is')
-    sentence.append(folia.Word, 'a')
-    sentence.append(folia.Word, 'test')
-    sentence.append(folia.Word, '.')
+    text = doc.add(folia.Text)
+    paragraph = text.add(folia.Paragraph)
+    sentence = paragraph.add(folia.Sentence)
+    sentence.add(folia.Word, 'This')
+    sentence.add(folia.Word, 'is')
+    sentence.add(folia.Word, 'a')
+    sentence.add(folia.Word, 'test')
+    sentence.add(folia.Word, '.')
+
+**Advanced Note**:
+
+The ``add()`` method is actually a wrapper around ``append()``, which takes the
+exact same arguments. It performs extra checks and works for both span
+annotation as well as token annotation. Using ``append()`` will be faster.
 
 Adding annotations
 -------------------------
 
-Adding annotations, or any elements for that matter, is done using the append
+Adding annotations, or any elements for that matter, is done using the add
 method. We assume that the annotations we add have already been properly
-declared, otherwise an exception will be raised as soon as ``append()`` is
+declared, otherwise an exception will be raised as soon as ``add()`` is
 called. Let's build on the previous example::
 
     #First we grab the fourth word, 'test', from the sentence
     word = sentence.words(3)
     
     #Add Part-of-Speech tag
-    word.append(folia.PosAnnotation, set='brown-tagset',cls='n')
+    word.add(folia.PosAnnotation, set='brown-tagset',cls='n')
     
     #Add lemma
-    lemma.append(folia.LemmaAnnotation, cls='test')
+    lemma.add(folia.LemmaAnnotation, cls='test')
 
 
-Note that in the above examples, the ``append()`` method takes a class as first
+Note that in the above examples, the ``add()`` method takes a class as first
 argument, and subsequently takes keyword arguments that will be passed to the
 classes' constructor.
 
-A second way of using ``append()`` is by simply passing a child element and
-constructing it prior to appending. The following is equivalent to the above
+A second way of using ``add()`` is by simply passing a child element and
+constructing it prior to adding. The following is equivalent to the above
 example::
 
     #First we grab the fourth word, 'test', from the sentence
     word = sentence.words(3)
     
     #Add Part-of-Speech tag
-    word.append( folia.PosAnnotation(doc, set='brown-tagset',cls='n') )
+    word.add( folia.PosAnnotation(doc, set='brown-tagset',cls='n') )
     
     #Add lemma
-    lemma.append( folia.LemmaAnnotation(doc , cls='test') )   
+    lemma.add( folia.LemmaAnnotation(doc , cls='test') )   
 
-The append method always returns that which was appended. 
+The add method always returns that which was added. 
 
 In the above example we first instantiate a PosAnnotatation and a
 LemmaAnnotation. Instantiation of any element follows the following pattern::
@@ -346,29 +370,48 @@ will be shown in the next section.
 Adding span annotation
 ---------------------------
 
-Adding span annotation is easy with the FoLiA library, not withstanding the
-fact that there's more to it than adding token annotation.
+Adding span annotation is easy with the FoLiA library. As you know, span
+annotation uses a stand-off annotation embedded in annotation layers. These
+layers are in turn embedded in structural elements such as sentences. However,
+the ``add()`` method abstracts over this. Consider the following example of a named entity::
 
-As you know, span annotation uses a stand-off annotation embedded in annotation
-layers. These layers are in turn embedded in structural elements such as
-sentences. In the following example we first create a sentence and then add a
-syntax parse::
+    doc.declare(folia.Entity, "https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml")
+    
+    sentence = text.add(folia.Sentence)
+    sentence.add(folia.Word, 'I',id='example.s.1.w.1')
+    sentence.add(folia.Word, 'saw',id='example.s.1.w.2')
+    sentence.add(folia.Word, 'the',id='example.s.1.w.3')
+    word = sentence.add(folia.Word, 'Dalai',id='example.s.1.w.4')
+    word2 =sentence.add(folia.Word, 'Lama',id='example.s.1.w.5')
+    sentence.add(folia.Word, '.', id='example.s.1.w.6')
+
+    word.add(folia.Entity, word, word2, cls="per")
+
+To make references to the words, we simply pass the word instances and use the
+document's index to obtain them.  Note also that passing a list using the
+keyword argument ``contents`` is wholly equivalent to passing the non-keyword
+arguments separately::
+
+    word.add(folia.Entity, cls="per", contents=[word,word2])
+
+In the next example we do things more explicitly. We first create a sentence
+and then add a syntax parse, consisting of nested elements::
 
     doc.declare(folia.SyntaxLayer, 'some-syntax-set')
     
-    sentence = text.append(folia.Sentence)
-    sentence.append(folia.Word, 'The',id='example.s.1.w.1')
-    sentence.append(folia.Word, 'boy',id='example.s.1.w.2')
-    sentence.append(folia.Word, 'pets',id='example.s.1.w.3')
-    sentence.append(folia.Word, 'the',id='example.s.1.w.4')
-    sentence.append(folia.Word, 'cat',id='example.s.1.w.5')
-    sentence.append(folia.Word, '.', id='example.s.1.w.6')
+    sentence = text.add(folia.Sentence)
+    sentence.add(folia.Word, 'The',id='example.s.1.w.1')
+    sentence.add(folia.Word, 'boy',id='example.s.1.w.2')
+    sentence.add(folia.Word, 'pets',id='example.s.1.w.3')
+    sentence.add(folia.Word, 'the',id='example.s.1.w.4')
+    sentence.add(folia.Word, 'cat',id='example.s.1.w.5')
+    sentence.add(folia.Word, '.', id='example.s.1.w.6')
     
     #Adding Syntax Layer
-    layer = sentence.append(folia.SyntaxLayer)
+    layer = sentence.add(folia.SyntaxLayer)
     
     #Adding Syntactic Units
-    layer.append( 
+    layer.add( 
         folia.SyntacticUnit(self.doc, cls='s', contents=[
             folia.SyntacticUnit(self.doc, cls='np', contents=[
                 folia.SyntacticUnit(self.doc, self.doc['example.s.1.w.1'], cls='det'),
@@ -385,10 +428,9 @@ syntax parse::
         ])
     )
     
-To make references to the words, we simply pass the word instances and use the
-document's index to obtain them.  Note also that passing a list using the
-keyword argument ``contents`` is wholly equivalent to passing the non-keyword
-arguments separately.
+**Advanced Note**: 
+
+The lower-level ``append()`` method would have had the same effect in the above syntax tree sample.
 
 
 Searching in a FoLiA document
@@ -528,7 +570,7 @@ using the reader::
     for match in reader.findwords( folia.Pattern('house')):
         for word in match:
             print(word.id)
-        print "----"
+        print("----")
 
 API Reference
 ==============================
