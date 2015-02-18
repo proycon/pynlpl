@@ -1891,20 +1891,19 @@ class AllowTokenAnnotation(AllowCorrections):
         raise NoSuchAnnotation()
 
     def alternatives(self, Class=None, set=None):
-        """Obtain a list of alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
+        """Generator over alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
 
         Arguments:
             * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation). Or set to None to select all alternatives regardless of what type they are.
             * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
 
         Returns:
-            List of Alternative elements
+            Generator of Alternative elements
         """
-        l = []
 
         for e in self.select(Alternative,None, True, []):
             if Class is None:
-                l.append(e)
+                yield e
             elif len(e) >= 1: #child elements?
                 for e2 in e:
                     try:
@@ -1912,13 +1911,12 @@ class AllowTokenAnnotation(AllowCorrections):
                             try:
                                 if set is None or e2.set == set:
                                     found = True
-                                    l.append(e) #not e2
+                                    yield e #not e2
                                     break #yield an alternative only once (in case there are multiple matches)
                             except AttributeError:
                                 continue
                     except AttributeError:
                         continue
-        return l
 
 
 class AllowGenerateID(object):
@@ -3044,33 +3042,31 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
         raise NoSuchAnnotation()
 
     def alternatives(self, Class=None, set=None):
-        """Obtain a list of alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
+        """Generator over alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
 
         Arguments:
             * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation). Or set to None to select all alternatives regardless of what type they are.
             * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
 
         Returns:
-            List of Alternative elements
+            Generator over Alternative elements
         """
-        l = []
 
         for e in self.select(AlternativeLayers,None, True, ['Original','Suggestion']):
             if Class is None:
-                l.append(e)
+                yield e
             elif len(e) >= 1: #child elements?
                 for e2 in e:
                     try:
                         if isinstance(e2, Class):
                             try:
                                 if set is None or e2.set == set:
-                                    l.append(e) #not e2
+                                    yield e #not e2
                                     break #yield an alternative only once (in case there are multiple matches)
                             except AttributeError:
                                 continue
                     except AttributeError:
                         continue
-        return l
 
     def findspan(self, *words):
         """Returns the span element which spans over the specified words or morphemes"""
