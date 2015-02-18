@@ -548,7 +548,7 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
         if q.kw(i,'ALTERNATIVE'):
             i += 1
             if not q.kw(i,'WITH'):
-                i = getassignments(q, i+1, subassignments)
+                i = getassignments(q, i, subassignments)
             if q.kw(i,'WITH'):
                 i = getassignments(q, i+1,  assignments)
         else:
@@ -563,19 +563,78 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
         return Alternative(subassignments, assignments, nextalternative), i
 
 
+class Correction(object): #AS CORRECTION/SUGGESTION expression...
+    def __init__(self, set,subassignments={}, assignments={},suggestions=[], suggestonly=False):
+        self.set = set
+        self.subassignments = subassignments
+        self.assignments = assignments
+        self.suggestions = suggestions # [ (subassignments, assignments) ]
+        self.suggestonly = suggestonly
+
+    @staticmethod
+    def parse(q,i=0):
+        if q.kw(i,'AS') and q.kw(i+1,("CORRECTION","SUGGESTION")):
+            i += 1
+
+        set = None
+        subassignments = {}
+        assignments = {}
+        suggestions = []
+        suggestonly = False
+
+        if q.kw(i,'CORRECTION'):
+            i += 1
+            if q.kw(i,'OF') and q[i+1]:
+                set = q[i+1]
+                i += 2
+            if not q.kw(i,'WITH'):
+                i = getassignments(q, i, subassignments)
+            if q.kw(i,'WITH'):
+                i = getassignments(q, i+1,  assignments)
+        elif q.kw(i,'SUGGESTION'):
+            suggestonly = True
+            i += 1
+            if q.kw(i,'OF') and q[i+1]:
+                set = q[i+1]
+                i += 2
+            suggestion = ( {}, {} )
+            if not q.kw(i,'WITH'):
+                i = getassignments(q, i, suggestion[0])
+            if q.kw(i,'WITH'):
+                i = getassignments(q, i+1, suggestion[1])
+            suggestions.append(suggestion)
+        else:
+            raise SyntaxError("Expected CORRECTION or SUGGESTION, got " + str(q[i]) + " in: " + str(q))
+
+        l = len(q)
+        while i < l:
+            if q.kw(i,'SUGGEST'):
+                suggestion = ( {}, {} )
+                if not q.kw(i,'WITH'):
+                    i = getassignments(q, i, suggestion[0])
+                if q.kw(i,'WITH'):
+                    i = getassignments(q, i+1, suggestion[1])
+                suggestions.append(suggestion)
+            else:
+                raise SyntaxError("Expected SUGGEST or end of AS clause, got " + str(q[i]) + " in: " + str(q))
+
+        return Correction(set, subassignments, assignments, suggestions,  suggestonly), i
+
+
+
 
 def getassignments(q, i, assignments,  focus=None):
     l = len(q)
     while i < l:
         if q.kw(i, ('annotator','annotatortype','class','n')):
             assignments[q[i]] = q[i+1]
-            i+=1
+            i+=2
         elif q.kw(i,'confidence'):
             try:
                 assignments[q[i]] = float(q[i+1])
             except:
                 raise SyntaxError("Invalid value for confidence: " + str(q[i+1]))
-            i+=1
+            i+=2
         elif q.kw(i,'annotatortype'):
             if q[i+1] == "auto":
                 assignments[q[i]] = folia.AnnotatorType.AUTO
@@ -583,17 +642,17 @@ def getassignments(q, i, assignments,  focus=None):
                 assignments[q[i]] = folia.AnnotatorType.MANUAL
             else:
                 raise SyntaxError("Invalid value for annotatortype: " + str(q[i+1]))
-            i+=1
+            i+=2
         elif q.kw(i,'text'):
             if not focus is None and focus.Class is folia.TextContent:
                 key = 'value'
             else:
                 key = 'text'
             assignments[key] = q[i+1]
-            i+=1
+            i+=2
         else:
             if not assignments:
-                raise SyntaxError("Expected assignments after WITH statement, but no valid attribute found: " + str(q))
+                raise SyntaxError("Expected assignments after WITH statement, but no valid attribute found, got  " + str(q[i]) + " at position " + str(i) + " in: " +  str(q))
             break
     return i
 
@@ -627,7 +686,6 @@ class Action(object): #Action expression
                 raise SyntaxError("Focus has WITH statement but " + action + " does not support this: " +str(q))
             i += 1
             i = getassignments(q,i ,assignments, focus)
-            i+=1
 
         #we have enough to set up the action now
         action = Action(action, focus, assignments)
@@ -648,10 +706,8 @@ class Action(object): #Action expression
                 elif q[i].kw(0, 'AS'):
                     if q[i].kw(1, "ALTERNATIVE"):
                         action.form,_ = Alternative.parse(q[i])
-                    elif q[i].kw(1, "CORRECTION"):
-                        raise NotImplementedError
-                    elif q[i].kw(1, "SUGGESTION"):
-                        raise NotImplementedError
+                    elif q[i].kw(1, ("CORRECTION","SUGGESTION")):
+                        action.form,_ = Correction.parse(q[i])
                     else:
                         raise SyntaxError("Invalid keyword after AS: " + str(q[i][1]))
                 i+=1
