@@ -1910,7 +1910,6 @@ class AllowTokenAnnotation(AllowCorrections):
                         if isinstance(e2, Class):
                             try:
                                 if set is None or e2.set == set:
-                                    found = True
                                     yield e #not e2
                                     break #yield an alternative only once (in case there are multiple matches)
                             except AttributeError:
