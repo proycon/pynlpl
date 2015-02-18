@@ -571,6 +571,7 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
         isspan = isinstance(action.focus.Class, folia.AbstractSpanAnnotation)
 
         if action.action == "SELECT":
+            if not focus: raise QueryError("SELECT requires a focus element")
             if not isspan:
                 for alternative in focus.alternative(action.focus.Class, focus.set):
                     if not self.filter or (self.filter and self.filter.match(query, alternative, debug)):
@@ -579,10 +580,15 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
                 raise NotImplementedError("Selecting alternative span not implemented yet")
         elif action.action == "EDIT" or action.action == "ADD":
             if not isspan:
-                parent = focus.ancestor(folia.AbstractStructureElement)
-                alternative = folia.Alternative( parent.doc, action.focus.Class( parent.doc , **self.subassignments), **self.assignments)
-                parent.append(alt)
-                yield alternative
+                if focus:
+                    parent = focus.ancestor(folia.AbstractStructureElement)
+                    alternative = folia.Alternative( parent.doc, action.focus.Class( parent.doc , **self.subassignments), **self.assignments)
+                    parent.append(alt)
+                    yield alternative
+                else:
+                    alternative = folia.Alternative( target.doc, action.focus.Class( parent.doc , **self.subassignments), **self.assignments)
+                    target.append(alt)
+                    yield alternative
             else:
                 raise NotImplementedError("Editing alternative span not implemented yet")
         else:
@@ -602,7 +608,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
     @staticmethod
     def parse(q,i=0):
-        if q.kw(i,'AS') and q.kw(i+1,("CORRECTION","SUGGESTION")):
+        if q.kw(i,'AS') and q.kw(i+1,("CORRECTION","SUGGESTION","ORIGINAL")):
             i += 1
 
         set = None
@@ -637,6 +643,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if q.kw(i,'WITH'):
                 i = getassignments(q, i+1, suggestion[1])
             suggestions.append(suggestion)
+        elif q.kw(i,'ORIGINAL'):
+            raise NotImplementedError("ORIGINAL not implemented yet")
         else:
             raise SyntaxError("Expected CORRECTION or SUGGESTION, got " + str(q[i]) + " in: " + str(q))
 
@@ -653,6 +661,56 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 raise SyntaxError("Expected SUGGEST or end of AS clause, got " + str(q[i]) + " in: " + str(q))
 
         return Correction(set, subassignments, assignments, filter, suggestions,  suggestonly), i
+
+
+    def __call__(self, query, action, focus, target,debug=False):
+        """Action delegates to this function"""
+        isspan = isinstance(action.focus.Class, folia.AbstractSpanAnnotation)
+        if action.action == "SELECT":
+            if not focus: raise QueryError("SELECT requires a focus element")
+            correction = focus.incorrection()
+            if correction:
+                if not self.filter or (self.filter and self.filter.match(query, correction, debug)):
+                    yield correction
+        elif action.action == "EDIT" or action.action == "ADD":
+            if isspan:
+                raise NotImplementedError("Editing span elements as correction not implemented yet")
+
+            kwargs = {}
+            if focus:
+                correction = focus.incorrection()
+            else:
+                correction = False
+
+            if focus:
+                parent = focus.ancestor(folia.AbstractStructureElement) #TODO: span annotation?
+            else:
+                parent = target
+
+            if self.set:
+                kwargs['set'] = self.set
+
+            for key, value in self.attributes.items():
+                kwargs[key] = value
+
+            if not self.suggestonly:
+                kwargs['new'] = action.focus.Class(focus.doc, **self.subassignments)
+                kwargs['original'] = focus
+            else:
+                kwargs['current'] = focus
+                if correction: #reuse the existing correction element
+                    kwargs['reuse'] = correction
+
+            if 'id' not in kwargs and 'reuse' not in kwargs:
+                kwargs['id'] = parent.generate_id(folia.Correction)
+
+            kwargs['suggestions'] = []
+            for subassignments, assignments in self.suggestions:
+                kwargs['suggestions'].append( folia.Suggestion(target.doc, action.focus.Class(focus.doc, **subassignments), **assignments )   )
+
+            return parent.correct(**kwargs)
+        else:
+            raise QueryError("Correction does not handle action " + action.action)
 
 
 
