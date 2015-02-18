@@ -571,10 +571,16 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
         """Action delegates to this function"""
         isspan = isinstance(action.focus.Class, folia.AbstractSpanAnnotation)
 
+        subassignments = {} #make a copy
+        for key, value in action.assignments.items():
+            subassignments[key] = value
+        for key, value in self.subassignments.items():
+            subassignments[key] = value
+
         if action.action == "SELECT":
             if not focus: raise QueryError("SELECT requires a focus element")
             if not isspan:
-                for alternative in focus.alternative(action.focus.Class, focus.set):
+                for alternative in focus.alternatives(action.focus.Class, focus.set):
                     if not self.filter or (self.filter and self.filter.match(query, alternative, debug)):
                         yield alternative
             else:
@@ -583,12 +589,12 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
             if not isspan:
                 if focus:
                     parent = focus.ancestor(folia.AbstractStructureElement)
-                    alternative = folia.Alternative( parent.doc, action.focus.Class( parent.doc , **self.subassignments), **self.assignments)
-                    parent.append(alt)
+                    alternative = folia.Alternative( parent.doc, action.focus.Class( parent.doc , **subassignments), **self.assignments)
+                    parent.append(alternative)
                     yield alternative
                 else:
-                    alternative = folia.Alternative( target.doc, action.focus.Class( parent.doc , **self.subassignments), **self.assignments)
-                    target.append(alt)
+                    alternative = folia.Alternative( target.doc, action.focus.Class( parent.doc , **subassignments), **self.assignments)
+                    target.append(alternative)
                     yield alternative
             else:
                 raise NotImplementedError("Editing alternative span not implemented yet")

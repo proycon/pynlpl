@@ -317,6 +317,13 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[1], folia.Word)
         self.assertEqual(results[1].text(), "A")
 
+    def test21_edit_alt(self):
+        "Add alternative token annotation"""
+        q = fql.Query(Qalt)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Alternative)
+        self.assertIsInstance(results[0][0], folia.LemmaAnnotation)
+        self.assertEqual(results[0][0].cls, "terwijl")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
