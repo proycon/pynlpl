@@ -673,6 +673,13 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
     def __call__(self, query, action, focus, target,debug=False):
         """Action delegates to this function"""
         isspan = isinstance(action.focus.Class, folia.AbstractSpanAnnotation)
+
+        subassignments = {} #make a copy
+        for key, value in action.assignments.items():
+            subassignments[key] = value
+        for key, value in self.subassignments.items():
+            subassignments[key] = value
+
         if action.action == "SELECT":
             if not focus: raise QueryError("SELECT requires a focus element")
             correction = focus.incorrection()
@@ -701,7 +708,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 kwargs[key] = value
 
             if not self.suggestonly:
-                kwargs['new'] = action.focus.Class(focus.doc, **self.subassignments)
+                kwargs['new'] = action.focus.Class(focus.doc, **subassignments)
                 kwargs['original'] = focus
             else:
                 kwargs['current'] = focus
@@ -713,6 +720,10 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
             kwargs['suggestions'] = []
             for subassignments, assignments in self.suggestions:
+                subassignments = copy(subassignments)
+                for key, value in action.assignments.items():
+                    if not key in subassignments:
+                        subassignments[key] = value
                 kwargs['suggestions'].append( folia.Suggestion(target.doc, action.focus.Class(focus.doc, **subassignments), **assignments )   )
 
             return parent.correct(**kwargs)
