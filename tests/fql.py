@@ -66,6 +66,8 @@ Qselect_span2_returntarget = "SELECT entity OF \"http://raw.github.com/proycon/f
 
 Qadd_span= "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
 
+Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNATIVE WITH confidence 0.9)"
+
 class Test1UnparsedQuery(unittest.TestCase):
 
     def test1_basic(self):
@@ -126,6 +128,10 @@ class Test2ParseQuery(unittest.TestCase):
     def test7_parse(self):
         """Parsing """ + Qcontext
         q = fql.Query(Qcontext)
+
+    def test8_parse(self):
+        """Parsing """ + Qalt
+        q = fql.Query(Qalt)
 
 class Test3Evaluation(unittest.TestCase):
     def setUp(self):

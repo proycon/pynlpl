@@ -531,9 +531,71 @@ class Target(object): #FOR/IN... expression
 
 
 
-class Form(object):  #AS... expression
-    pass #TODO
+class Alternative(object):  #AS ALTERNATIVE ... expression
+    def __init__(self, subassignments={},assignments={}, nextalternative=None):
+        self.subassignments = subassignments
+        self.assignments = assignments
+        self.nextalternative = nextalternative
 
+    @staticmethod
+    def parse(q,i=0):
+        if q.kw(i,'AS') and q[i+1] == "ALTERNATIVE":
+            i += 1
+
+        subassignments = {}
+        assignments = {}
+
+        if q.kw(i,'ALTERNATIVE'):
+            i += 1
+            if not q.kw(i,'WITH'):
+                i = getassignments(q, i+1, subassignments)
+            if q.kw(i,'WITH'):
+                i = getassignments(q, i+1,  assignments)
+        else:
+            raise SyntaxError("Expected ALTERNATIVE, got " + str(q[i]) + " in: " + str(q))
+
+        if q.kw(i,'ALTERNATIVE'):
+            #we have another!
+            nextalternative,i  = Alternative.parse(q,i)
+        else:
+            nextalternative = None
+
+        return Alternative(subassignments, assignments, nextalternative), i
+
+
+
+def getassignments(q, i, assignments,  focus=None):
+    l = len(q)
+    while i < l:
+        if q.kw(i, ('annotator','annotatortype','class','n')):
+            assignments[q[i]] = q[i+1]
+            i+=1
+        elif q.kw(i,'confidence'):
+            try:
+                assignments[q[i]] = float(q[i+1])
+            except:
+                raise SyntaxError("Invalid value for confidence: " + str(q[i+1]))
+            i+=1
+        elif q.kw(i,'annotatortype'):
+            if q[i+1] == "auto":
+                assignments[q[i]] = folia.AnnotatorType.AUTO
+            elif q[i+1] == "manual":
+                assignments[q[i]] = folia.AnnotatorType.MANUAL
+            else:
+                raise SyntaxError("Invalid value for annotatortype: " + str(q[i+1]))
+            i+=1
+        elif q.kw(i,'text'):
+            if not focus is None and focus.Class is folia.TextContent:
+                key = 'value'
+            else:
+                key = 'text'
+            assignments[key] = q[i+1]
+            i+=1
+        else:
+            if not assignments:
+                raise SyntaxError("Expected assignments after WITH statement, but no valid attribute found: " + str(q))
+            break
+    return i
 
 class Action(object): #Action expression
     def __init__(self, action, focus, assignments={}):
@@ -564,22 +626,7 @@ class Action(object): #Action expression
             if action in ("SELECT", "DELETE"):
                 raise SyntaxError("Focus has WITH statement but " + action + " does not support this: " +str(q))
             i += 1
-            l = len(q)
-            while i < l:
-                if q.kw(i, ('annotator','annotatortype','class','confidence','n')):
-                    assignments[q[i]] = q[i+1]
-                    i+=1
-                elif q.kw(i,'text'):
-                    if focus.Class is folia.TextContent:
-                        key = 'value'
-                    else:
-                        key = 'text'
-                    assignments[key] = q[i+1]
-                    i+=1
-                else:
-                    if not assignments:
-                        raise SyntaxError("Expected assignments after WITH statement, but no valid attribute found: " + str(q))
-                    break
+            i = getassignments(q,i ,assignments, focus)
             i+=1
 
         #we have enough to set up the action now
@@ -599,9 +646,14 @@ class Action(object): #Action expression
                     subaction, _ = Action.parse(q[i])
                     action.subactions.append( subaction )
                 elif q[i].kw(0, 'AS'):
-                    #It's an AS.. expression
-                    #self.form = #TODO
-                    raise NotImplementedError #TODO
+                    if q[i].kw(1, "ALTERNATIVE"):
+                        action.form,_ = Alternative.parse(q[i])
+                    elif q[i].kw(1, "CORRECTION"):
+                        raise NotImplementedError
+                    elif q[i].kw(1, "SUGGESTION"):
+                        raise NotImplementedError
+                    else:
+                        raise SyntaxError("Invalid keyword after AS: " + str(q[i][1]))
                 i+=1
             else:
                 done = True
