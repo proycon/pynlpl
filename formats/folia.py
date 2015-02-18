@@ -488,6 +488,24 @@ def makeelement(E, tagname, **kwargs):
         return E._makeelement(tagname,**kwargs)
 
 
+def commonancestors(Class, *args):
+    """Generator over common ancestors, of the Class specified, of the current element and the other specified elements"""
+    commonancestors = None
+    for sibling in args:
+        ancestors = list( sibling.ancestors(Class) )
+        if commonancestors is None:
+            commonancestors = copy(ancestors)
+        else:
+            removeancestors = []
+            for a in commonancestors:
+                if not (a in ancestors):
+                    removeancestors.append(a)
+            for a in removeancestors:
+                commonancestors.remove(a)
+    if commonancestors:
+        for commonancestor in commonancestors:
+            yield commonancestor
+
 class AbstractElement(object):
     """This is the abstract base class from which all FoLiA elements are derived. This class should not be instantiated directly, but can useful if you want to check if a variable is an instance of any FoLiA element: isinstance(x, AbstractElement). It contains methods and variables also commonly inherited."""
 
@@ -1040,51 +1058,37 @@ class AbstractElement(object):
 
     def add(self, child, *args, **kwargs):
         """High level function that adds (appends) an annotation to an element, it will simply call append() for token annotation elements that fit within the scope. For span annotation, it will create and find or create the proper annotation layer and insert the element there"""
-        if inspect.isclass(child):
-            if issubclass(child, AbstractSpanAnnotation):
+        addspanfromspanned = False
+        if isinstance(self,AbstractStructureElement):
+            if inspect.isclass(child):
+                if issubclass(child, AbstractSpanAnnotation):
+                    layerclass = ANNOTATIONTYPE2LAYERCLASS[child.ANNOTATIONTYPE]
+                    addspanfromspanned = True
+            elif isinstance(child, AbstractSpanAnnotation):
                 layerclass = ANNOTATIONTYPE2LAYERCLASS[child.ANNOTATIONTYPE]
-            isspan= True
-        elif isinstance(child, AbstractSpanAnnotation):
-            layerclass = ANNOTATIONTYPE2LAYERCLASS[child.ANNOTATIONTYPE]
-            isspan= True
-        else:
-            isspan = False
+                addspanfromspanned = True
 
-        if not isspan:
+        if not addspanfromspanned:
             return self.append(child,*args,**kwargs)
         else:
-            #find common ancestors of self and structure element in the arguments, and check whether it has the required annotation layer, create one if necessary
-            for e in self.commonancestor(AbstractStructureElement,  *[ x for x in args if isinstance(x, AbstractStructureElement)] ):
-                if AbstractSpanAnnotation in e.ACCEPTED_DATA or layerclass in e.ACCEPTED_DATA:
-                    if 'set' in kwargs:
-                        set = kwargs['set']
-                    else:
-                        set = self.doc.defaultset(layerclass)
-                    try:
-                        layer = next(e.select(layerclass,set,True))
-                    except StopIteration:
-                        layer = e.append(layerclass)
-                    return layer.append(child,*args,**kwargs)
+            #collect ancestors of the current element,
+            allowedparents = [self] + list(self.ancestors(AbstractStructureElement))
+            #find common ancestors of structure elements in the arguments, and check whether it has the required annotation layer, create one if necessary
+            for e in commonancestors(AbstractStructureElement,  *[ x for x in args if isinstance(x, AbstractStructureElement)] ):
+                if e in allowedparents: #is the element in the list of allowed parents according to this element?
+                    if AbstractAnnotationLayer in e.ACCEPTED_DATA or layerclass in e.ACCEPTED_DATA:
+                        if 'set' in kwargs:
+                            set = kwargs['set']
+                        else:
+                            set = self.doc.defaultset(layerclass)
+                        try:
+                            layer = next(e.select(layerclass,set,True))
+                        except StopIteration:
+                            layer = e.append(layerclass)
+                        return layer.append(child,*args,**kwargs)
 
             raise Exception("Unable to find suitable common ancestor to create annotation layer")
 
-    def commonancestor(self, Class, *args):
-        """Generator over common ancestors, of the Class specified, of the current element and the other specified elements"""
-        commonancestors = None
-        args = [self] + list(args)
-        for sibling in args:
-            ancestors = list( target.ancestors(Class) )
-            if commonancestors is None:
-                commonancestors = copy(ancestors)
-            else:
-                removeancestors = []
-                for a in commonancestors:
-                    if not (a in ancestors):
-                        removeancestors.append(a)
-                for a in removeancestors:
-                    commonancestors.remove(a)
-        for commonancestor in commonancestors:
-            yield commonancestor
 
 
 

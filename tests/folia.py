@@ -1337,6 +1337,32 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" class="PUNCTUATION"><t>.</t></w></s>'))
 
 
+    def test001c_addsentence(self):
+        """Edit Check - Adding a sentence to last paragraph (using add instead of append)"""
+
+        #grab last paragraph
+        p = self.doc.paragraphs(-1)
+
+        #how many sentences?
+        tmp = len(list(p.sentences()))
+
+        s = p.add(folia.Sentence)
+        s.add(folia.Word,'Dit')
+        s.add(folia.Word,'is')
+        s.add(folia.Word,'een')
+        s.add(folia.Word,'nieuwe')
+        w = s.add(folia.Word,'zin')
+        w2 = s.add(folia.Word,'.',cls='PUNCTUATION')
+
+        self.assertEqual( len(list(s.words())), 6 ) #number of words in sentence
+        self.assertEqual( w.text(), 'zin' ) #text check
+        self.assertEqual( self.doc[w.id], w ) #index check
+
+        #addition to paragraph correct?
+        self.assertEqual( len(list(p.sentences())) , tmp + 1)
+        self.assertEqual( p[-1] , s)
+
+        self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.9"><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.1"><t>Dit</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.2"><t>is</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.3"><t>een</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.4"><t>nieuwe</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.5"><t>zin</t></w><w xml:id="WR-P-E-J-0000000001.p.1.s.9.w.6" class="PUNCTUATION"><t>.</t></w></s>'))
 
     def test002_addannotation(self):
         """Edit Check - Adding a token annotation (pos, lemma) (pre-generated instances)"""
@@ -1386,6 +1412,29 @@ class Test4Edit(unittest.TestCase):
 
         self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma class="NAAM" set="adhoclemma" annotatortype="auto" annotator="testscript"/></w>'))
 
+    def test002c_addannotation(self):
+        """Edit Check - Adding a token annotation (pos, lemma) (using add instead of append)"""
+
+        #grab a word (naam)
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
+
+        self.doc.declare(folia.PosAnnotation, 'adhocpos')
+        self.doc.declare(folia.LemmaAnnotation, 'adhoclemma')
+
+        #add a pos annotation (in a different set than the one already present, to prevent conflict)
+        w.add( folia.PosAnnotation(self.doc, set='adhocpos', cls='NOUN', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
+        w.add( folia.LemmaAnnotation(self.doc, set='adhoclemma', cls='NAAM', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO, datetime=datetime(1982, 12, 15, 19, 0, 1) ) )
+
+        #retrieve and check
+        p = w.annotation(folia.PosAnnotation, 'adhocpos')
+        self.assertTrue( isinstance(p, folia.PosAnnotation) )
+        self.assertEqual( p.cls, 'NOUN' )
+
+        l = w.annotation(folia.LemmaAnnotation, 'adhoclemma')
+        self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
+        self.assertEqual( l.cls, 'NAAM' )
+
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma set="adhoclemma" class="NAAM" datetime="1982-12-15T19:00:01" annotatortype="auto" annotator="testscript"/></w>') )
 
     def test004_addinvalidannotation(self):
         """Edit Check - Adding a token default-set annotation that clashes with the existing one"""
@@ -1531,8 +1580,10 @@ class Test4Edit(unittest.TestCase):
 
         self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.6.w.8"><t>ze</t><pos class="VNW(pers,pron,stan,red,3,mv)"/><lemma class="ze"/><alignment class="coreference"><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.1"/><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.2"/></alignment></w>'))
 
+
+
     def test013_spanannot(self):
-        """Edit Check - Adding Span Annotatation (syntax)"""
+        """Edit Check - Adding nested Span Annotatation (syntax)"""
 
         s = self.doc['WR-P-E-J-0000000001.p.1.s.4']
         #sentence: 'De hoofdletter A wordt gebruikt voor het originele handschrift .'
@@ -1563,7 +1614,48 @@ class Test4Edit(unittest.TestCase):
 
         self.assertTrue( xmlcheck(layer.xmlstring(),'<syntax xmlns="http://ilk.uvt.nl/folia"><su class="s"><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.1" t="De"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.2" t="hoofdletter"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.3" t="A"/></su></su><su class="vp"><su class="vp"><su class="v"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.4" t="wordt"/></su><su class="participle"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.5" t="gebruikt"/></su></su><su class="pp"><su class="prep"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.6" t="voor"/></su><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.7" t="het"/></su><su class="adj"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.8" t="originele"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.9" t="handschrift"/></su></su></su></su></su></syntax>'))
 
-    def test013_spanannotcorrection(self):
+    def test013a_spanannot(self):
+        """Edit Check - Adding Span Annotation (entity, from word using add)"""
+        word = self.doc["WR-P-E-J-0000000001.p.1.s.4.w.2"] #hoofdletter
+        word2 = self.doc["WR-P-E-J-0000000001.p.1.s.4.w.3"] #A
+        entity = word.add(folia.Entity, word, word2, cls="misc",set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml")
+
+        self.assertIsInstance(entity, folia.Entity)
+        self.assertTrue(xmlcheck(entity.parent.parent.xmlstring(),'<part xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.4.part.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.1"><t offset="0">De</t><t class="original" offset="0">De</t><pos class="LID(bep,stan,rest)"/><lemma class="de"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.2"><t offset="3">hoofdletter</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="hoofdletter"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.3"><t>A</t><pos class="SPEC(symb)"/><lemma class="_"/></w><entities set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><entity class="misc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.2" t="hoofdletter"/><wref id="WR-P-E-J-0000000001.p.1.s.4.w.3" t="A"/></entity></entities></part>'))
+
+    def test013b_spanannot(self):
+        """Edit Check - Adding nested Span Annotatation (add as append)"""
+
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.4']
+        #sentence: 'De hoofdletter A wordt gebruikt voor het originele handschrift .'
+        layer = s.add(folia.SyntaxLayer)
+        layer.add(
+            folia.SyntacticUnit(self.doc,cls='s',contents=[
+                folia.SyntacticUnit(self.doc,cls='np', contents=[
+                    folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.1'] ,cls='det'),
+                    folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.2'], cls='n'),
+                    folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.3'], cls='n'),
+                ]),
+                folia.SyntacticUnit(self.doc,cls='vp',contents=[
+                    folia.SyntacticUnit(self.doc,cls='vp',contents=[
+                        folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.4'], cls='v'),
+                        folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.5'], cls='participle'),
+                    ]),
+                    folia.SyntacticUnit(self.doc, cls='pp',contents=[
+                        folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.6'], cls='prep'),
+                        folia.SyntacticUnit(self.doc, cls='np',contents=[
+                            folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.7'], cls='det'),
+                            folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.8'], cls='adj'),
+                            folia.SyntacticUnit(self.doc, self.doc['WR-P-E-J-0000000001.p.1.s.4.w.9'], cls='n'),
+                        ])
+                    ])
+                ])
+            ])
+        )
+
+        self.assertTrue( xmlcheck(layer.xmlstring(),'<syntax xmlns="http://ilk.uvt.nl/folia"><su class="s"><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.1" t="De"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.2" t="hoofdletter"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.3" t="A"/></su></su><su class="vp"><su class="vp"><su class="v"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.4" t="wordt"/></su><su class="participle"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.5" t="gebruikt"/></su></su><su class="pp"><su class="prep"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.6" t="voor"/></su><su class="np"><su class="det"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.7" t="het"/></su><su class="adj"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.8" t="originele"/></su><su class="n"><wref id="WR-P-E-J-0000000001.p.1.s.4.w.9" t="handschrift"/></su></su></su></su></su></syntax>'))
+
+    def test013c_spanannotcorrection(self):
         """Edit Check - Correcting Span Annotation"""
         s = self.doc['example.cell']
         l = s.annotation(folia.EntitiesLayer)
