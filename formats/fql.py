@@ -532,9 +532,10 @@ class Target(object): #FOR/IN... expression
 
 
 class Alternative(object):  #AS ALTERNATIVE ... expression
-    def __init__(self, subassignments={},assignments={}, nextalternative=None):
+    def __init__(self, subassignments={},assignments={},filter=None, nextalternative=None):
         self.subassignments = subassignments
         self.assignments = assignments
+        self.filter = filter
         self.nextalternative = nextalternative
 
     @staticmethod
@@ -544,6 +545,7 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
 
         subassignments = {}
         assignments = {}
+        filter = None
 
         if q.kw(i,'ALTERNATIVE'):
             i += 1
@@ -551,6 +553,8 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
                 i = getassignments(q, i, subassignments)
             if q.kw(i,'WITH'):
                 i = getassignments(q, i+1,  assignments)
+            if q.kw(i,'WHERE'):
+                filter, i = Filter.parse(q, i+1)
         else:
             raise SyntaxError("Expected ALTERNATIVE, got " + str(q[i]) + " in: " + str(q))
 
@@ -560,14 +564,39 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
         else:
             nextalternative = None
 
-        return Alternative(subassignments, assignments, nextalternative), i
+        return Alternative(subassignments, assignments, filter, nextalternative), i
+
+    def __call__(self, query, action, focus, target,debug=False):
+        """Action delegates to this function"""
+        isspan = isinstance(action.focus.Class, folia.AbstractSpanAnnotation)
+
+        if action.action == "SELECT":
+            if not isspan:
+                for alternative in focus.alternative(action.focus.Class, focus.set):
+                    if not self.filter or (self.filter and self.filter.match(query, alternative, debug)):
+                        yield alternative
+            else:
+                raise NotImplementedError("Selecting alternative span not implemented yet")
+        elif action.action == "EDIT" or action.action == "ADD":
+            if not isspan:
+                parent = focus.ancestor(folia.AbstractStructureElement)
+                alternative = folia.Alternative( parent.doc, action.focus.Class( parent.doc , **self.subassignments), **self.assignments)
+                parent.append(alt)
+                yield alternative
+            else:
+                raise NotImplementedError("Editing alternative span not implemented yet")
+        else:
+            raise QueryError("Alternative does not handle action " + action.action)
+
+
 
 
 class Correction(object): #AS CORRECTION/SUGGESTION expression...
-    def __init__(self, set,subassignments={}, assignments={},suggestions=[], suggestonly=False):
+    def __init__(self, set,subassignments={}, assignments={},filter=None,suggestions=[], suggestonly=False):
         self.set = set
         self.subassignments = subassignments
         self.assignments = assignments
+        self.filter = filter
         self.suggestions = suggestions # [ (subassignments, assignments) ]
         self.suggestonly = suggestonly
 
@@ -579,6 +608,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
         set = None
         subassignments = {}
         assignments = {}
+        filter = None
         suggestions = []
         suggestonly = False
 
@@ -589,6 +619,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 i += 2
             if not q.kw(i,'WITH'):
                 i = getassignments(q, i, subassignments)
+            if q.kw(i,'WHERE'):
+                filter, i = Filter.parse(q, i+1)
             if q.kw(i,'WITH'):
                 i = getassignments(q, i+1,  assignments)
         elif q.kw(i,'SUGGESTION'):
@@ -600,6 +632,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             suggestion = ( {}, {} )
             if not q.kw(i,'WITH'):
                 i = getassignments(q, i, suggestion[0])
+            if q.kw(i,'WHERE'):
+                filter, i = Filter.parse(q, i+1)
             if q.kw(i,'WITH'):
                 i = getassignments(q, i+1, suggestion[1])
             suggestions.append(suggestion)
@@ -618,7 +652,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             else:
                 raise SyntaxError("Expected SUGGEST or end of AS clause, got " + str(q[i]) + " in: " + str(q))
 
-        return Correction(set, subassignments, assignments, suggestions,  suggestonly), i
+        return Correction(set, subassignments, assignments, filter, suggestions,  suggestonly), i
 
 
 
@@ -752,6 +786,7 @@ class Action(object): #Action expression
             if debug: print("[FQL EVALUATION DEBUG] Action - Evaluating action ", action.action,file=sys.stderr)
             focusselection = []
             constrainedtargetselection = [] #selecting focus elements constrains the target selection
+            processed_form = []
 
             if action.action not in ("ADD","APPEND","PREPEND"): #only for actions that operate on an existing focus
                 for focus, target in action.focus(query, contextselector, True, debug):
@@ -762,23 +797,33 @@ class Action(object): #Action expression
                         elif debug:
                             print("[FQL EVALUATION DEBUG] Action - Target result already obtained, skipping... ", repr(target),file=sys.stderr)
 
-                    if action.action != "DELETE" and not any(x is focus for x in  focusselection):
-                        if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
-                        focusselection.append(focus)
-                    elif debug:
-                        print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
-                        continue
 
-                    if action.action == "EDIT":
-                        if debug: print("[FQL EVALUATION DEBUG] Action - Applying EDIT to focus ", repr(focus),file=sys.stderr)
-                        for attr, value in action.assignments.items():
-                            if attr == "text":
-                                focus.settext(value)
-                            else:
-                                setattr(focus, attr, value)
-                    elif action.action == "DELETE":
-                        focus.parent.remove(focus)
+                    if action.form:
+                        #Delegate action to form (= correction or alternative)
+                        if not any(x is focus for x in  processed_form):
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, processing using form ", repr(focus),file=sys.stderr)
+                            processed_form.append(focus)
+                            focusselection += list(action.form(query, action,focus,target,debug))
+                        elif debug:
+                            print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
+                            continue
+                    else:
+                        if action.action != "DELETE" and not any(x is focus for x in  focusselection):
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
+                            focusselection.append(focus)
+                        elif debug:
+                            print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
+                            continue
 
+                        if action.action == "EDIT":
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying EDIT to focus ", repr(focus),file=sys.stderr)
+                            for attr, value in action.assignments.items():
+                                if attr == "text":
+                                    focus.settext(value)
+                                else:
+                                    setattr(focus, attr, value)
+                        elif action.action == "DELETE":
+                            focus.parent.remove(focus)
 
 
             if action.action in ("ADD","APPEND","PREPEND") or (action.action == "EDIT" and not focusselection):
@@ -794,17 +839,21 @@ class Action(object): #Action expression
                     if not action.focus.Class:
                         raise QueryError("Focus of action has no class!")
 
-                    if action.action == "ADD" or action.action == "EDIT":
-                        if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target " + repr(target),file=sys.stderr)
-                        focusselection.append( target.append(action.focus.Class, **action.assignments) )
-                    elif action.action == "APPEND":
-                        if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
-                        index = target.parent.data.index(target)
-                        focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
-                    elif action.action == "PREPEND":
-                        if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
-                        index = target.parent.data.index(target) - 1
-                        focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
+                    if action.form:
+                        #Delegate action to form (= correction or alternative)
+                        focusselection += list( action.form(query, action,None,target,debug) )
+                    else:
+                        if action.action == "ADD" or action.action == "EDIT":
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target " + repr(target),file=sys.stderr)
+                            focusselection.append( target.append(action.focus.Class, **action.assignments) )
+                        elif action.action == "APPEND":
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
+                            index = target.parent.data.index(target)
+                            focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
+                        elif action.action == "PREPEND":
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
+                            index = target.parent.data.index(target) - 1
+                            focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
 
                     if not any(x is target for x in constrainedtargetselection):
                         constrainedtargetselection.append(target)
