@@ -1700,6 +1700,18 @@ class AbstractElement(object):
         if child.id and self.doc and child.id in self.doc.index:
             del self.doc.index[child.id]
 
+    def incorrection(self):
+        """Is this element part of a correction? If it is, it returns the Correction element (evaluating to True), otherwise it returns None"""
+        e = self.parent
+
+        while e:
+            if isinstance(e, Correction):
+                return e
+            if isinstance(e, AbstractStructureElement):
+                break
+            e = e.parent
+        return None
+
 class Description(AbstractElement):
     """Description is an element that can be used to associate a description with almost any other FoLiA element"""
     XMLTAG = 'desc'
@@ -2685,18 +2697,6 @@ class Word(AbstractStructureElement, AllowCorrections):
         """Obtain the deepest division this word is a part of, otherwise return None"""
         return self.ancestor(Division)
 
-    def incorrection(self):
-        """Is this word part of a correction? If it is, it returns the Correction element (evaluating to True), otherwise it returns None"""
-        e = self
-
-        while not e.parent is None:
-                if isinstance(e, Correction):
-                    return e
-                if isinstance(e, Sentence):
-                    break
-                e = e.parent
-
-        return None
 
 
 
