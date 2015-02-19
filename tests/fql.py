@@ -68,6 +68,7 @@ Qadd_span = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefin
 Qadd_span_returntarget = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" RETURN target"
 
 Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNATIVE WITH confidence 0.9)"
+Qdeclare = "DECLARE correction OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH annotator \"me\" annotatortype \"manual\""
 Qcorrect1 = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
 Qcorrect2 = "EDIT lemma WHERE class = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" class \"terwijl\" WITH class \"nonworderror\" confidence 0.9)"
 
@@ -297,7 +298,7 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[2].text(), "Gompel")
 
     def test20a_add_span(self):
-        "Add span"""
+        """Add span"""
         q = fql.Query(Qadd_span)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Entity)
@@ -309,7 +310,7 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[1].text(), "A")
 
     def test20b_add_span_returntarget(self):
-        "Add span (return target)"""
+        """Add span (return target)"""
         q = fql.Query(Qadd_span_returntarget)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Word)
@@ -318,12 +319,26 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[1].text(), "A")
 
     def test21_edit_alt(self):
-        "Add alternative token annotation"""
+        """Add alternative token annotation"""
         q = fql.Query(Qalt)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Alternative)
         self.assertIsInstance(results[0][0], folia.LemmaAnnotation)
         self.assertEqual(results[0][0].cls, "terwijl")
+
+    def test22_declare(self):
+        """Explicit declaration"""
+        q = fql.Query(Qdeclare)
+        results = q(self.doc)
+
+    def test23_edit_correct(self):
+        """Add correction on token annotation"""
+        q = fql.Query(Qcorrect1)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "nonworderror")
+        self.assertEqual(results[0].new(0), folia.LemmaAnnotation)
+        self.assertEqual(results[0].new(0).cls, "terwijl")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'

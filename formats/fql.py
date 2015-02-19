@@ -704,7 +704,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if self.set:
                 kwargs['set'] = self.set
 
-            for key, value in self.attributes.items():
+            for key, value in self.assignments.items():
                 kwargs[key] = value
 
             if not self.suggestonly:
@@ -991,6 +991,7 @@ class Query(object):
     def __init__(self, q, context=Context()):
         self.action = None
         self.targets = None
+        self.declarations = []
         self.format = context.format
         self.returntype = context.returntype
         self.request = copy(context.request)
@@ -1003,23 +1004,45 @@ class Query(object):
             q = UnparsedQuery(q)
 
         l = len(q)
-        self.action,i = Action.parse(q,i)
+        if q.kw(i,"DECLARE"):
+            try:
+                Class = folia.XML2CLASS[q[i+1]]
+            except:
+                raise SyntaxError("DECLARE statement expects a FoLiA element, got: " + str(q[i+1]))
 
-        if q.kw(i,("FOR","IN")):
-            self.targets, i = Target.parse(q,i)
+            if not Class.ANNOTATIONTYPE:
+                raise SyntaxError("DECLARE statement for undeclarable element type: " + q[i+1])
 
-        while i < l:
-            if q.kw(i,"RETURN"):
-                self.returntype = q[i+1]
-                i+=2
-            elif q.kw(i,"FORMAT"):
-                self.format = q[i+1]
-                i+=2
-            elif q.kw(i,"REQUEST"):
-                self.request = q[i+1].split(",")
-                i+=2
-            else:
-                raise SyntaxError("Unexpected " + q[i] + " at position " + str(i) + " in: " + str(q))
+            i += 2
+
+            defaults = {}
+            if q.kw(i,"OF") and q[i+1]:
+                i += 1
+                decset = q[i]
+                i += 1
+                if q.kw(i,"WITH"):
+                    i = getassignments(q,i+1,defaults)
+
+            self.declarations.append( (Class, decset, defaults)  )
+
+        if i < l:
+            self.action,i = Action.parse(q,i)
+
+            if q.kw(i,("FOR","IN")):
+                self.targets, i = Target.parse(q,i)
+
+            while i < l:
+                if q.kw(i,"RETURN"):
+                    self.returntype = q[i+1]
+                    i+=2
+                elif q.kw(i,"FORMAT"):
+                    self.format = q[i+1]
+                    i+=2
+                elif q.kw(i,"REQUEST"):
+                    self.request = q[i+1].split(",")
+                    i+=2
+                else:
+                    raise SyntaxError("Unexpected " + q[i] + " at position " + str(i) + " in: " + str(q))
 
 
         if i != l:
@@ -1032,25 +1055,35 @@ class Query(object):
 
         if debug: print("[FQL EVALUATION DEBUG] Query  - Starting on document ", doc.id,file=sys.stderr)
 
-        targetselector = (getattr, (doc, 'data') ) #function recipe to get all Text elements (f, *args), the root of all selectors
-        if self.targets:
-            targetselector = (self.targets, (self, targetselector, debug)) #function recipe to get the generator for the targets, (f, *args)
+        if self.declarations:
+            for Class, decset, defaults in self.declarations:
+                if debug: print("[FQL EVALUATION DEBUG] Processing declaration for ", Class.__name__, "of",str(decset),file=sys.stderr)
+                doc.declare(Class,decset,**defaults)
 
-        focusselection, targetselection = self.action(self, targetselector, debug) #selecting focus elements further constrains the target selection (if any), return values will be lists
+        if self.action:
 
-        if self.returntype == "focus":
-            responseselection = focusselection
-        elif self.returntype == "target" or self.returntype == "inner-target":
-            responseselection = []
-            for e in targetselection:
-                if not any(x is e for x in responseselection): #filter out duplicates
-                    responseselection.append(e)
-        elif self.returntype == "outer-target":
-            raise NotImplementedError
-        elif self.returntype == "ancestor-target":
-            raise NotImplementedError
+            targetselector = (getattr, (doc, 'data') ) #function recipe to get all Text elements (f, *args), the root of all selectors
+            if self.targets:
+                targetselector = (self.targets, (self, targetselector, debug)) #function recipe to get the generator for the targets, (f, *args)
+
+            focusselection, targetselection = self.action(self, targetselector, debug) #selecting focus elements further constrains the target selection (if any), return values will be lists
+
+            if self.returntype == "focus":
+                responseselection = focusselection
+            elif self.returntype == "target" or self.returntype == "inner-target":
+                responseselection = []
+                for e in targetselection:
+                    if not any(x is e for x in responseselection): #filter out duplicates
+                        responseselection.append(e)
+            elif self.returntype == "outer-target":
+                raise NotImplementedError
+            elif self.returntype == "ancestor-target":
+                raise NotImplementedError
+            else:
+                return QueryError("Invalid return type: " + self.returntype)
+
         else:
-            return QueryError("Invalid return type: " + self.returntype)
+            responseselection = []
 
 
         #convert response selection to proper format and return
