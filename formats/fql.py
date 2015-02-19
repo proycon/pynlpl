@@ -611,25 +611,23 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
 
 
 class Correction(object): #AS CORRECTION/SUGGESTION expression...
-    def __init__(self, set,subassignments={}, assignments={},filter=None,suggestions=[], suggestonly=False):
+    def __init__(self, set,actionassignments={}, assignments={},filter=None,suggestions=[]):
         self.set = set
-        self.subassignments = subassignments
-        self.assignments = assignments
+        self.actionassignments = actionassignments #the assignments in the action
+        self.assignments = assignments #the assignments for the correction
         self.filter = filter
-        self.suggestions = suggestions # [ (subassignments, assignments) ]
-        self.suggestonly = suggestonly
+        self.suggestions = suggestions # [ (subassignments, suggestionassignments) ]
 
     @staticmethod
     def parse(q,i=0):
-        if q.kw(i,'AS') and q.kw(i+1,("CORRECTION","SUGGESTION","ORIGINAL")):
+        if q.kw(i,'AS') and q.kw(i+1,'CORRECTION'):
             i += 1
 
         set = None
-        subassignments = {}
+        actionassignments = {}
         assignments = {}
         filter = None
         suggestions = []
-        suggestonly = False
 
         if q.kw(i,'CORRECTION'):
             i += 1
@@ -637,60 +635,45 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 set = q[i+1]
                 i += 2
             if not q.kw(i,'WITH'):
-                i = getassignments(q, i, subassignments)
+                i = getassignments(q, i, actionassignments)
             if q.kw(i,'WHERE'):
                 filter, i = Filter.parse(q, i+1)
             if q.kw(i,'WITH'):
                 i = getassignments(q, i+1,  assignments)
-        elif q.kw(i,'SUGGESTION'):
-            suggestonly = True
-            i += 1
-            if q.kw(i,'OF') and q[i+1]:
-                set = q[i+1]
-                i += 2
-            suggestion = ( {}, {} )
-            if not q.kw(i,'WITH'):
-                i = getassignments(q, i, suggestion[0])
-            if q.kw(i,'WHERE'):
-                filter, i = Filter.parse(q, i+1)
-            if q.kw(i,'WITH'):
-                i = getassignments(q, i+1, assignments)
-            suggestions.append(suggestion)
-        elif q.kw(i,'ORIGINAL'):
-            raise NotImplementedError("ORIGINAL not implemented yet")
         else:
-            raise SyntaxError("Expected CORRECTION or SUGGESTION, got " + str(q[i]) + " in: " + str(q))
+            raise SyntaxError("Expected CORRECTION, got " + str(q[i]) + " in: " + str(q))
 
         l = len(q)
         while i < l:
-            if q.kw(i,'SUGGEST'):
+            if q.kw(i,'SUGGESTION'):
+                i+= 1
                 suggestion = ( {}, {} )
                 if not q.kw(i,'WITH'):
-                    i = getassignments(q, i, suggestion[0])
+                    i = getassignments(q, i, suggestion[0]) #subassignments (the actual element in the suggestion)
                 if q.kw(i,'WITH'):
-                    i = getassignments(q, i+1, suggestion[1])
+                    i = getassignments(q, i+1, suggestion[1]) #assignments for the suggestion
                 suggestions.append(suggestion)
             else:
-                raise SyntaxError("Expected SUGGEST or end of AS clause, got " + str(q[i]) + " in: " + str(q))
+                raise SyntaxError("Expected SUGGESTION or end of AS clause, got " + str(q[i]) + " in: " + str(q))
 
-        return Correction(set, subassignments, assignments, filter, suggestions,  suggestonly), i
+        return Correction(set, actionassignments, assignments, filter, suggestions), i
 
 
     def __call__(self, query, action, focus, target,debug=False):
         """Action delegates to this function"""
         isspan = isinstance(action.focus.Class, folia.AbstractSpanAnnotation)
 
-        subassignments = {} #make a copy
+        actionassignments = {} #make a copy
         for key, value in action.assignments.items():
-            subassignments[key] = value
-        for key, value in self.subassignments.items():
-            subassignments[key] = value
+            actionassignments[key] = value
+        for key, value in self.actionassignments.items():
+            actionassignments[key] = value
 
-        if (not 'set' in subassignments or subassignments['set'] is None) and action.focus.Class:
+        if (not 'set' in actionassignments or actionassignments['set'] is None) and action.focus.Class:
             try:
-                subassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
+                actionassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
             except KeyError:
-                subassignments['set'] = query.doc.defaultset(action.focus.Class)
+                actionassignments['set'] = query.doc.defaultset(action.focus.Class)
 
         if action.action == "SELECT":
             if not focus: raise QueryError("SELECT requires a focus element")
@@ -719,8 +702,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             for key, value in self.assignments.items():
                 kwargs[key] = value
 
-            if not self.suggestonly:
-                kwargs['new'] = action.focus.Class(query.doc, **subassignments)
+            if actionassignments:
+                kwargs['new'] = action.focus.Class(query.doc, **actionassignments)
                 kwargs['original'] = focus
             else:
                 kwargs['current'] = focus
@@ -731,8 +714,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 kwargs['id'] = parent.generate_id(folia.Correction)
 
             kwargs['suggestions'] = []
-            for subassignments, assignments in self.suggestions:
-                subassignments = copy(subassignments)
+            for subassignments, suggestionassignments in self.suggestions:
+                subassignments = copy(subassignments) #assignment for the element in the suggestion
                 for key, value in action.assignments.items():
                     if not key in subassignments:
                         subassignments[key] = value
@@ -741,10 +724,9 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                         subassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
                     except KeyError:
                         subassignments['set'] = query.doc.defaultset(action.focus.Class)
-                kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, **subassignments), **assignments )   )
+                kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, **subassignments), **suggestionassignments )   )
 
-            correction = parent.correct(**kwargs) #generator
-            yield correction
+            yield parent.correct(**kwargs) #generator
         else:
             raise QueryError("Correction does not handle action " + action.action)
 
@@ -838,7 +820,7 @@ class Action(object): #Action expression
                 elif q[i].kw(0, 'AS'):
                     if q[i].kw(1, "ALTERNATIVE"):
                         action.form,_ = Alternative.parse(q[i])
-                    elif q[i].kw(1, ("CORRECTION","SUGGESTION")):
+                    elif q[i].kw(1, "CORRECTION"):
                         action.form,_ = Correction.parse(q[i])
                     else:
                         raise SyntaxError("Invalid keyword after AS: " + str(q[i][1]))

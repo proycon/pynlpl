@@ -73,7 +73,7 @@ Qdeclare = "DECLARE correction OF \"http://raw.github.com/proycon/folia/master/s
 
 Qcorrect1 = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
 Qcorrect2 = "EDIT lemma WHERE class = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" class \"terwijl\" WITH class \"nonworderror\" confidence 0.9)"
-Qsuggest1 = "EDIT lemma WHERE class = \"terweil\" (AS SUGGESTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
+Qsuggest1 = "EDIT lemma WHERE class = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" SUGGESTION WITH confidence 0.9)"
 
 class Test1UnparsedQuery(unittest.TestCase):
 
