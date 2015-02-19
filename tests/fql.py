@@ -331,12 +331,23 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qdeclare)
         results = q(self.doc)
 
-    def test23_edit_correct(self):
+    def test23a_edit_correct(self):
         """Add correction on token annotation"""
         q = fql.Query(Qcorrect1)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].cls, "nonworderror")
+        self.assertEqual(results[0].confidence, 0.9)
+        self.assertIsInstance(results[0].new(0), folia.LemmaAnnotation)
+        self.assertEqual(results[0].new(0).cls, "terwijl")
+
+    def test23b_edit_correct(self):
+        """Add correction on token annotation"""
+        q = fql.Query(Qcorrect2)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "nonworderror")
+        self.assertEqual(results[0].confidence, 0.9)
         self.assertIsInstance(results[0].new(0), folia.LemmaAnnotation)
         self.assertEqual(results[0].new(0).cls, "terwijl")
 
