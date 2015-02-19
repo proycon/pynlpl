@@ -5205,15 +5205,17 @@ class Document(object):
 
 
     def defaultset(self, annotationtype):
-        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         try:
             return list(self.annotationdefaults[annotationtype].keys())[0]
+        except KeyError:
+            raise NoDefaultError
         except IndexError:
             raise NoDefaultError
 
 
     def defaultannotator(self, annotationtype, set=None):
-        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         if not set: set = self.defaultset(annotationtype)
         try:
             return self.annotationdefaults[annotationtype][set]['annotator']
@@ -5221,7 +5223,7 @@ class Document(object):
             raise NoDefaultError
 
     def defaultannotatortype(self, annotationtype,set=None):
-        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         if not set: set = self.defaultset(annotationtype)
         try:
             return self.annotationdefaults[annotationtype][set]['annotatortype']
@@ -5230,7 +5232,7 @@ class Document(object):
 
 
     def defaultdatetime(self, annotationtype,set=None):
-        if inspect.isclass(annotationtype) and isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         if not set: set = self.defaultset(annotationtype)
         try:
             return self.annotationdefaults[annotationtype][set]['datetime']
