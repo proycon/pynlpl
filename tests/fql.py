@@ -337,7 +337,7 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].cls, "nonworderror")
-        self.assertEqual(results[0].new(0), folia.LemmaAnnotation)
+        self.assertIsInstance(results[0].new(0), folia.LemmaAnnotation)
         self.assertEqual(results[0].new(0).cls, "terwijl")
 
 if os.path.exists('../../FoLiA'):

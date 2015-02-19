@@ -429,8 +429,12 @@ class Selector(object):
         if debug: print("[FQL EVALUATION DEBUG] Select.Match! ", repr(candidate),file=sys.stderr)
         return True
 
-
-
+    def autodeclare(self,doc):
+        if self.Class and self.set:
+            if not doc.declared(self.Class, self.set):
+                doc.declare(self.Class, self.set)
+            if self.nextselector:
+                self.nextselector.autodeclare()
 
 
 class Span(object):
@@ -589,11 +593,11 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
             if not isspan:
                 if focus:
                     parent = focus.ancestor(folia.AbstractStructureElement)
-                    alternative = folia.Alternative( parent.doc, action.focus.Class( parent.doc , **subassignments), **self.assignments)
+                    alternative = folia.Alternative( query.doc, action.focus.Class( query.doc , **subassignments), **self.assignments)
                     parent.append(alternative)
                     yield alternative
                 else:
-                    alternative = folia.Alternative( target.doc, action.focus.Class( parent.doc , **subassignments), **self.assignments)
+                    alternative = folia.Alternative( query.doc, action.focus.Class( query.doc , **subassignments), **self.assignments)
                     target.append(alternative)
                     yield alternative
             else:
@@ -602,6 +606,8 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
             raise QueryError("Alternative does not handle action " + action.action)
 
 
+    def autodeclare(self, doc):
+        pass #nothing to declare
 
 
 class Correction(object): #AS CORRECTION/SUGGESTION expression...
@@ -680,6 +686,12 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
         for key, value in self.subassignments.items():
             subassignments[key] = value
 
+        if (not 'set' in subassignments or subassignments['set'] is None) and action.focus.Class:
+            try:
+                subassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
+            except KeyError:
+                subassignments['set'] = query.doc.defaultset(action.focus.Class)
+
         if action.action == "SELECT":
             if not focus: raise QueryError("SELECT requires a focus element")
             correction = focus.incorrection()
@@ -708,7 +720,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 kwargs[key] = value
 
             if not self.suggestonly:
-                kwargs['new'] = action.focus.Class(focus.doc, **subassignments)
+                kwargs['new'] = action.focus.Class(query.doc, **subassignments)
                 kwargs['original'] = focus
             else:
                 kwargs['current'] = focus
@@ -724,13 +736,18 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 for key, value in action.assignments.items():
                     if not key in subassignments:
                         subassignments[key] = value
-                kwargs['suggestions'].append( folia.Suggestion(target.doc, action.focus.Class(focus.doc, **subassignments), **assignments )   )
+                kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, **subassignments), **assignments )   )
 
-            return parent.correct(**kwargs)
+            correction = parent.correct(**kwargs) #generator
+            yield correction
         else:
             raise QueryError("Correction does not handle action " + action.action)
 
 
+    def autodeclare(self,doc):
+        if self.set:
+            if not doc.declared(folia.Correction, self.set):
+                doc.declare(folia.Correction, self.set)
 
 
 def getassignments(q, i, assignments,  focus=None):
@@ -856,6 +873,15 @@ class Action(object): #Action expression
             focusselection_all = []
             constrainedtargetselection_all = []
 
+        for action in actions:
+            if action.action != "SELECT":
+                #check if set is declared, if not, auto-declare
+                if debug: print("[FQL EVALUATION DEBUG] Action - Auto-declaring ",action.focus.Class.__name__, " of ", str(action.focus.set),file=sys.stderr)
+                action.focus.autodeclare(query.doc)
+
+        if action.form and isinstance(action.form, Correction):
+            if debug: print("[FQL EVALUATION DEBUG] Action - Auto-declaring ",action.focus.Class.__name__, " of ", str(action.focus.set),file=sys.stderr)
+            action.form.autodeclare(query.doc)
 
 
         for action in actions:
@@ -957,6 +983,10 @@ class Action(object): #Action expression
 
             if focusselection and action.subactions:
                 for subaction in action.subactions:
+                    if subaction.action != "SELECT":
+                        #check if set is declared, if not, auto-declare
+                        if debug: print("[FQL EVALUATION DEBUG] Action - Auto-declaring ",action.focus.Class.__name__, " of ", str(action.focus.set),file=sys.stderr)
+                        subaction.focus.autodeclare(query.doc)
                     if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction ", subaction.action,file=sys.stderr)
                     subaction(query, focusselection, debug ) #note: results of subactions will be silently discarded, they can never select anything
 
