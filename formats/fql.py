@@ -654,7 +654,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if q.kw(i,'WHERE'):
                 filter, i = Filter.parse(q, i+1)
             if q.kw(i,'WITH'):
-                i = getassignments(q, i+1, suggestion[1])
+                i = getassignments(q, i+1, assignments)
             suggestions.append(suggestion)
         elif q.kw(i,'ORIGINAL'):
             raise NotImplementedError("ORIGINAL not implemented yet")
@@ -736,6 +736,11 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 for key, value in action.assignments.items():
                     if not key in subassignments:
                         subassignments[key] = value
+                if (not 'set' in subassignments or subassignments['set'] is None) and action.focus.Class:
+                    try:
+                        subassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
+                    except KeyError:
+                        subassignments['set'] = query.doc.defaultset(action.focus.Class)
                 kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, **subassignments), **assignments )   )
 
             correction = parent.correct(**kwargs) #generator

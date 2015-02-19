@@ -68,9 +68,12 @@ Qadd_span = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefin
 Qadd_span_returntarget = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" RETURN target"
 
 Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNATIVE WITH confidence 0.9)"
+
 Qdeclare = "DECLARE correction OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH annotator \"me\" annotatortype \"manual\""
+
 Qcorrect1 = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
 Qcorrect2 = "EDIT lemma WHERE class = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" class \"terwijl\" WITH class \"nonworderror\" confidence 0.9)"
+Qsuggest1 = "EDIT lemma WHERE class = \"terweil\" (AS SUGGESTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -342,7 +345,7 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].new(0).cls, "terwijl")
 
     def test23b_edit_correct(self):
-        """Add correction on token annotation"""
+        """Add correction on token annotation (2)"""
         q = fql.Query(Qcorrect2)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
@@ -350,6 +353,16 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].confidence, 0.9)
         self.assertIsInstance(results[0].new(0), folia.LemmaAnnotation)
         self.assertEqual(results[0].new(0).cls, "terwijl")
+
+    def test23c_edit_suggest(self):
+        """Add correction on token annotation"""
+        q = fql.Query(Qsuggest1)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "nonworderror")
+        self.assertEqual(results[0].confidence, 0.9)
+        self.assertIsInstance(results[0].suggestions(0), folia.LemmaAnnotation)
+        self.assertEqual(results[0].suggestions(0).cls, "terwijl")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
