@@ -669,11 +669,12 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
         for key, value in self.actionassignments.items():
             actionassignments[key] = value
 
-        if (not 'set' in actionassignments or actionassignments['set'] is None) and action.focus.Class:
-            try:
-                actionassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
-            except KeyError:
-                actionassignments['set'] = query.doc.defaultset(action.focus.Class)
+        if actionassignments:
+            if (not 'set' in actionassignments or actionassignments['set'] is None) and action.focus.Class:
+                try:
+                    actionassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
+                except KeyError:
+                    actionassignments['set'] = query.doc.defaultset(action.focus.Class)
 
         if action.action == "SELECT":
             if not focus: raise QueryError("SELECT requires a focus element")

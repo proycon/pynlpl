@@ -73,7 +73,7 @@ Qdeclare = "DECLARE correction OF \"http://raw.github.com/proycon/folia/master/s
 
 Qcorrect1 = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
 Qcorrect2 = "EDIT lemma WHERE class = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" class \"terwijl\" WITH class \"nonworderror\" confidence 0.9)"
-Qsuggest1 = "EDIT lemma WHERE class = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" SUGGESTION WITH confidence 0.9)"
+Qsuggest1 = "EDIT lemma WHERE class = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" SUGGESTION class \"terwijl\" WITH confidence 0.9)"
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -360,9 +360,10 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].cls, "nonworderror")
-        self.assertEqual(results[0].confidence, 0.9)
-        self.assertIsInstance(results[0].suggestions(0), folia.LemmaAnnotation)
-        self.assertEqual(results[0].suggestions(0).cls, "terwijl")
+        self.assertIsInstance(results[0].suggestions(0), folia.Suggestion)
+        self.assertEqual(results[0].suggestions(0).confidence, 0.9)
+        self.assertIsInstance(results[0].suggestions(0)[0], folia.LemmaAnnotation)
+        self.assertEqual(results[0].suggestions(0)[0].cls, "terwijl")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
