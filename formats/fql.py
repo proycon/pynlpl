@@ -753,10 +753,6 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if not focus: raise QueryError("DELETE AS CORRECTION did not find a focus to operate on")
             kwargs['original'] = focus
             yield parent.correct(**kwargs) #generator
-        elif action.action == "MERGE":
-            raise NotImplementedError
-        elif action.action == "SPLIT":
-            raise NotImplementedError
         else:
             raise QueryError("Correction does not handle action " + action.action)
 
@@ -844,7 +840,7 @@ class Action(object): #Action expression
                 #we have a sub expression
                 if q[i].kw(0, ('EDIT','DELETE','ADD')):
                     #It's a sub-action!
-                    if action.action in ("DELETE","SPLIT","MERGE"):
+                    if action.action in ("DELETE"):
                         raise SyntaxError("Subactions are not allowed for action " + action.action + ", in: " + str(q))
                     subaction, _ = Action.parse(q[i])
                     action.subactions.append( subaction )
@@ -860,7 +856,7 @@ class Action(object): #Action expression
                 done = True
 
 
-        if q.kw(i, ('SELECT','EDIT','DELETE','ADD','APPEND','PREPEND','MERGE','SPLIT')):
+        if q.kw(i, ('SELECT','EDIT','DELETE','ADD','APPEND','PREPEND','SUBSTITUTE')):
             #We have another action!
             action.nextaction, i = Action.parse(q,i)
 
@@ -961,8 +957,8 @@ class Action(object): #Action expression
                             focus.parent.remove(focus)
 
                         elif action.action == "SUBSTITUTE":
-                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying MERGE to target ", repr(focus),file=sys.stderr)
-                            if not isinstance(target,SpanSet) or not target: raise QueryError("MERGE requires a target SPAN")
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying SUBSTITUTE to target ", repr(focus),file=sys.stderr)
+                            if not isinstance(target,SpanSet) or not target: raise QueryError("SUBSTITUTE requires a target SPAN")
                             focusselection.remove(focus)
 
                             if not substitution:
