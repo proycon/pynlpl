@@ -766,12 +766,22 @@ class AbstractElement(object):
     def __str__(self):
         return self.text()
 
-    def copy(self, newdoc=None):
+    def copy(self, newdoc=None, idsuffix=""):
         """Make a deep copy"""
         c = deepcopy(self)
+        c.addidsuffix(idsuffix)
         c.setparents()
         c.setdoc(newdoc)
         return c
+
+    def addidsuffix(self, idsuffix, recursive = True):
+        if self.id: self.id += idsuffix
+        if recursive:
+            for e in self:
+                try:
+                    e.addidsuffix(idsuffix, recursive)
+                except:
+                    pass
 
     def setparents(self):
         """Correct all parent relations for elements within the scope, usually no need to call this directly, invoked implicitly by copy()"""
@@ -783,6 +793,8 @@ class AbstractElement(object):
     def setdoc(self,newdoc):
         """Set a different document, usually no need to call this directly, invoked implicitly by copy()"""
         self.doc = newdoc
+        if self.doc and self.id:
+            self.doc[self.id] = self
         for c in self:
             if isinstance(c, AbstractElement):
                 c.setdoc(newdoc)
