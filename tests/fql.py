@@ -85,7 +85,9 @@ Qcorrect_span = "EDIT entity OF \"http://raw.github.com/proycon/folia/master/set
 
 Qrespan = "EDIT semrole WHERE class = \"actor\" RESPAN ID \"WR-P-E-J-0000000001.p.1.s.7.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.7.w.3\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.7.w.3\""
 
-Qmerge = "MERGE w WITH text \"weertegeven\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.2.w.26\" & ID \"WR-P-E-J-0000000001.p.1.s.2.w.27\" & ID \"WR-P-E-J-0000000001.p.1.s.2.w.28\""
+Qmerge = "SUBSTITUTE w WITH text \"weertegeven\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.2.w.26\" & ID \"WR-P-E-J-0000000001.p.1.s.2.w.27\" & ID \"WR-P-E-J-0000000001.p.1.s.2.w.28\""
+
+Qsplit = "SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegeven\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.6.w.20\""
 
 class Test1UnparsedQuery(unittest.TestCase):
 
