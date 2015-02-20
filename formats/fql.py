@@ -780,6 +780,7 @@ class Action(object): #Action expression
         self.subactions = []
         self.nextaction = None
         self.respan = []
+        self.extra = {}
 
 
     @staticmethod
@@ -805,8 +806,8 @@ class Action(object): #Action expression
         #we have enough to set up the action now
         action = Action(action, focus, assignments)
 
-        if action.action == "EDIT" and q.kw(i,"SPAN"):
-            raise NotImplementedError #TODO
+        if action.action == "EDIT" and q.kw(i,"RESPAN"):
+            action.extra['respan'], i = Span.parse(q,i+1)
 
         done = False
         while not done:
@@ -916,6 +917,11 @@ class Action(object): #Action expression
                                     focus.settext(value)
                                 else:
                                     setattr(focus, attr, value)
+                            if 'respan' in action.extra:
+                               if not isinstance(focus, folia.AbstractSpanAnnotation): raise QueryError("Can only perform RESPAN on span annotation elements!")
+                               spanset = action.extra['respan'](query, contextselector, True, debug)
+                               focus.setspan(*spanset)
+
                         elif action.action == "DELETE":
                             focus.parent.remove(focus)
 

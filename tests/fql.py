@@ -71,6 +71,7 @@ Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNAT
 
 Qdeclare = "DECLARE correction OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH annotator \"me\" annotatortype \"manual\""
 
+#implicitly tests auto-declaration:
 Qcorrect1 = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
 Qcorrect2 = "EDIT lemma WHERE class = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" class \"terwijl\" WITH class \"nonworderror\" confidence 0.9)"
 
@@ -79,6 +80,9 @@ Qcorrectsuggest = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (
 
 Qcorrect_text = "EDIT t WHERE text = \"terweil\" WITH text \"terwijl\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
 Qsuggest_text = "EDIT t WHERE text = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" SUGGESTION text \"terwijl\" WITH confidence 0.9 SUGGESTION text \"gedurende\" WITH confidence 0.1)"
+
+Qrespan = "EDIT semrole WHERE class = \"actor\" RESPAN ID \"WR-P-E-J-0000000001.p.1.s.7.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.7.w.3\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.7.w.3\""
+
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -412,6 +416,17 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].suggestions(1).confidence, 0.1)
         self.assertIsInstance(results[0].suggestions(1)[0], folia.TextContent)
         self.assertEqual(results[0].suggestions(1)[0].text(), "gedurende")
+
+    def test26_edit_respan(self):
+        q = fql.Query(Qrespan)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.SemanticRole)
+        self.assertEqual(results[0].cls, "actor")
+        results = list(results[0].wrefs())
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertEqual(results[0].text(), "gaat") #yes, this is no a proper semantic role for class 'actor', I know.. but I had to make up a test
+        self.assertIsInstance(results[1], folia.Word)
+        self.assertEqual(results[1].text(), "men")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
