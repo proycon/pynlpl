@@ -617,6 +617,8 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
     def autodeclare(self, doc):
         pass #nothing to declare
 
+    def substitute(self, *args):
+        raise QueryError("SUBSTITUTE not supported with AS ALTERNATIVE")
 
 class Correction(object): #AS CORRECTION/SUGGESTION expression...
     def __init__(self, set,actionassignments={}, assignments={},filter=None,suggestions=[], bare=False):
@@ -762,6 +764,34 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if not doc.declared(folia.Correction, self.set):
                 doc.declare(folia.Correction, self.set)
 
+    def substitute(self, query, substitution, debug):
+        kwargs = {}
+        if self.set:
+            kwargs['set'] = self.set
+
+        for key, value in self.assignments.items():
+            kwargs[key] = value
+
+        kwargs = {'insertindex': substitution['index'], 'original': substitution['span']}
+
+        if substitution['new']:
+            kwargs['new'] = []
+
+        for i, (Class, actionassignments, subactions) in enumerate(substitution['new']):
+            if actionassignments:
+                if (not 'set' in actionassignments or actionassignments['set'] is None):
+                    try:
+                        actionassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
+                    except KeyError:
+                        actionassignments['set'] = query.doc.defaultset(action.focus.Class)
+            e = Class(query.doc, **actionassignments)
+            kwargs['new'].append(e)
+            for subaction in subactions:
+                subaction.focus.autodeclare(query.doc)
+                if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction (in subtitution) ", subaction.action,file=sys.stderr)
+                subaction(query, [e], debug ) #note: results of subactions will be silently discarded
+
+        return substitution['parent'].correct(**kwargs)
 
 def getassignments(q, i, assignments,  focus=None):
     l = len(q)
@@ -1053,7 +1083,7 @@ class Action(object): #Action expression
             constrainedtargetselection_all = []
             constrainedtargetselection = []
             if action.form:
-                result = action.form.substitute(query, substitute,debug)
+                result = action.form.substitute(query, substitution,debug)
                 if len(actions) > 1:
                     focusselection_all += result
                 else:

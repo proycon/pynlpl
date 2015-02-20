@@ -89,6 +89,10 @@ Qmerge = "SUBSTITUTE w WITH text \"weertegeven\" FOR SPAN ID \"WR-P-E-J-00000000
 
 Qsplit = "SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegeven\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.6.w.20\""
 
+Qcorrect_merge = "SUBSTITUTE w WITH text \"weertegeven\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"spliterror\") FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.2.w.26\" & ID \"WR-P-E-J-0000000001.p.1.s.2.w.27\" & ID \"WR-P-E-J-0000000001.p.1.s.2.w.28\""
+
+Qcorrect_split = "SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegeven\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"runonerror\") FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.6.w.20\""
+
 class Test1UnparsedQuery(unittest.TestCase):
 
     def test1_basic(self):
@@ -459,6 +463,13 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[1], folia.Word)
         self.assertEqual(results[0].text(), "weer")
         self.assertEqual(results[1].text(), "gegeven")
+
+    def test28a_correct_merge(self):
+        """Merge Correction"""
+        q = fql.Query(Qcorrect_merge)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].new(0).text(), "weertegeven")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
