@@ -25,6 +25,7 @@ from copy import copy
 import json
 import re
 import sys
+import random
 
 OPERATORS = ('=','==','!=','>','<','<=','>=')
 MASK_NORMAL = 0
@@ -781,9 +782,10 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if actionassignments:
                 if (not 'set' in actionassignments or actionassignments['set'] is None):
                     try:
-                        actionassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
+                        actionassignments['set'] = query.defaultsets[Class.XMLTAG]
                     except KeyError:
-                        actionassignments['set'] = query.doc.defaultset(action.focus.Class)
+                        actionassignments['set'] = query.doc.defaultset(Class)
+            actionassignments['id'] = "corrected.%08x" % random.getrandbits(32) #generate a random ID
             e = Class(query.doc, **actionassignments)
             kwargs['new'].append(e)
             for subaction in subactions:
@@ -1085,9 +1087,9 @@ class Action(object): #Action expression
             if action.form:
                 result = action.form.substitute(query, substitution,debug)
                 if len(actions) > 1:
-                    focusselection_all += result
+                    focusselection_all.append(result)
                 else:
-                    focusselection += result
+                    focusselection.append(result)
             else:
                 if debug: print("[FQL EVALUATION DEBUG] Action - Substitution - Removing target",file=sys.stderr)
                 for e in substitution['span']:
