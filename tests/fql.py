@@ -81,6 +81,8 @@ Qcorrectsuggest = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (
 Qcorrect_text = "EDIT t WHERE text = \"terweil\" WITH text \"terwijl\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
 Qsuggest_text = "EDIT t WHERE text = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" SUGGESTION text \"terwijl\" WITH confidence 0.9 SUGGESTION text \"gedurende\" WITH confidence 0.1)"
 
+Qcorrect_span = "EDIT entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WHERE class = \"per\" WITH class \"misc\" (AS CORRECTION OF \"https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentitycorrection.foliaset.xml\" WITH class \"wrongclass\" confidence 0.2) FOR ID \"example.table.1.w.3\""
+
 Qrespan = "EDIT semrole WHERE class = \"actor\" RESPAN ID \"WR-P-E-J-0000000001.p.1.s.7.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.7.w.3\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.7.w.3\""
 
 
@@ -283,6 +285,7 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qselect_span)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Entity)
+        self.assertEqual(results[0].cls, 'per')
         self.assertEqual(len(list(results[0].wrefs())), 3)
 
     def test18_select_span2(self):
@@ -417,7 +420,17 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0].suggestions(1)[0], folia.TextContent)
         self.assertEqual(results[0].suggestions(1)[0].text(), "gedurende")
 
-    def test26_edit_respan(self):
+    def test26_correct_span(self):
+        """Correction of span annotation"""
+        q = fql.Query(Qcorrect_span)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertIsInstance(results[0].new(0), folia.Entity)
+        self.assertEqual(results[0].new(0).cls, 'misc')
+        self.assertEqual(len(list(results[0].new(0).wrefs())), 3)
+
+    def test27_edit_respan(self):
+        """Re-spanning"""
         q = fql.Query(Qrespan)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.SemanticRole)

@@ -767,12 +767,21 @@ class AbstractElement(object):
         return self.text()
 
     def copy(self, newdoc=None, idsuffix=""):
-        """Make a deep copy"""
+        """Make a deep copy of this element and all its children. If idsuffix is a string, if set to True, a random idsuffix will be generated including a random 32-bit hash"""
+        if idsuffix is True: idsuffix = ".copy." + "%08x" % random.getrandbits(32) #random 32-bit hash for each copy, same one will be reused for all children
         c = deepcopy(self)
-        c.addidsuffix(idsuffix)
+        if idsuffix:
+            c.addidsuffix(idsuffix)
         c.setparents()
         c.setdoc(newdoc)
         return c
+
+    def copychildren(self, newdoc=None, idsuffix=""):
+        """Generator creating a deep copy of the children of this element. If idsuffix is a string, if set to True, a random idsuffix will be generated including a random 32-bit hash"""
+        if idsuffix is True: idsuffix = ".copy." + "%08x" % random.getrandbits(32) #random 32-bit hash for each copy, same one will be reused for all children
+        for c in self:
+            yield c.copy(newdoc,idsuffix)
+
 
     def addidsuffix(self, idsuffix, recursive = True):
         if self.id: self.id += idsuffix

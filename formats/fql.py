@@ -617,17 +617,22 @@ class Alternative(object):  #AS ALTERNATIVE ... expression
 
 
 class Correction(object): #AS CORRECTION/SUGGESTION expression...
-    def __init__(self, set,actionassignments={}, assignments={},filter=None,suggestions=[]):
+    def __init__(self, set,actionassignments={}, assignments={},filter=None,suggestions=[], bare=False):
         self.set = set
         self.actionassignments = actionassignments #the assignments in the action
         self.assignments = assignments #the assignments for the correction
         self.filter = filter
         self.suggestions = suggestions # [ (subassignments, suggestionassignments) ]
+        self.bare = bare
 
     @staticmethod
     def parse(q,i, focus):
         if q.kw(i,'AS') and q.kw(i+1,'CORRECTION'):
             i += 1
+            bare = False
+        if q.kw(i,'AS') and q.kw(i+1,'BARE') and q.kw(i+2,'CORRECTION'):
+            bare = True
+            i += 2
 
         set = None
         actionassignments = {}
@@ -662,7 +667,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             else:
                 raise SyntaxError("Expected SUGGESTION or end of AS clause, got " + str(q[i]) + " in: " + str(q))
 
-        return Correction(set, actionassignments, assignments, filter, suggestions), i
+        return Correction(set, actionassignments, assignments, filter, suggestions, bare), i
 
 
     def __call__(self, query, action, focus, target,debug=False):
@@ -704,7 +709,12 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 kwargs[key] = value
 
             if actionassignments:
-                kwargs['new'] = action.focus.Class(query.doc, **actionassignments)
+                if not self.bare: #copy all data within
+                    idsuffix = ".copy." + "%08x" % random.getrandbits(32) #random 32-bit hash for each copy
+                    children = []
+                    for e in focus:
+                        children.append(e.copy(query.doc, idsuffix))
+                kwargs['new'] = action.focus.Class(query.doc,*newdata, **actionassignments)
                 kwargs['original'] = focus
             else:
                 kwargs['current'] = focus
