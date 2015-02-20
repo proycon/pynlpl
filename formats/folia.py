@@ -60,6 +60,7 @@ except ImportError:
 import multiprocessing
 import bz2
 import gzip
+import random
 
 
 FOLIAVERSION = '0.11.2'
@@ -780,7 +781,8 @@ class AbstractElement(object):
         """Generator creating a deep copy of the children of this element. If idsuffix is a string, if set to True, a random idsuffix will be generated including a random 32-bit hash"""
         if idsuffix is True: idsuffix = ".copy." + "%08x" % random.getrandbits(32) #random 32-bit hash for each copy, same one will be reused for all children
         for c in self:
-            yield c.copy(newdoc,idsuffix)
+            if isinstance(c, AbstractElement):
+                yield c.copy(newdoc,idsuffix)
 
 
     def addidsuffix(self, idsuffix, recursive = True):
@@ -803,7 +805,7 @@ class AbstractElement(object):
         """Set a different document, usually no need to call this directly, invoked implicitly by copy()"""
         self.doc = newdoc
         if self.doc and self.id:
-            self.doc[self.id] = self
+            self.doc.index[self.id] = self
         for c in self:
             if isinstance(c, AbstractElement):
                 c.setdoc(newdoc)

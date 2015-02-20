@@ -708,14 +708,14 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             for key, value in self.assignments.items():
                 kwargs[key] = value
 
+            inheritchildren = []
+            if focus and not self.bare: #copy all data within
+                inheritchildren = list(focus.copychildren(query.doc, True))
+
             if actionassignments:
-                if not self.bare: #copy all data within
-                    idsuffix = ".copy." + "%08x" % random.getrandbits(32) #random 32-bit hash for each copy
-                    children = []
-                    for e in focus:
-                        children.append(e.copy(query.doc, idsuffix))
-                kwargs['new'] = action.focus.Class(query.doc,*newdata, **actionassignments)
+                kwargs['new'] = action.focus.Class(query.doc,*inheritchildren, **actionassignments)
                 kwargs['original'] = focus
+                #TODO: if not bare, fix all span annotation references to this element
             else:
                 kwargs['current'] = focus
                 if correction: #reuse the existing correction element
@@ -743,7 +743,9 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                         subassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
                     except KeyError:
                         subassignments['set'] = query.doc.defaultset(action.focus.Class)
-                kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, **subassignments), **suggestionassignments )   )
+                if focus and not self.bare: #copy all data within (we have to do this again for each suggestion as it will generate different ID suffixes)
+                    inheritchildren = list(focus.copychildren(query.doc, True))
+                kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, *inheritchildren,**subassignments), **suggestionassignments )   )
 
             yield parent.correct(**kwargs) #generator
         else:
@@ -840,7 +842,7 @@ class Action(object): #Action expression
                 elif q[i].kw(0, 'AS'):
                     if q[i].kw(1, "ALTERNATIVE"):
                         action.form,_ = Alternative.parse(q[i])
-                    elif q[i].kw(1, "CORRECTION"):
+                    elif q[i].kw(1, "CORRECTION") or (q[i].kw(1,"BARE") and q[i].kw(2, "CORRECTION")):
                         action.form,_ = Correction.parse(q[i],0,action.focus)
                     else:
                         raise SyntaxError("Invalid keyword after AS: " + str(q[i][1]))
