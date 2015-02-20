@@ -471,6 +471,16 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].new(0).text(), "weertegeven")
 
+    def test28b_correct_split(self):
+        """Split Correction"""
+        q = fql.Query(Qcorrect_split)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertIsInstance(results[0].new(0), folia.Word)
+        self.assertIsInstance(results[0].new(1), folia.Word)
+        self.assertEqual(results[0].new(0).text(), "weer")
+        self.assertEqual(results[0].new(1).text(), "gegeven")
+
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
 elif os.path.exists('../FoLiA'):

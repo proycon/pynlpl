@@ -1100,7 +1100,7 @@ class Action(object): #Action expression
                     e =  substitution['parent'].insert(substitution['index']+i, Class, **assignments)
                     for subaction in subactions:
                         subaction.focus.autodeclare(query.doc)
-                        if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction (in subtitution) ", subaction.action,file=sys.stderr)
+                        if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction (in substitution) ", subaction.action,file=sys.stderr)
                         subaction(query, [e], debug ) #note: results of subactions will be silently discarded, they can never select anything
 
                     if len(actions) > 1:
