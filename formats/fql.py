@@ -687,6 +687,13 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 except KeyError:
                     actionassignments['set'] = query.doc.defaultset(action.focus.Class)
 
+        kwargs = {}
+        if self.set:
+            kwargs['set'] = self.set
+
+        for key, value in self.assignments.items():
+            kwargs[key] = value
+
         if action.action == "SELECT":
             if not focus: raise QueryError("SELECT requires a focus element")
             correction = focus.incorrection()
@@ -694,19 +701,10 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 if not self.filter or (self.filter and self.filter.match(query, correction, debug)):
                     yield correction
         elif action.action == "EDIT" or action.action == "ADD":
-
-            kwargs = {}
             if focus:
                 correction = focus.incorrection()
             else:
                 correction = False
-
-
-            if self.set:
-                kwargs['set'] = self.set
-
-            for key, value in self.assignments.items():
-                kwargs[key] = value
 
             inheritchildren = []
             if focus and not self.bare: #copy all data within
@@ -748,6 +746,14 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, *inheritchildren,**subassignments), **suggestionassignments )   )
 
             yield parent.correct(**kwargs) #generator
+        elif action.action == "DELETE":
+            if not focus: raise QueryError("DELETE AS CORRECTION did not find a focus to operate on")
+            kwargs['original'] = focus
+            yield parent.correct(**kwargs) #generator
+        elif action.action == "MERGE":
+            raise NotImplementedError
+        elif action.action == "SPLIT":
+            raise NotImplementedError
         else:
             raise QueryError("Correction does not handle action " + action.action)
 
