@@ -409,6 +409,8 @@ class Selector(object):
                                 if matched:
                                     if debug: print("[FQL EVALUATION DEBUG] Select - Yielding span, multiple references: ", repr(candidate),file=sys.stderr)
                                     yield candidate, e
+                    elif isinstance(e, SpanSet):
+                        yield e, e
                     else:
                         for candidate  in e.select(selector.Class, selector.set, recurse):
                             if not selector.filter or  selector.filter(query,candidate, debug):
@@ -950,7 +952,30 @@ class Action(object): #Action expression
                                focus.setspan(*spanset)
 
                         elif action.action == "DELETE":
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying DELETE to focus ", repr(focus),file=sys.stderr)
                             focus.parent.remove(focus)
+
+                        elif action.action == "MERGE":
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying MERGE to target ", repr(focus),file=sys.stderr)
+                            query.returntype = "focus" #the target will be gone after merge
+                            if not isinstance(target,SpanSet) or not target: raise QueryError("MERGE requires a target SPAN")
+                            focusselection.remove(focus)
+
+                            parent = target[0].parent
+                            index = 0
+
+                            #find insertion index:
+                            for i, e in enumerate(target[0].parent):
+                                if e is target[0]:
+                                 index = i
+
+                            #remove all targets and insert a new one in their place
+                            for e in target:
+                                e.parent.remove(e)
+
+                            focusselection.append( parent.insert(index, action.focus.Class, **action.assignments) )
+                        elif action.action == "SPLIT":
+                            raise NotImplementedError
 
 
             if action.action in ("ADD","APPEND","PREPEND") or (action.action == "EDIT" and not focusselection):
@@ -1004,10 +1029,9 @@ class Action(object): #Action expression
 
             if focusselection and action.subactions:
                 for subaction in action.subactions:
-                    if subaction.action != "SELECT":
-                        #check if set is declared, if not, auto-declare
-                        if debug: print("[FQL EVALUATION DEBUG] Action - Auto-declaring ",action.focus.Class.__name__, " of ", str(action.focus.set),file=sys.stderr)
-                        subaction.focus.autodeclare(query.doc)
+                    #check if set is declared, if not, auto-declare
+                    if debug: print("[FQL EVALUATION DEBUG] Action - Auto-declaring ",action.focus.Class.__name__, " of ", str(action.focus.set),file=sys.stderr)
+                    subaction.focus.autodeclare(query.doc)
                     if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction ", subaction.action,file=sys.stderr)
                     subaction(query, focusselection, debug ) #note: results of subactions will be silently discarded, they can never select anything
 

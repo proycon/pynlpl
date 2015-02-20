@@ -85,6 +85,7 @@ Qcorrect_span = "EDIT entity OF \"http://raw.github.com/proycon/folia/master/set
 
 Qrespan = "EDIT semrole WHERE class = \"actor\" RESPAN ID \"WR-P-E-J-0000000001.p.1.s.7.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.7.w.3\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.7.w.3\""
 
+Qmerge = "MERGE w WITH text \"weertegeven\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.2.w.26\" & ID \"WR-P-E-J-0000000001.p.1.s.2.w.27\" & ID \"WR-P-E-J-0000000001.p.1.s.2.w.28\""
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -440,6 +441,14 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].text(), "gaat") #yes, this is not a proper semantic role for class 'actor', I know.. but I had to make up a test
         self.assertIsInstance(results[1], folia.Word)
         self.assertEqual(results[1].text(), "men")
+
+    def test28_merge(self):
+        """Merging"""
+        q = fql.Query(Qmerge)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertEqual(results[0].text(), "weertegeven")
+
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
