@@ -2989,6 +2989,12 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
         else:
             return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)
 
+    def setspan(self, *args):
+        """Sets the span of the span element anew, erases all data inside"""
+        self.data = []
+        for child in args:
+            self.append(child)
+
     def add(self, child, *args, **kwargs): #alias for append
         return self.append(child, *args, **kwargs)
 
