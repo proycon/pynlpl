@@ -712,9 +712,10 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
             if actionassignments:
                 kwargs['new'] = action.focus.Class(query.doc,*inheritchildren, **actionassignments)
-                kwargs['original'] = focus
+                if focus:
+                    kwargs['original'] = focus
                 #TODO: if not bare, fix all span annotation references to this element
-            else:
+            elif focus:
                 kwargs['current'] = focus
                 if correction: #reuse the existing correction element
                     kwargs['reuse'] = correction
