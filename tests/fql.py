@@ -424,7 +424,7 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].cls, "actor")
         results = list(results[0].wrefs())
         self.assertIsInstance(results[0], folia.Word)
-        self.assertEqual(results[0].text(), "gaat") #yes, this is no a proper semantic role for class 'actor', I know.. but I had to make up a test
+        self.assertEqual(results[0].text(), "gaat") #yes, this is not a proper semantic role for class 'actor', I know.. but I had to make up a test
         self.assertIsInstance(results[1], folia.Word)
         self.assertEqual(results[1].text(), "men")
 

@@ -689,8 +689,6 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 if not self.filter or (self.filter and self.filter.match(query, correction, debug)):
                     yield correction
         elif action.action == "EDIT" or action.action == "ADD":
-            if isspan:
-                raise NotImplementedError("Editing span elements as correction not implemented yet")
 
             kwargs = {}
             if focus:
@@ -698,10 +696,6 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             else:
                 correction = False
 
-            if focus:
-                parent = focus.ancestor(folia.AbstractStructureElement) #TODO: span annotation?
-            else:
-                parent = target
 
             if self.set:
                 kwargs['set'] = self.set
@@ -716,6 +710,14 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 kwargs['current'] = focus
                 if correction: #reuse the existing correction element
                     kwargs['reuse'] = correction
+
+            if focus:
+                if 'reuse' in kwargs and kwargs['reuse']:
+                    parent = focus.ancestor( (folia.AbstractStructureElement, folia.AbstractSpanAnnotation, folia.AbstractAnnotationLayer) )
+                else:
+                    parent = focus.ancestor( (folia.AbstractStructureElement, folia.AbstractSpanAnnotation, folia.AbstractAnnotationLayer, folia.Correction) )
+            else:
+                parent = target
 
             if 'id' not in kwargs and 'reuse' not in kwargs:
                 kwargs['id'] = parent.generate_id(folia.Correction)
