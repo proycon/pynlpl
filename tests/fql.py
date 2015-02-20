@@ -445,12 +445,20 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[1].text(), "men")
 
     def test28_merge(self):
-        """Merging"""
+        """Substitute - Merging"""
         q = fql.Query(Qmerge)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Word)
         self.assertEqual(results[0].text(), "weertegeven")
 
+    def test28_merge(self):
+        """Substitute - Split"""
+        q = fql.Query(Qsplit)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertIsInstance(results[1], folia.Word)
+        self.assertEqual(results[0].text(), "weer")
+        self.assertEqual(results[1].text(), "gegeven")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
