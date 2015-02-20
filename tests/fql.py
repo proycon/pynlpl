@@ -93,6 +93,8 @@ Qcorrect_merge = "SUBSTITUTE w WITH text \"weertegeven\" (AS CORRECTION OF \"htt
 
 Qcorrect_split = "SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegeven\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"runonerror\") FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.6.w.20\""
 
+Qsuggest_split = "SUBSTITUTE (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"runonerror\" SUGGESTION (SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegeven\")) FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.6.w.20\""
+
 class Test1UnparsedQuery(unittest.TestCase):
 
     def test1_basic(self):
@@ -165,6 +167,12 @@ class Test2ParseQuery(unittest.TestCase):
     def test11_parse(self):
         """Parsing """ + Qcorrect2
         q = fql.Query(Qcorrect2)
+
+    def test12_parse(self):
+        """Parsing """ + Qsuggest_split
+        q = fql.Query(Qsuggest_split)
+        self.assertIsInstance(q.action.form, fql.Correction)
+
 
 class Test3Evaluation(unittest.TestCase):
     def setUp(self):
@@ -379,6 +387,7 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].cls, "nonworderror")
+        self.assertEqual(results[0].current(0).cls,"terweil")
         self.assertIsInstance(results[0].suggestions(0), folia.Suggestion)
         self.assertEqual(results[0].suggestions(0).confidence, 0.9)
         self.assertIsInstance(results[0].suggestions(0)[0], folia.LemmaAnnotation)
@@ -418,6 +427,7 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].cls, "nonworderror")
+        self.assertEqual(results[0].current(0).text(),"terweil")
         self.assertIsInstance(results[0].suggestions(0), folia.Suggestion)
         self.assertEqual(results[0].suggestions(0).confidence, 0.9)
         self.assertIsInstance(results[0].suggestions(0)[0], folia.TextContent)
@@ -480,6 +490,18 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0].new(1), folia.Word)
         self.assertEqual(results[0].new(0).text(), "weer")
         self.assertEqual(results[0].new(1).text(), "gegeven")
+        self.assertEqual(results[0].original(0).text(), "weergegeven")
+
+    def test28b_suggest_split(self):
+        """Split Correction"""
+        q = fql.Query(Qsuggest_split)
+        results = q(self.doc,True)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertIsInstance(results[0].suggestions(0), folia.Word)
+        self.assertIsInstance(results[0].suggestions(1), folia.Word)
+        self.assertEqual(results[0].suggestions(0).text(), "weer")
+        self.assertEqual(results[0].suggestions(1).text(), "gegeven")
+        self.assertEqual(results[0].current(0).text(), "weergegeven")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'

@@ -39,6 +39,13 @@ class SyntaxError(Exception):
 class QueryError(Exception):
     pass
 
+
+def getrandomid(query,prefix=""):
+    randomid = ""
+    while not randomid or randomid in query.doc.index:
+        randomid =  prefix + "%08x" % random.getrandbits(32) #generate a random ID
+    return randomid
+
 class UnparsedQuery(object):
     """This class takes care of handling grouped blocks in parentheses and handling quoted values"""
     def __init__(self, s, i=0):
@@ -664,7 +671,12 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if q.kw(i,'SUGGESTION'):
                 i+= 1
                 suggestion = ( {}, {} )
-                if not q.kw(i,'WITH'):
+                if isinstance(q[i], UnparsedQuery):
+                    if not q.kw(i,'SUBSTITUTE'):
+                        raise ParseError("Subexpression after SUGGESTION, expected SUBSTITUTE, got " + str(q[i]))
+                    parsesubstitute(q[i],suggestion)
+                    i += 1
+                elif not q.kw(i,'WITH'):
                     i = getassignments(q, i, suggestion[0], focus) #subassignments (the actual element in the suggestion)
                 if q.kw(i,'WITH'):
                     i = getassignments(q, i+1, suggestion[1]) #assignments for the suggestion
@@ -674,6 +686,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
         return Correction(set, actionassignments, assignments, filter, suggestions, bare), i
 
+    def parsesubstitute(q,suggestion):
+        suggestion[0]['substitute'] = Action.parse(q)
 
     def __call__(self, query, action, focus, target,debug=False):
         """Action delegates to this function"""
@@ -749,6 +763,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                         subassignments['set'] = query.doc.defaultset(action.focus.Class)
                 if focus and not self.bare: #copy all data within (we have to do this again for each suggestion as it will generate different ID suffixes)
                     inheritchildren = list(focus.copychildren(query.doc, True))
+                if folia.Attrib.ID in action.focus.Class.REQUIRED_ATTRIBS:
+                    subassignments['id'] = getrandomid(query, "suggestion.")
                 kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, *inheritchildren,**subassignments), **suggestionassignments )   )
 
             yield parent.correct(**kwargs) #generator
@@ -765,7 +781,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if not doc.declared(folia.Correction, self.set):
                 doc.declare(folia.Correction, self.set)
 
-    def substitute(self, query, substitution, debug):
+    def substitute(self, query, substitution, contextselector, debug):
         kwargs = {}
         if self.set:
             kwargs['set'] = self.set
@@ -773,10 +789,37 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
         for key, value in self.assignments.items():
             kwargs[key] = value
 
-        kwargs = {'insertindex': substitution['index'], 'original': substitution['span']}
 
-        if substitution['new']:
-            kwargs['new'] = []
+        if not substitution:
+            #suggestions only, no subtitution obtained from main action yet, we have to process it still
+            if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Initialising for suggestions only",file=sys.stderr)
+            if isinstance(contextselector,tuple) and len(contextselector) == 2:
+                contextselector = contextselector[0](*contextselector[1])
+            target = list(contextselector)[0]
+            if not isinstance(target, SpanSet):
+                raise QueryError("SUBTITUTE expects target SPAN")
+
+            prev = target[0].parent
+            for e in target[1:]:
+                if e.parent != prev:
+                    raise QueryError("SUBSTITUTE can only be performed when the target items share the same parent")
+
+            insertindex = 0
+            #find insertion index:
+            for i, e in enumerate(target[0].parent):
+                if e is target[0]:
+                    insertindex = i
+                    break
+
+            substitution = {'parent': target[0].parent,'new':[]}
+            kwargs = {'insertindex': insertindex, 'current':target}
+        else:
+            kwargs = {'insertindex': substitution['index'], 'original': substitution['span']}
+            if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Initialising correction",file=sys.stderr)
+            kwargs['new'] = [] #stuff will be appended
+
+        if self.suggestions:
+            kwargs['suggestions'] = [] #stuff will be appended
 
         for i, (Class, actionassignments, subactions) in enumerate(substitution['new']):
             if actionassignments:
@@ -787,12 +830,30 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                         actionassignments['set'] = query.doc.defaultset(Class)
             actionassignments['id'] = "corrected.%08x" % random.getrandbits(32) #generate a random ID
             e = Class(query.doc, **actionassignments)
+            if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Adding to new",file=sys.stderr)
             kwargs['new'].append(e)
             for subaction in subactions:
                 subaction.focus.autodeclare(query.doc)
-                if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction (in subtitution) ", subaction.action,file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Invoking subaction", subaction.action,file=sys.stderr)
                 subaction(query, [e], debug ) #note: results of subactions will be silently discarded
 
+        for subassignments, suggestionassignments in self.suggestions:
+            if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Adding suggestion",file=sys.stderr)
+            subassignments = copy(subassignments) #assignment for the element in the suggestion
+            for key, value in action.assignments.items():
+                if not key in subassignments:
+                    subassignments[key] = value
+            if (not 'set' in subassignments or subassignments['set'] is None) and subassignment['substitute'].focus.Class:
+                try:
+                    subassignments['set'] = query.defaultsets[subassignment['substitute'].focus.Class.XMLTAG]
+                except KeyError:
+                    subassignments['set'] = query.doc.defaultset(subassignment['substitute'].focus.Class)
+            del subassignments['substitute']
+            if folia.Attrib.ID in subassignment['substitute'].focus.Class.REQUIRED_ATTRIBS:
+                subassignments['id'] = getrandomid(query, "suggestion.")
+            kwargs['suggestions'].append( folia.Suggestion(query.doc, subassignment['substitute'].focus.Class(query.doc, **subassignments), **suggestionassignments )   )
+
+        if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Returning correction",file=sys.stderr)
         return substitution['parent'].correct(**kwargs)
 
 def getassignments(q, i, assignments,  focus=None):
@@ -847,18 +908,23 @@ class Action(object): #Action expression
         else:
             raise SyntaxError("Expected action, got " + q[i] + " in: " + str(q))
 
-        i += 1
-        focus, i = Selector.parse(q,i)
-
-        if action == "ADD" and focus.filter:
-            raise SyntaxError("Focus has WHERE statement but ADD action does not support this")
-
         assignments = {}
-        if q.kw(i,"WITH"):
-            if action in ("SELECT", "DELETE"):
-                raise SyntaxError("Focus has WITH statement but " + action + " does not support this: " +str(q))
+
+        i += 1
+        if (action == 'SUBSTITUTE') and (q.mask[i] == MASK_EXPRESSION):
+            focus = None   #We have a SUBSTITUTE (AS CORRECTION) expression
             i += 1
-            i = getassignments(q,i ,assignments, focus)
+        else:
+            focus, i = Selector.parse(q,i)
+
+            if action == "ADD" and focus.filter:
+                raise SyntaxError("Focus has WHERE statement but ADD action does not support this")
+
+            if q.kw(i,"WITH"):
+                if action in ("SELECT", "DELETE"):
+                    raise SyntaxError("Focus has WITH statement but " + action + " does not support this: " +str(q))
+                i += 1
+                i = getassignments(q,i ,assignments, focus)
 
         #we have enough to set up the action now
         action = Action(action, focus, assignments)
@@ -920,193 +986,202 @@ class Action(object): #Action expression
             constrainedtargetselection_all = []
 
         for action in actions:
-            if action.action != "SELECT":
+            if action.action != "SELECT" and action.focus:
                 #check if set is declared, if not, auto-declare
                 if debug: print("[FQL EVALUATION DEBUG] Action - Auto-declaring ",action.focus.Class.__name__, " of ", str(action.focus.set),file=sys.stderr)
                 action.focus.autodeclare(query.doc)
 
-        if action.form and isinstance(action.form, Correction):
-            if debug: print("[FQL EVALUATION DEBUG] Action - Auto-declaring ",action.focus.Class.__name__, " of ", str(action.focus.set),file=sys.stderr)
-            action.form.autodeclare(query.doc)
+            if action.form and isinstance(action.form, Correction) and action.focus:
+                if debug: print("[FQL EVALUATION DEBUG] Action - Auto-declaring ",action.focus.Class.__name__, " of ", str(action.focus.set),file=sys.stderr)
+                action.form.autodeclare(query.doc)
 
 
         substitution = {}
-
-        for action in actions:
-            if debug: print("[FQL EVALUATION DEBUG] Action - Evaluating action ", action.action,file=sys.stderr)
-            focusselection = []
-            constrainedtargetselection = [] #selecting focus elements constrains the target selection
-            processed_form = []
-
-            if substitution and action.action != "SUBSTITUTE":
-                raise QueryError("SUBSTITUTE can not be chained with " + action.action)
-
-            if action.action not in ("ADD","APPEND","PREPEND"): #only for actions that operate on an existing focus
-                for focus, target in action.focus(query, contextselector, True, debug):
-                    if target and action.action != "SUBSTITUTE":
-                        if isinstance(target, SpanSet):
-                            for e in target:
-                                if not any(x is e for x in constrainedtargetselection):
-                                    constrainedtargetselection.append(e)
-                        elif not any(x is target for x in constrainedtargetselection):
-                            if debug: print("[FQL EVALUATION DEBUG] Action - Got target result, adding ", repr(target),file=sys.stderr)
-                            constrainedtargetselection.append(target)
-                        elif debug:
-                            print("[FQL EVALUATION DEBUG] Action - Target result already obtained, skipping... ", repr(target),file=sys.stderr)
-
-
-                    if action.form and action.action != "SUBSTITUTE":
-                        #Delegate action to form (= correction or alternative)
-                        if not any(x is focus for x in  processed_form):
-                            if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, processing using form ", repr(focus),file=sys.stderr)
-                            processed_form.append(focus)
-                            focusselection += list(action.form(query, action,focus,target,debug))
-                        elif debug:
-                            print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
-                            continue
-                    else:
-                        if action.action != "DELETE" and not any(x is focus for x in  focusselection):
-                            if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
-                            focusselection.append(focus)
-                        elif debug:
-                            print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
-                            continue
-
-                        if action.action == "EDIT":
-                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying EDIT to focus ", repr(focus),file=sys.stderr)
-                            for attr, value in action.assignments.items():
-                                if attr == "text":
-                                    focus.settext(value)
-                                else:
-                                    setattr(focus, attr, value)
-                            if 'respan' in action.extra:
-                               if not isinstance(focus, folia.AbstractSpanAnnotation): raise QueryError("Can only perform RESPAN on span annotation elements!")
-                               spanset = action.extra['respan'](query, contextselector, True, debug)
-                               focus.setspan(*spanset)
-
-                        elif action.action == "DELETE":
-                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying DELETE to focus ", repr(focus),file=sys.stderr)
-                            focus.parent.remove(focus)
-
-                        elif action.action == "SUBSTITUTE":
-                            if debug: print("[FQL EVALUATION DEBUG] Action - Applying SUBSTITUTE to target ", repr(focus),file=sys.stderr)
-                            if not isinstance(target,SpanSet) or not target: raise QueryError("SUBSTITUTE requires a target SPAN")
-                            focusselection.remove(focus)
-
-                            if not substitution:
-                                #this is the first SUBSTITUTE in a chain
-                                prev = target[0].parent
-                                for e in target[1:]:
-                                    if e.parent != prev:
-                                        raise QueryError("SUBSTITUTE can only be performed when the target items share the same parent")
-
-                                substitution['parent'] = target[0].parent
-                                substitution['index'] = 0
-                                substitution['span'] = target
-                                substitution['new'] = []
-
-                                #find insertion index:
-                                for i, e in enumerate(target[0].parent):
-                                    if e is target[0]:
-                                        substitution['index'] = i
-
-                            substitution['new'].append( (action.focus.Class, action.assignments, action.subactions)  )
-
-
-
-            if action.action in ("ADD","APPEND","PREPEND") or (action.action == "EDIT" and not focusselection):
-                if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " to targets",file=sys.stderr)
-                if not action.focus.Class:
-                    raise QueryError("Focus of action has no class!")
-
-                isspan = issubclass(action.focus.Class, folia.AbstractSpanAnnotation)
-
-                #if not 'set' in action.assignments:
-                #    if action.focus.Class.XMLTAG in query.defaultsets:
-                #        action.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
-                if not 'set' in action.assignments:
-                    action.assignments['set'] = action.focus.set
-
-                if isinstance(contextselector, tuple) and len(contextselector) == 2:
-                    targetselection = contextselector[0](*contextselector[1])
-                else:
-                    targetselection = contextselector
-
-                for target in targetselection:
-                    if action.form:
-                        #Delegate action to form (= correction or alternative)
-                        focusselection += list( action.form(query, action,None,target,debug) )
-                    else:
-                        if isinstance(target, SpanSet):
-                            if action.action == "ADD" or action.action == "EDIT":
-                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target spanset " + repr(target),file=sys.stderr)
-                                focusselection.append( target[0].add(action.focus.Class, *target, **action.assignments) ) #handles span annotation too
-                        else:
-                            if action.action == "ADD" or action.action == "EDIT":
-                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target " + repr(target),file=sys.stderr)
-                                focusselection.append( target.add(action.focus.Class, **action.assignments) ) #handles span annotation too
-                            elif action.action == "APPEND":
-                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
-                                index = target.parent.data.index(target)
-                                focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
-                            elif action.action == "PREPEND":
-                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
-                                index = target.parent.data.index(target) - 1
-                                focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
-
-                    if not any(x is target for x in constrainedtargetselection):
-                        if isinstance(target, SpanSet):
-                            for e in target:
-                                if not any(x is e for x in constrainedtargetselection):
-                                    constrainedtargetselection.append(e)
-                        else:
-                            constrainedtargetselection.append(target)
-
-            if focusselection and action.subactions and not substitution:
-                for subaction in action.subactions:
-                    #check if set is declared, if not, auto-declare
-                    if debug: print("[FQL EVALUATION DEBUG] Action - Auto-declaring ",action.focus.Class.__name__, " of ", str(action.focus.set),file=sys.stderr)
-                    subaction.focus.autodeclare(query.doc)
-                    if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction ", subaction.action,file=sys.stderr)
-                    subaction(query, focusselection, debug ) #note: results of subactions will be silently discarded, they can never select anything
-
-            if len(actions) > 1:
-                #consolidate results:
-                focusselection_all = []
-                for e in focusselection:
-                    if not any(x is e for x in focusselection_all):
-                        focusselection_all.append(e)
-                constrainedtargetselection_all = []
-                for e in constrainedtargetselection:
-                    if not any(x is e for x in constrainedtargetselection_all):
-                        constrainedtargetselection_all.append(e)
-
-        if substitution:
-            constrainedtargetselection_all = []
+        if self.action == 'SUBSTITUTE' and not self.focus and self.form:
+            #we have a SUBSTITUTE (AS CORRECTION) statement with no correction but only suggestions
+            #defer substitute to form
+            result = self.form.substitute(query, None, contextselector, debug)
+            focusselection = [result]
             constrainedtargetselection = []
-            if action.form:
-                result = action.form.substitute(query, substitution,debug)
-                if len(actions) > 1:
-                    focusselection_all.append(result)
-                else:
-                    focusselection.append(result)
-            else:
-                if debug: print("[FQL EVALUATION DEBUG] Action - Substitution - Removing target",file=sys.stderr)
-                for e in substitution['span']:
-                    substitution['parent'].remove(e)
+            #(no further chaining possible in this setup)
+        else:
 
-                for i, (Class, assignments, subactions) in enumerate(substitution['new']):
-                    if debug: print("[FQL EVALUATION DEBUG] Action - Substitution - Inserting substitution",file=sys.stderr)
-                    e =  substitution['parent'].insert(substitution['index']+i, Class, **assignments)
-                    for subaction in subactions:
-                        subaction.focus.autodeclare(query.doc)
-                        if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction (in substitution) ", subaction.action,file=sys.stderr)
-                        subaction(query, [e], debug ) #note: results of subactions will be silently discarded, they can never select anything
+            for action in actions:
+                if debug: print("[FQL EVALUATION DEBUG] Action - Evaluating action ", action.action,file=sys.stderr)
+                focusselection = []
+                constrainedtargetselection = [] #selecting focus elements constrains the target selection
+                processed_form = []
 
-                    if len(actions) > 1:
-                        focusselection_all.append(e)
+                if substitution and action.action != "SUBSTITUTE":
+                    raise QueryError("SUBSTITUTE can not be chained with " + action.action)
+
+                if action.action not in ("ADD","APPEND","PREPEND"): #only for actions that operate on an existing focus
+                    for focus, target in action.focus(query, contextselector, True, debug):
+                        if target and action.action != "SUBSTITUTE":
+                            if isinstance(target, SpanSet):
+                                for e in target:
+                                    if not any(x is e for x in constrainedtargetselection):
+                                        constrainedtargetselection.append(e)
+                            elif not any(x is target for x in constrainedtargetselection):
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Got target result, adding ", repr(target),file=sys.stderr)
+                                constrainedtargetselection.append(target)
+                            elif debug:
+                                print("[FQL EVALUATION DEBUG] Action - Target result already obtained, skipping... ", repr(target),file=sys.stderr)
+
+
+                        if action.form and action.action != "SUBSTITUTE":
+                            #Delegate action to form (= correction or alternative)
+                            if not any(x is focus for x in  processed_form):
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, processing using form ", repr(focus),file=sys.stderr)
+                                processed_form.append(focus)
+                                focusselection += list(action.form(query, action,focus,target,debug))
+                            elif debug:
+                                print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
+                                continue
+                        else:
+                            if action.action != "DELETE" and not any(x is focus for x in  focusselection):
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
+                                focusselection.append(focus)
+                            elif debug:
+                                print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
+                                continue
+
+                            if action.action == "EDIT":
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying EDIT to focus ", repr(focus),file=sys.stderr)
+                                for attr, value in action.assignments.items():
+                                    if attr == "text":
+                                        focus.settext(value)
+                                    else:
+                                        setattr(focus, attr, value)
+                                if 'respan' in action.extra:
+                                    if not isinstance(focus, folia.AbstractSpanAnnotation): raise QueryError("Can only perform RESPAN on span annotation elements!")
+                                    spanset = action.extra['respan'](query, contextselector, True, debug)
+                                    focus.setspan(*spanset)
+
+                            elif action.action == "DELETE":
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying DELETE to focus ", repr(focus),file=sys.stderr)
+                                focus.parent.remove(focus)
+
+                            elif action.action == "SUBSTITUTE":
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Applying SUBSTITUTE to target ", repr(focus),file=sys.stderr)
+                                if not isinstance(target,SpanSet) or not target: raise QueryError("SUBSTITUTE requires a target SPAN")
+                                focusselection.remove(focus)
+
+                                if not substitution:
+                                    #this is the first SUBSTITUTE in a chain
+                                    prev = target[0].parent
+                                    for e in target[1:]:
+                                        if e.parent != prev:
+                                            raise QueryError("SUBSTITUTE can only be performed when the target items share the same parent")
+
+                                    substitution['parent'] = target[0].parent
+                                    substitution['index'] = 0
+                                    substitution['span'] = target
+                                    substitution['new'] = []
+
+                                    #find insertion index:
+                                    for i, e in enumerate(target[0].parent):
+                                        if e is target[0]:
+                                            substitution['index'] = i
+                                            break
+
+                                substitution['new'].append( (action.focus.Class, action.assignments, action.subactions)  )
+
+
+
+                if action.action in ("ADD","APPEND","PREPEND") or (action.action == "EDIT" and not focusselection):
+                    if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " to targets",file=sys.stderr)
+                    if not action.focus.Class:
+                        raise QueryError("Focus of action has no class!")
+
+                    isspan = issubclass(action.focus.Class, folia.AbstractSpanAnnotation)
+
+                    #if not 'set' in action.assignments:
+                    #    if action.focus.Class.XMLTAG in query.defaultsets:
+                    #        action.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
+                    if not 'set' in action.assignments:
+                        action.assignments['set'] = action.focus.set
+
+                    if isinstance(contextselector, tuple) and len(contextselector) == 2:
+                        targetselection = contextselector[0](*contextselector[1])
                     else:
-                        focusselection.append(e)
+                        targetselection = contextselector
+
+                    for target in targetselection:
+                        if action.form:
+                            #Delegate action to form (= correction or alternative)
+                            focusselection += list( action.form(query, action,None,target,debug) )
+                        else:
+                            if isinstance(target, SpanSet):
+                                if action.action == "ADD" or action.action == "EDIT":
+                                    if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target spanset " + repr(target),file=sys.stderr)
+                                    focusselection.append( target[0].add(action.focus.Class, *target, **action.assignments) ) #handles span annotation too
+                            else:
+                                if action.action == "ADD" or action.action == "EDIT":
+                                    if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target " + repr(target),file=sys.stderr)
+                                    focusselection.append( target.add(action.focus.Class, **action.assignments) ) #handles span annotation too
+                                elif action.action == "APPEND":
+                                    if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
+                                    index = target.parent.data.index(target)
+                                    focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
+                                elif action.action == "PREPEND":
+                                    if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
+                                    index = target.parent.data.index(target) - 1
+                                    focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
+
+                        if not any(x is target for x in constrainedtargetselection):
+                            if isinstance(target, SpanSet):
+                                for e in target:
+                                    if not any(x is e for x in constrainedtargetselection):
+                                        constrainedtargetselection.append(e)
+                            else:
+                                constrainedtargetselection.append(target)
+
+                if focusselection and action.subactions and not substitution:
+                    for subaction in action.subactions:
+                        #check if set is declared, if not, auto-declare
+                        if debug: print("[FQL EVALUATION DEBUG] Action - Auto-declaring ",action.focus.Class.__name__, " of ", str(action.focus.set),file=sys.stderr)
+                        subaction.focus.autodeclare(query.doc)
+                        if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction ", subaction.action,file=sys.stderr)
+                        subaction(query, focusselection, debug ) #note: results of subactions will be silently discarded, they can never select anything
+
+                if len(actions) > 1:
+                    #consolidate results:
+                    focusselection_all = []
+                    for e in focusselection:
+                        if not any(x is e for x in focusselection_all):
+                            focusselection_all.append(e)
+                    constrainedtargetselection_all = []
+                    for e in constrainedtargetselection:
+                        if not any(x is e for x in constrainedtargetselection_all):
+                            constrainedtargetselection_all.append(e)
+
+            if substitution:
+                constrainedtargetselection_all = []
+                constrainedtargetselection = []
+                if action.form:
+                    result = action.form.substitute(query, substitution, None, debug)
+                    if len(actions) > 1:
+                        focusselection_all.append(result)
+                    else:
+                        focusselection.append(result)
+                else:
+                    if debug: print("[FQL EVALUATION DEBUG] Action - Substitution - Removing target",file=sys.stderr)
+                    for e in substitution['span']:
+                        substitution['parent'].remove(e)
+
+                    for i, (Class, assignments, subactions) in enumerate(substitution['new']):
+                        if debug: print("[FQL EVALUATION DEBUG] Action - Substitution - Inserting substitution",file=sys.stderr)
+                        e =  substitution['parent'].insert(substitution['index']+i, Class, **assignments)
+                        for subaction in subactions:
+                            subaction.focus.autodeclare(query.doc)
+                            if debug: print("[FQL EVALUATION DEBUG] Action - Invoking subaction (in substitution) ", subaction.action,file=sys.stderr)
+                            subaction(query, [e], debug ) #note: results of subactions will be silently discarded, they can never select anything
+
+                        if len(actions) > 1:
+                            focusselection_all.append(e)
+                        else:
+                            focusselection.append(e)
 
         if len(actions) > 1:
             return focusselection_all, constrainedtargetselection_all
