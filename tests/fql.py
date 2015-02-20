@@ -77,6 +77,9 @@ Qcorrect2 = "EDIT lemma WHERE class = \"terweil\" (AS CORRECTION OF \"http://raw
 Qsuggest1 = "EDIT lemma WHERE class = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" SUGGESTION class \"terwijl\" WITH confidence 0.9 SUGGESTION class \"gedurende\" WITH confidence 0.1)"
 Qcorrectsuggest = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9 SUGGESTION class \"gedurende\" WITH confidence 0.1)"
 
+Qcorrect_text = "EDIT t WHERE text = \"terweil\" WITH text \"terwijl\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" confidence 0.9)"
+Qsuggest_text = "EDIT t WHERE text = \"terweil\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"nonworderror\" SUGGESTION text \"terwijl\" WITH confidence 0.9 SUGGESTION text \"gedurende\" WITH confidence 0.1)"
+
 class Test1UnparsedQuery(unittest.TestCase):
 
     def test1_basic(self):
@@ -384,6 +387,31 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].suggestions(0).confidence, 0.1)
         self.assertIsInstance(results[0].suggestions(0)[0], folia.LemmaAnnotation)
         self.assertEqual(results[0].suggestions(0)[0].cls, "gedurende")
+
+    def test25a_edit_correct_text(self):
+        """Add correction on text"""
+        q = fql.Query(Qcorrect_text)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "nonworderror")
+        self.assertEqual(results[0].confidence, 0.9)
+        self.assertIsInstance(results[0].new(0), folia.TextContent)
+        self.assertEqual(results[0].new(0).text(), "terwijl")
+
+    def test25b_edit_suggest_text(self):
+        """Add suggestion for correction on text"""
+        q = fql.Query(Qsuggest_text)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "nonworderror")
+        self.assertIsInstance(results[0].suggestions(0), folia.Suggestion)
+        self.assertEqual(results[0].suggestions(0).confidence, 0.9)
+        self.assertIsInstance(results[0].suggestions(0)[0], folia.TextContent)
+        self.assertEqual(results[0].suggestions(0)[0].text(), "terwijl")
+        self.assertIsInstance(results[0].suggestions(1), folia.Suggestion)
+        self.assertEqual(results[0].suggestions(1).confidence, 0.1)
+        self.assertIsInstance(results[0].suggestions(1)[0], folia.TextContent)
+        self.assertEqual(results[0].suggestions(1)[0].text(), "gedurende")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'

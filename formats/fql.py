@@ -619,7 +619,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
         self.suggestions = suggestions # [ (subassignments, suggestionassignments) ]
 
     @staticmethod
-    def parse(q,i=0):
+    def parse(q,i, focus):
         if q.kw(i,'AS') and q.kw(i+1,'CORRECTION'):
             i += 1
 
@@ -635,7 +635,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 set = q[i+1]
                 i += 2
             if not q.kw(i,'WITH'):
-                i = getassignments(q, i, actionassignments)
+                i = getassignments(q, i, actionassignments, focus)
             if q.kw(i,'WHERE'):
                 filter, i = Filter.parse(q, i+1)
             if q.kw(i,'WITH'):
@@ -649,7 +649,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 i+= 1
                 suggestion = ( {}, {} )
                 if not q.kw(i,'WITH'):
-                    i = getassignments(q, i, suggestion[0]) #subassignments (the actual element in the suggestion)
+                    i = getassignments(q, i, suggestion[0], focus) #subassignments (the actual element in the suggestion)
                 if q.kw(i,'WITH'):
                     i = getassignments(q, i+1, suggestion[1]) #assignments for the suggestion
                 suggestions.append(suggestion)
@@ -822,7 +822,7 @@ class Action(object): #Action expression
                     if q[i].kw(1, "ALTERNATIVE"):
                         action.form,_ = Alternative.parse(q[i])
                     elif q[i].kw(1, "CORRECTION"):
-                        action.form,_ = Correction.parse(q[i])
+                        action.form,_ = Correction.parse(q[i],0,action.focus)
                     else:
                         raise SyntaxError("Invalid keyword after AS: " + str(q[i][1]))
                 i+=1
