@@ -1335,7 +1335,7 @@ class Query(object):
                 else:
                     r = "<results>\n"
                     for e in responseselection:
-                        r += "<result>\n" + e.xmlstring(True) + "\n</result>\n"
+                        r += "<result>\n" + e.xmlstring(True) + "</result>\n"
                     r += "</results>\n"
                     return r
             elif self.format == "json":
