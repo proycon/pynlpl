@@ -493,14 +493,14 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].original(0).text(), "weergegeven")
 
     def test28b_suggest_split(self):
-        """Split Correction"""
+        """Split Suggestion for Correction"""
         q = fql.Query(Qsuggest_split)
         results = q(self.doc,True)
         self.assertIsInstance(results[0], folia.Correction)
-        self.assertIsInstance(results[0].suggestions(0), folia.Word)
-        self.assertIsInstance(results[0].suggestions(1), folia.Word)
-        self.assertEqual(results[0].suggestions(0).text(), "weer")
-        self.assertEqual(results[0].suggestions(1).text(), "gegeven")
+        self.assertIsInstance(results[0].suggestions(0)[0], folia.Word)
+        self.assertIsInstance(results[0].suggestions(1)[0], folia.Word)
+        self.assertEqual(results[0].suggestions(0)[0].text(), "weer")
+        self.assertEqual(results[0].suggestions(1)[0].text(), "gegeven")
         self.assertEqual(results[0].current(0).text(), "weergegeven")
 
 if os.path.exists('../../FoLiA'):

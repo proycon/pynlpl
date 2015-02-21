@@ -672,9 +672,9 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 i+= 1
                 suggestion = ( {}, {} )
                 if isinstance(q[i], UnparsedQuery):
-                    if not q.kw(i,'SUBSTITUTE'):
+                    if not q[i].kw(0,'SUBSTITUTE'):
                         raise ParseError("Subexpression after SUGGESTION, expected SUBSTITUTE, got " + str(q[i]))
-                    parsesubstitute(q[i],suggestion)
+                    Correction.parsesubstitute(q[i],suggestion)
                     i += 1
                 elif not q.kw(i,'WITH'):
                     i = getassignments(q, i, suggestion[0], focus) #subassignments (the actual element in the suggestion)
@@ -686,8 +686,9 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
         return Correction(set, actionassignments, assignments, filter, suggestions, bare), i
 
+    @staticmethod
     def parsesubstitute(q,suggestion):
-        suggestion[0]['substitute'] = Action.parse(q)
+        suggestion[0]['substitute'],_ = Action.parse(q)
 
     def __call__(self, query, action, focus, target,debug=False):
         """Action delegates to this function"""
@@ -840,18 +841,18 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
         for subassignments, suggestionassignments in self.suggestions:
             if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Adding suggestion",file=sys.stderr)
             subassignments = copy(subassignments) #assignment for the element in the suggestion
-            for key, value in action.assignments.items():
-                if not key in subassignments:
-                    subassignments[key] = value
-            if (not 'set' in subassignments or subassignments['set'] is None) and subassignment['substitute'].focus.Class:
+            if isinstance(subassignments['substitute'].focus, tuple) and len(subassignments['substitute'].focus) == 2:
+                subassignments['substitute'].focus = subassignments['substitute'].focus[0]
+            if (not 'set' in subassignments or subassignments['set'] is None) and subassignments['substitute'].focus.Class:
                 try:
-                    subassignments['set'] = query.defaultsets[subassignment['substitute'].focus.Class.XMLTAG]
+                    subassignments['set'] = query.defaultsets[subassignments['substitute'].focus.Class.XMLTAG]
                 except KeyError:
-                    subassignments['set'] = query.doc.defaultset(subassignment['substitute'].focus.Class)
+                    subassignments['set'] = query.doc.defaultset(subassignments['substitute'].focus.Class)
+            focus = subassignments['substitute'].focus
             del subassignments['substitute']
-            if folia.Attrib.ID in subassignment['substitute'].focus.Class.REQUIRED_ATTRIBS:
+            if folia.Attrib.ID in focus.Class.REQUIRED_ATTRIBS:
                 subassignments['id'] = getrandomid(query, "suggestion.")
-            kwargs['suggestions'].append( folia.Suggestion(query.doc, subassignment['substitute'].focus.Class(query.doc, **subassignments), **suggestionassignments )   )
+            kwargs['suggestions'].append( folia.Suggestion(query.doc,focus.Class(query.doc, **subassignments), **suggestionassignments )   )
 
         if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Returning correction",file=sys.stderr)
         return substitution['parent'].correct(**kwargs)
@@ -911,9 +912,8 @@ class Action(object): #Action expression
         assignments = {}
 
         i += 1
-        if (action == 'SUBSTITUTE') and (q.mask[i] == MASK_EXPRESSION):
+        if (action == 'SUBSTITUTE') and (isinstance(q[i],UnparsedQuery)):
             focus = None   #We have a SUBSTITUTE (AS CORRECTION) expression
-            i += 1
         else:
             focus, i = Selector.parse(q,i)
 
