@@ -173,7 +173,7 @@ class Test2ParseQuery(unittest.TestCase):
         q = fql.Query(Qsuggest_split)
         self.assertIsInstance(q.action.form, fql.Correction)
         self.assertEqual( len(q.action.form.suggestions),1)
-        self.assertEqual( q.action.form.suggestions[0][0]['substitute'] ,
+        self.assertEqual( q.action.form.suggestions[0][0]['substitute'])
 
 
 class Test3Evaluation(unittest.TestCase):
