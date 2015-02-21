@@ -172,6 +172,8 @@ class Test2ParseQuery(unittest.TestCase):
         """Parsing """ + Qsuggest_split
         q = fql.Query(Qsuggest_split)
         self.assertIsInstance(q.action.form, fql.Correction)
+        self.assertEqual( len(q.action.form.suggestions),1)
+        self.assertEqual( q.action.form.suggestions[0][0]['substitute'] ,
 
 
 class Test3Evaluation(unittest.TestCase):
@@ -495,12 +497,13 @@ class Test3Evaluation(unittest.TestCase):
     def test28b_suggest_split(self):
         """Split Suggestion for Correction"""
         q = fql.Query(Qsuggest_split)
-        results = q(self.doc,True)
+        results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
+        print(results[0].suggestions(0).xmlstring())
         self.assertIsInstance(results[0].suggestions(0)[0], folia.Word)
-        self.assertIsInstance(results[0].suggestions(1)[0], folia.Word)
+        self.assertIsInstance(results[0].suggestions(0)[1], folia.Word)
         self.assertEqual(results[0].suggestions(0)[0].text(), "weer")
-        self.assertEqual(results[0].suggestions(1)[0].text(), "gegeven")
+        self.assertEqual(results[0].suggestions(0)[1].text(), "gegeven")
         self.assertEqual(results[0].current(0).text(), "weergegeven")
 
 if os.path.exists('../../FoLiA'):

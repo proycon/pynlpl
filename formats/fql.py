@@ -839,20 +839,28 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 subaction(query, [e], debug ) #note: results of subactions will be silently discarded
 
         for subassignments, suggestionassignments in self.suggestions:
-            if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Adding suggestion",file=sys.stderr)
-            subassignments = copy(subassignments) #assignment for the element in the suggestion
-            if isinstance(subassignments['substitute'].focus, tuple) and len(subassignments['substitute'].focus) == 2:
-                subassignments['substitute'].focus = subassignments['substitute'].focus[0]
-            if (not 'set' in subassignments or subassignments['set'] is None) and subassignments['substitute'].focus.Class:
-                try:
-                    subassignments['set'] = query.defaultsets[subassignments['substitute'].focus.Class.XMLTAG]
-                except KeyError:
-                    subassignments['set'] = query.doc.defaultset(subassignments['substitute'].focus.Class)
-            focus = subassignments['substitute'].focus
+            suggestionchildren = []
+            action = subassignments['substitute']
             del subassignments['substitute']
-            if folia.Attrib.ID in focus.Class.REQUIRED_ATTRIBS:
-                subassignments['id'] = getrandomid(query, "suggestion.")
-            kwargs['suggestions'].append( folia.Suggestion(query.doc,focus.Class(query.doc, **subassignments), **suggestionassignments )   )
+            if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Adding suggestion",file=sys.stderr)
+            while action:
+                subassignments = copy(subassignments) #assignment for the element in the suggestion
+                if isinstance(action.focus, tuple) and len(action.focus) == 2:
+                    action.focus = action.focus[0]
+                for key, value in action.assignments.items():
+                    subassignments[key] = value
+                if (not 'set' in subassignments or subassignments['set'] is None) and action.focus.Class:
+                    try:
+                        subassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
+                    except KeyError:
+                        subassignments['set'] = query.doc.defaultset(action.focus.Class)
+                focus = action.focus
+                if folia.Attrib.ID in focus.Class.REQUIRED_ATTRIBS:
+                    subassignments['id'] = getrandomid(query, "suggestion.")
+                suggestionchildren.append( focus.Class(query.doc, **subassignments))
+                action = action.nextaction
+
+            kwargs['suggestions'].append( folia.Suggestion(query.doc,*suggestionchildren, **suggestionassignments )   )
 
         if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Returning correction",file=sys.stderr)
         return substitution['parent'].correct(**kwargs)
