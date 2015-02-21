@@ -498,7 +498,6 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qsuggest_split)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
-        print(results[0].suggestions(0).xmlstring())
         self.assertIsInstance(results[0].suggestions(0)[0], folia.Word)
         self.assertIsInstance(results[0].suggestions(0)[1], folia.Word)
         self.assertEqual(results[0].suggestions(0)[0].text(), "weer")
