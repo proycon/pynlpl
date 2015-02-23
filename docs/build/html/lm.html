@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Language Models &mdash; PyNLPl 0.6.5 documentation</title>
+    <title>Language Models &mdash; PyNLPl 0.7.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.6.5',
+        URL_ROOT:    './',
+        VERSION:     '0.7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.6.5 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.7.0 documentation" href="index.html" />
     <link rel="next" title="Search Algorithms" href="search.html" />
     <link rel="prev" title="Formats" href="formats.html" /> 
   </head>
@@ -46,7 +44,7 @@
         <li class="right" >
           <a href="formats.html" title="Formats"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.5 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.7.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -59,23 +57,45 @@
 <span id="language-models"></span><h1>Language Models<a class="headerlink" href="#module-pynlpl.lm.lm" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pynlpl.lm.lm.ARPALanguageModel">
-<em class="property">class </em><tt class="descclassname">pynlpl.lm.lm.</tt><tt class="descname">ARPALanguageModel</tt><big>(</big><em>filename</em>, <em>encoding=u'utf-8'</em>, <em>encoder=None</em>, <em>base_e=True</em>, <em>debug=False</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Full back-off language model, loaded from file in ARPA format. This class does not build the model but allows you to use a pre-computed one. You can use the tool ngram-count from for instance SRILM to actually build the model.</p>
+<em class="property">class </em><tt class="descclassname">pynlpl.lm.lm.</tt><tt class="descname">ARPALanguageModel</tt><big>(</big><em>filename</em>, <em>encoding='utf-8'</em>, <em>encoder=None</em>, <em>base_e=True</em>, <em>dounknown=True</em>, <em>debug=False</em>, <em>mode='simple'</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Full back-off language model, loaded from file in ARPA format.</p>
+<p>This class does not build the model but allows you to use a pre-computed one.
+You can use the tool ngram-count from for instance SRILM to actually build the model.</p>
+<dl class="class">
+<dt id="pynlpl.lm.lm.ARPALanguageModel.NgramsProbs">
+<em class="property">class </em><tt class="descname">NgramsProbs</tt><big>(</big><em>data</em>, <em>mode='simple'</em>, <em>delim=' '</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel.NgramsProbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store Ngrams with their probabilities and backoffs.</p>
+<p>This class is used in order to abstract the physical storage layout,
+and enable memory/speed tradeoffs.</p>
+<dl class="method">
+<dt id="pynlpl.lm.lm.ARPALanguageModel.NgramsProbs.backoff">
+<tt class="descname">backoff</tt><big>(</big><em>ngram</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel.NgramsProbs.backoff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return backoff value of a given ngram tuple</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.lm.lm.ARPALanguageModel.NgramsProbs.prob">
+<tt class="descname">prob</tt><big>(</big><em>ngram</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel.NgramsProbs.prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return probability of given ngram tuple</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="method">
 <dt id="pynlpl.lm.lm.ARPALanguageModel.score">
-<tt class="descname">score</tt><big>(</big><em>data</em>, <em>history=None</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel.score" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">ARPALanguageModel.</tt><tt class="descname">score</tt><big>(</big><em>data</em>, <em>history=None</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel.score" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.lm.lm.ARPALanguageModel.scoreword">
-<tt class="descname">scoreword</tt><big>(</big><em>word</em>, <em>history=None</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel.scoreword" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">ARPALanguageModel.</tt><tt class="descname">scoreword</tt><big>(</big><em>word</em>, <em>history=None</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.ARPALanguageModel.scoreword" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.lm.lm.SimpleLanguageModel">
-<em class="property">class </em><tt class="descclassname">pynlpl.lm.lm.</tt><tt class="descname">SimpleLanguageModel</tt><big>(</big><em>n=2</em>, <em>casesensitive=True</em>, <em>beginmarker=u'&lt;begin&gt;'</em>, <em>endmarker=u'&lt;end&gt;'</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.SimpleLanguageModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.lm.lm.</tt><tt class="descname">SimpleLanguageModel</tt><big>(</big><em>n=2</em>, <em>casesensitive=True</em>, <em>beginmarker='&lt;begin&gt;'</em>, <em>endmarker='&lt;end&gt;'</em><big>)</big><a class="headerlink" href="#pynlpl.lm.lm.SimpleLanguageModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is a simple unsmoothed language model. This class can both hold and compute the model.</p>
 <dl class="method">
 <dt id="pynlpl.lm.lm.SimpleLanguageModel.append">
@@ -149,7 +169,7 @@
 
 <span class="target" id="module-pynlpl.lm.client"></span><dl class="class">
 <dt id="pynlpl.lm.client.LMClient">
-<em class="property">class </em><tt class="descclassname">pynlpl.lm.client.</tt><tt class="descname">LMClient</tt><big>(</big><em>host=u'localhost'</em>, <em>port=12346</em>, <em>n=0</em><big>)</big><a class="headerlink" href="#pynlpl.lm.client.LMClient" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.lm.client.</tt><tt class="descname">LMClient</tt><big>(</big><em>host='localhost'</em>, <em>port=12346</em>, <em>n=0</em><big>)</big><a class="headerlink" href="#pynlpl.lm.client.LMClient" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="pynlpl.lm.client.LMClient.scoresentence">
 <tt class="descname">scoresentence</tt><big>(</big><em>sentence</em><big>)</big><a class="headerlink" href="#pynlpl.lm.client.LMClient.scoresentence" title="Permalink to this definition">¶</a></dt>
@@ -208,12 +228,12 @@
         <li class="right" >
           <a href="formats.html" title="Formats"
              >previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.5 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.7.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Maarten van Gompel.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

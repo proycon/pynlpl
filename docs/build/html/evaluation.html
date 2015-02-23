@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Evaluation &amp; Experiments &mdash; PyNLPl 0.6.5 documentation</title>
+    <title>Evaluation &amp; Experiments &mdash; PyNLPl 0.7.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.6.5',
+        URL_ROOT:    './',
+        VERSION:     '0.7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.6.5 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.7.0 documentation" href="index.html" />
     <link rel="next" title="FoLiA library" href="folia.html" />
     <link rel="prev" title="Data Types" href="datatypes.html" /> 
   </head>
@@ -46,7 +44,7 @@
         <li class="right" >
           <a href="datatypes.html" title="Data Types"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.5 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.7.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -117,7 +115,7 @@
 
 <dl class="class">
 <dt id="pynlpl.evaluation.ClassEvaluation">
-<em class="property">class </em><tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">ClassEvaluation</tt><big>(</big><em>goals=</em><span class="optional">[</span><span class="optional">]</span>, <em>observations=</em><span class="optional">[</span><span class="optional">]</span>, <em>missing={}</em>, <em>encoding=u'utf-8'</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">ClassEvaluation</tt><big>(</big><em>goals=[]</em>, <em>observations=[]</em>, <em>missing={}</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="pynlpl.evaluation.ClassEvaluation.accuracy">
 <tt class="descname">accuracy</tt><big>(</big><em>cls=None</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.ClassEvaluation.accuracy" title="Permalink to this definition">¶</a></dt>
@@ -268,7 +266,7 @@ an ROC curve. If the curve is non-ascending, the result will be wrong.</dd>
 
 <dl class="function">
 <dt id="pynlpl.evaluation.filesampler">
-<tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">filesampler</tt><big>(</big><em>files</em>, <em>testsetsize=0.1</em>, <em>devsetsize=0</em>, <em>trainsetsize=0</em>, <em>outputdir=u''</em>, <em>encoding=u'utf-8'</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.filesampler" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pynlpl.evaluation.</tt><tt class="descname">filesampler</tt><big>(</big><em>files</em>, <em>testsetsize=0.1</em>, <em>devsetsize=0</em>, <em>trainsetsize=0</em>, <em>outputdir=''</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#pynlpl.evaluation.filesampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract a training set, test set and optimally a development set from one file, or multiple <em>interdependent</em> files (such as a parallel corpus). It is assumed each line contains one instance (such as a word or sentence for example).</p>
 </dd></dl>
 
@@ -323,12 +321,12 @@ an ROC curve. If the curve is non-ascending, the result will be wrong.</dd>
         <li class="right" >
           <a href="datatypes.html" title="Data Types"
              >previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.5 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.7.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Maarten van Gompel.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Text Processors &mdash; PyNLPl 0.6.5 documentation</title>
+    <title>Text Processors &mdash; PyNLPl 0.7.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.6.5',
+        URL_ROOT:    './',
+        VERSION:     '0.7.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.6.5 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.7.0 documentation" href="index.html" />
     <link rel="prev" title="Statistics and Information Theory" href="statistics.html" /> 
   </head>
   <body>
@@ -42,7 +40,7 @@
         <li class="right" >
           <a href="statistics.html" title="Statistics and Information Theory"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.5 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.7.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -70,9 +68,9 @@
 <div class="section" id="n-gram-extraction">
 <h2>N-gram extraction<a class="headerlink" href="#n-gram-extraction" title="Permalink to this headline">¶</a></h2>
 <p>The extraction of n-grams is an elemental operation in Natural Language Processing. PyNLPl offers the <tt class="docutils literal"><span class="pre">Windower</span></tt> class to accomplish this task:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">tokens</span> <span class="o">=</span> <span class="n">pynlpl</span><span class="o">.</span><span class="n">textprocessors</span><span class="o">.</span><span class="n">crude_tokeniser</span><span class="p">(</span><span class="s">&quot;to be or not to be&quot;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">trigram</span> <span class="ow">in</span> <span class="n">Windower</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
-        <span class="k">print</span> <span class="n">trigram</span>
+<div class="highlight-python"><div class="highlight"><pre>tokens = pynlpl.textprocessors.crude_tokeniser(&quot;to be or not to be&quot;)
+for trigram in Windower(tokens,3):
+        print trigram
 </pre></div>
 </div>
 <p>The input to the Windower should be a list of words and a value for n. In addition, the windower can output extra symbols at the beginning of the input sequence and at the end of it. By default, this behaviour is enabled and the input symbol is <tt class="docutils literal"><span class="pre">&lt;begin&gt;</span></tt>, whereas the output symbol is <tt class="docutils literal"><span class="pre">&lt;end&gt;</span></tt>. If this behaviour is unwanted you can suppress it by instantiating the Windower as follows:</p>
@@ -81,6 +79,56 @@
 </div>
 <p>The Windower is implemented as a Python generator and at each iteration yields a tuple of length n.</p>
 <span class="target" id="module-textprocessors"></span><dl class="class">
+<dt id="textprocessors.ClassDecoder">
+<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">ClassDecoder</tt><big>(</big><em>filename=''</em>, <em>allowunknown=False</em><big>)</big><a class="headerlink" href="#textprocessors.ClassDecoder" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="textprocessors.ClassDecoder.decodefile">
+<tt class="descname">decodefile</tt><big>(</big><em>files</em>, <em>targetfilename=None</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#textprocessors.ClassDecoder.decodefile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="textprocessors.ClassEncoder">
+<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">ClassEncoder</tt><big>(</big><em>filename=''</em>, <em>autoadd=False</em>, <em>allowunknown=False</em>, <em>syncwithdecoder=None</em><big>)</big><a class="headerlink" href="#textprocessors.ClassEncoder" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="textprocessors.ClassEncoder.buildfromfolia">
+<tt class="descname">buildfromfolia</tt><big>(</big><em>files</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#textprocessors.ClassEncoder.buildfromfolia" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.ClassEncoder.buildfromfreqlist">
+<tt class="descname">buildfromfreqlist</tt><big>(</big><em>freqlist</em><big>)</big><a class="headerlink" href="#textprocessors.ClassEncoder.buildfromfreqlist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.ClassEncoder.buildfromtext">
+<tt class="descname">buildfromtext</tt><big>(</big><em>files</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#textprocessors.ClassEncoder.buildfromtext" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.ClassEncoder.encodefile">
+<tt class="descname">encodefile</tt><big>(</big><em>files</em>, <em>targetfilename</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#textprocessors.ClassEncoder.encodefile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.ClassEncoder.encodesentence">
+<tt class="descname">encodesentence</tt><big>(</big><em>tokens</em>, <em>stream=None</em><big>)</big><a class="headerlink" href="#textprocessors.ClassEncoder.encodesentence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.ClassEncoder.newencodedfile">
+<tt class="descname">newencodedfile</tt><big>(</big><em>targetfilename</em><big>)</big><a class="headerlink" href="#textprocessors.ClassEncoder.newencodedfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="textprocessors.ClassEncoder.save">
+<tt class="descname">save</tt><big>(</big><em>filename=''</em><big>)</big><a class="headerlink" href="#textprocessors.ClassEncoder.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="textprocessors.MultiWindower">
 <em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">MultiWindower</tt><big>(</big><em>tokens</em>, <em>min_n=1</em>, <em>max_n=9</em>, <em>beginmarker=None</em>, <em>endmarker=None</em><big>)</big><a class="headerlink" href="#textprocessors.MultiWindower" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract n-grams of various configurations from a sequence</p>
@@ -94,14 +142,14 @@
 
 <dl class="class">
 <dt id="textprocessors.Tokenizer">
-<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Tokenizer</tt><big>(</big><em>stream</em>, <em>splitsentences=True</em>, <em>onesentenceperline=False</em>, <em>regexps=(&lt;_sre.SRE_Pattern object at 0x39b8790&gt;</em>, <em>&lt;_sre.SRE_Pattern object at 0x2351210&gt;)</em><big>)</big><a class="headerlink" href="#textprocessors.Tokenizer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Tokenizer</tt><big>(</big><em>stream</em>, <em>splitsentences=True</em>, <em>onesentenceperline=False</em>, <em>regexps=(re.compile('^(?:(?:https?):(?:(?://)|(?:\\\\))|www\.)(?:[\w\d:#&#64;%/;$()~_?\+-=\\\.&amp;](?:#!)?)*')</em>, <em>re.compile('^[A-Za-z0-9\.\+_-]+&#64;[A-Za-z0-9\._-]+(?:\.[a-zA-Z]+)+'))</em><big>)</big><a class="headerlink" href="#textprocessors.Tokenizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>A tokenizer and sentence splitter, which acts on a file/stream-like object and when iterating over the object it yields
 a lists of tokens (in case the sentence splitter is active (default)), or a token (if the sentence splitter is deactivated).</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="textprocessors.Windower">
-<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Windower</tt><big>(</big><em>tokens</em>, <em>n=1</em>, <em>beginmarker=u'&lt;begin&gt;'</em>, <em>endmarker=u'&lt;end&gt;'</em><big>)</big><a class="headerlink" href="#textprocessors.Windower" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">textprocessors.</tt><tt class="descname">Windower</tt><big>(</big><em>tokens</em>, <em>n=1</em>, <em>beginmarker='&lt;begin&gt;'</em>, <em>endmarker='&lt;end&gt;'</em><big>)</big><a class="headerlink" href="#textprocessors.Windower" title="Permalink to this definition">¶</a></dt>
 <dd><p>Moves a sliding window over a list of tokens, upon iteration in yields all n-grams of specified size in a tuple.</p>
 <p>Example without markers:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">Windower</span><span class="p">(</span><span class="s">&quot;This is a test .&quot;</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
@@ -156,7 +204,7 @@ a lists of tokens (in case the sentence splitter is active (default)), or a toke
 
 <dl class="function">
 <dt id="textprocessors.strip_accents">
-<tt class="descclassname">textprocessors.</tt><tt class="descname">strip_accents</tt><big>(</big><em>s</em>, <em>encoding=u'utf-8'</em><big>)</big><a class="headerlink" href="#textprocessors.strip_accents" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">textprocessors.</tt><tt class="descname">strip_accents</tt><big>(</big><em>s</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#textprocessors.strip_accents" title="Permalink to this definition">¶</a></dt>
 <dd><p>Strip characters with diacritics and return a flat ascii representation</p>
 </dd></dl>
 
@@ -168,13 +216,13 @@ a lists of tokens (in case the sentence splitter is active (default)), or a toke
 
 <dl class="function">
 <dt id="textprocessors.tokenise">
-<tt class="descclassname">textprocessors.</tt><tt class="descname">tokenise</tt><big>(</big><em>text</em>, <em>regexps=(&lt;_sre.SRE_Pattern object at 0x39b8790&gt;</em>, <em>&lt;_sre.SRE_Pattern object at 0x2351210&gt;)</em><big>)</big><a class="headerlink" href="#textprocessors.tokenise" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">textprocessors.</tt><tt class="descname">tokenise</tt><big>(</big><em>text</em>, <em>regexps=(re.compile('^(?:(?:https?):(?:(?://)|(?:\\\\\\\\))|www\\.)(?:[\\w\\d:#&#64;%/;$()~_?\\+-=\\\\\\.&amp;](?:#!)?)*')</em>, <em>re.compile('^[A-Za-z0-9\\.\\+_-]+&#64;[A-Za-z0-9\\._-]+(?:\\.[a-zA-Z]+)+'))</em><big>)</big><a class="headerlink" href="#textprocessors.tokenise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Alias for the British</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="textprocessors.tokenize">
-<tt class="descclassname">textprocessors.</tt><tt class="descname">tokenize</tt><big>(</big><em>text</em>, <em>regexps=(&lt;_sre.SRE_Pattern object at 0x39b8790&gt;</em>, <em>&lt;_sre.SRE_Pattern object at 0x2351210&gt;)</em><big>)</big><a class="headerlink" href="#textprocessors.tokenize" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">textprocessors.</tt><tt class="descname">tokenize</tt><big>(</big><em>text</em>, <em>regexps=(re.compile('^(?:(?:https?):(?:(?://)|(?:\\\\\\\\))|www\\.)(?:[\\w\\d:#&#64;%/;$()~_?\\+-=\\\\\\.&amp;](?:#!)?)*')</em>, <em>re.compile('^[A-Za-z0-9\\.\\+_-]+&#64;[A-Za-z0-9\\._-]+(?:\\.[a-zA-Z]+)+'))</em><big>)</big><a class="headerlink" href="#textprocessors.tokenize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tokenizes a string and returns a list of tokens</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -258,12 +306,12 @@ a lists of tokens (in case the sentence splitter is active (default)), or a toke
         <li class="right" >
           <a href="statistics.html" title="Statistics and Information Theory"
              >previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.6.5 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.7.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Maarten van Gompel.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
