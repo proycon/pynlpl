@@ -1344,7 +1344,7 @@ class Query(object):
                     return "[]"
                 else:
                     return json.dumps([ e.json() for e in responseselection ] )
-            elif self.format == "python":
+            else: #python and undefined formats
                 if debug: print("[FQL EVALUATION DEBUG] Query  - Returning python",file=sys.stderr)
                 return responseselection
 
