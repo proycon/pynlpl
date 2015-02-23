@@ -273,7 +273,9 @@ An example with a default annotator::
     
     doc.declare(folia.PosAnnotation, 'brown-tag-set', annotator='proycon', annotatortype=folia.AnnotatorType.MANUAL)
 
-Any additional sets for Part-of-Speech would have to be explicitly declared as well.
+Any additional sets for Part-of-Speech would have to be explicitly declared as
+well. To check if a particular annotation type and set is declared, use the
+``declared(Class, set)`` method.
 
 Adding structure
 -------------------------
@@ -544,6 +546,26 @@ For single documents this is okay, but when iterating over a corpus of
 thousands of documents, this method is too slow, especially for real-time
 applications. For huge corpora, clever indexing and database management systems
 will be required. This however is beyond the scope of this library.
+
+
+FoLiA Query Language
+-----------------------
+
+Advanced querying is possible through the ``fql`` library, this implements the
+FoLiA Query Language on top of the FoLiA library and allows complex queries,
+not just for retrieval but also to modify the document. Import the library as
+follows::
+
+    from pynlpl.formats import fql
+
+Then, you can query it as in the following example::
+
+    doc = folia.Document(file="/some/document.folia.xml")
+    query = fql.Query('SELECT pos FOR w WHERE text = "fly"')
+    for pos in query(doc)
+        print(pos.cls)
+
+The syntax of the FoLiA Query Language is documented here at https://github.com/proycon/foliadocserve/blob/master/README.rst .
 
 Streaming Reader
 -------------------
