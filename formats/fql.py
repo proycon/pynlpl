@@ -1267,7 +1267,7 @@ class Query(object):
         if i != l:
             raise SyntaxError("Expected end of query, got " + q[i] + " in: " + str(q))
 
-    def __call__(self, doc, debug=False):
+    def __call__(self, doc, wrap=True,debug=False):
         """Execute the query on the specified document"""
 
         self.doc = doc
@@ -1331,19 +1331,32 @@ class Query(object):
             if self.format == "xml":
                 if debug: print("[FQL EVALUATION DEBUG] Query  - Returning xml",file=sys.stderr)
                 if not responseselection:
-                    return "<results></results>"
+                    if wrap:
+                        return "<results></results>"
+                    else:
+                        return ""
                 else:
-                    r = "<results>\n"
+                    if wrap:
+                        r = "<results>\n"
+                    else:
+                        r = ""
                     for e in responseselection:
                         r += "<result>\n" + e.xmlstring(True) + "</result>\n"
-                    r += "</results>\n"
+                    if wrap:
+                        r += "</results>\n"
                     return r
             elif self.format == "json":
                 if debug: print("[FQL EVALUATION DEBUG] Query  - Returning json",file=sys.stderr)
                 if not responseselection:
-                    return "[]"
+                    if wrap:
+                        return "[]"
+                    else:
+                        return ""
                 else:
-                    return json.dumps([ e.json() for e in responseselection ] )
+                    if wrap:
+                        return json.dumps([ e.json() for e in responseselection ] )
+                    else:
+                        return json.dumps([ e.json() for e in responseselection ] )[1:-1]
             else: #python and undefined formats
                 if debug: print("[FQL EVALUATION DEBUG] Query  - Returning python",file=sys.stderr)
                 return responseselection
