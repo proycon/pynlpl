@@ -922,6 +922,8 @@ class Action(object): #Action expression
         i += 1
         if (action == 'SUBSTITUTE') and (isinstance(q[i],UnparsedQuery)):
             focus = None   #We have a SUBSTITUTE (AS CORRECTION) expression
+        elif (action == 'SELECT') and q.kw(i,('FOR','IN')): #select statement  without focus, pure target
+            focus = None
         else:
             focus, i = Selector.parse(q,i)
 
@@ -1023,7 +1025,17 @@ class Action(object): #Action expression
                 if substitution and action.action != "SUBSTITUTE":
                     raise QueryError("SUBSTITUTE can not be chained with " + action.action)
 
-                if action.action not in ("ADD","APPEND","PREPEND"): #only for actions that operate on an existing focus
+                if action.action == "SELECT" and not action.focus: #SELECT without focus, pure target-select
+                    if isinstance(contextselector, tuple) and len(contextselector) == 2:
+                        for e in contextselector[0](*contextselector[1]):
+                            constrainedtargetselection.append(e)
+                            focusselection.append(e)
+                    else:
+                        for e in contextselector:
+                            constrainedtargetselection.append(e)
+                            focusselection.append(e)
+
+                elif action.action not in ("ADD","APPEND","PREPEND"): #only for actions that operate on an existing focus
                     for focus, target in action.focus(query, contextselector, True, debug):
                         if target and action.action != "SUBSTITUTE":
                             if isinstance(target, SpanSet):
