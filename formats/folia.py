@@ -5480,7 +5480,7 @@ class Document(object):
     def select(self, Class, set=None, recursive=True,  ignore=True):
         if self.mode == Mode.MEMORY:
             for t in self.data:
-                if Class is folia.Text:
+                if Class.__name__ == 'Text':
                     yield t
                 else:
                     for e in t.select(Class,set,recursive,ignore):
