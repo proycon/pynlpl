@@ -5480,8 +5480,11 @@ class Document(object):
     def select(self, Class, set=None, recursive=True,  ignore=True):
         if self.mode == Mode.MEMORY:
             for t in self.data:
-                for e in t.select(Class,set,recursive,ignore):
-                    yield e
+                if Class is folia.Text:
+                    yield t
+                else:
+                    for e in t.select(Class,set,recursive,ignore):
+                        yield e
 
     def count(self, Class, set=None):
         if self.mode == Mode.MEMORY:
