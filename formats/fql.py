@@ -1045,7 +1045,11 @@ class Action(object): #Action expression
                             focusselection.append(e)
 
                 elif action.action not in ("ADD","APPEND","PREPEND"): #only for actions that operate on an existing focus
-                    for focus, target in action.focus(query, contextselector, True, debug):
+                    if contextselector is query.doc and action.focus.Class in ('ALL',folia.Text):
+                        focusselector = ( (x,x) for x in query.doc )  #Patch to make root-level SELECT ALL work as intended
+                    else:
+                        focusselector = action.focus(query,contextselector, True, debug)
+                    for focus, target in focusselector:
                         if target and action.action != "SUBSTITUTE":
                             if isinstance(target, SpanSet):
                                 for e in target:
@@ -1302,7 +1306,7 @@ class Query(object):
 
         if self.action:
             targetselector = doc
-            if self.targets:
+            if self.targets and not (isinstance(self.targets.targets[0], Selector) and self.targets.targets[0].Class in ("ALL", folia.Text)):
                 targetselector = (self.targets, (self, targetselector, debug)) #function recipe to get the generator for the targets, (f, *args)
 
             focusselection, targetselection = self.action(self, targetselector, debug) #selecting focus elements further constrains the target selection (if any), return values will be lists
