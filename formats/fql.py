@@ -32,6 +32,8 @@ MASK_NORMAL = 0
 MASK_LITERAL = 1
 MASK_EXPRESSION = 2
 
+FOLIAVERSION = '0.11.2'
+FQLVERSION = '0.2.1'
 
 class SyntaxError(Exception):
     pass
@@ -347,10 +349,13 @@ class Selector(object):
             Class = None
             i += 2
         else:
-            try:
-                Class = folia.XML2CLASS[q[i]]
-            except:
-                raise SyntaxError("Expected element type, got " + q[i] + " in: " + str(q))
+            if q[i] == "ALL":
+                Class = "ALL"
+            else:
+                try:
+                    Class = folia.XML2CLASS[q[i]]
+                except:
+                    raise SyntaxError("Expected element type, got " + q[i] + " in: " + str(q))
             i += 1
 
         while i < l:
@@ -392,6 +397,10 @@ class Selector(object):
                             yield candidate, None
                     except KeyError:
                         pass #silently ignore ID mismatches
+                elif selector.Class == "ALL":
+                    for candidate in e:
+                        if isinstance(candidate, folia.AbstractElement):
+                            yield candidate, e
                 elif selector.Class:
                     if debug: print("[FQL EVALUATION DEBUG] Select - Selecting Class " + selector.Class.XMLTAG + " with set " + str(selector.set),file=sys.stderr)
                     if selector.Class.XMLTAG in query.defaultsets:
@@ -511,7 +520,7 @@ class Target(object): #FOR/IN... expression
             if q.kw(i,'SPAN'):
                 target,i = Span.parse(q,i+1)
                 targets.append(target)
-            elif q.kw(i,"ID") or q[i] in folia.XML2CLASS:
+            elif q.kw(i,"ID") or q[i] in folia.XML2CLASS or q[i] == "ALL":
                 target,i = Selector.parse(q,i)
                 targets.append(target)
             elif q.kw(i,","):
@@ -1292,8 +1301,7 @@ class Query(object):
                 doc.declare(Class,decset,**defaults)
 
         if self.action:
-
-            targetselector = (getattr, (doc, 'data') ) #function recipe to get all Text elements (f, *args), the root of all selectors
+            targetselector = doc
             if self.targets:
                 targetselector = (self.targets, (self, targetselector, debug)) #function recipe to get the generator for the targets, (f, *args)
 
