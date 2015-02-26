@@ -52,6 +52,8 @@ Qdelete_target = "DELETE lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w
 Qcomplexadd = "APPEND w (ADD t WITH text \"gisteren\" ADD lemma OF \"lemmas-nl\" WITH class \"gisteren\") FOR ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
 
 Qedittext = "EDIT w WHERE text = \"terweil\" WITH text \"terwijl\""
+Qedittext2 = "EDIT t WITH text \"terwijl\" FOR w WHERE text = \"terweil\" RETURN target"
+Qedittext3 = "EDIT t WITH text \"de\" FOR w ID \"WR-P-E-J-0000000001.p.1.s.8.w.10\" RETURN target"
 
 Qhas = "SELECT w WHERE (pos HAS class = \"LET()\")"
 Qhas_shortcut = "SELECT w WHERE :pos = \"LET()\""
@@ -261,6 +263,15 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertEqual(results[0].text(), "terwijl")
 
+    def test12b_edittext(self):
+        q = fql.Query(Qedittext2)
+        results = q(self.doc)
+        self.assertEqual(results[0].text(), "terwijl")
+
+    def test12c_edittext(self):
+        q = fql.Query(Qedittext3)
+        results = q(self.doc)
+        self.assertEqual(results[0].text(), "de")
 
     def test13_subfilter(self):
         q = fql.Query(Qhas)
