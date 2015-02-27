@@ -27,7 +27,7 @@ import re
 import sys
 import random
 
-OPERATORS = ('=','==','!=','>','<','<=','>=')
+OPERATORS = ('=','==','!=','>','<','<=','>=','CONTAINS','MATCHES')
 MASK_NORMAL = 0
 MASK_LITERAL = 1
 MASK_EXPRESSION = 2
@@ -254,7 +254,7 @@ class Filter(object): #WHERE ....
                 #has statement (spans full UnparsedQuery by definition)
                 selector,i =  Selector.parse(q,i)
                 if not q.kw(i,"HAS"):
-                    raise SyntaxError("Expected HAS, got " + q[i] + " at position " + str(i) + " in: " + str(q))
+                    raise SyntaxError("Expected HAS, got " + str(q[i]) + " at position " + str(i) + " in: " + str(q))
                 i += 1
                 subfilter,i = Filter.parse(q,i)
                 filters.append( ("CHILD",selector,subfilter) )
@@ -269,7 +269,7 @@ class Filter(object): #WHERE ....
     def __call__(self, query, element, debug=False):
         """Tests the filter on the specified element, returns a boolean"""
         match = True
-        if debug: print("[FQL EVALUATION DEBUG] Filter - Testing filter for ", repr(element),file=sys.stderr)
+        if debug: print("[FQL EVALUATION DEBUG] Filter - Testing filter [" + str(self) + "] for ", repr(element),file=sys.stderr)
         for filter in self.filters:
             if isinstance(filter,tuple):
                 modifier, selector, subfilter = filter
@@ -284,15 +284,15 @@ class Filter(object): #WHERE ....
                             match = subfilter(query, subelement, debug)
                         if match: break #only one subelement has to match by definition, then the HAS statement is matched
                 elif modifier == "PARENT":
-                    match = selector.match(query, element.parent)
+                    match = selector.match(query, element.parent,debug)
                 elif modifier == "NEXT":
                     neighbour = element.next()
                     if neighbour:
-                        match = selector.match(query, neighbour)
+                        match = selector.match(query, neighbour,debug)
                 elif modifier == "PREVIOUS":
                     neighbour = element.previous()
                     if neighbour:
-                        match = selector.match(query, neighbour)
+                        match = selector.match(query, neighbour,debug)
                 else:
                     raise NotImplementedError("Context keyword " + modifier + " not implemented yet")
             elif isinstance(filter, Filter):
@@ -306,17 +306,52 @@ class Filter(object): #WHERE ....
                 match = not match
             if match:
                 if self.disjunction:
+                    if debug: print("[FQL EVALUATION DEBUG] Filter returns True",file=sys.stderr)
                     return True
             else:
                 if not self.disjunction: #implies conjunction
+                    if debug: print("[FQL EVALUATION DEBUG] Filter returns False",file=sys.stderr)
                     return False
 
+        if debug: print("[FQL EVALUATION DEBUG] Filter returns ", str(match),file=sys.stderr)
         return match
+
+    def __str__(self):
+        q = ""
+        if self.negation:
+            q += "NOT "
+        for i, filter in enumerate(self.filters):
+            if i > 0:
+                if self.disjunction:
+                    q += "OR "
+                else:
+                    q += "AND "
+            if isinstance(filter, Filter):
+                q += "(" + str(filter) + ") "
+            elif isinstance(filter, tuple):
+                modifier,selector,subfilter = filter
+                q += "(" + modifier + " " + str(selector) + " HAS " + str(subfilter) + ") "
+            else:
+                #original filter can't be reconstructed, place dummy:
+                q += "...\"" + filter.__defaults__[0] +"\""
+        return q.strip()
+
+
 
 
 class SpanSet(list):
     def select(self,*args):
         raise QueryError("Got a span set for a non-span element")
+
+    def partof(self, collection):
+        for e in collection:
+            if isinstance(e, SpanSet):
+                if len(e) != len(self):
+                    return False
+                for c1,c2 in zip(e,self):
+                    if c1 is not c2:
+                        return False
+        return False
 
 
 
@@ -355,7 +390,7 @@ class Selector(object):
                 try:
                     Class = folia.XML2CLASS[q[i]]
                 except:
-                    raise SyntaxError("Expected element type, got " + q[i] + " in: " + str(q))
+                    raise SyntaxError("Expected element type, got " + str(q[i]) + " in: " + str(q))
             i += 1
 
         while i < l:
@@ -386,7 +421,7 @@ class Selector(object):
         for e in selection:
             selector = self
             while True: #will loop through the chain of selectors, only the first one is called explicitly
-                if debug: print("[FQL EVALUATION DEBUG] Select - Running selector ", repr(selector), " on ", repr(e),file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Select - Running selector [", str(self), "] on ", repr(e),file=sys.stderr)
 
                 if selector.id:
                     if debug: print("[FQL EVALUATION DEBUG] Select - Selecting ID " + selector.id,file=sys.stderr)
@@ -443,6 +478,7 @@ class Selector(object):
 
 
     def match(self, query, candidate, debug = False):
+        if debug: print("[FQL EVALUATION DEBUG] Select - Matching selector [", str(self), "] on ", repr(candidate),file=sys.stderr)
         if self.id:
             if candidate.id != self.id:
                 return False
@@ -451,7 +487,7 @@ class Selector(object):
                 return False
         if self.filter and not self.filter(query,candidate, debug):
             return False
-        if debug: print("[FQL EVALUATION DEBUG] Select.Match! ", repr(candidate),file=sys.stderr)
+        if debug: print("[FQL EVALUATION DEBUG] Select - Selector matches! ", repr(candidate),file=sys.stderr)
         return True
 
     def autodeclare(self,doc):
@@ -460,6 +496,21 @@ class Selector(object):
                 doc.declare(self.Class, self.set)
             if self.nextselector:
                 self.nextselector.autodeclare()
+
+    def __str__(self):
+        s = ""
+        if self.Class:
+            s += self.Class.XMLTAG + " "
+        if self.set:
+            s += "OF " + self.set + " "
+        if self.id:
+            s += "ID " + self.id + " "
+        if self.filter:
+            s += "WHERE " + str(self.filter)
+
+        if self.nextselector:
+            s += str(self.nextselector)
+        return s.strip()
 
 
 class Span(object):
@@ -486,15 +537,46 @@ class Span(object):
         return Span(targets), i
 
     def __call__(self, query, contextselector, recurse=True,debug=False): #returns a list of element in a span
-        if debug: print("[FQL EVALUATION DEBUG] Span   - Building span from target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
+        if debug: print("[FQL EVALUATION DEBUG] Span  - Building span from target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
-        #chain selectors
-        selector = self.targets[0]
-        selector.chain(self.targets)
+        #get first target
+        for element, target in self.targets[0](query, contextselector, recurse,debug):
+            if debug: print("[FQL EVALUATION DEBUG] Span  - First item of span found  (" + str(element) + ", target="+ str(target)+")",file=sys.stderr)
+            spanset = SpanSet([element])
+            match = True
+            #now see if consecutive elements match up
+            for selector in self.targets[1:]:
+                if selector.id: #selection by ID, don't care about consecutiveness
+                    try:
+                        element = query.doc[selector.id]
+                        if debug: print("[FQL EVALUATION DEBUG] Span  - Obtained subsequent span item from ID: ", repr(element), file=sys.stderr)
+                    except KeyError:
+                        if debug: print("[FQL EVALUATION DEBUG] Span  - Obtained subsequent with specified ID does not exist ", file=sys.stderr)
+                        match = False
+                        break
+                else: #element must be consecutive
+                    element = element.next(selector.Class, None)
+                    if debug: print("[FQL EVALUATION DEBUG] Span  - Obtained subsequent item in span: ", repr(element), file=sys.stderr)
+                if not element or not selector.match(query, element,debug) or (target and target not in element.ancestors()):
+                    if debug:
+                        if not element:
+                            print("[FQL EVALUATION DEBUG] Span  - Subsequent element not found",file=sys.stderr)
+                        elif target and not target in element.ancestors():
+                            print("[FQL EVALUATION DEBUG] Span  - Subsequent element out of scope",file=sys.stderr)
+                        else:
+                            print("[FQL EVALUATION DEBUG] Span  - Subsequent element does not match filter",file=sys.stderr)
+                    match = False
+                    break
+                else:
+                    spanset.append(element)
 
-        spanset = SpanSet( e for e,_ in selector(query, contextselector, recurse, debug)  )
-        if debug: print("[FQL EVALUATION DEBUG] Span   - Returning spanset (" + str(len(spanset)) + ")",file=sys.stderr)
-        return spanset
+            if match:
+                if debug: print("[FQL EVALUATION DEBUG] Span   - Span found, returning spanset (" + repr(spanset) + ")",file=sys.stderr)
+                yield spanset
+            else:
+                if debug: print("[FQL EVALUATION DEBUG] Span   - Span not found",file=sys.stderr)
+
+
 
 
 class Target(object): #FOR/IN... expression
@@ -532,7 +614,7 @@ class Target(object): #FOR/IN... expression
                 break
 
         if not targets:
-            raise SyntaxError("Expected one or more targets, got " + q[i] + " in: " + str(q))
+            raise SyntaxError("Expected one or more targets, got " + str(q[i]) + " in: " + str(q))
 
         return Target(targets,strict,nested), i
 
@@ -546,10 +628,12 @@ class Target(object): #FOR/IN... expression
 
         if self.targets:
             if isinstance(self.targets[0], Span):
-                for selector in self.targets:
-                    if not isinstance(selector, Span): raise ParseError("SPAN statement may not be mixed with non-span statements in a single selection")
-                    if debug: print("[FQL EVALUATION DEBUG] Target - Yielding spanset ",file=sys.stderr)
-                    yield selector(query, contextselector, not self.strict, debug)
+                for span in self.targets:
+                    if not isinstance(span, Span): raise ParseError("SPAN statement may not be mixed with non-span statements in a single selection")
+                    if debug: print("[FQL EVALUATION DEBUG] Target - Evaluation span ",file=sys.stderr)
+                    for spanset in span(query, contextselector, not self.strict, debug):
+                        if debug: print("[FQL EVALUATION DEBUG] Target - Yielding spanset ",file=sys.stderr)
+                        yield spanset
             else:
                 selector = self.targets[0]
                 selector.chain(self.targets)
@@ -924,7 +1008,7 @@ class Action(object): #Action expression
         if q.kw(i, ('SELECT','EDIT','DELETE','ADD','APPEND','PREPEND','SUBSTITUTE')):
             action = q[i]
         else:
-            raise SyntaxError("Expected action, got " + q[i] + " in: " + str(q))
+            raise SyntaxError("Expected action, got " + str(q[i]) + " in: " + str(q))
 
         assignments = {}
 
@@ -1052,14 +1136,12 @@ class Action(object): #Action expression
                     for focus, target in focusselector:
                         if target and action.action != "SUBSTITUTE":
                             if isinstance(target, SpanSet):
-                                for e in target:
-                                    if not any(x is e for x in constrainedtargetselection):
-                                        constrainedtargetselection.append(e)
+                                if not target.partof(constrainedtargetselection):
+                                    if debug: print("[FQL EVALUATION DEBUG] Action - Got target result (spanset), adding ", repr(target),file=sys.stderr)
+                                    constrainedtargetselection.append(target)
                             elif not any(x is target for x in constrainedtargetselection):
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Got target result, adding ", repr(target),file=sys.stderr)
                                 constrainedtargetselection.append(target)
-                            elif debug:
-                                print("[FQL EVALUATION DEBUG] Action - Target result already obtained, skipping... ", repr(target),file=sys.stderr)
 
 
                         if action.form and action.action != "SUBSTITUTE":
@@ -1072,7 +1154,14 @@ class Action(object): #Action expression
                                 print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
                                 continue
                         else:
-                            if action.action != "DELETE" and not any(x is focus for x in  focusselection):
+                            if isinstance(focus,SpanSet):
+                                if not focus.partof(focusselection):
+                                    if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result (spanset), adding ", repr(target),file=sys.stderr)
+                                    focusselection.append(target)
+                                else:
+                                    print("[FQL EVALUATION DEBUG] Action - Focus result (spanset) already obtained, skipping... ", repr(target),file=sys.stderr)
+                                    continue
+                            elif not any(x is focus for x in  focusselection):
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
                                 focusselection.append(focus)
                             elif debug:
@@ -1090,7 +1179,7 @@ class Action(object): #Action expression
                                         setattr(focus, attr, value)
                                 if 'respan' in action.extra:
                                     if not isinstance(focus, folia.AbstractSpanAnnotation): raise QueryError("Can only perform RESPAN on span annotation elements!")
-                                    spanset = action.extra['respan'](query, contextselector, True, debug)
+                                    spanset = next(action.extra['respan'](query, contextselector, True, debug)) #there can be only one
                                     focus.setspan(*spanset)
 
                             elif action.action == "DELETE":
@@ -1164,13 +1253,11 @@ class Action(object): #Action expression
                                     index = target.parent.data.index(target) - 1
                                     focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
 
-                        if not any(x is target for x in constrainedtargetselection):
-                            if isinstance(target, SpanSet):
-                                for e in target:
-                                    if not any(x is e for x in constrainedtargetselection):
-                                        constrainedtargetselection.append(e)
-                            else:
+                        if isinstance(target, SpanSet):
+                            if not target.partof(constrainedtargetselection):
                                 constrainedtargetselection.append(target)
+                        elif not any(x is target for x in constrainedtargetselection):
+                            constrainedtargetselection.append(target)
 
                 if focusselection and action.subactions and not substitution:
                     for subaction in action.subactions:
@@ -1184,11 +1271,17 @@ class Action(object): #Action expression
                     #consolidate results:
                     focusselection_all = []
                     for e in focusselection:
-                        if not any(x is e for x in focusselection_all):
+                        if isinstance(e, SpanSet):
+                            if not e.partof(focusselection_all):
+                                focusselection_all.append(e)
+                        elif not any(x is e for x in focusselection_all):
                             focusselection_all.append(e)
                     constrainedtargetselection_all = []
                     for e in constrainedtargetselection:
-                        if not any(x is e for x in constrainedtargetselection_all):
+                        if isinstance(e, SpanSet):
+                            if not e.partof(constrainedtargetselection_all):
+                                constrainedtargetselection_all.append(e)
+                        elif not any(x is e for x in constrainedtargetselection_all):
                             constrainedtargetselection_all.append(e)
 
             if substitution:
@@ -1257,7 +1350,7 @@ class Query(object):
                 raise SyntaxError("DECLARE statement expects a FoLiA element, got: " + str(q[i+1]))
 
             if not Class.ANNOTATIONTYPE:
-                raise SyntaxError("DECLARE statement for undeclarable element type: " + q[i+1])
+                raise SyntaxError("DECLARE statement for undeclarable element type: " + str(q[i+1]))
 
             i += 2
 
@@ -1288,11 +1381,11 @@ class Query(object):
                     self.request = q[i+1].split(",")
                     i+=2
                 else:
-                    raise SyntaxError("Unexpected " + q[i] + " at position " + str(i) + " in: " + str(q))
+                    raise SyntaxError("Unexpected " + str(q[i]) + " at position " + str(i) + " in: " + str(q))
 
 
         if i != l:
-            raise SyntaxError("Expected end of query, got " + q[i] + " in: " + str(q))
+            raise SyntaxError("Expected end of query, got " + str(q[i]) + " in: " + str(q))
 
     def __call__(self, doc, wrap=True,debug=False):
         """Execute the query on the specified document"""
@@ -1340,7 +1433,14 @@ class Query(object):
                 if not responseselection:
                     return ""
                 else:
-                    return responseselection[0].xmlstring(True)
+                    if isinstance(responseselection[0], SpanSet):
+                            r = "<result>"
+                            for e in responseselection[0]:
+                                r += e.xmlstring(True)
+                            r += "</result>"
+                            return r
+                    else:
+                        return responseselection[0].xmlstring(True)
             elif self.format == "single-json":
                 if debug: print("[FQL EVALUATION DEBUG] Query  - Returning single-json",file=sys.stderr)
                 if not responseselection:
@@ -1367,7 +1467,13 @@ class Query(object):
                     else:
                         r = ""
                     for e in responseselection:
-                        r += "<result>\n" + e.xmlstring(True) + "</result>\n"
+                        if isinstance(e, SpanSet):
+                            r += "<result>"
+                            for e2 in e:
+                                r += "" + e2.xmlstring(True) + "\n"
+                            r += "</result>"
+                        else:
+                            r += "<result>\n" + e.xmlstring(True) + "</result>\n"
                     if wrap:
                         r += "</results>\n"
                     return r

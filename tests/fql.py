@@ -61,6 +61,7 @@ Qhas_shortcut = "SELECT w WHERE :pos = \"LET()\""
 Qboolean = "SELECT w WHERE (pos HAS class = \"LET()\") AND ((lemma HAS class = \".\") OR (lemma HAS class = \",\"))"
 
 Qcontext = "SELECT w WHERE (PREVIOUS w WHERE text = \"de\")"
+Qcontext2 = "SELECT FOR SPAN w WHERE (pos HAS class CONTAINS \"LID(\") & w WHERE (pos HAS class CONTAINS \"ADJ(\") & w WHERE (pos HAS class CONTAINS \"N(\")"
 
 Qselect_span = "SELECT entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WHERE class = \"per\" FOR ID \"example.table.1.w.3\""
 Qselect_span2 = "SELECT entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WHERE class = \"per\" FOR SPAN ID \"example.table.1.w.3\" & ID \"example.table.1.w.4\" & ID \"example.table.1.w.5\""
@@ -242,7 +243,7 @@ class Test3Evaluation(unittest.TestCase):
     def test09_evaluate_delete(self):
         q = fql.Query(Qdelete)
         results = q(self.doc)
-        self.assertEqual(len(results),0)
+        self.assertEqual(len(results),2) #returns that what was deleted
 
     def test10_evaluate_delete(self):
         q = fql.Query(Qdelete_target)
@@ -307,6 +308,22 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[6].text(), "verwantschap")
         self.assertEqual(results[7].text(), "handschriften")
 
+    def test16b_context(self):
+        """Obtaining LID ADJ N sequences"""
+        q = fql.Query(Qcontext2)
+        results = q(self.doc)
+        self.assertTrue( len(results) > 0 )
+        for result in results:
+            self.assertIsInstance(result, fql.SpanSet)
+            #print("RESULT: ", [w.text() for w in result])
+            self.assertEqual(len(result), 3)
+            self.assertIsInstance(result[0], folia.Word)
+            self.assertIsInstance(result[1], folia.Word)
+            self.assertIsInstance(result[2], folia.Word)
+            self.assertEqual(result[0].pos()[:4], "LID(")
+            self.assertEqual(result[1].pos()[:4], "ADJ(")
+            self.assertEqual(result[2].pos()[:2], "N(")
+
     def test17_select_span(self):
         """Select span"""
         q = fql.Query(Qselect_span)
@@ -332,6 +349,8 @@ class Test3Evaluation(unittest.TestCase):
         """Select span"""
         q = fql.Query(Qselect_span2_returntarget)
         results = q(self.doc)
+        self.assertIsInstance(results[0], fql.SpanSet)
+        results = results[0]
         self.assertIsInstance(results[0], folia.Word)
         self.assertEqual(results[0].text(), "Maarten")
         self.assertIsInstance(results[1], folia.Word)
@@ -355,6 +374,8 @@ class Test3Evaluation(unittest.TestCase):
         """Add span (return target)"""
         q = fql.Query(Qadd_span_returntarget)
         results = q(self.doc)
+        self.assertIsInstance(results[0], fql.SpanSet )
+        results = results[0]
         self.assertIsInstance(results[0], folia.Word)
         self.assertEqual(results[0].text(), "hoofdletter")
         self.assertIsInstance(results[1], folia.Word)
