@@ -401,7 +401,7 @@ class Selector(object):
                     raise SyntaxError("Expected element type, got " + str(q[i]) + " in: " + str(q))
             i += 1
 
-        if q[i][0] == "{" and q[i][-1] == "}":
+        if q[i] and q[i][0] == "{" and q[i][-1] == "}":
             if not allowexpansion:
                 raise SyntaxError("Expansion expressions not allowed at this point, got one at position " + str(i) + " in: " + str(q))
             expansion = q[i][1:-1]
