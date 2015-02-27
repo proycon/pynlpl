@@ -1542,7 +1542,6 @@ def cql2fql(cq):
                         fq += operator + " \"^" + attribexpr.valueexpr[0] + "$\" "
                 fq += ")"
 
-    print(fq)
     return fq
 
 
