@@ -571,7 +571,7 @@ class Test2Sanity(unittest.TestCase):
 
         self.assertEqual( s.text(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
         self.assertEqual( s.stricttext(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
-        self.assertEqual( s.textcontent().value, 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
+        self.assertEqual( s.textcontent().text(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
         self.assertEqual( s.text('original'), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
         self.assertRaises( folia.NoSuchText, s.text, 'BLAH' )
 
@@ -579,7 +579,7 @@ class Test2Sanity(unittest.TestCase):
         w = self.doc['WR-P-E-J-0000000001.p.1.s.4.w.2']
         self.assertEqual( w.text(), 'hoofdletter')
 
-        self.assertEqual( w.textcontent().value, 'hoofdletter')
+        self.assertEqual( w.textcontent().text(), 'hoofdletter')
         self.assertEqual( w.textcontent().offset, 3)
 
         w2 = self.doc['WR-P-E-J-0000000001.p.1.s.6.w.31']
@@ -592,11 +592,10 @@ class Test2Sanity(unittest.TestCase):
         s = self.doc['sandbox.3.head']
         t = s.textcontent()
         self.assertEqual( len(t), 3)
-        self.assertEqual( t.value, "De FoLiA developers zijn:")
         self.assertEqual( t.text(), "De FoLiA developers zijn:")
         self.assertEqual( t[0], "De ")
         self.assertTrue( isinstance(t[1], folia.TextMarkupString) )
-        self.assertEqual( t[1].value, "FoLiA developers")
+        self.assertEqual( t[1].text(), "FoLiA developers")
         self.assertEqual( t[2], " zijn:")
 
 
@@ -800,7 +799,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( t.count(folia.TextMarkupString), 1)
 
         st = next(t.select(folia.TextMarkupString))
-        self.assertEqual( st.value, "FoLiA developers" ) #testing value (full text value)
+        self.assertEqual( st.text(), "FoLiA developers" ) #testing value (full text value)
 
         self.assertEqual( st.resolve(), self.doc['sandbox.3.str']) #testing resolving references
 

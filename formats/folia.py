@@ -533,8 +533,6 @@ class AbstractElement(object):
         self.parent = None
         self.data = []
 
-        if self.TEXTCONTAINER:
-            self.value = "" #full textual value (no elements), value will be populated by postappend()
 
         kwargs = parsecommonarguments(self, doc, self.ANNOTATIONTYPE, self.REQUIRED_ATTRIBS, self.OPTIONAL_ATTRIBS,**kwargs)
         for child in args:
@@ -595,7 +593,7 @@ class AbstractElement(object):
 
     def stricttext(self, cls='current'):
         """Get the text strictly associated with this element (of the specified class). Does not recurse into children, with the sole exception of Corection/New"""
-        return self.textcontent(cls).value
+        return self.textcontent(cls).text()
 
     def toktext(self,cls='current'):
         """Alias for text with retaintokenisation=True"""
@@ -611,7 +609,14 @@ class AbstractElement(object):
 
 
         if self.TEXTCONTAINER:
-            return self.value
+            s = ""
+            for e in self:
+                if isstring(e):
+                    s += e
+                else:
+                    if s: s += e.TEXTDELIMITER #for AbstractMarkup, will usually be ""
+                    s += e.text()
+            return s
         if not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
 
@@ -619,7 +624,7 @@ class AbstractElement(object):
         #print >>stderr, repr(self) + '.text()'
 
         if self.hastext(cls):
-            s = self.textcontent(cls).value
+            s = self.textcontent(cls).text()
             #print >>stderr, "text content: " + s
         else:
             #Not found, descend into children
@@ -988,7 +993,6 @@ class AbstractElement(object):
             if self.TEXTCONTAINER:
                 #element is a text container and directly allows strings as content, add the string as such:
                 self.data.append(u(child))
-                self.value += u(child)
                 dopostappend = False
             elif TextContent in self.ACCEPTED_DATA:
                 #you can pass strings directly (just for convenience), will be made into textcontent automatically.
@@ -1002,11 +1006,6 @@ class AbstractElement(object):
                 child = Alternative(self.doc, child, generate_id_in=self)
             self.data.append(child)
             child.parent = self
-            if self.TEXTCONTAINER and isinstance(child, AbstractTextMarkup):
-                if self.value:
-                    self.value += child.TEXTDELIMITER + child.value #TEXTDELIMITER will be "" for most AbstractTextMarkup element (except Linebreak)
-                else:
-                    self.value = child.value
         else:
             raise ValueError("Unable to append object of type " + child.__class__.__name__ + " to " + self.__class__.__name__ + ". Type not allowed as child.")
 
@@ -1125,16 +1124,17 @@ class AbstractElement(object):
 
 
 
-    def recomputevalue(self):
+    def updatetext(self):
         """Internal method, recompute textual value. Only for elements that are a TEXTCONTAINER"""
         if self.TEXTCONTAINER:
-            self.value = ""
+            s = ""
             for child in self:
                 if isinstance(child, AbstractElement):
-                    child.recomputevalue()
-                    self.value += child.value
+                    child.updatetext()
+                    s += child.text()
                 elif isstring(child):
-                    self.value += child
+                    s += child
+            self.data = [s]
 
     def replace(self, child, *args, **kwargs):
         """Appends a child element like ``append()``, but replaces any existing child element of the same type and set. If no such child element exists, this will act the same as append()
@@ -1189,7 +1189,7 @@ class AbstractElement(object):
                 #remove old version competely
                 self.remove(replace[0])
             e = self.append(child, *args, **kwargs)
-            self.recomputevalue()
+            self.updatetext()
             return e
 
     def ancestors(self, Class=None):
@@ -2232,14 +2232,25 @@ class AbstractTextMarkup(AbstractAnnotation):
             del kwargs['idref']
         else:
             self.idref = None
+
+        if 'value' in kwargs:
+            #for backward compatibility
+            kwargs['text'] = kwargs['value']
+            del kwargs['value']
+
         super(AbstractTextMarkup,self).__init__(doc, *args, **kwargs)
 
-        if self.value and (self.value != self.value.translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
-            raise ValueError("There are illegal unicode control characters present in Text Markup Content: " + repr(self.value))
+        #if self.value and (self.value != self.value.translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
+        #    raise ValueError("There are illegal unicode control characters present in Text Markup Content: " + repr(self.value))
 
+    def text(self):
+        """Obtain the text (unicode instance)"""
+        return super(AbstractTextMarkup,self).text() #AbstractElement will handle it now, merely overridden to get rid of parameters that dont make sense in this context
 
-    def text(self, cls='current', retaintokenisation=False, previousdelimiter=""):
-        return self.value #(no strip)
+    def settext(self, text):
+        self.data = [text]
+        if not self.data:
+            raise ValueError("Empty text content elements are not allowed")
 
     def resolve(self):
         if self.idref:
@@ -2383,7 +2394,7 @@ class TextContent(AbstractElement):
 
         if 'value' in kwargs:
             #for backward compatibility
-            kwargs['contents'] = kwargs['value']
+            kwargs['text'] = kwargs['value']
             del kwargs['value']
 
 
