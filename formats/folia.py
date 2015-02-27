@@ -1523,7 +1523,7 @@ class AbstractElement(object):
                         returnnext = True
                     elif returnnext:
                         if e.AUTH:
-                            if (isinstance(Class,tuple) and (isinstance(e,C) for C in Class)) or isinstance(e,Class):
+                            if (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
                                 return e
                             else:
                                 #this is not yet the element of the type we are looking for, we are going to descend again in the very leftmost branch only
@@ -1532,7 +1532,7 @@ class AbstractElement(object):
                                     if not isinstance(e, AbstractElement):
                                         return None #we've gone too far
                                     if e.AUTH:
-                                        if (isinstance(Class,tuple) and (isinstance(e,C) for C in Class)) or isinstance(e,Class):
+                                        if (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
                                             return e
                                         else:
                                             #descend deeper
