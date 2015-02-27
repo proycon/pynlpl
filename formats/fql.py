@@ -1516,14 +1516,14 @@ def cql2fql(cq):
             fq += "WHERE "
             for j, attribexpr in enumerate(token):
                 if j > 0:
-                    fq += " AND"
+                    fq += " AND "
                 fq += "("
                 if attribexpr.operator == "!=":
                     operator = "NOTMATCHES"
-                elif attribexpr.operator == "==":
+                elif attribexpr.operator == "=":
                     operator = "MATCHES"
                 else:
-                    raise Exception("Invalid operator: " + operator)
+                    raise Exception("Invalid operator: " + attribexpr.operator)
                 if attribexpr.attribute in ("word","text"):
                     if len(attribexpr.valueexpr) > 1:
                         fq += "text " + operator + " \"^(" + "|".join(attribexpr.valueexpr) + ")$\" "
@@ -1535,13 +1535,14 @@ def cql2fql(cq):
                         annottype = "pos"
                     elif annottype == "lempos":
                         raise Exception("lempos not supported in CQL to FQL conversion, use pos and lemma separately")
-                    fq += "(" + annottype + " HAS class "
+                    fq += annottype + " HAS class "
                     if len(attribexpr.valueexpr) > 1:
-                        fq += annottype + " " + operator + " \"^(" + "|".join(attribexpr.valueexpr) + ")$\" "
+                        fq += operator + " \"^(" + "|".join(attribexpr.valueexpr) + ")$\" "
                     else:
-                        fq += annottype + " " + operator + " \"^" + attribexpr.valueexpr[0] + "$\" "
+                        fq += operator + " \"^" + attribexpr.valueexpr[0] + "$\" "
                 fq += ")"
 
+    print(fq)
     return fq
 
 

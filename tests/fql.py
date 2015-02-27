@@ -98,6 +98,8 @@ Qcorrect_split = "SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegev
 
 Qsuggest_split = "SUBSTITUTE (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"runonerror\" SUGGESTION (SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegeven\")) FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.6.w.20\""
 
+Qcql_context = '"de" [ tag="ADJ\(.*" ] [ tag="N\(.*" & lemma!="blah" ]'
+
 class Test1UnparsedQuery(unittest.TestCase):
 
     def test1_basic(self):
@@ -535,6 +537,27 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].suggestions(0)[0].text(), "weer")
         self.assertEqual(results[0].suggestions(0)[1].text(), "gegeven")
         self.assertEqual(results[0].current(0).text(), "weergegeven")
+
+class Test4CQL(unittest.TestCase):
+    def setUp(self):
+        self.doc = folia.Document(string=FOLIAEXAMPLE)
+
+    def test01_context(self):
+        q = fql.Query(fql.cql2fql(Qcql_context))
+        results = q(self.doc)
+        self.assertTrue( len(results) > 0 )
+        for result in results:
+            self.assertIsInstance(result, fql.SpanSet)
+            #print("RESULT: ", [w.text() for w in result])
+            self.assertEqual(len(result), 3)
+            self.assertIsInstance(result[0], folia.Word)
+            self.assertIsInstance(result[1], folia.Word)
+            self.assertIsInstance(result[2], folia.Word)
+            self.assertEqual(result[0].text(), "de")
+            self.assertEqual(result[1].pos()[:4], "ADJ(")
+            self.assertEqual(result[2].pos()[:2], "N(")
+
+
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'

@@ -27,14 +27,14 @@ class ValueExpression(object):
 
     @staticmethod
     def parse(s,i):
+        values = ""
         assert s[i] == '"'
         i += 1
-        while s[i] != '"' and s[i-1] != "\\":
+        while not (s[i] == '"' and s[i-1] != "\\"):
             values += s[i]
             i += 1
-
         values = values.split("|")
-        return ValueExpression(values), i
+        return ValueExpression(values), i+1
 
     def __len__(self):
         return len(self.values)
@@ -72,12 +72,12 @@ class AttributeExpression(object):
                 if s[i] != ' ':
                     operator += s[i]
                 i += 1
-            if operator not in operators:
-                raise SyntaxError("Expected operator, got " + operator)
+            if operator not in OPERATORS:
+                raise SyntaxError("Expected operator, got '" + operator + "'")
         if s[i] != '"':
             raise SyntaxError("Expected start of value expression (doublequote) in position " + str(i) + ", got " + s[i])
         valueexpr, i = ValueExpression.parse(s,i)
-        return AttributeExpression(attrigbute,operator, valueexpr), i
+        return AttributeExpression(attribute,operator, valueexpr), i
 
 class TokenExpression(object):
     def __init__(self, attribexprs=[], interval=None):
@@ -90,7 +90,7 @@ class TokenExpression(object):
         while s[i] == " ":
             i +=1
         if s[i] == '"':
-            attribexpr,i = AttributeExpression(s,i+1)
+            attribexpr,i = AttributeExpression.parse(s,i)
             attribexprs.append(attribexpr)
         elif s[i] == "[":
             i += 1
@@ -98,41 +98,47 @@ class TokenExpression(object):
                 while s[i] == " ":
                     i +=1
                 if s[i] == "&":
-                    attribexpr,i = AttributeExpression(s,i+1)
+                    attribexpr,i = AttributeExpression.parse(s,i+1)
                     attribexprs.append(attribexpr)
                 elif s[i] == "]":
                     i += 1
                     break
                 elif not attribexprs:
-                    attribexpr,i = AttributeExpression(s,i)
+                    attribexpr,i = AttributeExpression.parse(s,i)
                     attribexprs.append(attribexpr)
                 else:
                     raise SyntaxError("Unexpected char whilst parsing token expression,  position " + str(i) + ": " + s[i])
 
-        if s[i] == "{":
+        if i == len(s):
+            interval = None #end of query!
+        elif s[i] == "{":
             #interval expression, find end:
             for j in range(i+1, len(s)):
                 if s[j] == "}":
                     interval = s[i+1:j]
-            if ',' in interval:
-                interval = tuple(interval.split(","))
-                if len(interval) != 2:
-                    raise SyntaxError("Invalid interval: " + interval)
-            elif '-' in interval: #alternative
-                interval = tuple(interval.split("-"))
-                if len(interval) != 2:
-                    raise SyntaxError("Invalid interval: " + interval)
-            else:
-                try:
+            try:
+                if ',' in interval:
+                    interval = tuple(int(x) for x in interval.split(","))
+                    if len(interval) != 2:
+                        raise SyntaxError("Invalid interval: " + interval)
+                elif '-' in interval: #alternative
+                    interval = tuple(int(x) for x in interval.split("-"))
+                    if len(interval) != 2:
+                        raise SyntaxError("Invalid interval: " + interval)
+                else:
                     interval = (int(interval),int(interval))
-                except:
-                    raise SyntaxError("Invalid interval: " + interval)
+            except ValueError:
+                raise SyntaxError("Invalid interval: " + interval)
+            i = j + 1
         elif s[i] == "?":
             interval = (0,1)
+            i += 1
         elif s[i] == "+":
             interval = (1,MAXINTERVAL)
+            i += 1
         elif s[i] == "*":
             interval = (0,MAXINTERVAL)
+            i += 1
         else:
             interval = None
 
@@ -152,11 +158,13 @@ class Query(object):
     def __init__(self, s):
         self.tokenexprs = []
         i = 0
-        while True:
-            while s[i] == " ":
-                i +=1
-            tokenexpr,i = TokenExpression(s,i)
-            self.tokens.append(tokenexpr)
+        l = len(s)
+        while i < l:
+            if s[i] == " ":
+                i += 1
+            else:
+                tokenexpr,i = TokenExpression.parse(s,i)
+                self.tokenexprs.append(tokenexpr)
 
     def __len__(self):
         return len(self.tokenexprs)
