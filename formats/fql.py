@@ -1,4 +1,5 @@
 #---------------------------------------------------------------
+
 # PyNLPl - FoLiA Query Language
 #   by Maarten van Gompel
 #   Centre for Language Studies
@@ -1494,11 +1495,6 @@ class Query(object):
                 return responseselection
 
         return QueryError("Invalid format: " + self.format)
-
-
-
-
-
 
 
 
