@@ -29,7 +29,7 @@ import sys
 import os
 import unittest
 import io
-from pynlpl.formats import fql, folia
+from pynlpl.formats import fql, folia, cql
 
 Q1 = 'SELECT pos WHERE class = "n" FOR w WHERE text = "house" AND class != "punct" RETURN focus'
 Q2 = 'ADD w WITH text "house" (ADD pos WITH class "n") FOR ID sentence'
@@ -543,7 +543,7 @@ class Test4CQL(unittest.TestCase):
         self.doc = folia.Document(string=FOLIAEXAMPLE)
 
     def test01_context(self):
-        q = fql.Query(fql.cql2fql(Qcql_context))
+        q = fql.Query(cql.cql2fql(Qcql_context))
         results = q(self.doc)
         self.assertTrue( len(results) > 0 )
         for result in results:

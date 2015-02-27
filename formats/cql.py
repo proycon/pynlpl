@@ -176,3 +176,47 @@ class Query(object):
     def __getitem__(self,index):
         return self.tokenexprs[index]
 
+
+def cql2fql(cq):
+    fq = "SELECT FOR SPAN "
+    if not isinstance(cq, Query):
+        cq = Query(cq)
+
+    for i, token in enumerate(cq):
+        if i > 0: fq += " & "
+        fq += "w"
+        if token.interval:
+            fq += "{" + token.interval[0], token.interval[1]+ "} "
+        else:
+            fq += " "
+        if token.attribexprs:
+            fq += "WHERE "
+            for j, attribexpr in enumerate(token):
+                if j > 0:
+                    fq += " AND "
+                fq += "("
+                if attribexpr.operator == "!=":
+                    operator = "NOTMATCHES"
+                elif attribexpr.operator == "=":
+                    operator = "MATCHES"
+                else:
+                    raise Exception("Invalid operator: " + attribexpr.operator)
+                if attribexpr.attribute in ("word","text"):
+                    if len(attribexpr.valueexpr) > 1:
+                        fq += "text " + operator + " \"^(" + "|".join(attribexpr.valueexpr) + ")$\" "
+                    else:
+                        fq += "text " + operator + " \"^" + attribexpr.valueexpr[0] + "$\" "
+                else:
+                    annottype = attribexpr.attribute
+                    if annottype == "tag":
+                        annottype = "pos"
+                    elif annottype == "lempos":
+                        raise Exception("lempos not supported in CQL to FQL conversion, use pos and lemma separately")
+                    fq += annottype + " HAS class "
+                    if len(attribexpr.valueexpr) > 1:
+                        fq += operator + " \"^(" + "|".join(attribexpr.valueexpr) + ")$\" "
+                    else:
+                        fq += operator + " \"^" + attribexpr.valueexpr[0] + "$\" "
+                fq += ")"
+
+    return fq
