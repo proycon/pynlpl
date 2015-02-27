@@ -1082,9 +1082,11 @@ class Action(object): #Action expression
                             if action.action == "EDIT":
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Applying EDIT to focus ", repr(focus),file=sys.stderr)
                                 for attr, value in action.assignments.items():
-                                    if attr == "text":
+                                    if attr in ("text","value"):
+                                        if debug: print("[FQL EVALUATION DEBUG] Action - settext("+ value+ ") on focus ", repr(focus),file=sys.stderr)
                                         focus.settext(value)
                                     else:
+                                        if debug: print("[FQL EVALUATION DEBUG] Action - " + attr +  " = " + value + " on focus ", repr(focus),file=sys.stderr)
                                         setattr(focus, attr, value)
                                 if 'respan' in action.extra:
                                     if not isinstance(focus, folia.AbstractSpanAnnotation): raise QueryError("Can only perform RESPAN on span annotation elements!")
