@@ -21,14 +21,14 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 
-from pynlpl.formats import folia
+from pynlpl.formats import folia, cql
 from copy import copy
 import json
 import re
 import sys
 import random
 
-OPERATORS = ('=','==','!=','>','<','<=','>=','CONTAINS','MATCHES')
+OPERATORS = ('=','==','!=','>','<','<=','>=','CONTAINS','NOTCONTAINS','MATCHES','NOTMATCHES')
 MASK_NORMAL = 0
 MASK_LITERAL = 1
 MASK_EXPRESSION = 2
@@ -240,8 +240,12 @@ class Filter(object): #WHERE ....
                     filters.append( lambda x,y=q[i+2],v=v : v(x) <= y )
                 elif operator == 'CONTAINS':
                     filters.append( lambda x,y=q[i+2],v=v : v(x).find( y ) != -1 )
+                elif operator == 'NOTCONTAINS':
+                    filters.append( lambda x,y=q[i+2],v=v : v(x).find( y ) == -1 )
                 elif operator == 'MATCHES':
                     filters.append( lambda x,y=re.compile(q[i+2]),v=v : y.search(v(x)) is not None  )
+                elif operator == 'NOTMATCHES':
+                    filters.append( lambda x,y=re.compile(q[i+2]),v=v : y.search(v(x)) is None  )
 
                 if q.kw(i+3,("AND","OR")):
                     if logop and q[i+3] != logop:
@@ -1495,6 +1499,50 @@ class Query(object):
                 return responseselection
 
         return QueryError("Invalid format: " + self.format)
+
+def cql2fql(cq):
+    fq = "SELECT FOR SPAN "
+    if not isinstance(cq, cql.Query):
+        cq = cql.Query(cq)
+
+    for i, token in enumerate(cq):
+        if i > 0: fq += " & "
+        fq += "w"
+        if token.interval:
+            fq += "{" + token.interval[0], token.interval[1]+ "} "
+        else:
+            fq += " "
+        if token.attribexprs:
+            fq += "WHERE "
+            for j, attribexpr in enumerate(token):
+                if j > 0:
+                    fq += " AND"
+                fq += "("
+                if attribexpr.operator == "!=":
+                    operator = "NOTMATCHES"
+                elif attribexpr.operator == "==":
+                    operator = "MATCHES"
+                else:
+                    raise Exception("Invalid operator: " + operator)
+                if attribexpr.attribute in ("word","text"):
+                    if len(attribexpr.valueexpr) > 1:
+                        fq += "text " + operator + " \"^(" + "|".join(attribexpr.valueexpr) + ")$\" "
+                    else:
+                        fq += "text " + operator + " \"^" + attribexpr.valueexpr[0] + "$\" "
+                else:
+                    annottype = attribexpr.attribute
+                    if annottype == "tag":
+                        annottype = "pos"
+                    elif annottype == "lempos":
+                        raise Exception("lempos not supported in CQL to FQL conversion, use pos and lemma separately")
+                    fq += "(" + annottype + " HAS class "
+                    if len(attribexpr.valueexpr) > 1:
+                        fq += annottype + " " + operator + " \"^(" + "|".join(attribexpr.valueexpr) + ")$\" "
+                    else:
+                        fq += annottype + " " + operator + " \"^" + attribexpr.valueexpr[0] + "$\" "
+                fq += ")"
+
+    return fq
 
 
 

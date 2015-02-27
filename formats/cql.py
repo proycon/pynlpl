@@ -15,7 +15,7 @@
 
 from __future__ import print_function, unicode_literals, division, absolute_import
 
-OPERATORS = ('=','!=','>','>=','<','<=')
+OPERATORS = ('=','!=')
 MAXINTERVAL = 99
 
 class SyntaxError(Exception):
@@ -35,6 +35,16 @@ class ValueExpression(object):
 
         values = values.split("|")
         return ValueExpression(values), i
+
+    def __len__(self):
+        return len(self.values)
+
+    def __iter__(self):
+        for x in self.values:
+            yield x
+
+    def __getitem__(self,index):
+        return self.values[index]
 
 class AttributeExpression(object):
     def __init__(self, attribute, operator, valueexpression):
@@ -128,6 +138,15 @@ class TokenExpression(object):
 
         return TokenExpression(attribexprs,interval),i
 
+    def __len__(self):
+        return len(self.attribexprs)
+
+    def __iter__(self):
+        for x in self.attribexprs:
+            yield x
+
+    def __getitem__(self,index):
+        return self.attribexprs[index]
 
 class Query(object):
     def __init__(self, s):
@@ -138,4 +157,14 @@ class Query(object):
                 i +=1
             tokenexpr,i = TokenExpression(s,i)
             self.tokens.append(tokenexpr)
+
+    def __len__(self):
+        return len(self.tokenexprs)
+
+    def __iter__(self):
+        for x in self.tokenexprs:
+            yield x
+
+    def __getitem__(self,index):
+        return self.tokenexprs[index]
 
