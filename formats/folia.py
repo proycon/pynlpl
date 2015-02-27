@@ -1496,7 +1496,7 @@ class AbstractElement(object):
 
 
     def next(self, Class=True, scope=True, reverse=False):
-        """Returns the next element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found
+        """Returns the next element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found. Non-authoritative elements are never returned.
 
         Arguments:
             * ``Class``: The class to select; any python class subclassed off `'AbstractElement``, may also be a tuple of multiple classes. Set to ``True`` to constrain to the same class as that of the current instance, set to ``None`` to not constrain at all
@@ -1526,7 +1526,7 @@ class AbstractElement(object):
                             if (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
                                 return e
                             else:
-                                #this is not yet the element of the type we are looking for, we are going to descend again in the very leftmost branch only
+                                #this is not yet the element of the type we are looking for, we are going to descend again in the very leftmost (rightmost if reversed) branch only
                                 while e.data:
                                     e = e.data[descendindex]
                                     if not isinstance(e, AbstractElement):
@@ -1551,7 +1551,7 @@ class AbstractElement(object):
 
 
     def previous(self, Class=True, scope=True):
-        """Returns the previous element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found
+        """Returns the previous element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found. Non-authoritative elements are never returned.
 
         Arguments:
             * ``Class``: The class to select; any python class subclassed off `'AbstractElement``. Set to ``True`` to constrain to the same class as that of the current instance, set to ``None`` to not constrain at all
