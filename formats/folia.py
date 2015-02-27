@@ -1495,6 +1495,70 @@ class AbstractElement(object):
         return l
 
 
+    def next(self, Class=True, scope=True ):
+        """Returns the next element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found
+
+        Arguments:
+            * ``Class``: The class to select; any python class subclassed off `'AbstractElement``. Set to ``True`` to constrain to the same class as that of the current instance, set to ``None`` to not constrain at all
+            * ``scope``: A list of classes which are never crossed looking for a next element. Set to ``True`` to constrain to a default list of structure elements (Sentence,Paragraph,Division,Event, ListItem,Caption), set to ``None`` to not constrain at all.
+
+        """
+        if Class is True: Class = self.__class__
+        if scope is True: scope = STRUCTURESCOPE
+
+        child = self
+        parent = self.parent
+        while parent:
+            if len(parent) > 1:
+                returnnext = False
+                for e in parent:
+                    if e is child:
+                        returnnext = True
+                    elif returnnext:
+                        return e
+
+            #generational iteration
+            child = parent
+            if scope is not None and child in scope:
+                #you shall not pass!
+                break
+            parent = parent.parent
+
+        return None
+
+
+
+    def previous(self, Class=True, scope=True):
+        """Returns the previous element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found
+
+        Arguments:
+            * ``Class``: The class to select; any python class subclassed off `'AbstractElement``. Set to ``True`` to constrain to the same class as that of the current instance, set to ``None`` to not constrain at all
+            * ``scope``: A list of classes which are never crossed looking for a next element. Set to ``True`` to constrain to a default list of structure elements (Sentence,Paragraph,Division,Event, ListItem,Caption), set to ``None`` to not constrain at all.
+
+        """
+        if Class is True: Class = self.__class__
+        if scope is True: scope = STRUCTURESCOPE
+
+        child = self
+        parent = self.parent
+        while parent:
+            if len(parent) > 1:
+                returnnext = False
+                for e in reversed(parent):
+                    if e is child:
+                        returnnext = True
+                    elif returnnext:
+                        return e
+
+            #generational iteration
+            child = parent
+            if scope is not None and child in scope:
+                #you shall not pass!
+                break
+            parent = parent.parent
+
+        return None
+
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None, origclass = None):
             """Returns a RelaxNG definition for this element (as an XML element (lxml.etree) rather than a string)"""
@@ -2842,26 +2906,6 @@ class Word(AbstractStructureElement, AllowCorrections):
         self.sentence().splitword(self, *newwords, **kwargs)
 
 
-    def next(self, scope=None ):
-        """Returns the next word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,Event, ListItem,Caption by default)"""
-        if scope is None: scope = STRUCTURESCOPE
-        words = list(self.ancestor(scope).select(Word))
-        i = words.index(self) + 1
-        if i < len(words):
-            return words[i]
-        else:
-            return None
-
-
-    def previous(self, scope=None):
-        """Returns the previous word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,ListItem, Caption, Head, Event by default)"""
-        if scope is None: scope = STRUCTURESCOPE
-        words = list(self.ancestor(scope).select(Word))
-        i = words.index(self) - 1
-        if i >= 0:
-            return words[i]
-        else:
-            return None
 
     def leftcontext(self, size, placeholder=None):
         """Returns the left context for a word. This method crosses sentence/paragraph boundaries"""
