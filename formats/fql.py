@@ -32,6 +32,7 @@ OPERATORS = ('=','==','!=','>','<','<=','>=','CONTAINS','NOTCONTAINS','MATCHES',
 MASK_NORMAL = 0
 MASK_LITERAL = 1
 MASK_EXPRESSION = 2
+MAXEXPANSION = 99
 
 FOLIAVERSION = '0.11.2'
 FQLVERSION = '0.2.1'
@@ -367,8 +368,7 @@ class Selector(object):
         self.id = id
         self.filter = filter
         self.nextselector =  nextselector #selectors can be chained
-        self.expansion = expansion
-
+        self.expansion = expansion #{min,max} occurrence interval, allowed only in Span and evaluated there instead of here
 
 
     def chain(self, targets):
@@ -409,8 +409,12 @@ class Selector(object):
             try:
                 if len(expansion) == 1:
                     expansion = (int(expansion), int(expansion))
+                elif len(expansion) == 2 and expansion[0] == "":
+                    expansion = (0,int(expansion[1]))
+                elif len(expansion) == 2 and expansion[1] == "":
+                    expansion = (int(expansion[0]),MAXEXPANSION)
                 elif len(expansion) == 2:
-                    expansion = tuple(int(x) for x in expansion)
+                    expansion = tuple(int(x) for x in expansion if x)
                 else:
                     raise SyntaxError("Invalid expansion expression: " + ",".join(expansion))
             except ValueError:
