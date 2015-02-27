@@ -572,7 +572,8 @@ class Span(object):
             spanset = SpanSet([element])
             match = True
             #now see if consecutive elements match up
-            for selector in self.targets[1:]:
+            for i, selector in enumerate(self.targets[1:]):
+                i = i+1 #offset correction
                 if selector.id: #selection by ID, don't care about consecutiveness
                     try:
                         element = query.doc[selector.id]
@@ -581,21 +582,49 @@ class Span(object):
                         if debug: print("[FQL EVALUATION DEBUG] Span  - Obtained subsequent with specified ID does not exist ", file=sys.stderr)
                         match = False
                         break
+                    if element and not selector.match(query, element,debug):
+                        if debug: print("[FQL EVALUATION DEBUG] Span  - Subsequent element does not match filter",file=sys.stderr)
+                    else:
+                        spanset.append(element)
+
                 else: #element must be consecutive
-                    element = element.next(selector.Class, None)
-                    if debug: print("[FQL EVALUATION DEBUG] Span  - Obtained subsequent item in span: ", repr(element), file=sys.stderr)
-                if not element or not selector.match(query, element,debug) or (target and target not in element.ancestors()):
-                    if debug:
-                        if not element:
-                            print("[FQL EVALUATION DEBUG] Span  - Subsequent element not found",file=sys.stderr)
-                        elif target and not target in element.ancestors():
-                            print("[FQL EVALUATION DEBUG] Span  - Subsequent element out of scope",file=sys.stderr)
+                    if selector.expansion:
+                        minmatches = selector.expansion[0]
+                        maxmatches = selector.expansion[1]
+                    else:
+                        minmatches = maxmatches = 1
+
+                    matches = 0
+
+                    while True:
+                        submatch = True
+
+                        prevelement = element
+                        #get next element
+                        element = element.next(selector.Class, None)
+                        if debug: print("[FQL EVALUATION DEBUG] Span  - Obtained subsequent item in span: ", repr(element), file=sys.stderr)
+
+                        if not element or (target and target not in element.ancestors()):
+                            if debug:
+                                if not element:
+                                    print("[FQL EVALUATION DEBUG] Span  - Subsequent element not found",file=sys.stderr)
+                                elif target and not target in element.ancestors():
+                                    print("[FQL EVALUATION DEBUG] Span  - Subsequent element out of scope",file=sys.stderr)
+                            submatch = False
+                            break
+                        elif element and not selector.match(query, element,debug):
+                            if debug: print("[FQL EVALUATION DEBUG] Span  - Subsequent element does not match filter",file=sys.stderr)
+                            submatch = False
+
+                        if submatch:
+                            matches += 1
+                            spanset.append(element)
+                            if matches == maxmatches:
+                                break
                         else:
-                            print("[FQL EVALUATION DEBUG] Span  - Subsequent element does not match filter",file=sys.stderr)
-                    match = False
-                    break
-                else:
-                    spanset.append(element)
+                            if matches < minmatches:
+                                match = False
+                            break
 
             if match:
                 if debug: print("[FQL EVALUATION DEBUG] Span   - Span found, returning spanset (" + repr(spanset) + ")",file=sys.stderr)
