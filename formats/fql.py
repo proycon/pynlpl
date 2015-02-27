@@ -1439,10 +1439,10 @@ class Query(object):
                     return ""
                 else:
                     if isinstance(responseselection[0], SpanSet):
-                            r = "<result>"
+                            r = "<result>\n"
                             for e in responseselection[0]:
                                 r += e.xmlstring(True)
-                            r += "</result>"
+                            r += "</result>\n"
                             return r
                     else:
                         return responseselection[0].xmlstring(True)
@@ -1473,10 +1473,10 @@ class Query(object):
                         r = ""
                     for e in responseselection:
                         if isinstance(e, SpanSet):
-                            r += "<result>"
+                            r += "<result>\n"
                             for e2 in e:
                                 r += "" + e2.xmlstring(True) + "\n"
-                            r += "</result>"
+                            r += "</result>\n"
                         else:
                             r += "<result>\n" + e.xmlstring(True) + "</result>\n"
                     if wrap:
