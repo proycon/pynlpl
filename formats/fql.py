@@ -361,12 +361,14 @@ class SpanSet(list):
 
 
 class Selector(object):
-    def __init__(self, Class, set=None,id=None, filter=None, nextselector=None):
+    def __init__(self, Class, set=None,id=None, filter=None, nextselector=None, expansion = None):
         self.Class = Class
         self.set = set
         self.id = id
         self.filter = filter
         self.nextselector =  nextselector #selectors can be chained
+        self.expansion = expansion
+
 
 
     def chain(self, targets):
@@ -378,11 +380,12 @@ class Selector(object):
             selector = target
 
     @staticmethod
-    def parse(q, i=0):
+    def parse(q, i=0, allowexpansion=False):
         l = len(q)
         set = None
         id = None
         filter = None
+        expansion = None
 
         if q[i] == "ID" and q[i+1]:
             id = q[i+1]
@@ -397,6 +400,21 @@ class Selector(object):
                 except:
                     raise SyntaxError("Expected element type, got " + str(q[i]) + " in: " + str(q))
             i += 1
+
+        if q[i][0] == "{" and q[i][-1] == "}":
+            if not allowexpansion:
+                raise SyntaxError("Expansion expressions not allowed at this point, got one at position " + str(i) + " in: " + str(q))
+            expansion = q[i][1:-1]
+            expansion = expansion.split(',')
+            try:
+                if len(expansion) == 1:
+                    expansion = (int(expansion), int(expansion))
+                elif len(expansion) == 2:
+                    expansion = tuple(int(x) for x in expansion)
+                else:
+                    raise SyntaxError("Invalid expansion expression: " + ",".join(expansion))
+            except ValueError:
+                raise SyntaxError("Invalid expansion expression: " + ",".join(expansion))
 
         while i < l:
             if q.kw(i,"OF") and q[i+1]:
@@ -413,7 +431,7 @@ class Selector(object):
                 #something we don't handle
                 break
 
-        return Selector(Class,set,id,filter), i
+        return Selector(Class,set,id,filter, expansion), i
 
     def __call__(self, query, contextselector, recurse=True, debug=False): #generator, lazy evaluation!
         if isinstance(contextselector,tuple) and len(contextselector) == 2:
@@ -519,7 +537,7 @@ class Selector(object):
 
 
 class Span(object):
-    def __init__(self, targets):
+    def __init__(self, targets, intervals = []):
         self.targets = targets #Selector instances making up the span
 
     @staticmethod
