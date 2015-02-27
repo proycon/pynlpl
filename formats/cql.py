@@ -77,10 +77,12 @@ class TokenExpression(object):
     @staticmethod
     def parse(s,i):
         attribexprs = []
-        interval = None
         while s[i] == " ":
             i +=1
-        if s[i] == "[":
+        if s[i] == '"':
+            attribexpr,i = AttributeExpression(s,i+1)
+            attribexprs.append(attribexpr)
+        elif s[i] == "[":
             i += 1
             while True:
                 while s[i] == " ":
@@ -89,39 +91,42 @@ class TokenExpression(object):
                     attribexpr,i = AttributeExpression(s,i+1)
                     attribexprs.append(attribexpr)
                 elif s[i] == "]":
+                    i += 1
                     break
                 elif not attribexprs:
                     attribexpr,i = AttributeExpression(s,i)
                     attribexprs.append(attribexpr)
-
-            if s[i] == "{":
-                #interval expression, find end:
-                for j in range(i+1, len(s)):
-                    if s[j] == "}":
-                        interval = s[i+1:j]
-                if ',' in interval:
-                    interval = tuple(interval.split(","))
-                    if len(interval) != 2:
-                        raise SyntaxError("Invalid interval: " + interval)
-                elif '-' in interval: #alternative
-                    interval = tuple(interval.split("-"))
-                    if len(interval) != 2:
-                        raise SyntaxError("Invalid interval: " + interval)
                 else:
-                    try:
-                        interval = (int(interval),int(interval))
-                    except:
-                        raise SyntaxError("Invalid interval: " + interval)
-            elif s[i] == "?":
-                interval = (0,1)
-            elif s[i] == "+":
-                interval = (1,MAXINTERVAL)
-            elif s[i] == "*":
-                interval = (0,MAXINTERVAL)
+                    raise SyntaxError("Unexpected char whilst parsing token expression,  position " + str(i) + ": " + s[i])
+
+        if s[i] == "{":
+            #interval expression, find end:
+            for j in range(i+1, len(s)):
+                if s[j] == "}":
+                    interval = s[i+1:j]
+            if ',' in interval:
+                interval = tuple(interval.split(","))
+                if len(interval) != 2:
+                    raise SyntaxError("Invalid interval: " + interval)
+            elif '-' in interval: #alternative
+                interval = tuple(interval.split("-"))
+                if len(interval) != 2:
+                    raise SyntaxError("Invalid interval: " + interval)
+            else:
+                try:
+                    interval = (int(interval),int(interval))
+                except:
+                    raise SyntaxError("Invalid interval: " + interval)
+        elif s[i] == "?":
+            interval = (0,1)
+        elif s[i] == "+":
+            interval = (1,MAXINTERVAL)
+        elif s[i] == "*":
+            interval = (0,MAXINTERVAL)
+        else:
+            interval = None
 
         return TokenExpression(attribexprs,interval),i
-
-
 
 
 class Query(object):
@@ -133,6 +138,4 @@ class Query(object):
                 i +=1
             tokenexpr,i = TokenExpression(s,i)
             self.tokens.append(tokenexpr)
-
-
 
