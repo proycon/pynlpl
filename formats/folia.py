@@ -1495,27 +1495,49 @@ class AbstractElement(object):
         return l
 
 
-    def next(self, Class=True, scope=True ):
+    def next(self, Class=True, scope=True, reverse=False):
         """Returns the next element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found
 
         Arguments:
-            * ``Class``: The class to select; any python class subclassed off `'AbstractElement``. Set to ``True`` to constrain to the same class as that of the current instance, set to ``None`` to not constrain at all
+            * ``Class``: The class to select; any python class subclassed off `'AbstractElement``, may also be a tuple of multiple classes. Set to ``True`` to constrain to the same class as that of the current instance, set to ``None`` to not constrain at all
             * ``scope``: A list of classes which are never crossed looking for a next element. Set to ``True`` to constrain to a default list of structure elements (Sentence,Paragraph,Division,Event, ListItem,Caption), set to ``None`` to not constrain at all.
 
         """
         if Class is True: Class = self.__class__
         if scope is True: scope = STRUCTURESCOPE
 
+        if reverse:
+            order = reversed
+            descendindex = -1
+        else:
+            order = lambda x: x
+            descendindex = 0
+
         child = self
         parent = self.parent
         while parent:
             if len(parent) > 1:
                 returnnext = False
-                for e in parent:
+                for e in order(parent):
                     if e is child:
                         returnnext = True
                     elif returnnext:
-                        return e
+                        if e.AUTH:
+                            if (isinstance(Class,tuple) and (isinstance(e,C) for C in Class)) or isinstance(e,Class):
+                                return e
+                            else:
+                                #this is not yet the element of the type we are looking for, we are going to descend again in the very leftmost branch only
+                                while e.data:
+                                    e = e.data[descendindex]
+                                    if not isinstance(e, AbstractElement):
+                                        return None #we've gone too far
+                                    if e.AUTH:
+                                        if (isinstance(Class,tuple) and (isinstance(e,C) for C in Class)) or isinstance(e,Class):
+                                            return e
+                                        else:
+                                            #descend deeper
+                                            continue
+                        return None
 
             #generational iteration
             child = parent
@@ -1536,28 +1558,7 @@ class AbstractElement(object):
             * ``scope``: A list of classes which are never crossed looking for a next element. Set to ``True`` to constrain to a default list of structure elements (Sentence,Paragraph,Division,Event, ListItem,Caption), set to ``None`` to not constrain at all.
 
         """
-        if Class is True: Class = self.__class__
-        if scope is True: scope = STRUCTURESCOPE
-
-        child = self
-        parent = self.parent
-        while parent:
-            if len(parent) > 1:
-                returnnext = False
-                for e in reversed(parent):
-                    if e is child:
-                        returnnext = True
-                    elif returnnext:
-                        return e
-
-            #generational iteration
-            child = parent
-            if scope is not None and child in scope:
-                #you shall not pass!
-                break
-            parent = parent.parent
-
-        return None
+        return self.next(Class,scope, True)
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None, origclass = None):
