@@ -2411,15 +2411,23 @@ class TextContent(AbstractElement):
 
         super(TextContent,self).__init__(doc, *args, **kwargs)
 
-        if not self.value:
+        if not self.data:
             raise ValueError("Empty text content elements are not allowed")
-        if (self.value != self.value.translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
-            raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.value))
+        #if isstring(self.data[0]) and (self.data[0] != self.data[0].translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
+        #    raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.data[0]))
 
 
     def text(self):
         """Obtain the text (unicode instance)"""
         return super(TextContent,self).text() #AbstractElement will handle it now, merely overridden to get rid of parameters that dont make sense in this context
+
+    def settext(self, text):
+        self.data = [text]
+        if not self.data:
+            raise ValueError("Empty text content elements are not allowed")
+        #if isstring(self.data[0]) and (self.data[0] != self.data[0].translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
+        #    raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.data[0]))
+
 
     def validateref(self):
         """Validates the Text Content's references. Raises UnresolvableTextContent when invalid"""
@@ -2434,7 +2442,7 @@ class TextContent(AbstractElement):
             raise UnresolvableTextContent("Default reference for textcontent not found!")
         elif ref.hastext(self.cls):
             raise UnresolvableTextContent("Reference has no such text (class=" + self.cls+")")
-        elif self.value != ref.textcontent(self.cls).value[self.offset:self.offset+len(self.value)]:
+        elif self.text() != ref.textcontent(self.cls).text()[self.offset:self.offset+len(self.data[0])]:
             raise UnresolvableTextContent("Referenced found but does not match!")
         else:
             #finally, we made it!
@@ -2446,16 +2454,16 @@ class TextContent(AbstractElement):
 
 
     def __unicode__(self):
-        return self.value
+        return self.text()
 
     def __str__(self):
-        return self.value
+        return self.text()
 
     def __eq__(self, other):
         if isinstance(other, TextContent):
-            return self.value == other.value
+            return self.text() == other.text()
         elif isstring(other):
-            return self.value == u(other)
+            return self.text() == u(other)
         else:
             return False
 
