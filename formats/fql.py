@@ -566,14 +566,20 @@ class Span(object):
     def __call__(self, query, contextselector, recurse=True,debug=False): #returns a list of element in a span
         if debug: print("[FQL EVALUATION DEBUG] Span  - Building span from target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
+        backtrack = []
+
         #get first target
         for element, target in self.targets[0](query, contextselector, recurse,debug):
             if debug: print("[FQL EVALUATION DEBUG] Span  - First item of span found  (" + str(element) + ", target="+ str(target)+")",file=sys.stderr)
             spanset = SpanSet([element])
             match = True
             #now see if consecutive elements match up
-            for i, selector in enumerate(self.targets[1:]):
-                i = i+1 #offset correction
+            l = len(self.targets)
+            i = 0
+            while i < l:
+                i += 1 #skips the first selector, we already have it
+                if i == l: break
+                selector = self.targets[i]
                 if selector.id: #selection by ID, don't care about consecutiveness
                     try:
                         element = query.doc[selector.id]
@@ -618,13 +624,34 @@ class Span(object):
 
                         if submatch:
                             matches += 1
+                            if matches > minmatches:
+                                #check if the next selector(s) match too, then we have a point where we might branch two ways
+                                j = 1
+                                while i+j < len(self.targets):
+                                    nextselector = self.targets[i+j]
+                                    if nextselector.match(query, element,debug):
+                                        #save this point for backtracking, when we get stuck, we'll roll back to this point
+                                        backtrack.append( (i+j, prevelement, copy(spanset) ) ) #using prevelement, nextelement will be recomputed after backtracking,   using different selector
+                                    if not nextselector.expansion or nextselector.expansion[0] > 0:
+                                        break
+                                    j += 1
+
                             spanset.append(element)
                             if matches == maxmatches:
                                 break
                         else:
                             if matches < minmatches:
-                                match = False
-                            break
+                                #can we backtrack?
+                                if backtrack:
+                                    index, element, spanset = backtrack.pop()
+                                    i = index - 1 #next iteration will do +1 again
+                                    continue
+                                else:
+                                    #nope, all is lost, we have no match
+                                    match = False
+                                    break
+
+                    if not match: break
 
             if match:
                 if debug: print("[FQL EVALUATION DEBUG] Span   - Span found, returning spanset (" + repr(spanset) + ")",file=sys.stderr)
