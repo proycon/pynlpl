@@ -1503,7 +1503,9 @@ class Query(object):
 
             focusselection, targetselection = self.action(self, targetselector, debug) #selecting focus elements further constrains the target selection (if any), return values will be lists
 
-            if self.returntype == "focus":
+            if self.returntype == "nothing":
+                return ""
+            elif self.returntype == "focus":
                 responseselection = focusselection
             elif self.returntype == "target" or self.returntype == "inner-target":
                 responseselection = []
@@ -1520,6 +1522,8 @@ class Query(object):
         else:
             responseselection = []
 
+        if self.returntype == "nothing": #we're done
+            return ""
 
         #convert response selection to proper format and return
         if self.format.startswith('single'):
