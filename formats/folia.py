@@ -1560,6 +1560,48 @@ class AbstractElement(object):
         """
         return self.next(Class,scope, True)
 
+    def leftcontext(self, size, placeholder=None, scope=None):
+        """Returns the left context for an element, as a list. This method crosses sentence/paragraph boundaries by default, which can be restricted by setting scope"""
+
+        if size == 0: return [] #for efficiency
+
+        context = []
+        e = self
+        while len(context) < size:
+            e = e.previous(True,scope)
+            if not e: break
+            context.append(e)
+
+        if placeholder:
+            while len(context) < size:
+                context.append(placeholder)
+
+        context.reverse()
+        return context
+
+
+    def rightcontext(self, size, placeholder=None, scope=None):
+        """Returns the right context for an element, as a list. This method crosses sentence/paragraph boundaries by default, which can be restricted by setting scope"""
+
+        if size == 0: return [] #for efficiency
+
+        context = []
+        e = self
+        while len(context) < size:
+            e = e.next(True,scope)
+            if not e: break
+            context.append(e)
+
+        if placeholder:
+            while len(context) < size:
+                context.append(placeholder)
+
+        return context
+
+    def context(self, size, placeholder=None, scope=None):
+        """Returns this word in context, {size} words to the left, the current word, and {size} words to the right"""
+        return self.leftcontext(size, placeholder,scope) + [self] + self.rightcontext(size, placeholder,scope)
+
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None, origclass = None):
             """Returns a RelaxNG definition for this element (as an XML element (lxml.etree) rather than a string)"""
@@ -2908,33 +2950,6 @@ class Word(AbstractStructureElement, AllowCorrections):
 
 
 
-    def leftcontext(self, size, placeholder=None):
-        """Returns the left context for a word. This method crosses sentence/paragraph boundaries"""
-        if size == 0: return [] #for efficiency
-        words = list(self.doc.words())
-        i = words.index(self)
-        begin = i - size
-        if begin < 0:
-            return [placeholder] * (begin * -1) + words[0:i]
-        else:
-            return words[begin:i]
-
-    def rightcontext(self, size, placeholder=None):
-        """Returns the right context for a word. This method crosses sentence/paragraph boundaries"""
-        if size == 0: return [] #for efficiency
-        words = list(self.doc.words())
-        i = words.index(self)
-        begin = i+1
-        end = begin + size
-        rightcontext = words[begin:end]
-        if len(rightcontext) < size:
-            rightcontext += (size - len(rightcontext)) * [placeholder]
-        return rightcontext
-
-
-    def context(self, size, placeholder=None):
-        """Returns this word in context, {size} words to the left, the current word, and {size} words to the right"""
-        return self.leftcontext(size, placeholder) + [self] + self.rightcontext(size, placeholder)
 
     def findspans(self, type,set=None):
         """Find span annotation of the specified type that includes this word"""
