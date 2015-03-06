@@ -941,7 +941,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                         subassignments['set'] = query.doc.defaultset(action.focus.Class)
                 if focus and not self.bare: #copy all data within (we have to do this again for each suggestion as it will generate different ID suffixes)
                     inheritchildren = list(focus.copychildren(query.doc, True))
-                if folia.Attrib.ID in action.focus.Class and action.focus.Class.REQUIRED_ATTRIBS:
+                if action.focus.Class and folia.Attrib.ID and action.focus.Class.REQUIRED_ATTRIBS:
                     subassignments['id'] = getrandomid(query, "suggestion.")
                 kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, *inheritchildren,**subassignments), **suggestionassignments )   )
 
