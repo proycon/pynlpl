@@ -1082,6 +1082,7 @@ def getassignments(q, i, assignments,  focus=None):
                     assignments[q[i]] = datetime.strptime("%Y-%m-%dT%H:%M:%S")
                 except:
                     raise SyntaxError("Unable to parse datetime: " + str(q[i+1]))
+            i += 2
         else:
             if not assignments:
                 raise SyntaxError("Expected assignments after WITH statement, but no valid attribute found, got  " + str(q[i]) + " at position " + str(i) + " in: " +  str(q))
