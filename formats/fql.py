@@ -914,8 +914,9 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                     kwargs['original'] = focus
                 #TODO: if not bare, fix all span annotation references to this element
             elif focus:
-                kwargs['current'] = focus
-                if correction: #reuse the existing correction element
+                if isinstance(focus, folia.AbstractStructureElement):
+                    kwargs['current'] = focus #current only needed for structure annotation
+                if correction and (not 'set' in kwargs or correction.set == kwargs['set']) and (not 'cls' in kwargs or correction.cls == kwargs['cls']): #reuse the existing correction element
                     kwargs['reuse'] = correction
 
             if focus:

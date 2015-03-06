@@ -422,7 +422,7 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].cls, "nonworderror")
-        self.assertEqual(results[0].current(0).cls,"terweil")
+        self.assertEqual(results[0].parent.lemma(),"terweil")
         self.assertIsInstance(results[0].suggestions(0), folia.Suggestion)
         self.assertEqual(results[0].suggestions(0).confidence, 0.9)
         self.assertIsInstance(results[0].suggestions(0)[0], folia.LemmaAnnotation)
@@ -462,7 +462,7 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].cls, "nonworderror")
-        self.assertEqual(results[0].current(0).text(),"terweil")
+        self.assertEqual(results[0].parent.text(),"terweil") #original
         self.assertIsInstance(results[0].suggestions(0), folia.Suggestion)
         self.assertEqual(results[0].suggestions(0).confidence, 0.9)
         self.assertIsInstance(results[0].suggestions(0)[0], folia.TextContent)
