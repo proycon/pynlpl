@@ -455,6 +455,7 @@ class Selector(object):
                     if debug: print("[FQL EVALUATION DEBUG] Select - Selecting ID " + selector.id,file=sys.stderr)
                     try:
                         candidate = query.doc[selector.id]
+                        selector.Class = candidate.__class__
                         if not selector.filter or  selector.filter(query,candidate, debug):
                             if debug: print("[FQL EVALUATION DEBUG] Select - Yielding (by ID) ", repr(candidate),file=sys.stderr)
                             yield candidate, None
