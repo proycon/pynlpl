@@ -494,8 +494,14 @@ class Selector(object):
                         yield e, e
                     else:
                         for candidate  in e.select(selector.Class, selector.set, recurse):
+                            try:
+                                if candidate.changedbyquery is query:
+                                    #this candidate has been added/modified by the query, don't select it again
+                                    continue
+                            except AttributeError:
+                                pass
                             if not selector.filter or  selector.filter(query,candidate, debug):
-                                if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate),file=sys.stderr)
+                                if debug: print("[FQL EVALUATION DEBUG] Select - Yielding ", repr(candidate), " in ", repr(e),file=sys.stderr)
                                 yield candidate, e
 
                 if selector.nextselector is None:
@@ -917,6 +923,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 if isinstance(focus, folia.AbstractStructureElement):
                     kwargs['current'] = focus #current only needed for structure annotation
                 if correction and (not 'set' in kwargs or correction.set == kwargs['set']) and (not 'cls' in kwargs or correction.cls == kwargs['cls']): #reuse the existing correction element
+                    print("Reusing " + correction.id,file=sys.stderr)
                     kwargs['reuse'] = correction
 
             if focus:
@@ -947,6 +954,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                     subassignments['id'] = getrandomid(query, "suggestion.")
                 kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, *inheritchildren,**subassignments), **suggestionassignments )   )
 
+            print("Applying correction: ", kwargs)
             yield parent.correct(**kwargs) #generator
         elif action.action == "DELETE":
             if not focus: raise QueryError("DELETE AS CORRECTION did not find a focus to operate on")
@@ -1282,6 +1290,7 @@ class Action(object): #Action expression
                                     spanset = next(action.extra['respan'](query, contextselector, True, debug)) #there can be only one
                                     focus.setspan(*spanset)
 
+                                query._touch(focus)
                             elif action.action == "DELETE":
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Applying DELETE to focus ", repr(focus),file=sys.stderr)
                                 focus.parent.remove(focus)
@@ -1340,18 +1349,22 @@ class Action(object): #Action expression
                                 if action.action == "ADD" or action.action == "EDIT":
                                     if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target spanset " + repr(target),file=sys.stderr)
                                     focusselection.append( target[0].add(action.focus.Class, *target, **action.assignments) ) #handles span annotation too
+                                    query._touch(focusselection[-1])
                             else:
                                 if action.action == "ADD" or action.action == "EDIT":
                                     if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target " + repr(target),file=sys.stderr)
                                     focusselection.append( target.add(action.focus.Class, **action.assignments) ) #handles span annotation too
+                                    query._touch(focusselection[-1])
                                 elif action.action == "APPEND":
                                     if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
                                     index = target.parent.data.index(target)
                                     focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
+                                    query._touch(focusselection[-1])
                                 elif action.action == "PREPEND":
                                     if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
                                     index = target.parent.data.index(target) - 1
                                     focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
+                                    query._touch(focusselection[-1])
 
                         if isinstance(target, SpanSet):
                             if not target.partof(constrainedtargetselection):
@@ -1599,7 +1612,10 @@ class Query(object):
 
         return QueryError("Invalid format: " + self.format)
 
-
+    def _touch(self, *args):
+        for e in args:
+            e.changedbyquery = self
+            self._touch(*e.data)
 
 
 

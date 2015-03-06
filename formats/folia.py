@@ -358,7 +358,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             object.auth = bool(kwargs['auth'])
         del kwargs['auth']
     else:
-        object.auth = True
+        object.auth = object.__class__.AUTH
 
 
 
@@ -918,15 +918,16 @@ class AbstractElement(object):
         if self.doc and self.doc.deepvalidation:
             self.deepvalidation()
 
-    def addtoindex(self):
+    def addtoindex(self,norecurse=[]):
         """Makes sure this element (and all subelements), are properly added to the index"""
         if self.id:
             self.doc.index[self.id] = self
         for e in self.data:
-            try:
-                e.addtoindex()
-            except AttributeError:
-                pass
+            if all([not isinstance(e, C) for x in norecurse]):
+                try:
+                    e.addtoindex(norecurse)
+                except AttributeError:
+                    pass
 
     def deepvalidation(self):
         if self.doc and self.doc.deepvalidation and self.set and self.set[0] != '_':
@@ -1522,7 +1523,7 @@ class AbstractElement(object):
                     if e is child:
                         returnnext = True
                     elif returnnext:
-                        if e.AUTH:
+                        if e.auth:
                             if (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
                                 return e
                             else:
@@ -1531,7 +1532,7 @@ class AbstractElement(object):
                                     e = e.data[descendindex]
                                     if not isinstance(e, AbstractElement):
                                         return None #we've gone too far
-                                    if e.AUTH:
+                                    if e.auth:
                                         if (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
                                             return e
                                         else:
@@ -2994,6 +2995,7 @@ class Feature(AbstractElement):
         if not isinstance(doc, Document) and not (doc is None):
             raise Exception("First argument of Feature constructor must be a Document instance, not " + str(type(doc)))
         self.doc = doc
+        self.auth = True
 
 
         if self.SUBSET:
@@ -3133,6 +3135,17 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
         else:
             return targets[index]
 
+    def addtoindex(self,norecurse=None):
+        if not norecurse: norecurse = (Word, Morpheme)
+        """Makes sure this element (and all subelements), are properly added to the index"""
+        if self.id:
+            self.doc.index[self.id] = self
+        for e in self.data:
+            if all([not isinstance(e, C) for C in norecurse]):
+                try:
+                    e.addtoindex(norecurse)
+                except AttributeError:
+                    pass
 
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections):
