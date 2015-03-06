@@ -27,6 +27,7 @@ import json
 import re
 import sys
 import random
+import datetime
 
 OPERATORS = ('=','==','!=','>','<','<=','>=','CONTAINS','NOTCONTAINS','MATCHES','NOTMATCHES')
 MASK_NORMAL = 0
@@ -1068,6 +1069,19 @@ def getassignments(q, i, assignments,  focus=None):
                 key = 'text'
             assignments[key] = q[i+1]
             i+=2
+        elif q.kw(i, 'datetime'):
+            if q[i+1] == "now":
+                assignments[q[i]] = datetime.datetime.now()
+            elif q[i+1].isdigit():
+                try:
+                    assignments[q[i]] = datetime.datetime.fromtimestamp(q[i+1])
+                except:
+                    raise SyntaxError("Unable to parse datetime: " + str(q[i+1]))
+            else:
+                try:
+                    assignments[q[i]] = datetime.strptime("%Y-%m-%dT%H:%M:%S")
+                except:
+                    raise SyntaxError("Unable to parse datetime: " + str(q[i+1]))
         else:
             if not assignments:
                 raise SyntaxError("Expected assignments after WITH statement, but no valid attribute found, got  " + str(q[i]) + " at position " + str(i) + " in: " +  str(q))
