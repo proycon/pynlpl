@@ -954,7 +954,6 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                     subassignments['id'] = getrandomid(query, "suggestion.")
                 kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, *inheritchildren,**subassignments), **suggestionassignments )   )
 
-            print("Applying correction: ", kwargs)
             yield parent.correct(**kwargs) #generator
         elif action.action == "DELETE":
             if not focus: raise QueryError("DELETE AS CORRECTION did not find a focus to operate on")
