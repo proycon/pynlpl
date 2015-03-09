@@ -1495,6 +1495,44 @@ class AbstractElement(object):
                     l += e.items(l)
         return l
 
+    def getindex(self, child, recursive=True, ignore=True):
+        """returns the index at which an element occurs, recursive by default!"""
+
+        #breadth first search
+        for i, c in enumerate(self.data):
+            if c is child:
+                return i
+        if recursive:
+            for i, c in enumerate(self.data):
+                if ignore is True:
+                    try:
+                        if not c.auth:
+                            continue
+                    except AttributeError:
+                        #not all elements have auth attribute..
+                        pass
+                elif ignore: #list
+                    doignore = False
+                    for e in ignore:
+                        if e is True:
+                            try:
+                                if not c.auth:
+                                    doignore =True
+                                    break
+                            except AttributeError:
+                                #not all elements have auth attribute..
+                                pass
+                        elif e == c.__class__ or issubclass(c.__class__,e):
+                            doignore = True
+                            break
+                    if doignore:
+                        continue
+                if isinstance(c, AbstractElement):
+                    j = c.getindex(child, recursive)
+                    if j != -1:
+                        return i #yes, i ... not j!
+        return -1
+
 
     def next(self, Class=True, scope=True, reverse=False):
         """Returns the next element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found. Non-authoritative elements are never returned.

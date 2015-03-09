@@ -98,6 +98,8 @@ Qcorrect_split = "SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegev
 
 Qsuggest_split = "SUBSTITUTE (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"runonerror\" SUGGESTION (SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegeven\")) FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.6.w.20\""
 
+Qcorrect_prepend = "PREPEND w WITH text \"heel\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"insertion\") FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
+
 Qcql_context = '"de" [ tag="ADJ\(.*" ] [ tag="N\(.*" & lemma!="blah" ]'
 
 class Test1UnparsedQuery(unittest.TestCase):
@@ -537,6 +539,15 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].suggestions(0)[0].text(), "weer")
         self.assertEqual(results[0].suggestions(0)[1].text(), "gegeven")
         self.assertEqual(results[0].current(0).text(), "weergegeven")
+
+    def test29_correct_prepend(self):
+        """Insertion as correction (prepend)"""
+        q = fql.Query(Qcorrect_prepend)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].text(), "heel")
+        self.assertEqual(results[0].next(folia.Word), "ander")
+
 
 class Test4CQL(unittest.TestCase):
     def setUp(self):

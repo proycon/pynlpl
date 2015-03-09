@@ -890,6 +890,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                     actionassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
                 except KeyError:
                     actionassignments['set'] = query.doc.defaultset(action.focus.Class)
+            if folia.Attrib.ID in action.focus.Class.REQUIRED_ATTRIBS:
+                actionassignments['id'] = getrandomid(query, "corrected." + action.focus.Class.XMLTAG + ".")
 
         kwargs = {}
         if self.set:
@@ -904,7 +906,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if correction:
                 if not self.filter or (self.filter and self.filter.match(query, correction, debug)):
                     yield correction
-        elif action.action == "EDIT" or action.action == "ADD":
+        elif action.action in ("EDIT","ADD","PREPEND","APPEND"):
             if focus:
                 correction = focus.incorrection()
             else:
@@ -916,17 +918,20 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
             if actionassignments:
                 kwargs['new'] = action.focus.Class(query.doc,*inheritchildren, **actionassignments)
-                if focus:
+                if focus and action.action not in ('PREPEND','APPEND'):
                     kwargs['original'] = focus
                 #TODO: if not bare, fix all span annotation references to this element
-            elif focus:
+            elif focus and action.action not in ('PREPEND','APPEND'):
                 if isinstance(focus, folia.AbstractStructureElement):
                     kwargs['current'] = focus #current only needed for structure annotation
                 if correction and (not 'set' in kwargs or correction.set == kwargs['set']) and (not 'cls' in kwargs or correction.cls == kwargs['cls']): #reuse the existing correction element
                     print("Reusing " + correction.id,file=sys.stderr)
                     kwargs['reuse'] = correction
 
-            if focus:
+            if action.action in ('PREPEND','APPEND'):
+                #get parent relative to target
+                parent = target.ancestor( (folia.AbstractStructureElement, folia.AbstractSpanAnnotation, folia.AbstractAnnotationLayer) )
+            elif focus:
                 if 'reuse' in kwargs and kwargs['reuse']:
                     parent = focus.ancestor( (folia.AbstractStructureElement, folia.AbstractSpanAnnotation, folia.AbstractAnnotationLayer) )
                 else:
@@ -953,6 +958,17 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 if folia.Attrib.ID in action.focus.Class.REQUIRED_ATTRIBS:
                     subassignments['id'] = getrandomid(query, "suggestion.")
                 kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, *inheritchildren,**subassignments), **suggestionassignments )   )
+
+            if action.action == 'PREPEND':
+                index = parent.getindex(focus,True) #recursive
+                if index == -1:
+                    raise QueryError("Insertion point for PREPEND action not found")
+                kwargs['insertindex'] = index
+            elif action.action == 'APPEND':
+                index = parent.getindex(focus,True) #recursive
+                if index == -1:
+                    raise QueryError("Insertion point for APPEND action not found")
+                kwargs['insertindex'] = index+1
 
             yield parent.correct(**kwargs) #generator
         elif action.action == "DELETE":
@@ -1356,12 +1372,16 @@ class Action(object): #Action expression
                                     query._touch(focusselection[-1])
                                 elif action.action == "APPEND":
                                     if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
-                                    index = target.parent.data.index(target)
-                                    focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
+                                    index = target.parent.getindex(target)
+                                    if index == -1:
+                                        raise QueryError("Insertion point for APPEND action not found")
+                                    focusselection.append( target.parent.insert(index+1, action.focus.Class, **action.assignments) )
                                     query._touch(focusselection[-1])
                                 elif action.action == "PREPEND":
                                     if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ +" to target " + repr(target),file=sys.stderr)
-                                    index = target.parent.data.index(target) - 1
+                                    index = target.parent.getindex(target)
+                                    if index == -1:
+                                        raise QueryError("Insertion point for PREPEND action not found")
                                     focusselection.append( target.parent.insert(index, action.focus.Class, **action.assignments) )
                                     query._touch(focusselection[-1])
 
