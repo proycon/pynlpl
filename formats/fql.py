@@ -960,15 +960,17 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, *inheritchildren,**subassignments), **suggestionassignments )   )
 
             if action.action == 'PREPEND':
-                index = parent.getindex(focus,True) #recursive
+                index = parent.getindex(target,True) #recursive
                 if index == -1:
                     raise QueryError("Insertion point for PREPEND action not found")
                 kwargs['insertindex'] = index
+                kwargs['nooriginal'] = True
             elif action.action == 'APPEND':
-                index = parent.getindex(focus,True) #recursive
+                index = parent.getindex(target,True) #recursive
                 if index == -1:
                     raise QueryError("Insertion point for APPEND action not found")
                 kwargs['insertindex'] = index+1
+                kwargs['nooriginal'] = True
 
             yield parent.correct(**kwargs) #generator
         elif action.action == "DELETE":

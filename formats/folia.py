@@ -1981,7 +1981,7 @@ class AllowCorrections(object):
             if not 'id' in kwargs and not 'generate_id_in' in kwargs:
                 kwargs['generate_id_in'] = self
             kwargs2 = copy(kwargs)
-            for x in ['new','original','suggestion', 'suggestions','current', 'insertindex']:
+            for x in ['new','original','suggestion', 'suggestions','current', 'insertindex','nooriginal']:
                 if x in kwargs2:
                     del kwargs2[x]
             c = Correction(self.doc, **kwargs2)
@@ -1992,6 +1992,11 @@ class AllowCorrections(object):
             del kwargs['insertindex']
         else:
             insertindex = -1 #append
+        if 'nooriginal' in kwargs and kwargs['nooriginal']:
+            nooriginal = True
+            del kwargs['nooriginal']
+        else:
+            nooriginal = False
 
         if 'current' in kwargs:
             if 'original' in kwargs or 'new' in kwargs: raise Exception("When setting current=, original= and new= can not be set!")
@@ -2009,7 +2014,7 @@ class AllowCorrections(object):
             for current in c.select(Current): #delete current if present
                 c.remove(current)
             del kwargs['new']
-        if 'original' in kwargs:
+        if 'original' in kwargs and kwargs['original']:
             if not isinstance(kwargs['original'], list) and not isinstance(kwargs['original'], tuple): kwargs['original'] = [kwargs['original']] #support both lists (for multiple elements at once), as well as single element
             c.replace(Original(self.doc, *kwargs['original']))
             for o in kwargs['original']: #delete original from current element
@@ -2021,7 +2026,7 @@ class AllowCorrections(object):
             for current in c.select(Current):  #delete current if present
                 c.remove(current)
             del kwargs['original']
-        elif addnew:
+        elif addnew and not nooriginal:
             #original not specified, find automagically:
             original = []
             for new in addnew:
@@ -2044,7 +2049,7 @@ class AllowCorrections(object):
                 for current in c.select(Current):  #delete current if present
                     c.remove(current)
 
-        if addnew:
+        if addnew and not nooriginal:
             for original in c.original():
                 if original in self:
                     self.remove(original)
