@@ -1613,8 +1613,9 @@ class Query(object):
 
     def _touch(self, *args):
         for e in args:
-            e.changedbyquery = self
-            self._touch(*e.data)
+            if isinstance(e, folia.AbstractElement):
+                e.changedbyquery = self
+                self._touch(*e.data)
 
 
 
