@@ -4364,9 +4364,10 @@ class Sentence(AbstractStructureElement):
             elif not isinstance(newword, Word):
                 raise Exception("New word no instance of Word!")
 
-            kwargs['insertindex'] = self.data.index(prevword) + 1
+            kwargs['insertindex'] = self.getindex(prevword) + 1
         else:
             kwargs['insertindex'] = 0
+        kwargs['nooriginal'] = True
         if isinstance(newword, list) or isinstance(newword, tuple):
             return self.correctwords([], newword, **kwargs)
         else:
@@ -4385,9 +4386,10 @@ class Sentence(AbstractStructureElement):
             elif not isinstance(newword, Word):
                 raise Exception("New word no instance of Word!")
 
-            kwargs['insertindex'] = self.data.index(nextword)
+            kwargs['insertindex'] = self.getindex(nextword)
         else:
             kwargs['insertindex'] = 0
+        kwargs['nooriginal'] = True
         if isinstance(newword, list) or isinstance(newword, tuple):
             return self.correctwords([], newword, **kwargs)
         else:
