@@ -234,16 +234,19 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qedit)
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
+        self.assertEqual(results[0].cls, "blah")
 
     def test07_evaluate_add(self):
         q = fql.Query(Qadd)
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
+        self.assertEqual(results[0].cls, "hebben")
 
     def test08_evaluate_editadd(self):
         q = fql.Query(Qeditadd)
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
+        self.assertEqual(results[0].cls, "hebben")
 
     def test09_evaluate_delete(self):
         q = fql.Query(Qdelete)

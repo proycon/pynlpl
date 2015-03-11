@@ -1299,6 +1299,9 @@ class Action(object): #Action expression
                                     if attr in ("text","value"):
                                         if debug: print("[FQL EVALUATION DEBUG] Action - settext("+ value+ ") on focus ", repr(focus),file=sys.stderr)
                                         focus.settext(value)
+                                    elif attr == "class":
+                                        if debug: print("[FQL EVALUATION DEBUG] Action - " + attr +  " = " + value + " on focus ", repr(focus),file=sys.stderr)
+                                        focus.cls = value
                                     else:
                                         if debug: print("[FQL EVALUATION DEBUG] Action - " + attr +  " = " + value + " on focus ", repr(focus),file=sys.stderr)
                                         setattr(focus, attr, value)
