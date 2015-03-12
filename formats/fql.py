@@ -1559,7 +1559,7 @@ class Query(object):
                 try:
                     responseselection.append( next(folia.commonancestors(folia.AbstractStructureElement,*focusselection)) )
                 except StopIteration:
-                    return QueryError("No ancestors found for focus: " + str(repr(focusselection)))
+                    raise QueryError("No ancestors found for focus: " + str(repr(focusselection)))
             elif self.returntype == "ancestor-target":
                 elems = []
                 for e in targetselection:
@@ -1571,9 +1571,9 @@ class Query(object):
                 try:
                     responseselection.append( next(folia.commonancestors(folia.AbstractStructureElement,*elems)) )
                 except StopIteration:
-                    return QueryError("No ancestors found for targets: " + str(repr(targetselection)))
+                    raise QueryError("No ancestors found for targets: " + str(repr(targetselection)))
             else:
-                return QueryError("Invalid return type: " + self.returntype)
+                raise QueryError("Invalid return type: " + self.returntype)
 
         else:
             responseselection = []
