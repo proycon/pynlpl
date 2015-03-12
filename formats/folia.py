@@ -6080,8 +6080,10 @@ class SetDefinition(AbstractDefinition):
         for subset in self.subsets:
             jsonnode['subsets'][subset.id] = subset.json()
         jsonnode['classes'] = {}
-        for c in self.classes:
+        jsonnode['classorder'] = []
+        for c in sorted(self.classes, key=lambda x: x.label):
             jsonnode['classes'][c.id] = c.json()
+            jsonnode['classorder'].append( c.id )
         return jsonnode
 
 
