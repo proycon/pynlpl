@@ -1072,7 +1072,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 def getassignments(q, i, assignments,  focus=None):
     l = len(q)
     while i < l:
-        if q.kw(i, ('annotator','annotatortype','class','n')):
+        if q.kw(i, ('id','set','annotator','class','n')):
             assignments[q[i]] = q[i+1]
             i+=2
         elif q.kw(i,'confidence'):
