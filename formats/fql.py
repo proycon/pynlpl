@@ -1554,8 +1554,24 @@ class Query(object):
                         responseselection.append(e)
             elif self.returntype == "outer-target":
                 raise NotImplementedError
+            elif self.returntype == "ancestor-focus":
+                responseselection = []
+                try:
+                    responseselection.append( next(folia.commonancestors(folia.AbstractStructureElement,*focusselection)) )
+                except StopIteration:
+                    return QueryError("No ancestors found for focus: " + str(repr(focusselection)))
             elif self.returntype == "ancestor-target":
-                raise NotImplementedError
+                elems = []
+                for e in targetselection:
+                    if isinstance(e, SpanSet):
+                        elems += e
+                    else:
+                        elems.append(e)
+                responseselection = []
+                try:
+                    responseselection.append( next(folia.commonancestors(folia.AbstractStructureElement,*elems)) )
+                except StopIteration:
+                    return QueryError("No ancestors found for targets: " + str(repr(targetselection)))
             else:
                 return QueryError("Invalid return type: " + self.returntype)
 
