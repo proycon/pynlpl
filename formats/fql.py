@@ -1313,8 +1313,10 @@ class Action(object): #Action expression
                                 query._touch(focus)
                             elif action.action == "DELETE":
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Applying DELETE to focus ", repr(focus),file=sys.stderr)
-                                focus.parent.remove(focus)
-
+                                p = focus.parent
+                                p.remove(focus)
+                                #we set the parent back on the element we return, so return types like ancestor-focus work
+                                focus.parent = p
                             elif action.action == "SUBSTITUTE":
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Applying SUBSTITUTE to target ", repr(focus),file=sys.stderr)
                                 if not isinstance(target,SpanSet) or not target: raise QueryError("SUBSTITUTE requires a target SPAN")
@@ -1554,7 +1556,7 @@ class Query(object):
                         responseselection.append(e)
             elif self.returntype == "outer-target":
                 raise NotImplementedError
-            elif self.returntype == "ancestor-focus":
+            elif self.returntype == "ancestor" or self.returntype == "ancestor-focus":
                 responseselection = []
                 try:
                     responseselection.append( next(folia.commonancestors(folia.AbstractStructureElement,*focusselection)) )
