@@ -918,6 +918,14 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             inheritchildren = []
             if focus and not self.bare: #copy all data within
                 inheritchildren = list(focus.copychildren(query.doc, True))
+                if action.action == "EDIT" and 'respan' in action.extra:
+                    #delete all word references from the copy first, we will add new ones
+                    inheritchildren = [ c  for c in inheritchildren if not isinstance(c, folia.WordReference) ]
+                    if not isinstance(focus, folia.AbstractSpanAnnotation): raise QueryError("Can only perform RESPAN on span annotation elements!")
+                    contextselector = target if target else query.doc
+                    spanset = next(action.extra['respan'](query, contextselector, True, debug)) #there can be only one
+                    for w in spanset:
+                        inheritchildren.append(w)
 
             if actionassignments:
                 kwargs['new'] = action.focus.Class(query.doc,*inheritchildren, **actionassignments)
