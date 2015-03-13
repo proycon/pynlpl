@@ -3921,7 +3921,7 @@ class External(AbstractElement):
 
 
 class WordReference(AbstractElement):
-    """Word reference. Use to refer to words or morphemes from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word or Morpheme objects will be used"""
+    """Word reference. Used to refer to words or morphemes from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word or Morpheme objects will be used"""
     REQUIRED_ATTRIBS = (Attrib.ID,)
     XMLTAG = 'wref'
     #ANNOTATIONTYPE = AnnotationType.TOKEN
@@ -3942,6 +3942,9 @@ class WordReference(AbstractElement):
         self.n = None
         self.datetime = None
         self.data = []
+        self.set = None
+        self.cls = None
+        self.auth = True
 
     @classmethod
     def parsexml(Class, node, doc):
