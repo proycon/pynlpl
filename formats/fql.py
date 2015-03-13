@@ -980,7 +980,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
         elif action.action == "DELETE":
             if not focus: raise QueryError("DELETE AS CORRECTION did not find a focus to operate on")
             kwargs['original'] = focus
-            yield parent.correct(**kwargs) #generator
+            yield focus.parent.correct(**kwargs) #generator
         else:
             raise QueryError("Correction does not handle action " + action.action)
 
