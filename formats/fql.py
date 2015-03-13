@@ -900,6 +900,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             kwargs['set'] = self.set
 
         for key, value in self.assignments.items():
+            if key == 'class': key = 'cls'
             kwargs[key] = value
 
         if action.action == "SELECT":
@@ -999,6 +1000,9 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             kwargs[key] = value
 
 
+        self.autodeclare(query.doc)
+
+
         if not substitution:
             #suggestions only, no subtitution obtained from main action yet, we have to process it still
             if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Initialising for suggestions only",file=sys.stderr)
@@ -1021,9 +1025,11 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                     break
 
             substitution = {'parent': target[0].parent,'new':[]}
-            kwargs = {'insertindex': insertindex, 'current':target}
+            kwargs['insertindex'] = insertindex
+            kwargs['current'] = target
         else:
-            kwargs = {'insertindex': substitution['index'], 'original': substitution['span']}
+            kwargs['insertindex'] = substitution['index']
+            kwargs['original'] =  substitution['span']
             if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Initialising correction",file=sys.stderr)
             kwargs['new'] = [] #stuff will be appended
 
@@ -1064,6 +1070,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                     except KeyError:
                         subassignments['set'] = query.doc.defaultset(action.focus.Class)
                 focus = action.focus
+                focus.autodeclare(query.doc)
                 if folia.Attrib.ID in focus.Class.REQUIRED_ATTRIBS:
                     subassignments['id'] = getrandomid(query, "suggestion.")
                 suggestionchildren.append( focus.Class(query.doc, **subassignments))

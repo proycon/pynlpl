@@ -527,6 +527,7 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qcorrect_merge)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "spliterror")
         self.assertEqual(results[0].new(0).text(), "weertegeven")
 
     def test28b_correct_split(self):
@@ -534,6 +535,7 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qcorrect_split)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "runonerror")
         self.assertIsInstance(results[0].new(0), folia.Word)
         self.assertIsInstance(results[0].new(1), folia.Word)
         self.assertEqual(results[0].new(0).text(), "weer")
@@ -545,6 +547,7 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qsuggest_split)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "runonerror")
         self.assertIsInstance(results[0].suggestions(0)[0], folia.Word)
         self.assertIsInstance(results[0].suggestions(0)[1], folia.Word)
         self.assertEqual(results[0].suggestions(0)[0].text(), "weer")
@@ -564,6 +567,7 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qcorrect_prepend)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "insertion")
         self.assertEqual(results[0].text(), "heel")
         self.assertEqual(results[0].next(folia.Word).text(), "ander")
 
