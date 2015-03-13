@@ -3162,8 +3162,19 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
         for c in self:
             if isinstance(c,Word) or isinstance(c,Morpheme): #TODO: add phoneme when it becomes available
                 targets.append(c)
+            elif isinstance(c,WordReference):
+                try:
+                    targets.append(self.doc[c.id]) #try to resolve
+                except KeyError:
+                    targets.append(c) #add unresolved
             elif isinstance(c, AbstractSpanAnnotation):
-                c._helper_wrefs(targets)
+                c._helper_wrefs(targets) #recursion
+            elif isinstance(c, Correction) and c.auth: #recurse into corrections
+                for e in c:
+                  if isinstance(e, AbstractCorrectionChild) and e.auth:
+                    if e2 in e:
+                        if isinstance(e2, AbstractSpanAnnotation):
+                            e2._helper_wrefs(targets) #recursion
 
     def wrefs(self, index = None):
         """Returns a list of word references, these can be Words but also Morphemes or Phonemes.
@@ -3189,6 +3200,16 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
                     e.addtoindex(norecurse)
                 except AttributeError:
                     pass
+
+
+    def copychildren(self, newdoc=None, idsuffix=""):
+        """Generator creating a deep copy of the children of this element. If idsuffix is a string, if set to True, a random idsuffix will be generated including a random 32-bit hash"""
+        if idsuffix is True: idsuffix = ".copy." + "%08x" % random.getrandbits(32) #random 32-bit hash for each copy, same one will be reused for all children
+        for c in self:
+            if isinstance(c, Word):
+                yield WordReference(newdoc, id=c.id)
+            else:
+                yield c.copy(newdoc,idsuffix)
 
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections):
@@ -3487,6 +3508,7 @@ class AlignReference(AbstractElement):
 
     def json(self, attribs=None, recurse=True):
         return {} #alignment not supported yet, TODO
+
 
 class Alignment(AbstractElement):
     REQUIRED_ATTRIBS = ()
@@ -3919,7 +3941,6 @@ class WordReference(AbstractElement):
         self.confidence = None
         self.n = None
         self.datetime = None
-        self.auth = False
         self.data = []
 
     @classmethod
