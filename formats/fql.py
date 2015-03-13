@@ -880,8 +880,10 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
         actionassignments = {} #make a copy
         for key, value in action.assignments.items():
+            if key == 'class': key = 'cls'
             actionassignments[key] = value
         for key, value in self.actionassignments.items():
+            if key == 'class': key = 'cls'
             actionassignments[key] = value
 
         if actionassignments:
@@ -947,6 +949,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 subassignments = copy(subassignments) #assignment for the element in the suggestion
                 for key, value in action.assignments.items():
                     if not key in subassignments:
+                        if key == 'class': key = 'cls'
                         subassignments[key] = value
                 if (not 'set' in subassignments or subassignments['set'] is None) and action.focus.Class:
                     try:
@@ -992,6 +995,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             kwargs['set'] = self.set
 
         for key, value in self.assignments.items():
+            if key == 'class': key = 'cls'
             kwargs[key] = value
 
 
@@ -1052,6 +1056,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 if isinstance(action.focus, tuple) and len(action.focus) == 2:
                     action.focus = action.focus[0]
                 for key, value in action.assignments.items():
+                    if key == 'class': key = 'cls'
                     subassignments[key] = value
                 if (not 'set' in subassignments or subassignments['set'] is None) and action.focus.Class:
                     try:
