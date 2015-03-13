@@ -1351,11 +1351,13 @@ class Action(object): #Action expression
 
                     isspan = issubclass(action.focus.Class, folia.AbstractSpanAnnotation)
 
-                    #if not 'set' in action.assignments:
-                    #    if action.focus.Class.XMLTAG in query.defaultsets:
-                    #        action.assignments['set'] = query.defaultsets[focus.Class.XMLTAG]
                     if not 'set' in action.assignments:
-                        action.assignments['set'] = action.focus.set
+                        if action.focus.set and action.focus.set != "undefined":
+                            action.assignments['set'] = action.focus.set
+                        elif action.focus.Class.XMLTAG in query.defaultsets:
+                            action.assignments['set'] = action.focus.set = query.defaultsets[action.focus.Class.XMLTAG]
+                        else:
+                            action.assignments['set'] = action.focus.set = query.doc.defaultset(action.focus.Class)
 
                     if isinstance(contextselector, tuple) and len(contextselector) == 2:
                         targetselection = contextselector[0](*contextselector[1])
