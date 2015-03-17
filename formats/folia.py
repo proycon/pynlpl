@@ -63,8 +63,8 @@ import gzip
 import random
 
 
-FOLIAVERSION = '0.11.2'
-LIBVERSION = '0.11.2.58' #== FoLiA version + library revision
+FOLIAVERSION = '0.11.3'
+LIBVERSION = '0.11.3.59' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -367,6 +367,13 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             object.settext(kwargs['text'])
         del kwargs['text']
 
+    if object.XLINK:
+        if 'href' in kwargs:
+            object.href =kwargs['href']
+            del kwargs['href']
+        else:
+            object.href = None
+
     if doc and doc.debug >= 2:
         print("   @id           = ", repr(object.id),file=stderr)
         print("   @set          = ", repr(object.set),file=stderr)
@@ -525,6 +532,7 @@ class AbstractElement(object):
     TEXTCONTAINER = False #Text containers directly take textual content. (t is a TEXTCONTAINER)
 
     ROOTELEMENT = True #Is this the main/root element representaive of the annotation type? Not including annotation layers
+    XLINK = False #Can this element carry simple xlink references?
 
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document) and not doc is None:
@@ -1286,6 +1294,9 @@ class AbstractElement(object):
             except AttributeError:
                 pass
 
+        if self.XLINK and self.href:
+            attribs['{http://www.w3.org/1999/xlink}href'] = self.href
+            attribs['{http://www.w3.org/1999/xlink}type'] = 'simple'
 
         omitchildren =  []
 
@@ -1687,11 +1698,13 @@ class AbstractElement(object):
                attribs.append( E.attribute(E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='datetime') )
             elif Attrib.DATETIME in cls.OPTIONAL_ATTRIBS:
                attribs.append( E.optional( E.attribute( E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),  name='datetime') ) )
-
+            if cls.XLINK:
+                attribs += [ E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ) ]
             attribs.append( E.optional( E.attribute( name='auth' ) ) )
 
             #if cls.ALLOWTEXT:
             #    attribs.append( E.optional( E.ref(name='t') ) ) #yes, not actually an attrib, I know, but should go here
+
 
             if extraattribs:
                     for e in extraattribs:
@@ -1801,6 +1814,12 @@ class AbstractElement(object):
                     if key == 'id':
                         #ID in FoLiA namespace is always a reference, passed in kwargs as follows:
                         key = 'idref'
+                elif Class.XLINK and key.startswith('{http://www.w3.org/1999/xlink}'):
+                    key = key[30:]
+                    if key == "type":
+                        if value != "simple":
+                            raise Exception('Only xlink:type="simple" is supported by FoLiA')
+                        continue #ignore this one, it's implied
                 elif key.startswith('{' + NSDCOI + '}'):
                     key = key[nslendcoi:]
 
@@ -2376,6 +2395,7 @@ class AbstractTextMarkup(AbstractAnnotation):
     OPTIONAL_ATTRIBS = Attrib.ALL
     TEXTCONTAINER = True #This element is a direct text container
     ROOTELEMENT = False
+    XLINK = True
 
     def __init__(self, doc, *args, **kwargs):
         if 'idref' in kwargs:
@@ -2527,6 +2547,7 @@ class TextContent(AbstractElement):
     TEXTCONTAINER = True #This element is a direct text container
     ACCEPTED_DATA = (AbstractTextMarkup,)
     ROOTELEMENT = True
+    XLINK = True
 
 
     def __init__(self, doc, *args, **kwargs):
@@ -2566,6 +2587,13 @@ class TextContent(AbstractElement):
             del kwargs['ref']
         else:
             self.ref = None #will be set upon parent.append()
+
+        #hyperlink support
+        if 'href' in kwargs:
+            self.href =kwargs['href']
+            del kwargs['href']
+        else:
+            self.href = None
 
         #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
         if not ('cls' in kwargs) and not ('class' in kwargs):
@@ -3518,48 +3546,8 @@ class Alignment(AbstractElement):
     ANNOTATIONTYPE = AnnotationType.ALIGNMENT
     ACCEPTED_DATA = (AlignReference, Description, Metric)
     PRINTABLE = False
+    XLINK = True
 
-    def __init__(self, doc, *args, **kwargs):
-        if 'href' in kwargs:
-            self.href =kwargs['href']
-            del kwargs['href']
-        else:
-            self.href = None
-        super(Alignment,self).__init__(doc, *args, **kwargs)
-
-    @classmethod
-    def parsexml(Class, node, doc):
-        global NSFOLIA
-        assert Class is Alignment or issubclass(Class, Alignment)
-
-        if '{http://www.w3.org/1999/xlink}href' in node.attrib:
-            href = node.attrib['{http://www.w3.org/1999/xlink}href']
-            del node.attrib['{http://www.w3.org/1999/xlink}href']
-        else:
-            href = None
-
-        if '{http://www.w3.org/1999/xlink}type' in node.attrib:
-            type = node.attrib['{http://www.w3.org/1999/xlink}type']
-            del node.attrib['{http://www.w3.org/1999/xlink}type']
-        else:
-            type = None
-
-        instance = super(Alignment,Class).parsexml(node, doc)
-        if href:
-            instance.href = href
-            instance.type = 'simple'
-        if type:
-            instance.type = type
-
-
-        return instance
-
-    def xml(self, attribs = None,elements = None, skipchildren = False):
-        if not attribs: attribs = {}
-        if self.href:
-            attribs['{http://www.w3.org/1999/xlink}href'] = self.href
-            attribs['{http://www.w3.org/1999/xlink}type'] = 'simple'
-        return super(Alignment,self).xml(attribs,elements, False)
 
     def json(self, attribs =None):
         return {} #alignment not supported yet, TODO
@@ -3567,15 +3555,6 @@ class Alignment(AbstractElement):
     def resolve(self):
         for x in self.select(AlignReference,None,True,False):
             yield x.resolve(self)
-
-
-    @classmethod
-    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
-        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        if not extraattribs:
-            extraattribs = [ E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ) ]
-        return AbstractStructureElement.relaxng(includechildren, extraattribs, extraelements, cls)
 
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
@@ -6179,9 +6158,15 @@ def relaxng(filename=None):
     #for e in relaxng_imdi():
     #    grammar.append(e)
     if filename:
-        f = io.open(filename,'w',encoding='utf-8')
+        if sys.version < '3':
+            f = io.open(filename,'w',encoding='utf-8')
+        else:
+            f = io.open(filename,'wb')
         if LXE:
-            f.write( ElementTree.tostring(relaxng(),pretty_print=True).replace("</define>","</define>\n\n") )
+            if sys.version < '3':
+                f.write( ElementTree.tostring(relaxng(),pretty_print=True).replace("</define>","</define>\n\n") )
+            else:
+                f.write( ElementTree.tostring(relaxng(),pretty_print=True).replace(b"</define>",b"</define>\n\n") )
         else:
             f.write( ElementTree.tostring(relaxng()).replace("</define>","</define>\n\n") )
         f.close()
