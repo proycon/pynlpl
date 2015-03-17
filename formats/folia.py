@@ -4252,18 +4252,14 @@ class Quote(AbstractStructureElement):
     def append(self, child, *args, **kwargs):
         #Quotes have some more complex ACCEPTED_DATA behaviour depending on what lever they are used on
 
-        #Sentences under quotes may if the parent of the quote is a sentence already, but will be non-authorative then
+        #Note that Sentences under quotes may occur if the parent of the quote is a sentence already
         insentence = len(list(self.ancestors(Sentence))) > 0
         inparagraph = len(list(self.ancestors(Paragraph))) > 0
         if inspect.isclass(child):
-            if child is Sentence and insentence:
-                kwargs['auth'] = False
-            elif (insentence or inparagraph) and (child is Paragraph or child is Division):
+            if (insentence or inparagraph) and (child is Paragraph or child is Division):
                 raise Exception("Can't add paragraphs or divisions to a quote when the quote is in a sentence or paragraph!")
         else:
-            if isinstance(child, Sentence) and insentence:
-                child.auth = False
-            elif (insentence or inparagraph) and (isinstance(child, Paragraph) or isinstance(child, Division)):
+            if (insentence or inparagraph) and (isinstance(child, Paragraph) or isinstance(child, Division)):
                 raise Exception("Can't add paragraphs or divisions to a quote when the quote is in a sentence or paragraph!")
 
         return super(Quote, self).append(child, *args, **kwargs)
