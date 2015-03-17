@@ -4502,7 +4502,7 @@ class Head(AbstractStructureElement):
 class Paragraph(AbstractStructureElement):
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
-    ACCEPTED_DATA = (Sentence, AbstractExtendedTokenAnnotation, Correction, TextContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Head, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
+    ACCEPTED_DATA = (Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Head, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n\n"
     ANNOTATIONTYPE = AnnotationType.PARAGRAPH
@@ -5763,7 +5763,7 @@ class Text(AbstractStructureElement):
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric, Correction)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Quote, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric, Correction)
     XMLTAG = 'text'
     TEXTDELIMITER = "\n\n\n"
 
@@ -5771,7 +5771,7 @@ class Text(AbstractStructureElement):
 #==============================================================================
 #Setting Accepted data that has been postponed earlier (to allow circular references)
 
-Division.ACCEPTED_DATA = (Division, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
+Division.ACCEPTED_DATA = (Division, Quote, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
 Event.ACCEPTED_DATA = (Event, Paragraph, Sentence, Division, Word, Head,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent, String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head, List, Figure, Table, Reference, Feature, TextContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Quote.ACCEPTED_DATA = (Word, Sentence, Paragraph, Division, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
