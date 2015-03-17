@@ -5792,7 +5792,7 @@ class Corpus:
 
     def __iter__(self):
         if not self.restrict_to_collection:
-            for f in glob.glob(self.corpusdir+"/*." + self.extension):
+            for f in glob.glob(os.path.join(self.corpusdir,"*." + self.extension)):
                 if self.conditionf(f):
                     try:
                         yield Document(file=f, **self.kwargs )
@@ -5800,9 +5800,9 @@ class Corpus:
                         print("Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                         if not self.ignoreerrors:
                             raise
-        for d in glob.glob(self.corpusdir+"/*"):
+        for d in glob.glob(os.path.join(self.corpusdir,"*")):
             if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
-                for f in glob.glob(d+ "/*." + self.extension):
+                for f in glob.glob(os.path.join(d ,"*." + self.extension)):
                     if self.conditionf(f):
                         try:
                             yield Document(file=f, **self.kwargs)
@@ -5817,7 +5817,7 @@ class CorpusFiles(Corpus):
 
     def __iter__(self):
         if not self.restrict_to_collection:
-            for f in glob.glob(self.corpusdir+"/*." + self.extension):
+            for f in glob.glob(os.path.join(self.corpusdir,"*." + self.extension)):
                 if self.conditionf(f):
                     try:
                         yield f
@@ -5825,9 +5825,9 @@ class CorpusFiles(Corpus):
                         print("Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                         if not self.ignoreerrors:
                             raise
-        for d in glob.glob(self.corpusdir+"/*"):
+        for d in glob.glob(os.path.join(self.corpusdir,"*")):
             if (not self.restrict_to_collection or self.restrict_to_collection == os.path.basename(d)) and (os.path.isdir(d)):
-                for f in glob.glob(d+ "/*." + self.extension):
+                for f in glob.glob(os.path.join(d, "*." + self.extension)):
                     if self.conditionf(f):
                         try:
                             yield f
