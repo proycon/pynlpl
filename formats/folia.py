@@ -1,4 +1,4 @@
-
+#----------------------------------------------------------------
 # PyNLPl - FoLiA Format Module
 #   by Maarten van Gompel
 #   Centre for Language Studies
