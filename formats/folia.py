@@ -64,7 +64,7 @@ import random
 
 
 FOLIAVERSION = '0.11.3'
-LIBVERSION = '0.11.3.59' #== FoLiA version + library revision
+LIBVERSION = '0.11.3.60' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
