@@ -1382,9 +1382,11 @@ class AbstractElement(object):
 
         if recurse:
             jsonnode['children'] = []
+            if self.TEXTCONTAINER:
+                jsonnode['text'] = self.text()
             for child in self:
                 if self.TEXTCONTAINER and isstring(child):
-                    jsonnode['text'] = child #TODO: won't work in text <x/> text scenarios
+                    jsonnode['children'].append(child)
                 else:
                     jsonnode['children'].append(child.json())
 
