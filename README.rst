@@ -5,12 +5,13 @@ PyNLPl - Python Natural Language Processing Library
     :target: https://travis-ci.org/proycon/pynlpl
 
 PyNLPl, pronounced as "pineapple", is a Python library for Natural Language
-Processing. It contains various modules useful for common, and less common, NLP
-tasks. PyNLPl can be used for example the computation of n-grams, frequency
-lists and distributions, language models. There are also more complex data
-types, such as Priority Queues, and search algorithms, such as Beam Search.
+Processing. It is a collection of various independent or loosely interdependent
+modules useful for common, and less common, NLP tasks. PyNLPl can be used for
+example the computation of n-grams, frequency lists and distributions, language
+models. There are also more complex data types, such as Priority Queues, and
+search algorithms, such as Beam Search.
 
-The library is divided into several packages and modules. It works on Python
+The library is a divided into several packages and modules. It works on Python
 2.7, as well as Python 3.
 
 The following modules are available:
@@ -19,8 +20,13 @@ The following modules are available:
 - ``pynlpl.evaluation`` - Evaluation & experiment classes (parameter search, wrapped
   progressive sampling, class evaluation (precision/recall/f-score/auc), sampler, confusion matrix, multithreaded experiment pool)
 - ``pynlpl.formats.cgn`` - Module for parsing CGN (Corpus Gesproken Nederlands) part-of-speech tags
-- ``pynlpl.formats.folia`` - **Extensive library for reading and manipulating the
-  documents in `FoLiA <http://proycon.github.io/folia>`_ format (Format for Linguistic Annotation).**
+- ``pynlpl.formats.folia`` - Extensive library for reading and manipulating the
+  documents in `FoLiA <http://proycon.github.io/folia>`_ format (Format for Linguistic Annotation).
+- ``pynlpl.formats.fql`` - Extensive library for the FoLiA Query Language (FQL),
+  built on top of ``pynlpl.formats.folia``. FQL is currently documented `here
+  <https://github.com/proycon/foliadocserve>`_. 
+- ``pynlpl.formats.cql`` - Parser for the Corpus Query Language (CQL), as also used by
+  Corpus Workbench and Sketch Engine. Contains a convertor to FQL.
 - ``pynlpl.formats.giza`` - Module for reading GIZA++ word alignment data
 - ``pynlpl.formats.moses`` - Module for reading Moses phrase-translation tables.
 - ``pynlpl.formats.sonar`` - Largely obsolete module for pre-releases of the
