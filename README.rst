@@ -24,7 +24,7 @@ The following modules are available:
   documents in `FoLiA <http://proycon.github.io/folia>`_ format (Format for Linguistic Annotation).
 - ``pynlpl.formats.fql`` - Extensive library for the FoLiA Query Language (FQL),
   built on top of ``pynlpl.formats.folia``. FQL is currently documented `here
-  <https://github.com/proycon/foliadocserve>`_. 
+  <https://github.com/proycon/foliadocserve>`__. 
 - ``pynlpl.formats.cql`` - Parser for the Corpus Query Language (CQL), as also used by
   Corpus Workbench and Sketch Engine. Contains a convertor to FQL.
 - ``pynlpl.formats.giza`` - Module for reading GIZA++ word alignment data
@@ -42,6 +42,6 @@ The following modules are available:
 - ``pynlpl.textprocessors`` - Simple tokeniser, n-gram extraction 
 
 
-API Documentation can be found `here <http://pythonhosted.org/PyNLPl/>`_.
+API Documentation can be found `here <http://pythonhosted.org/PyNLPl/>`__.
 
 
