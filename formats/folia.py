@@ -5346,7 +5346,7 @@ class Document(object):
 
 
     def append(self,text):
-        """Add a text to the document:
+        """Add a text (or speech) to the document:
 
         Example 1::
 
@@ -5355,14 +5355,19 @@ class Document(object):
         Example 2::
             doc.append( folia.Text(doc, id='example.text') )
 
+        Example 3::
+
+            doc.append(folia.Speech)
 
         """
         if text is Text:
-            text = Text(self, id=self.id + '.text.' + str(len(self.data)+1) )
+            e = Text(self, id=self.id + '.text.' + str(len(self.data)+1) )
+        elif text is Speech:
+            e = Speech(self, id=self.id + '.speech.' + str(len(self.data)+1) )
         else:
-            assert isinstance(text, Text)
-        self.data.append(text)
-        return text
+            assert isinstance(text, Text) or isinstance(text, Speech)
+        self.data.append(e)
+        return e
 
     def create(self, Class, *args, **kwargs):
         """Create an element associated with this Document. This method may be obsolete and removed later."""
@@ -6048,16 +6053,25 @@ class Division(AbstractStructureElement):
         raise NoSuchAnnotation()
 
 
+class Speech(AbstractStructureElement):
+    """A full speech. This is a high-level element. This element may contain divisions, paragraphs, sentences, etc.."""
+
+    REQUIRED_ATTRIBS = (Attrib.ID,)
+    OPTIONAL_ATTRIBS = (Attrib.N,)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Quote, Sentence, Word,  List,  Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,PhonContent,String, Metric, Correction)
+    XMLTAG = 'text'
+    TEXTDELIMITER = "\n\n\n"
+    # (both SPEAKABLE and PRINTABLE)
 
 class Text(AbstractStructureElement):
     """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Quote, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,String, Metric, Correction)
+    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Quote, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description,TextContent,String, Metric, Correction)
     XMLTAG = 'text'
     TEXTDELIMITER = "\n\n\n"
-
+    # (both SPEAKABLE and PRINTABLE)
 
 #==============================================================================
 #Setting Accepted data that has been postponed earlier (to allow circular references)
