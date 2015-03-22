@@ -104,7 +104,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART = range(38)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE = range(39)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -4711,6 +4711,15 @@ class Sentence(AbstractStructureElement):
             return self.correctwords([], [newword], **kwargs)
 
 
+
+class Utterance(AbstractStructureElement):
+    """Utterance element. A structure element for speech annotation."""
+
+    ACCEPTED_DATA = (Word,Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description, Event, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
+    XMLTAG = 'utt'
+    TEXTDELIMITER = ' '
+    ANNOTATIONTYPE = AnnotationType.UTTERANCE
+    PRINTABLE = SPEAKABLE = True
 
 class Event(AbstractStructureElement):
     #ACCEPTED_DATA set at bottom
