@@ -3687,7 +3687,6 @@ class String(AbstractElement, AllowTokenAnnotation):
 
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME,Attrib.N)
-    ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, TextContent,PhonContent, String, Description, Metric)
     TEXTDELIMITER = None
     PRINTABLE = True
     SPEAKABLE = True
@@ -4715,7 +4714,7 @@ class Sentence(AbstractStructureElement):
 class Utterance(AbstractStructureElement):
     """Utterance element. A structure element for speech annotation."""
 
-    ACCEPTED_DATA = (Word,Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description, Event, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
+    ACCEPTED_DATA = (Word,Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
     XMLTAG = 'utt'
     TEXTDELIMITER = ' '
     ANNOTATIONTYPE = AnnotationType.UTTERANCE
@@ -6102,10 +6101,11 @@ class Text(AbstractStructureElement):
 #==============================================================================
 #Setting Accepted data that has been postponed earlier (to allow circular references)
 
-Division.ACCEPTED_DATA = (Division, Quote, Gap, Event, Head, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
-Event.ACCEPTED_DATA = (Event, Paragraph, Sentence, Division, Word, Head,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent,PhonContent, String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Quote.ACCEPTED_DATA = (Word, Sentence, Paragraph, Division, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
+AbstractCorrectionChild.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, Sentence, Paragraph, Division, Utterance, TextContent,PhonContent, String, Description, Metric)
+Division.ACCEPTED_DATA = (Division, Quote, Gap, Event, Head, Utterance, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
+Event.ACCEPTED_DATA = (Event, Paragraph, Sentence, Division, Word, Head,Utterance,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent,PhonContent, String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
+Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
+Quote.ACCEPTED_DATA = (Word, Sentence, Paragraph, Utterance, Division, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
 
 
 #==============================================================================
