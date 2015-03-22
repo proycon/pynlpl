@@ -371,6 +371,11 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             object.settext(kwargs['text'])
         del kwargs['text']
 
+    if 'phon' in kwargs:
+        if kwargs['phon']:
+            object.setphon(kwargs['phon'])
+        del kwargs['phon']
+
     if object.XLINK:
         if 'href' in kwargs:
             object.href =kwargs['href']
@@ -1056,13 +1061,18 @@ class AbstractElement(object):
 
         #Do the actual appending
         if not Class and isstring(child):
-            if self.TEXTCONTAINER:
-                #element is a text container and directly allows strings as content, add the string as such:
+            if self.TEXTCONTAINER or self.PHONCONTAINER:
+                #element is a text/phon container and directly allows strings as content, add the string as such:
                 self.data.append(u(child))
                 dopostappend = False
             elif TextContent in self.ACCEPTED_DATA:
                 #you can pass strings directly (just for convenience), will be made into textcontent automatically.
                 child = TextContent(self.doc, child )
+                self.data.append(child)
+                child.parent = self
+            elif PhonContent in self.ACCEPTED_DATA:
+                #you can pass strings directly (just for convenience), will be made into phoncontent automatically (note that textcontent always takes precedence, so you most likely will have to do it explicitly)
+                child = PhonContent(self.doc, child )
                 self.data.append(child)
                 child.parent = self
             else:
@@ -2841,9 +2851,13 @@ class PhonContent(AbstractElement):
     OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
     OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
 
-    PHONCONTAINER = True #container of phonetic content (analagous to TEXTCONTAINER)
     ACCEPTED_DATA = tuple()
     ROOTELEMENT = True
+
+    PHONCONTAINER = True #container of phonetic content (analagous to TEXTCONTAINER)
+    TEXTCONTAINER = False
+    PRINTABLE = False
+    SPEAKABLE = True
 
 
     def __init__(self, doc, *args, **kwargs):
@@ -2898,7 +2912,7 @@ class PhonContent(AbstractElement):
         return super(PhonContent,self).phon() #AbstractElement will handle it now, merely overridden to get rid of parameters that dont make sense in this context
 
     def setphon(self, phon):
-        """Set the text for the phonetic content (unicode instance)"""
+        """Set the representation for the phonetic content (unicode instance), called whenever phon= is passed as a keyword argument to an element constructor  """
         self.data = [phon]
         if not self.data:
             raise ValueError("Empty phonetic content elements are not allowed")
@@ -5389,7 +5403,7 @@ class Document(object):
                     break
             #gather attribs
 
-            if annotationtype == AnnotationType.TEXT and set == 'undefined' and len(self.annotationdefaults[annotationtype][set]) == 0:
+            if (annotationtype == AnnotationType.TEXT or annotationtype == AnnotationType.PHON) and set == 'undefined' and len(self.annotationdefaults[annotationtype][set]) == 0:
                 #this is the implicit TextContent declaration, no need to output it explicitly
                 continue
 
@@ -5425,7 +5439,7 @@ class Document(object):
                     break
             #gather attribs
 
-            if annotationtype == AnnotationType.TEXT and set == 'undefined' and len(self.annotationdefaults[annotationtype][set]) == 0:
+            if (annotationtype == AnnotationType.TEXT or annotationtype == AnnotationType.PHON) and set == 'undefined' and len(self.annotationdefaults[annotationtype][set]) == 0:
                 #this is the implicit TextContent declaration, no need to output it explicitly
                 continue
 
