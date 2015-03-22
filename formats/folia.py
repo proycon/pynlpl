@@ -5391,7 +5391,7 @@ class Document(object):
             text = Speech(self, id=self.id + '.speech.' + str(len(self.data)+1) )
         else:
             assert isinstance(text, Text) or isinstance(text, Speech)
-        self.data.append(e)
+        self.data.append(text)
         return text
 
     def create(self, Class, *args, **kwargs):
