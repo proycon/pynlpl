@@ -5386,13 +5386,13 @@ class Document(object):
 
         """
         if text is Text:
-            e = Text(self, id=self.id + '.text.' + str(len(self.data)+1) )
+            text = Text(self, id=self.id + '.text.' + str(len(self.data)+1) )
         elif text is Speech:
-            e = Speech(self, id=self.id + '.speech.' + str(len(self.data)+1) )
+            text = Speech(self, id=self.id + '.speech.' + str(len(self.data)+1) )
         else:
             assert isinstance(text, Text) or isinstance(text, Speech)
         self.data.append(e)
-        return e
+        return text
 
     def create(self, Class, *args, **kwargs):
         """Create an element associated with this Document. This method may be obsolete and removed later."""
