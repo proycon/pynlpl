@@ -63,8 +63,8 @@ import gzip
 import random
 
 
-FOLIAVERSION = '0.11.3'
-LIBVERSION = '0.11.3.60' #== FoLiA version + library revision
+FOLIAVERSION = '0.12.0'
+LIBVERSION = '0.12.0.61' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -120,7 +120,11 @@ class NoSuchAnnotation(Exception):
     pass
 
 class NoSuchText(Exception):
-    """Exception raised when the requestion type of text content does not exist for the selected element"""
+    """Exception raised when the requested type of text content does not exist for the selected element"""
+    pass
+
+class NoSuchPhon(Exception):
+    """Exception raised when the requested type of phonetic content does not exist for the selected element"""
     pass
 
 class DuplicateAnnotationError(Exception):
@@ -527,9 +531,11 @@ class AbstractElement(object):
     OCCURRENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
 
     TEXTDELIMITER = None #Delimiter to use when dynamically gathering text from child elements
-    PRINTABLE = False #Is this element printable (aka, can its text method be called?)
+    PRINTABLE = False #Is this element printable (aka, can its text() method be called?)
+    SPEAKABLE = False #Is this element readable phonetically (aka, can its phon() method be called?)
     AUTH = True #Authoritative by default. Elements the parser should skip on normal queries are non-authoritative (such as original, alternative)
     TEXTCONTAINER = False #Text containers directly take textual content. (t is a TEXTCONTAINER)
+    PHONCONTAINER = False #Phonetic containers directly take phonetic content. (ph is a PHONCONTAINER)
 
     ROOTELEMENT = True #Is this the main/root element representaive of the annotation type? Not including annotation layers
     XLINK = False #Can this element carry simple xlink references?
@@ -659,10 +665,61 @@ class AbstractElement(object):
             raise NoSuchText
 
 
+    def phon(self, cls='current', previousdelimiter=""):
+        """Get the phonetic representation associated with this element (of the specified class), will always be a unicode instance.
+        If no text is directly associated with the element, it will be obtained from the children. If that doesn't result
+        in any text either, a NoSuchText exception will be raised.
+
+        If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.
+        """
+
+
+        if self.PHONCONTAINER:
+            s = ""
+            for e in self:
+                if isstring(e):
+                    s += e
+                else:
+                    try:
+                        if s: s += e.TEXTDELIMITER #We use TEXTDELIMITER for phon too
+                    except AttributeError:
+                        pass
+                    s += e.phon()
+            return s
+        if not self.SPEAKABLE: #only readable elements can hold phonetic content
+            raise NoSuchPhon
+
+
+
+        if self.hasphon(cls):
+            s = self.phoncontent(cls).text()
+        else:
+            #Not found, descend into children
+            delimiter = ""
+            s = ""
+            for e in self:
+                if e.SPEAKABLE and not isinstance(e, PhonContent):
+                    try:
+                        s += e.phon(cls, delimiter)
+                        delimiter = e.gettextdelimiter() #We use TEXTDELIMITER for phon too
+                        #delimiter will be buffered and only printed upon next iteration, this prevent the delimiter being output at the end of a sequence
+                    except NoSuchText:
+                        continue
+
+        s = s.strip(' \r\n\t')
+        if s and previousdelimiter:
+            return previousdelimiter + s
+        elif s:
+            return s
+        else:
+            #No text found at all :`(
+            raise NoSuchPhon
+
 
     def originaltext(self):
         """Alias for retrieving the original uncorrect text"""
         return self.text('original')
+
 
     def gettextdelimiter(self, retaintokenisation=False):
         """May return a customised text delimiter instead of the default for this class."""
@@ -2280,7 +2337,8 @@ class AllowGenerateID(object):
 class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Abstract element, all structure elements inherit from this class. Never instantiated directly."""
 
-    PRINTABLE = True
+    PRINTABLE = True #text content
+    SPEAKABLE = True #
     TEXTDELIMITER = "\n\n" #bigger gap between structure elements
     OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited, default=1)
 
@@ -2530,6 +2588,8 @@ class TextMarkupStyle(AbstractTextMarkup):
 
 
 
+
+
 class TextContent(AbstractElement):
     """Text content element (``t``), holds text to be associated with whatever element the text content element is a child of.
 
@@ -2554,11 +2614,7 @@ class TextContent(AbstractElement):
 
     def __init__(self, doc, *args, **kwargs):
         global ILLEGAL_UNICODE_CONTROL_CHARACTERS
-        """Required keyword arguments:
-
-                * ``value=``: Set to a unicode or str containing the text
-
-            Example::
+        """Example::
 
                 text = folia.TextContent(doc, 'test')
 
@@ -2566,8 +2622,8 @@ class TextContent(AbstractElement):
 
         """
 
+        #for backward compatibility:
         if 'value' in kwargs:
-            #for backward compatibility
             kwargs['text'] = kwargs['value']
             del kwargs['value']
 
@@ -2770,6 +2826,229 @@ class TextContent(AbstractElement):
 
 
 
+class PhonContent(AbstractElement):
+    """Phonetic content element (``ph``), holds a phonetic representation to be associated with whatever element the phonetic content element is a child of.
+
+    Phonetic content elements behave much like text content elements
+
+    Phonetic content elements can specify offset that refer to phonetic content at a higher parent level. Use the following keyword arguments:
+        * ``ref=``: The instance to point to, this points to the element holding the text content element, not the text content element itself.
+        * ``offset=``: The offset where this text is found, offsets start at 0
+    """
+    XMLTAG = 'ph'
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
+    ANNOTATIONTYPE = AnnotationType.PHON
+    OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
+    OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
+
+    PHONCONTAINER = True #container of phonetic content (analagous to TEXTCONTAINER)
+    ACCEPTED_DATA = tuple()
+    ROOTELEMENT = True
+
+
+    def __init__(self, doc, *args, **kwargs):
+        global ILLEGAL_UNICODE_CONTROL_CHARACTERS
+        """Example::
+
+                phon = folia.PhonContent(doc, 'hɛˈləʊ̯')
+
+                phon = folia.PhonContent(doc, 'hɛˈləʊ̯', cls="original")
+
+        """
+
+        if 'offset' in kwargs: #offset
+            self.offset = int(kwargs['offset'])
+            del kwargs['offset']
+        else:
+            self.offset = None
+
+        if 'ref' in kwargs: #reference to offset
+            if isinstance(self.ref, AbstractElement):
+                self.ref = kwargs['ref']
+            else:
+                try:
+                    self.ref = doc.index[kwargs['ref']]
+                except:
+                    raise UnresolvableTextContent("Unable to resolve phonetic content reference: " + kwargs['ref'] + " (class=" + self.cls+")")
+            del kwargs['ref']
+        else:
+            self.ref = None #will be set upon parent.append()
+
+        #hyperlink support
+        if 'href' in kwargs:
+            self.href =kwargs['href']
+            del kwargs['href']
+        else:
+            self.href = None
+
+        #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
+        if not ('cls' in kwargs) and not ('class' in kwargs):
+            kwargs['cls'] = 'current'
+
+        super(PhonContent,self).__init__(doc, *args, **kwargs)
+
+        if not self.data:
+            raise ValueError("Empty phonetic content elements are not allowed")
+        #if isstring(self.data[0]) and (self.data[0] != self.data[0].translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
+        #    raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.data[0]))
+
+
+    def phon(self):
+        """Obtain the actual phonetic representation (unicode/str instance)"""
+        return super(PhonContent,self).phon() #AbstractElement will handle it now, merely overridden to get rid of parameters that dont make sense in this context
+
+    def setphon(self, phon):
+        """Set the text for the phonetic content (unicode instance)"""
+        self.data = [phon]
+        if not self.data:
+            raise ValueError("Empty phonetic content elements are not allowed")
+        #if isstring(self.data[0]) and (self.data[0] != self.data[0].translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
+        #    raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.data[0]))
+
+
+    def validateref(self):
+        """Validates the Phonetic Content's references. Raises UnresolvableTextContent when invalid"""
+
+        if self.offset is None: return True #nothing to test
+        if self.ref:
+            ref = self.ref
+        else:
+            ref = self.finddefaultreference()
+
+        if not ref:
+            raise UnresolvableTextContent("Default reference for phonetic content not found!")
+        elif ref.hasphon(self.cls):
+            raise UnresolvableTextContent("Reference has no such phonetic content (class=" + self.cls+")")
+        elif self.phon() != ref.textcontent(self.cls).phon()[self.offset:self.offset+len(self.data[0])]:
+            raise UnresolvableTextContent("Referenced found but does not match!")
+        else:
+            #finally, we made it!
+            return True
+
+
+
+    def __unicode__(self):
+        return self.phon()
+
+    def __str__(self):
+        return self.phon()
+
+    def __eq__(self, other):
+        if isinstance(other, PhoneticContent):
+            return self.phon() == other.text()
+        elif isstring(other):
+            return self.phon() == u(other)
+        else:
+            return False
+
+    #append is implemented, the default suffices
+
+    def postappend(self):
+        """(Method for internal usage, see ``AbstractElement.postappend()``)"""
+        if isinstance(self.parent, Original):
+            if self.cls == 'current': self.cls = 'original'
+
+        #assert (self.testreference() == True)
+        super(PhonContent, self).postappend()
+
+
+    def finddefaultreference(self):
+        """Find the default reference for text offsets:
+          The parent of the current textcontent's parent (counting only Structure Elements and Subtoken Annotation Elements)
+
+          Note: This returns not a TextContent element, but its parent. Whether the textcontent actually exists is checked later/elsewhere
+        """
+
+        depth = 0
+        e = self
+        while True:
+            if e.parent:
+                e = e.parent
+            else:
+                #no parent, breaking
+                return False
+
+            if isinstance(e,AbstractStructureElement) or isinstance(e,AbstractSubtokenAnnotation):
+                depth += 1
+                if depth == 2:
+                    return e
+
+
+        return False
+
+    #Change in behaviour (FoLiA 0.10), iter() no longer iterates over the text itself!!
+
+
+    #Change in behaviour (FoLiA 0.10), len() no longer return the length of the text!!
+
+
+    @classmethod
+    def findreplaceables(Class, parent, set, **kwargs):
+        """(Method for internal usage, see AbstractElement)"""
+        #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
+        if not 'cls' in kwargs:
+            kwargs['cls'] = 'current'
+        replace = super(PhonContent, Class).findreplaceables(parent, set, **kwargs)
+        replace = [ x for x in replace if x.cls == kwargs['cls']]
+        del kwargs['cls'] #always delete what we processed
+        return replace
+
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        """(Method for internal usage, see AbstractElement)"""
+        global NSFOLIA
+
+        e = super(PhonContent,Class).parsexml(node,doc)
+        if 'offset' in node.attrib:
+            e.offset = int(node.attrib['offset'])
+        if 'ref' in node.attrib:
+            e.ref = node.attrib['ref']
+        return e
+
+
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        global NSFOLIA
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
+        attribs = {}
+        if not self.offset is None:
+            attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
+        if self.parent and self.ref:
+            attribs['{' + NSFOLIA + '}ref'] = self.ref.id
+
+        #if self.cls != 'current' and not (self.cls == 'original' and any( isinstance(x, Original) for x in self.ancestors() )  ):
+        #    attribs['{' + NSFOLIA + '}class'] = self.cls
+        #else:
+        #    if '{' + NSFOLIA + '}class' in attribs:
+        #        del attribs['{' + NSFOLIA + '}class']
+        #return E.t(self.value, **attribs)
+
+        e = super(PhonContent,self).xml(attribs,elements,skipchildren)
+        if '{' + NSFOLIA + '}class' in e.attrib and e.attrib['{' + NSFOLIA + '}class'] == "current":
+            #delete 'class=current'
+            del e.attrib['{' + NSFOLIA + '}class']
+
+        return e
+
+    def json(self, attribs =None, recurse =True):
+        attribs = {}
+        if not self.offset is None:
+            attribs['offset'] = self.offset
+        if self.parent and self.ref:
+            attribs['ref'] = self.ref.id
+        return super(PhonContent,self).json(attribs, recurse)
+
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
+        if not extraattribs: extraattribs = []
+        extraattribs.append( E.optional(E.attribute(name='offset' )))
+        extraattribs.append( E.optional(E.attribute(name='ref' )))
+        return super(PhonContent, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class Content(AbstractElement):     #used for raw content, subelement for Gap
     OCCURRENCES = 1
@@ -3130,6 +3409,7 @@ class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID):
     OPTIONAL_ATTRIBS = Attrib.ALL
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
     PRINTABLE = True
+    SPEAKABLE = True
 
 class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrections):
     """Abstract element, all span annotation elements are derived from this class"""
@@ -3138,6 +3418,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
     OPTIONAL_ATTRIBS = Attrib.ALL
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
     PRINTABLE = True
+    SPEAKABLE = True
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
@@ -3246,6 +3527,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
     """Annotation layers for Span Annotation are derived from this abstract base class"""
     OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.SETONLY,)
     PRINTABLE = False
+    SPEAKABLE = False
     ROOTELEMENT = False #only annotation elements are considered root elements
 
     def __init__(self, doc, *args, **kwargs):
@@ -3394,6 +3676,7 @@ class AbstractCorrectionChild(AbstractElement):
     ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, TextContent, String, Description, Metric)
     TEXTDELIMITER = None
     PRINTABLE = True
+    SPEAKABLE = True
     ROOTELEMENT = False
 
 
@@ -3402,6 +3685,7 @@ class Reference(AbstractStructureElement):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
     PRINTABLE = True
+    SPEAKABLE = True
     XMLTAG = 'ref'
 
     def __init__(self, doc, *args, **kwargs):
@@ -3548,6 +3832,7 @@ class Alignment(AbstractElement):
     ANNOTATIONTYPE = AnnotationType.ALIGNMENT
     ACCEPTED_DATA = (AlignReference, Description, Metric)
     PRINTABLE = False
+    SPEAKABLE = False
     XLINK = True
 
 
@@ -3635,6 +3920,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     TEXTDELIMITER = None
     PRINTABLE = True
+    SPEAKABLE = True
     ROOTELEMENT = True
 
     def append(self, child, *args, **kwargs):
@@ -3783,6 +4069,7 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
     XMLTAG = 'alt'
     PRINTABLE = False
+    SPEAKABLE = False
     AUTH = False
 
 
@@ -3794,6 +4081,7 @@ class AlternativeLayers(AbstractElement):
     ACCEPTED_DATA = (AbstractAnnotationLayer,)
     XMLTAG = 'altlayers'
     PRINTABLE = False
+    SPEAKABLE = False
     AUTH = False
 
 Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
@@ -3805,6 +4093,7 @@ class External(AbstractElement):
     ACCEPTED_DATA = []
     XMLTAG = 'external'
     PRINTABLE = True
+    SPEAKABLE = False
     AUTH = True
 
 
