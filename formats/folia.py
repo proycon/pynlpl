@@ -3673,7 +3673,7 @@ class String(AbstractElement, AllowTokenAnnotation):
 
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME,Attrib.N)
-    ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, TextContent, String, Description, Metric)
+    ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, TextContent,PhonContent, String, Description, Metric)
     TEXTDELIMITER = None
     PRINTABLE = True
     SPEAKABLE = True
@@ -3681,7 +3681,7 @@ class AbstractCorrectionChild(AbstractElement):
 
 
 class Reference(AbstractStructureElement):
-    ACCEPTED_DATA = (TextContent, String, Description, Metric)
+    ACCEPTED_DATA = (TextContent, PhonContent, String, Description, Metric)
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
     PRINTABLE = True
@@ -4055,11 +4055,11 @@ class Correction(AbstractAnnotation, AllowGenerateID):
     #        ignorelist.append(Suggestion)
     #        return super(Correction,self).select(cls,set,recursive, ignorelist, node)
 
-Original.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, TextContent,String, Correction, Description, Metric)
+Original.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, TextContent,PhonContent, String, Correction, Description, Metric)
 
 
 
-String.ACCEPTED_DATA = (TextContent,Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation)
+String.ACCEPTED_DATA = (TextContent,PhonContent, Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation)
 
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
@@ -4084,7 +4084,7 @@ class AlternativeLayers(AbstractElement):
     SPEAKABLE = False
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,PhonContent, String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
 
 
 class External(AbstractElement):
