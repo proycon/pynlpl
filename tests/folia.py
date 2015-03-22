@@ -1204,9 +1204,7 @@ folia-v0.8" version="0.8">
     def test102l_declarations(self):
         """Sanity Check - Declarations - Datetime default."""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="libfolia-v0.8" version="0.8">
   <metadata type="native">
     <annotations>
          <gap-annotation set="gap-set" datetime="2011-12-15T19:00" />
@@ -1228,9 +1226,7 @@ folia-v0.8" version="0.8">
     def test103_namespaces(self):
         """Sanity Check - Alien namespaces - Checking whether properly ignored"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="libfolia-v0.8" version="0.8">
   <metadata type="native">
     <annotations>
     </annotations>
@@ -1252,6 +1248,38 @@ folia-v0.8" version="0.8">
         doc = folia.Document(string=xml)
         self.assertTrue( len(list(doc['example.text.1.s.1'].words())) == 1 ) #second word is in alien namespace, not read
         self.assertRaises( KeyError,  doc.__getitem__, 'example.text.1.s.1.alienword') #doesn't exist
+
+
+    def test104_speech(self):
+        """Sanity Check - Speech data"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="manual" version="0.12">
+  <metadata type="native">
+    <annotations>
+        <utterance-annotation set="utterances" />
+    </annotations>
+  </metadata>
+  <speech xml:id="example.speech">
+    <utt xml:id="example.speech.utt.1">
+        <ph>həlˈəʊ wˈɜːld</ph>
+    </utt>
+    <utt xml:id="example.speech.utt.2">
+        <w xml:id="example.speech.utt.2.w.1">
+          <ph>həlˈəʊ</ph>
+        </w>
+        <w xml:id="example.speech.utt.2.w.2">
+           <ph>wˈɜːld</ph>
+        </w>
+    </utt>
+  </speech>
+</FoLiA>"""
+        doc = folia.Document(string=xml)
+        self.assertTrue( isinstance(doc.data[0], folia.Speech) )
+        self.assertTrue( isinstance(doc['example.speech.utt.1'], folia.Utterance) )
+        self.assertEqual( doc['example.speech.utt.1'].phon(), "həlˈəʊ wˈɜːld" )
+        self.assertRaises( folia.NoSuchText,  doc['example.speech.utt.1'].text) #doesn't exist
+        self.assertEqual( doc['example.speech.utt.2'].phon(), "həlˈəʊ wˈɜːld" )
+
 
 
 class Test4Edit(unittest.TestCase):
