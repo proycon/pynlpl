@@ -1253,7 +1253,7 @@ folia-v0.8" version="0.8">
     def test104_speech(self):
         """Sanity Check - Speech data (without attributes)"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="manual" version="0.12">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="manual" version="0.12">
   <metadata type="native">
     <annotations>
         <utterance-annotation set="utterances" />
@@ -1284,7 +1284,7 @@ folia-v0.8" version="0.8">
     def test104b_speech(self):
         """Sanity Check - Speech data with speech attributes"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="manual" version="0.12">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="manual" version="0.12">
   <metadata type="native">
     <annotations>
         <utterance-annotation set="utterances" />
@@ -1337,7 +1337,7 @@ folia-v0.8" version="0.8">
     </utt>
   </speech>"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="manual" version="0.12">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="manual" version="0.12">
   <metadata type="native">
     <annotations>
         <utterance-annotation set="utterances" />
