@@ -1251,7 +1251,7 @@ folia-v0.8" version="0.8">
 
 
     def test104_speech(self):
-        """Sanity Check - Speech data"""
+        """Sanity Check - Speech data (without attributes)"""
         xml = """<?xml version="1.0"?>\n
 <FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="manual" version="0.12">
   <metadata type="native">
@@ -1281,6 +1281,44 @@ folia-v0.8" version="0.8">
         self.assertEqual( doc['example.speech.utt.2'].phon(), "həlˈəʊ wˈɜːld" )
 
 
+    def test104b_speech(self):
+        """Sanity Check - Speech data with speech attributes"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="manual" version="0.12">
+  <metadata type="native">
+    <annotations>
+        <utterance-annotation set="utterances" />
+    </annotations>
+  </metadata>
+  <speech xml:id="example.speech" src="helloworld.ogg" speaker="proycon">
+    <utt xml:id="example.speech.utt.1" begintime="00:00:00" endtime="00:00:02:012">
+        <ph>həlˈəʊ wˈɜːld</ph>
+    </utt>
+    <utt xml:id="example.speech.utt.2">
+        <w xml:id="example.speech.utt.2.w.1" begintime="00:00:00" endtime="00:00:01">
+          <ph>həlˈəʊ</ph>
+        </w>
+        <w xml:id="example.speech.utt.2.w.2" begintime="00:00:01:267" endtime="00:00:02:012">
+           <ph>wˈɜːld</ph>
+        </w>
+    </utt>
+  </speech>
+</FoLiA>"""
+        doc = folia.Document(string=xml)
+        self.assertTrue( isinstance(doc.data[0], folia.Speech) )
+        self.assertTrue( isinstance(doc['example.speech.utt.1'], folia.Utterance) )
+        self.assertEqual( doc['example.speech.utt.1'].phon(), "həlˈəʊ wˈɜːld" )
+        self.assertRaises( folia.NoSuchText,  doc['example.speech.utt.1'].text) #doesn't exist
+        self.assertEqual( doc['example.speech.utt.2'].phon(), "həlˈəʊ wˈɜːld" )
+        self.assertEqual( doc['example.speech'].speech_speaker(), "proycon" )
+        self.assertEqual( doc['example.speech'].speech_src(), "helloworld.ogg" )
+        self.assertEqual( doc['example.speech.utt.1'].begintime, (0,0,0,0) )
+        self.assertEqual( doc['example.speech.utt.1'].endtime, (0,0,2,12) )
+        #testing inheritance
+        self.assertEqual( doc['example.speech.utt.2.w.2'].speech_speaker(), "proycon" )
+        self.assertEqual( doc['example.speech.utt.2.w.2'].speech_src(), "helloworld.ogg" )
+        self.assertEqual( doc['example.speech.utt.2.w.2'].begintime, (0,0,1,267) )
+        self.assertEqual( doc['example.speech.utt.2.w.2'].endtime, (0,0,2,12) )
 
 class Test4Edit(unittest.TestCase):
 

@@ -99,9 +99,9 @@ class AnnotatorType:
 
 
 class Attrib:
-    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY, BEGINTIME, ENDTIME, SRC, SRCOFFSET, SPEAKER = range(12) #for later
+    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY, BEGINTIME, ENDTIME, SRC, SPEAKER = range(11) #for later
 
-Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
+Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER)
 
 class AnnotationType:
     TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE = range(39)
@@ -333,11 +333,11 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
     if 'n' in kwargs:
         if not Attrib.N in supported:
-            raise ValueError("N is not supported")
+            raise ValueError("N is not supported for " + object.__class__.__name__)
         object.n = kwargs['n']
         del kwargs['n']
     elif Attrib.N in required:
-        raise ValueError("N is required")
+        raise ValueError("N is required for " + object.__class__.__name__)
 
     if 'datetime' in kwargs:
         if not Attrib.DATETIME in supported:
@@ -354,47 +354,40 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults[annotationtype] and 'datetime' in doc.annotationdefaults[annotationtype][object.set]:
         object.datetime = doc.annotationdefaults[annotationtype][object.set]['datetime']
     elif Attrib.DATETIME in required:
-        raise ValueError("Datetime is required")
+        raise ValueError("Datetime is required for " + object.__class__.__name__)
 
     if 'src' in kwargs:
         if not Attrib.SRC in supported:
-            raise ValueError("Source is not supported")
-        del kwargs['src']
+            raise ValueError("Source is not supported for " + object.__class__.__name__)
         object.src = kwargs['src']
+        del kwargs['src']
     elif Attrib.SRC in required:
-        raise ValueError("Source is required")
+        raise ValueError("Source is required for " + object.__class__.__name__)
 
     if 'begintime' in kwargs:
         if not Attrib.BEGINTIME in supported:
-            raise ValueError("Begintime is not supported")
-        del kwargs['begintime']
+            raise ValueError("Begintime is not supported for " + object.__class__.__name__)
         object.begintime = parsetime(kwargs['begintime'])
+        del kwargs['begintime']
     elif Attrib.BEGINTIME in required:
-        raise ValueError("Begintime is required")
+        raise ValueError("Begintime is required for " + object.__class__.__name__)
 
     if 'endtime' in kwargs:
         if not Attrib.ENDTIME in supported:
-            raise ValueError("Endtime is not supported")
+            raise ValueError("Endtime is not supported for " + object.__class__.__name__)
+        object.endtime = parsetime(kwargs['endtime'])
         del kwargs['endtime']
-        object.endtime = endtime(kwargs['endtime'])
     elif Attrib.ENDTIME in required:
-        raise ValueError("Endtime is required")
+        raise ValueError("Endtime is required for " + object.__class__.__name__)
 
-    if 'srcoffset' in kwargs:
-        if not Attrib.SRCOFFSET in supported:
-            raise ValueError("Srcoffset is not supported")
-        del kwargs['srcoffset']
-        object.srcoffset = endtime(kwargs['srcoffset'])
-    elif Attrib.SRCOFFSET in required:
-        raise ValueError("Srcoffset is required")
 
     if 'speaker' in kwargs:
         if not Attrib.SPEAKER in supported:
-            raise ValueError("Speaker is not supported")
+            raise ValueError("Speaker is not supported for " + object.__class__.__name__)
+        object.speaker = kwargs['speaker']
         del kwargs['speaker']
-        object.speaker = endtime(kwargs['speaker'])
     elif Attrib.SPEAKER in required:
-        raise ValueError("Speaker is required")
+        raise ValueError("Speaker is required for " + object.__class__.__name__)
 
     if 'auth' in kwargs:
         if kwargs['auth'] in ('no','false'):
@@ -609,7 +602,7 @@ class AbstractElement(object):
 
     def __getattr__(self, attr):
         #overriding getattr so we can get defaults here rather than needing a copy on each element
-        if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','srcoffset','speaker','begintime','endtime'):
+        if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','speaker','begintime','endtime'):
             return None
         else:
             return super(AbstractElement, self).getattr(attr)
@@ -738,6 +731,27 @@ class AbstractElement(object):
                 except NoSuchPhon:
                     pass
         raise NoSuchPhon
+
+
+    def speech_src(self):
+        """Retrieves the URL/filename of the audio or video file associated with the element. The source is inherited from ancestor elements if none is specified. For this reason, always use this method rather than access the ``src`` attribute directly. Returns None if not found."""
+        if self.src:
+            return self.src
+        elif self.parent:
+            return self.parent.speech_src()
+        else:
+            return None
+
+    def speech_speaker(self):
+        """Retrieves the speaker of the audio or video file associated with the element. The source is inherited from ancestor elements if none is specified. For this reason, always use this method rather than access the ``src`` attribute directly. Returns None if not found."""
+        if self.speaker:
+            return self.speaker
+        elif self.parent:
+            return self.parent.speech_speaker()
+        else:
+            return None
+
+
 
     def phon(self, cls='current', previousdelimiter=""):
         """Get the phonetic representation associated with this element (of the specified class), will always be a unicode instance.
@@ -1439,15 +1453,12 @@ class AbstractElement(object):
 
         if not '{' + NSFOLIA + '}begintime' in attribs: #do not override if caller already set it
             if self.begintime:
-                attribs['{' + NSFOLIA + '}begintime'] = "%02d:%02d:%02d:%04d" % self.begintime
+                attribs['{' + NSFOLIA + '}begintime'] = "%02d:%02d:%02d:%03d" % self.begintime
 
         if not '{' + NSFOLIA + '}endtime' in attribs: #do not override if caller already set it
             if self.endtime:
-                attribs['{' + NSFOLIA + '}endtime'] = "%02d:%02d:%02d:%04d" % self.endtime
+                attribs['{' + NSFOLIA + '}endtime'] = "%02d:%02d:%02d:%03d" % self.endtime
 
-        if not '{' + NSFOLIA + '}srcoffset' in attribs: #do not override if caller already set it
-            if self.srcoffset:
-                attribs['{' + NSFOLIA + '}srcoffset'] = "%02d:%02d:%02d:%04d" % self.srcoffset
 
         if self.XLINK and self.href:
             attribs['{http://www.w3.org/1999/xlink}href'] = self.href
@@ -6173,7 +6184,7 @@ class Division(AbstractStructureElement):
     """Structure element representing some kind of division. Divisions may be nested at will, and may include almost all kinds of other structure elements."""
     #Accepted_data set later
     REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.N)
+    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.N, Attrib.SRC,Attrib.BEGINTIME,Attrib.ENDTIME,Attrib.SPEAKER)
     XMLTAG = 'div'
     ANNOTATIONTYPE = AnnotationType.DIVISION
     TEXTDELIMITER = "\n\n\n"
@@ -6189,7 +6200,7 @@ class Speech(AbstractStructureElement):
     """A full speech. This is a high-level element. This element may contain divisions, paragraphs, sentences, etc.."""
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.N,)
+    OPTIONAL_ATTRIBS = (Attrib.N,Attrib.SRC,Attrib.BEGINTIME,Attrib.ENDTIME,Attrib.SPEAKER)
     ACCEPTED_DATA = (Utterance, Gap, Event, Division, Paragraph, Quote, Sentence, Word,  List,  Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,PhonContent,String, Metric, Correction)
     XMLTAG = 'speech'
     TEXTDELIMITER = "\n\n\n"
