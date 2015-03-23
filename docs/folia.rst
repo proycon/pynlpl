@@ -2,16 +2,16 @@
 FoLiA library 
 *************
 
-This tutorial will introduce the FoLiA Python library, part of PyNLPl. The
+This tutorial will introduce the **FoLiA Python library**, part of PyNLPl. The
 FoLiA library provides an Application Programming Interface for the reading,
 creation and manipulation of FoLiA XML documents. The library works under
-Python 2.7 as well as Python 3. The samples in this documentation follow
-Python 3 conventions.
+Python 2.7 as well as Python 3, which is the recommended version. The samples
+in this documentation follow Python 3 conventions.
 
 Prior to reading this document, it is highly recommended to first read the
 FoLiA documentation itself and familiarise yourself with the format and
 underlying paradigm. The FoLiA documentation can be found through
-http://proycon.github.com/folia . It is especially important to understand the
+https://proycon.github.io/folia . It is especially important to understand the
 way FoLiA handles sets/classes, declarations, common attributes such as
 annotator/annotatortype and the distinction between various kinds of annotation
 categories such as token annotation and span annotation.
@@ -30,8 +30,11 @@ Subsequently, a document can be read from file and follows::
 
     doc = folia.Document(file="/path/to/document.xml")
 
-This returns an instance that holds the entire document in memory. Note that for large
-FoLiA documents this may consume quite some memory!
+This returns an instance that holds the entire document in memory. Note that
+for large FoLiA documents this may consume quite some memory! If you happened
+to already have the document content in a string, you can load as follows::
+
+    doc = folia.Document(string="<FoLiA ...")
 
 Once you have loaded a document, all data is available for you to read and manipulate as you see fit. We will first illustrate some simple use cases:
 
@@ -42,6 +45,8 @@ To save a document back the file it was loaded from, we do::
 Or we can specify a specific filename::
 
     doc.save("/tmp/document.xml")
+
+.. note:: Any content that is in a different XML namespace than the FoLiA namespaces or other supported namespaces (XML, Xlink), will be ignored upon loading and lost when saving.
 
 Printing text
 ----------------------------------
@@ -55,8 +60,9 @@ Alternatively, you can obtain a string representation of all text::
     text = str(doc) 
 
 For any subelement of the document, you can obtain its text in the same
-fashion. In Python 2, ``str()`` returns a UTF-8 encoded ``str`` and
-``unicode()`` returns a unicode instance. 
+fashion. 
+
+.. note:: In Python 2, both ``str()`` as well as ``unicode()`` return a unicode instance. You may need to append ``.encode('utf-8')`` for proper output.
 
 Index
 ----------------------------------
@@ -67,6 +73,8 @@ dictionary::
 
     word = doc['example.p.3.s.5.w.1']
     print(word)
+
+.. note:: Python 2 users will have to do ``print word.text().encode('utf-8')`` instead, to ensure non-ascii characters are printed properly.
     
     
 Obtaining list of elements
@@ -82,7 +90,7 @@ For example, you can iterate over all words::
         print(word)
         
 That however gives you one big iteration of words without boundaries. You may
-more likely seek word within sentences. So we first iterate over all sentences,
+more likely want to seek words within sentences. So we first iterate over all sentences,
 then over the words therein::
 
     for sentence in doc.sentences():
@@ -103,13 +111,13 @@ You can also use this method to obtain a specific word, by passing an index para
 If you want to iterate over all of the child elements of a certain element,
 regardless of what type they are, you can simply do so as follows::
 
-    for element in doc:
-        if isinstance(element, folia.Sentence):
+    for subelement in element:
+        if isinstance(subelement, folia.Sentence):
             print("this is a sentence")
         else: 
             print("this is something else")
 
-If applied recursively this allows you in principle to traverse the entire
+If applied recursively this allows you to traverse the entire
 element tree, there are however specialised methods available that do this for
 you.
 
@@ -138,8 +146,9 @@ The ``select()`` method and similar high-level methods derived from it, are
 generators.  This implies that the results of the selection are returned one by
 one in the iteration, as opposed to all stored in memory. This also implies
 that you can only iterate over it once, we can not do another iteration over
-the ``words`` variable in the above example, unless we reinvtoke the
-``select()`` method to get a new generator.
+the ``words`` variable in the above example, unless we reinvoke the
+``select()`` method to get a new generator. Likewise, we can not do
+``len(words)``, but have to use the ``count()`` method instead.
 
 If you want to have all results in memory in a list, you can simply do the following::
 
@@ -147,39 +156,139 @@ If you want to have all results in memory in a list, you can simply do the follo
 
 The select method is by default recursive, set the third argument to False to
 make it non-recursive. The second argument can be used for restricting matches
-to a specific set. The recursion will not go into any non-authoritative
-elements such as alternatives, originals of corrections. 
+to a specific set, a tuple of classes. The recursion will not go into any
+non-authoritative elements such as alternatives, originals of corrections. 
+
+Navigating a document
+--------------------------
+
+The ``select()`` method is your main tool for descending downwards in the document
+tree. There are occassions, however, when you want go upwards or sideways. The
+``next()`` and ``previous()`` methods can be used for sideway navigation, they
+return the next or previous element, respectively::
+
+    nextelement = element.next()
+    previouselement = element.previous()
+
+You can explicitly filter by passing an element type::
+
+    nextword = word.next(folia.Word)
+
+By default, the search is constrained not to cross certain boundaries, such as
+sentences and paragraphs. You can do so explicitly as well by passing a list of
+constraints::
+
+    nextword = word.next(folia.Word, [folia.Sentence])
+
+If you do not want any constraints, pass ``None``::
+
+    nextword = word.next(folia.Word)
+
+These methods will return ``None`` if no next/previous element was found (of
+the specified type).
+
+Each element has a ``parent`` attributes that links it to its parent::
+
+    sentence = word.parent
+
+Only for the top-level element (Text), the parent is ``None``. There is also
+the method ``ancestors()`` to iterate over all ancestors::
+
+    for ancestor in element.ancestors():
+        print(type(ancestor))
+
+If you are looking for ancestors of a specific type, you can pass it as an
+argument::
+
+    for ancestor in element.ancestors(folia.Division):
+        print(type(ancestor))
+
+If only a single ancestor is desired, use the ``ancestor()`` method instead,
+unlike the generator version ``ancestors()``, it will raise an exception if the
+ancestor was not found::
+
+    paragraph = word.ancestor(folia.Paragraph)
 
 
+Structure Annotation Types
+------------------------------
+
+The FoLiA library discerns various Python classes for structure
+annotation, the corresponding FoLiA XML tag is listed too. Sets and classes can
+be associated with most of these elements to make them more specific, these are
+never prescribed by FoLiA. The list of classes is as follows:
+
+* ``folia.Cell`` - ``cell`` - A cell in a ``row`` in a ``table``
+* ``folia.Division`` - ``div`` - Used for for example chapters, sections, subsections
+* ``folia.Event`` - ``event`` -  Often in new-media data where a chat message, tweet or
+  forum post is considered an event.
+* ``folia.Figure`` - ``figure`` - A graphic/image
+* ``folia.Gap`` - ``gap`` - A gap containing raw un-annotated textual content
+* ``folia.Head`` - ``head`` - The head/title of a division (``div``), used for chapter/section/subsection titles etc..
+* ``folia.Linebreak`` - ``br`` - An explicit linebreak/newline
+* ``folia.List`` - ``list`` - A list, bulleted or enumerated
+* ``folia.ListItem`` - ``listitem`` - An item in a ``list``
+* ``folia.Note`` - ``note`` - A note, such as a footnote or bibliography reference for instance 
+* ``folia.Paragraph`` - ``p``
+* ``folia.Part`` - ``part`` - An abstract part of a larger structure
+* ``folia.Quote`` - ``quote`` - Cited text
+* ``folia.Reference`` - ``ref`` - A reference to another structural element,
+  used to refer to footnotes (``note``) for example.
+* ``folia.Sentence`` - ``s``
+* ``folia.Table`` - ``table`` - A table
+* ``folia.TableHead`` - ``tablehead`` - The head of a table, containing cells (``cell``) with column labels
+* ``folia.Row`` - ``row`` - A row in a ``table``
+* ``folia.Text`` - ``text`` - The root of the document's content
+* ``folia.Whitespace`` - ``whitespace`` - Explicit vertical whitespace
+* ``folia.Word``- ``w``
+
+The FoLiA documentation explain all of these in detail.  
+
+FoLiA and this library enforce explicit rules about what elements are allowed
+in what others. Exceptions will be raised when this is about to be violated.
 
 Common attributes
 -----------------------
 
-As you know, the FoLiA paradigm introduces *sets*, *classes*, *annotator* with
-*annotator types* and *confidence* values. These attributes are easily
-accessible on any element that has them:
+The FoLiA paradigm features *sets* and *classes* as primary means to represent
+the actual value (class) of an annotation. A set often corresponds to a tagset,
+such as a set of part-of-speech tags, and a class is one selected value in such a set.
+
+The paradigm furthermore introduces other comomn attributes to set on
+annotation elements, such as an identifier,  information on the annotator, and
+more. A full list is provided below:
     
-    * ``element.id``        (string)
-    * ``element.set``       (string)
-    * ``element.cls``       (string) Since class is already a reserved keyword in python, the library consistently uses ``cls``
-    * ``element.annotator`` (string)
-    * ``element.annotatortype`` (set to folia.AnnotatorType.MANUAL or  folia.AnnotatorType.AUTO)
-    * ``element.confidence`` (float)
-    * ``element.n``         (string)
-    * ``element.datetime``  (datetime.datetime)
-    
-Attributes that are not available for certain elements, or not set, default to None.
+* ``element.id``        (string) - The unique identifier of the element
+* ``element.set``       (string) - The set the element pertains to.
+* ``element.cls``       (string) - The assigned class, of the set above.
+    Classes correspond with tagsets in this case of many annotation types.
+    Note that since class is already a reserved keyword in python, the library consistently uses ``cls``
+* ``element.annotator`` (string) - The name or ID of the annotator who added/modified this element
+* ``element.annotatortype`` - The type of annotator, can be either ``folia.AnnotatorType.MANUAL`` or ``folia.AnnotatorType.AUTO``
+* ``element.confidence`` (float) - A confidence value expressing
+* ``element.datetime``  (datetime.datetime) - The date and time when the element was added/modified.
+* ``element.n``         (string) - An ordinal label, used for instance in enumerated list contexts, numbered sections, etc..
+
+The following attributes are specific to a speech context:
+
+* ``element.src``       (string) - A URL or filename referring the an audio or video file containing the speech. Access this attribute using the ``element.speaker_src()`` method, as it is inheritable from ancestors.
+* ``element.speaker``   (string) -  The name of ID of the speaker. Access this attribute using the ``element.speech_speaker()`` method, as it is inheritable from ancestors.
+* ``element.begintime`` (4-tuple) - The time in the above source fragment when the phonetic content of this element starts, this is a (hours, minutes,seconds,milliseconds) tuple.
+* ``element.endtime``   (4-tuple) - The time in the above source fragment when the phonetic content of this element ends, this is a (hours, minutes,seconds,milliseconds) tuple.
+ 
+Attributes that are not available for certain elements, or not set, default to ``None``.
 
 Annotations
 --------------------
 
-FoLiA is of course a format for linguistic annotation. So let's see how to
-obtain annotations. This can be done using ``annotations()`` or
-``annotation()``, which is similar to the ``select()`` method, except that it
-will raise an exception when no such annotation is found. The difference
-between ``annotation()`` and ``annotations()`` is that the former will grab
-only one and raise an exception if there are more between which it can't
-disambiguate::
+FoLiA is of course a format for linguistic annotation. Accessing annotation is
+therefore one of the primary functions of this library. This can be done using
+``annotations()`` or ``annotation()``, which is similar to the ``select()``
+method, except that it will raise an exception when no such annotation is
+found. The difference between ``annotation()`` and ``annotations()`` is that
+the former will grab only one and raise an exception if there are more between
+which it can't disambiguate, whereas the second is a generator, but will still
+raise an exception if none is found::
 
     for word in doc.words():
         try:
@@ -197,10 +306,38 @@ Note that the second argument of ``annotation()``, ``annotations()`` or
 ``select()`` can be used to restrict your selection to a certain set. In the
 above example we restrict ourselves to Part-of-Speech tags in the CGN set.
 
+Token Annotation Types
++++++++++++++++++++++++++
+
+The following token annotation elements are available in FoLiA, they are
+embedded under a structural element. 
+
+* ``folia.DomainAnnotation`` - ``domain`` - Domain/genre annotation
+* ``folia.PosAnnotation`` - ``pos`` - Part of Speech Annotation
+* ``folia.LangAnnotation`` - ``lang`` - Language identification
+* ``folia.LemmaAnnotation`` - ``lemma``
+* ``folia.SenseAnnotation`` - ``sense`` - Lexical semantic sense annotation
+* ``folia.SubjectivityAnnotation`` - ``subjectivity`` - Sentiment analysis / subjectivity annotation
+
+The following annotation types are somewhat special, as they are the only
+elements for which FoLiA assumes a default set and a default class:
+
+* ``folia.TextContent`` - ``t`` - Text content, this carries the actual text
+  for the structural element in which is it embedded
+* ``folia.PhonContent`` - ``ph`` - Phonetic content, this carries a phonetic
+  representation 
+
+
 Span Annotation
 +++++++++++++++++++
 
-We will discuss three ways of accessing span annotation. Span annotation is
+FoLiA distinguishes token annotation and span annotation, token annotation is
+embedded in-line within a structural element, and the annotation therefore
+pertains to that structural element, whereas span annotation is stored
+in a stand-off annotation layer outside the element and refers back to it. Span
+annotation elements typically *span* over multiple structural elements.
+
+We will discuss three ways of accessing span annotation. As stated, span annotation is
 contained within an annotation layer of a certain structure element, often a
 sentence. In the first way of accessing span annotation, we do everything explicitly. We
 first obtain the layer, then iterate over the span annotation elements within that layer,
@@ -242,6 +379,32 @@ do this, we use use the ``findspan()`` method on annotation layers::
     for span in annotationlayer.findspan(word1,word2):
         print(span.cls)
 
+Span Annotation Types
+++++++++++++++++++++++++
+
+This section lists the available Span annotation elements, the layer that contains
+them is explicitly mentioned as well.
+
+Some of the span annotation elements are complex and take span annotation role
+elements as children, these correspond to components of the span annotation.
+
+* ``folia.Chunk`` in ``folia.ChunkingLayer`` - ``chunk`` in ``chunks`` - Shallow parsing.  Not nested .
+* ``folia.CoreferenceChain`` in ``folia.CoreferenceLayer`` - ``coreferencechain`` in ``coreferences`` - Co-references
+
+ * Requires the roles ``folia.CoreferenceLink`` (``coreferencelink``) pointing to each coreferenced structure in the chain
+
+* ``folia.Dependency`` in ``folia.DependencyLayer`` - ``dependency`` in ``dependencies`` - Dependency Relations
+
+ * Requires the roles ``folia.HeadSpan`` (``hd``) and ``folia.DependencyDependent`` (``dep``)
+
+* ``folia.Entity`` in ``folia.EntitiesLayer`` - ``entity`` in ``entities`` - Named entities
+* ``folia.SyntacticUnit`` in ``folia.SyntaxLayer`` - ``su`` in ``syntax`` - Syntax.  These elements are generally nested to form syntax trees.
+
+* ``folia.SemanticRole`` in ``folia.SemanticRolesLayer`` - ``semrole`` in ``semroles`` - Semantic Roles
+
+
+The span annotation role ``folia.HeadSpan`` (``hd``)  may actually be used by
+most span annotation elements, indicating it's head-part.
 
 
 Editing FoLiA
@@ -251,7 +414,7 @@ Creating a new document
 -------------------------
 
 Creating a new FoliA document, rather than loading an existing one from file,
-can be done by explicitly providing an ID for the new document in the
+is done by explicitly providing the ID for the new document in the
 constructor::
 
     doc = folia.Document(id='example')
@@ -293,11 +456,10 @@ Then we can add paragraphs, sentences, or other structural elements. The
     sentence.add(folia.Word, 'test')
     sentence.add(folia.Word, '.')
 
-**Advanced Note**:
 
-The ``add()`` method is actually a wrapper around ``append()``, which takes the
-exact same arguments. It performs extra checks and works for both span
-annotation as well as token annotation. Using ``append()`` will be faster.
+.. note:: The ``add()`` method is actually a wrapper around ``append()``, which takes the
+    exact same arguments. It performs extra checks and works for both span
+    annotation as well as token annotation. Using ``append()`` will be faster.
 
 Adding annotations
 -------------------------
@@ -430,142 +592,135 @@ and then add a syntax parse, consisting of nested elements::
         ])
     )
     
-**Advanced Note**: 
 
-The lower-level ``append()`` method would have had the same effect in the above syntax tree sample.
+.. note:: The lower-level ``append()`` method would have had the same effect in the above syntax tree sample.
 
 
 Searching in a FoLiA document
 ================================
 
-If you have loaded a FoLiA document into memory, there are several ways to
-search in it. Iteration over any FoLiA element will iterate over all its
-children. As already discussed, you can of course loop over any annotation
-element using ``select()``, ``annotation()`` and ``annotations()``.
+If you have loaded a FoLiA document into memory, you may want to search for a
+particular annotations. You can of course loop over all structural and
+annotation elements using ``select()``, ``annotation()`` and ``annotations()``.
 Additionally, ``Word.findspans()`` and ``AbstractAnnotationLayer.findspan()``
 are useful methods of finding span annotations covering particular words,
 whereas ``AbstractSpanAnnotation.wrefs()`` does the reverse and finds the words
 for a given span annotation element. In addition to these main methods of
-navigation and selection, there are several more high-level functions available
-for searching.
+navigation and selection, there is higher-level function available for
+searching, this uses the **FoLiA Query Language** (FQL) or the **Corpus Query
+Language** (CQL).
 
-For this we introduce the ``folia.Pattern`` class. This class describes a
-pattern over words to be searched for. The ``Document.findwords()`` method can
-subsequently be called with this pattern, and it will return all the words that
-match. An example will best illustrate this, first a trivial example of
-searching for one word::
+These two languages are part of separate libraries that need to be imported::
 
-    for match in doc.findwords( folia.Pattern('house') ):
-        for word in match:
-            print(word.id)
-        print("----")
-
-The same can be done for a sequence::
-
-    for match in doc.findwords( folia.Pattern('a','big', 'house') ):
-        for word in match:
-            print(word.id)
-        print("----")
-
-The boolean value ``True`` acts as a wildcard, matching any word::
-
-    for match in doc.findwords( folia.Pattern('a',True,'house') ):
-        for word in match:
-            print(word.id, word.text())
-        print("----")
-
-Alternatively, and more constraning, you may also specify a tuple of alternatives::
+    from pynlpl.formats import fql, cql
 
 
-    for match in doc.findwords( folia.Pattern('a',('big','small'),'house') ):
-        for word in match:
-            print(word.id, word.text())
-        print("----")
+Corpus Query Language (CQL)
+-----------------------------
 
-Or even a regular expression using the ``folia.RegExp`` class::
+CQL is the easier-language of the two and most suitable for corpus searching.
+It is, however, less flexible than FQL, which is designed specifically for
+FoLiA and can not just query, but also manipulate FoLiA documents in great
+detail.
 
-
-    for match in doc.findwords( folia.Pattern('a', folia.RegExp('b?g'),'house') ):
-        for word in match:
-            print(word.id, word.text())
-        print("----")
-
-        
-Rather than searching on the text content of the words, you can search on the
-classes of any kind of token annotation using the keyword argument
-``matchannotation=``::
-
-    for match in doc.findwords( folia.Pattern('det','adj','noun',matchannotation=folia.PosAnnotation ) ):
-        for word in match:
-            print(word.id, word.text())
-        print("----")
-
-The set can be restricted by adding the additional keyword argument
-``matchannotationset=``. Case sensitivity, by default disabled, can be enabled by setting ``casesensitive=True``.
-
-Things become even more interesting when different Patterns are combined. A
-match will have to satisfy all patterns::
-
-    for match in doc.findwords( folia.Pattern('a', True, 'house'), folia.Pattern('det','adj','noun',matchannotation=folia.PosAnnotation ) ):
-        for word in match:
-            print(word.id, word.text())
-        print("----")
+CQL was developed for the `IMS Corpus Workbench
+<http://www.ims.uni-stuttgart.de/forschung/projekte/CorpusWorkbench.html>`_,
+at Stuttgart Univeristy, and is implemented in Sketch Engine, who provide good
+`CQL documentation
+<http://www.sketchengine.co.uk/documentation/wiki/SkE/CorpusQuerying>`_.
 
 
-The ``findwords()`` method can be instructed to also return left and/or right
-context for any match. This is done using the ``leftcontext=`` and
-``rightcontext=`` keyword arguments, their values being an integer number of
-the number of context words to include in each match. For instance, we can look
-for the word house and return its immediate neighbours as follows::
+CQL has to be converted to FQL first, which is then executed on the given document. This is a simple example querying for the word "house"::
 
-    for match in doc.findwords( folia.Pattern('house') , leftcontext=1, rightcontext=1):
-        for word in match:
-            print(word.id)
-        print("----")
+    doc = folia.Document(file="/path/to/some/document.folia.xml")
+    query = fql.Query(cql.cql2fql('"house"'))
+    for word in query(doc):
+        print(word) #these will be folia.Word instances (all matching house)
 
-A match here would thus always consist of three words instead of just one.
+Multiple words can be queried::
 
-Last, ``Pattern`` also has support for variable-width gaps, the asterisk symbol
-has special meaning to this end::
+    query = fql.Query(cql.cql2fql('"the" "big" "house"'))
+    for word1,word2,word3 in query(doc):
+        print(word1, word2,word3) 
+
+Queries may contain wildcard expressions to match multiple text patterns. Gaps can be specified using []. The following will match any three word combination starting with the and ending with something that starts with house. It will thus match things like "the big house" or "the small household"::
+
+    query = fql.Query(cql.cql2fql('"the" [] "house.*"'))
+    for word1,word2,word3 in query(doc):
+        ...
+
+We can make the gap optional with a question mark, it can be lenghtened with + or * , like regular expressions::
+
+    query = fql.Query(cql.cql2fql('"the" []? "house.*"'))
+    for match in query(doc):
+        print("We matched ", len(match), " words")
+
+Querying is not limited to text, but all of FoLiA's annotations can be used. To force our gap consist of one or more adjectives, we do::
+
+    query = fql.Query(cql.cql2fql('"the" [ pos = "a" ]+ "house.*"'))
+    for match in query(doc):
+        ...
+
+The original CQL attribute here is ``tag`` rather than ``pos``, this can be used too. In addition, all FoLiA element types can be used!  Just use their FoLiA tagname.
+
+Consult the CQL documentation for more. Do note that CQL is very word/token centered, for searching other types of elements, use FQL instead.
+
+    
+FoLiA Query Language (FQL)
+-------------------------------
+
+ 
+FQL is documented `here
+<https://github.com/proycon/foliadocserve/blob/master/README.rst>`__, a full
+overview is beyond the scope of this documentation. We will just introduce some
+basic selection queries so you can develop an initial impression of the language's abilities.
+
+Selecting a word with a particular text is done as follows::
+
+    query = fql.Query('SELECT w WHERE text = "house"')
+    for word in query(doc):
+        print(word)  #this will be an instance of folia.Word
+
+Regular expression matching can be done using the ``MATCHES`` operator::
+
+    query = fql.Query('SELECT w WHERE text MATCHES "^house.*$"')
+    for word in query(doc):
+        print(word)  
+
+The classes of other annotation types can be easily queried as follows::
+
+    query = fql.Query('SELECT w WHERE :pos = "v"' AND :lemma = "be"')
+    for word in query(doc):
+        print(word) 
+
+You can constrain your queries to a particular target selection using the ``FOR`` keyword::
+
+    query = fql.Query('SELECT w WHERE text MATCHES "^house.*$" FOR s WHERE text CONTAINS "sell"')
+    for word in query(doc):
+        print(word)
+
+This construction also allows you to select the actual annotations. To select all people (a named entity) for words that are not John::
+
+    query = fql.Query('SELECT entity WHERE class = "person" FOR w WHERE text != "John"')
+    for entity in query(doc):
+        print(entity) #this will be an instance of folia.Entity
+
+**FOR** statement may be chained, and Explicit IDs can be passed using the ``ID`` keyword::
+
+    query = fql.Query('SELECT entity WHERE class = "person" FOR w WHERE text != "John" FOR div ID "section.21"')
+    for entity in query(doc):
+        print(entity) 
+    
+Sets are specified using the **OF** keyword, it can be omitted if there is only one for the annotation type, but will be required otherwise::
+
+    query = fql.Query('SELECT su OF "http://some/syntax/set" WHERE class = "np"')
+    for su in query(doc):
+        print(su) #this will be an instance of folia.SyntacticUnit
 
 
-    for match in doc.findwords( folia.Pattern('a','*','house') ):
-        for word in match:
-            print(word.id)
-        print("----")
+We have just covered the **SELECT** keyword, FQL has other keywords for manipulating documents, such as **EDIT**, **ADD**, **APPEND** and **PREPEND**.
 
-Unlike the pattern ``('a',True,'house')``, which by definition is a pattern of
-three words, the pattern in the example above will match gaps of any length (up
-to a certain built-in maximum), so this might include matches such as *a very
-nice house*.
-
-Some remarks on these methods of querying are in order. These searches are
-pretty exhaustive and are done by simply iterating over all the words in the
-document. The entire document is loaded in memory and no special indices are involved. 
-For single documents this is okay, but when iterating over a corpus of
-thousands of documents, this method is too slow, especially for real-time
-applications. For huge corpora, clever indexing and database management systems
-will be required. This however is beyond the scope of this library.
-
-
-FoLiA Query Language
------------------------
-
-Advanced querying is possible through the ``fql`` library, this implements the
-FoLiA Query Language on top of the FoLiA library and allows complex queries,
-not just for retrieval but also to modify the document. Import the library as
-follows::
-
-    from pynlpl.formats import fql
-
-Then, you can query it as in the following example::
-
-    doc = folia.Document(file="/some/document.folia.xml")
-    query = fql.Query('SELECT pos FOR w WHERE text = "fly"')
-    for pos in query(doc)
-        print(pos.cls)
-
-The syntax of the FoLiA Query Language is documented here at https://github.com/proycon/foliadocserve/blob/master/README.rst .
+.. note:: Consult the FQL documentation at https://github.com/proycon/foliadocserve/blob/master/README.rst for further documentation on the language.
 
 Streaming Reader
 -------------------
@@ -584,15 +739,149 @@ want::
     for word in reader:
         print(word.id)
 
-The streaming reader also has a ``findwords()`` implementation that works the same as the
-one in ``Document``, except that directly retrieving words in context is not possible
-using the reader::
 
-    reader = folia.Reader("my.folia.xml", folia.Word)
-    for match in reader.findwords( folia.Pattern('house')):
-        for word in match:
-            print(word.id)
-        print("----")
+Higher-Order Annotations
+===========================
+
+
+Text Markup
+--------------
+
+FoLiA has a number of text markup elements, these appear within the
+``folia.TextContent`` (``t``) element, iterating over the element of a
+``folia.TextContent`` element will first and foremost produce strings, but also
+uncover these markup elements when present. The following markup types exists:
+
+* ``folia.TextMarkupGap`` (``t-gap``) - For marking gaps in the text
+* ``folia.TextMarkupString`` (``t-str``) - For marking arbitrary substring
+* ``folia.TextMarkupStyle`` (``t-style``) - For marking style (such as bold, italics, as dictated by the set used)
+* ``folia.TextMarkupCorrection`` (``t-correction``) - Simple in-line corrections
+* ``folia.TextMarkupError`` (``t-error``) -  For marking errors
+
+
+Features
+-------------
+
+Features allow a second-order annotation by adding the abilities to assign
+properties and values to any of the existing annotation elements. They follow
+the set/class paradigm by adding the notion of a subset and class relative to
+this subset. The ``feat()`` method provides a shortcut that can be used on any
+annotation element to obtain the class of the feature, given a subset. To
+illustrate the concept, take a look at part of speech annotation with some
+features::
+
+    pos = word.annotation(folia.PosAnnotation)
+    if pos.cls = "n":
+        if pos.feat('number') == 'plural':
+            print("We have a plural noun!")
+        elif pos.feat('number') == 'plural':
+            print("We have a singular noun!")
+
+The ``feat()`` method will return an exception when the feature does not exist.
+Note that the actual subset and class values are defined by the set and not
+FoLiA itself! They are therefore fictitious in the above example. 
+
+The Python class for features is ``folia.Feature``, in the following example we
+add a feature::
+
+    pos.add(folia.Feature, subset="gender", class="f")
+
+Although FoLiA does not define any sets nor subsets. Some annotation types do
+come with some associated subsets, their use is never mandatory. The advantage
+is that these associated subsets can be directly used as an XML attribute in
+the FoLiA document. The FoLiA library provides extra classes, iall subclassed
+off ``folia.Feature`` for these:
+
+* ``folia.SynsetFeature``, for use with ``folia.SenseAnnotation`` 
+* ``folia.ActorFeature``, for use with ``folia.Event`` 
+* ``folia.BegindatetimeFeature``, for use with ``folia.Event`` 
+* ``folia.EnddatetimeFeature``, for use with ``folia.Event`` 
+
+Alternatives
+------------------
+
+A key feature of FoLiA is its ability to make explicit alternative annotations,
+for token annotations, the ``folia.Alternative`` (``alt``) class is used to
+this end. Alternative annotations are embedded in this structure. This implies
+the annotation is not authoritative, but is merely an alternative to the actual
+annotation (if any). Alternatives may typically occur in larger numbers,
+representing a distribution each with a confidence value (not mandatory). Each
+alternative is wrapped in its own ``folia.Alternative`` element, as multiple
+elements inside a single alternative are considered dependent and part of the
+same alternative. Combining multiple annotation in one alternative makes sense
+for mixed annotation types, where for instance a pos tag alternative is tied to
+a particular lemma::
+
+    alt = word.add(folia.Alternative)
+    alt.add(folia.PosAnnotation, set='brown-tagset',cls='n',confidence=0.5)
+    alt = word.add(folia.Alternative)   #note that we reassign the variable!
+    alt.add(folia.PosAnnotation, set='brown-tagset',cls='a',confidence=0.3)
+    alt = word.add(folia.Alternative)
+    alt.add(folia.PosAnnotation, set='brown-tagset',cls='v',confidence=0.2)
+
+Span annotation elements have a different mechanism for alternatives, for those
+the entire annotation layer is embedded in a ``folia.AlternativeLayers``
+element. This element should be repeated for every type, unless the layers it
+describeds are dependent on it eachother::
+
+    alt = sentence.add(folia.AlternativeLayers)
+    layer = alt.add(folia.Entities)
+    entity = layer.add(folia.Entity, word1,word2,cls="person", confidence=0.3)
+
+
+Because the alternative annotations are **non-authoritative**, normal selection
+methods such as ``select()`` and ``annotations()`` will never yield them,
+unless explicitly told to do so. For this reason, there is an
+``alternatives()`` method on structure elements, for the first category of alternatives.
+
+Corrections
+------------------
+
+Corrections are one of the most complex annotation types in FoLiA. Corrections
+can be applied not just over text, but over any type of structure annotation,
+token annotation or span annotation. Corrections explicitly preserve the
+original, and recursively so if corrections are done over other corrections.
+
+Despite their complexity, the library treats correction transparently. Whenever
+you query for a particular element, and it is part of a correction, you get the
+corrected version rather than the original. The original is always *non-authoritative*
+and normal selection methods will ignore it.
+
+If you want to deal with correction, you have to explicitly get a
+``folia.Correction`` element. If an element is part of a correction, its
+``incorrection()`` method will give the correction element, if not, it will
+return ``None``::
+
+    pos = word.annotation(folia.PosAnnotation)
+    correction = pos.incorrection()
+    if correction: 
+        if correction.hasoriginal():
+            originalpos = correction.original(0) #assuming it's the only element as is customary
+            #originalpos will be an instance of folia.PosAnnotation
+            print("The original pos was", originalpos.cls)
+
+Corrections themselves carry a class too, indicating the type of correction (defined by the set used and not by FoLiA).
+
+Besides ``original()``, corrections distinguish three other types, ``new()`` (the corrected version), ``current()`` (the current uncorrected version) and ``suggestions(i)`` (a suggestion for correction), the former two and latter two usually form pairs, ``current()`` and ``new()`` can never be used together. Of ``suggestions(i)`` there may be multiple, hence the index argument. These return, respectively, instances of ``folia.Original``, ``folia.New``, ``folia.Current`` and ``folia.Suggestion``.
+
+Adding a correction can be done explicitly::
+
+    wrongpos = word.annotation(folia.PosAnnotation)
+    word.add(folia.Correction, folia.New(doc, folia.PosAnnotation(doc, cls="n")) , folia.Original(doc, wrongpos), cls="misclassified")   
+
+Let's settle for a suggestion rather than an actual correction::
+
+    wrongpos = word.annotation(folia.PosAnnotation)
+    word.add(folia.Correction, folia.Suggestion(doc, folia.PosAnnotation(doc, cls="n")), cls="misclassified")   
+
+
+In some instances, when correcting text or structural elements, ``folia.New()`` may be
+empty, which would correspond to an *deletion*. Similarly, ``folia.Original()`` may be
+empty, corresponding to an *insertion*. 
+
+The use of ``folia.Current()`` is reserved for use with structure elements, such as words, in combination with suggestions. The structure elements then have to be embedded in ``folia.Current()``. This situation arises for instance when making suggestions for a merge or split.
+
+
 
 API Reference
 ==============================

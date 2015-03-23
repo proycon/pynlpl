@@ -4123,7 +4123,7 @@ class CoreferenceLayer(AbstractAnnotationLayer):
     ANNOTATIONTYPE = AnnotationType.COREFERENCE
 
 class SemanticRolesLayer(AbstractAnnotationLayer):
-    """Syntax Layer: Annotation layer for SemnaticRole span annotation elements"""
+    """Syntax Layer: Annotation layer for SemanticRole span annotation elements"""
     ACCEPTED_DATA = (SemanticRole,Description, Correction)
     XMLTAG = 'semroles'
     ANNOTATIONTYPE = AnnotationType.SEMROLE
