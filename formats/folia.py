@@ -263,8 +263,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.set = "undefined"; #text content needs never be declared (for backward compatibility) and is in set 'undefined'
     elif Attrib.CLASS in required or Attrib.SETONLY in required:
         raise ValueError("Set is required for " + object.__class__.__name__)
-    else:
-        object.set = None
 
 
     if 'class' in kwargs:
@@ -279,8 +277,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         del kwargs['cls']
     elif Attrib.CLASS in required:
         raise ValueError("Class is required for " + object.__class__.__name__)
-    else:
-        object.cls = None
 
     if object.cls and not object.set:
         if doc and doc.autodeclare:
@@ -304,8 +300,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.annotator = doc.annotationdefaults[annotationtype][object.set]['annotator']
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotator is required for " + object.__class__.__name__)
-    else:
-        object.annotator = None
 
 
     if 'annotatortype' in kwargs:
@@ -322,8 +316,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.annotatortype = doc.annotationdefaults[annotationtype][object.set]['annotatortype']
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotatortype is required for " + object.__class__.__name__)
-    else:
-        object.annotatortype = None
 
 
     if 'confidence' in kwargs:
@@ -337,8 +329,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         del kwargs['confidence']
     elif Attrib.CONFIDENCE in required:
         raise ValueError("Confidence is required for " + object.__class__.__name__)
-    else:
-        object.confidence = None
 
 
 
@@ -349,8 +339,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         del kwargs['n']
     elif Attrib.N in required:
         raise ValueError("N is required")
-    else:
-        object.n = None
 
     if 'datetime' in kwargs:
         if not Attrib.DATETIME in supported:
@@ -368,8 +356,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.datetime = doc.annotationdefaults[annotationtype][object.set]['datetime']
     elif Attrib.DATETIME in required:
         raise ValueError("Datetime is required")
-    else:
-        object.datetime = None
 
     if 'src' in kwargs:
         if not Attrib.SRC in supported:
@@ -436,8 +422,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         if 'href' in kwargs:
             object.href =kwargs['href']
             del kwargs['href']
-        else:
-            object.href = None
 
     if doc and doc.debug >= 2:
         print("   @id           = ", repr(object.id),file=stderr)
@@ -622,6 +606,14 @@ class AbstractElement(object):
 
         for key in kwargs:
             raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)
+
+
+    def __getattr__(self, attr):
+        #overriding getattr so we can get defaults here rather than needing a copy on each element
+        if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','srcoffset','speaker','begintime','endtime'):
+            return None
+        else:
+            return super(AbstractElement, self).getattr(attr)
 
 
     #def __del__(self):
