@@ -137,8 +137,6 @@ class DuplicateIDError(Exception):
 class NoDefaultError(Exception):
     pass
 
-class NoDescription(Exception):
-    pass
 
 class UnresolvableTextContent(Exception):
     pass
@@ -631,7 +629,7 @@ class AbstractElement(object):
         for e in self:
             if isinstance(e, Description):
                 return e.value
-        raise NoDescription
+        raise NoSuchAnnotation
 
     def textcontent(self, cls='current'):
         """Get the text explicitly associated with this element (of the specified class).
