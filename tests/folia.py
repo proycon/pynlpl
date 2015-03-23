@@ -1320,6 +1320,34 @@ folia-v0.8" version="0.8">
         self.assertEqual( doc['example.speech.utt.2.w.2'].begintime, (0,0,1,267) )
         self.assertEqual( doc['example.speech.utt.2.w.2'].endtime, (0,0,2,12) )
 
+
+    def test104c_speech(self):
+        """Sanity Check - Testing serialisation of speech data with speech attributes"""
+        speechxml = """<speech xmlns="http://ilk.uvt.nl/folia" xml:id="example.speech" src="helloworld.ogg" speaker="proycon">
+        <utt xml:id="example.speech.utt.1" begintime="00:00:00:000" endtime="00:00:02:012">
+        <ph>həlˈəʊ wˈɜːld</ph>
+    </utt>
+    <utt xml:id="example.speech.utt.2">
+        <w xml:id="example.speech.utt.2.w.1" begintime="00:00:00:000" endtime="00:00:01:000">
+          <ph>həlˈəʊ</ph>
+        </w>
+        <w xml:id="example.speech.utt.2.w.2" begintime="00:00:01:267" endtime="00:00:02:012">
+           <ph>wˈɜːld</ph>
+        </w>
+    </utt>
+  </speech>"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="manual" version="0.12">
+  <metadata type="native">
+    <annotations>
+        <utterance-annotation set="utterances" />
+    </annotations>
+  </metadata>
+  %s
+</FoLiA>""" % speechxml
+        doc = folia.Document(string=xml)
+        self.assertTrue( xmlcheck( doc['example.speech'].xmlstring(), speechxml) )
+
 class Test4Edit(unittest.TestCase):
 
     def setUp(self):
