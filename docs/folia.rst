@@ -8,13 +8,21 @@ creation and manipulation of FoLiA XML documents. The library works under
 Python 2.7 as well as Python 3, which is the recommended version. The samples
 in this documentation follow Python 3 conventions.
 
-Prior to reading this document, it is highly recommended to first read the
+Prior to reading this document, it is  recommended to first read the
 FoLiA documentation itself and familiarise yourself with the format and
-underlying paradigm. The FoLiA documentation can be found through
-https://proycon.github.io/folia . It is especially important to understand the
+underlying paradigm. The FoLiA documentation can be found on the `FoLiA website <
+https://proycon.github.io/folia>`_. It is especially important to understand the
 way FoLiA handles sets/classes, declarations, common attributes such as
 annotator/annotatortype and the distinction between various kinds of annotation
 categories such as token annotation and span annotation.
+
+This Python library is also the foundation of the `FoLiA Tools
+<https://pypi.python.org/pypi/FoLiA-tools>`_ collection, which consists of
+various command line utilities to perform common tasks on FoLiA documents. If
+you're merely interested in performing a certain common task, such as a single
+query or conversion, you might want to check there if it contains is a tool that does
+what you want already.
+
 
 Reading FoLiA
 ===================
