@@ -215,6 +215,7 @@ def parsetime(s):
     except:
         raise ValueError("Invalid timestamp, must be in HH:MM:SS:mmmm format: " + s)
 
+
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     """Internal function, parses common FoLiA attributes and sets up the instance accordingly"""
 
@@ -1410,18 +1411,12 @@ class AbstractElement(object):
                 pass
 
         if not '{' + NSFOLIA + '}confidence' in attribs: #do not override if caller already set it
-            try:
-                if self.confidence:
-                    attribs['{' + NSFOLIA + '}confidence'] = str(self.confidence)
-            except AttributeError:
-                pass
+            if self.confidence:
+                attribs['{' + NSFOLIA + '}confidence'] = str(self.confidence)
 
         if not '{' + NSFOLIA + '}n' in attribs: #do not override if caller already set it
-            try:
-                if self.n:
-                    attribs['{' + NSFOLIA + '}n'] = str(self.n)
-            except AttributeError:
-                pass
+            if self.n:
+                attribs['{' + NSFOLIA + '}n'] = str(self.n)
 
         if not '{' + NSFOLIA + '}auth' in attribs: #do not override if caller already set it
             try:
@@ -1431,11 +1426,28 @@ class AbstractElement(object):
                 pass
 
         if not '{' + NSFOLIA + '}datetime' in attribs: #do not override if caller already set it
-            try:
-                if self.datetime and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'datetime' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.datetime != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['datetime'])):
-                    attribs['{' + NSFOLIA + '}datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
-            except AttributeError:
-                pass
+            if self.datetime and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'datetime' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.datetime != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['datetime'])):
+                attribs['{' + NSFOLIA + '}datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
+
+        if not '{' + NSFOLIA + '}src' in attribs: #do not override if caller already set it
+            if self.src:
+                attribs['{' + NSFOLIA + '}src'] = self.src
+
+        if not '{' + NSFOLIA + '}speaker' in attribs: #do not override if caller already set it
+            if self.speaker:
+                attribs['{' + NSFOLIA + '}speaker'] = self.speaker
+
+        if not '{' + NSFOLIA + '}begintime' in attribs: #do not override if caller already set it
+            if self.begintime:
+                attribs['{' + NSFOLIA + '}begintime'] = "%02d:%02d:%02d:%04d" % self.begintime
+
+        if not '{' + NSFOLIA + '}endtime' in attribs: #do not override if caller already set it
+            if self.endtime:
+                attribs['{' + NSFOLIA + '}endtime'] = "%02d:%02d:%02d:%04d" % self.endtime
+
+        if not '{' + NSFOLIA + '}srcoffset' in attribs: #do not override if caller already set it
+            if self.srcoffset:
+                attribs['{' + NSFOLIA + '}srcoffset'] = "%02d:%02d:%02d:%04d" % self.srcoffset
 
         if self.XLINK and self.href:
             attribs['{http://www.w3.org/1999/xlink}href'] = self.href
