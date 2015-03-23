@@ -344,7 +344,7 @@ class Test2Sanity(unittest.TestCase):
     def test016b_description(self):
         """Sanity Check - Error on non-existing description"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.1.w.7']
-        self.assertRaises( folia.NoDescription,  w.description)
+        self.assertRaises( folia.NoSuchAnnotation,  w.description)
 
     def test017_gap(self):
         """Sanity Check - Gap"""
