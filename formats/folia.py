@@ -99,7 +99,7 @@ class AnnotatorType:
 
 
 class Attrib:
-    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY = range(7) #BEGINTIME, ENDTIME, SRC, SRCOFFSET, SPEAKER = range(12) #for later
+    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY, BEGINTIME, ENDTIME, SRC, SRCOFFSET, SPEAKER = range(12) #for later
 
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME)
 
@@ -200,6 +200,22 @@ else:
         def readline(self):  #pylint: disable=E1003
             s = super(BypassLeakFile,self).readline()
             return s.replace(b'xml:id',b'id')
+
+
+def parsetime(s):
+    #parses time in HH:MM:SS:mmmm format, returns a four-tuple
+    try:
+        fields = s.split(':')
+        H = int(fields[0])
+        M = int(fields[1])
+        S = int(fields[2])
+        if len(fields) > 3:
+            m = int(fields[3])
+        else:
+            m = 0
+        return (H,M,S,m)
+    except:
+        raise ValueError("Invalid timestamp, must be in HH:MM:SS:mmmm format: " + s)
 
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     """Internal function, parses common FoLiA attributes and sets up the instance accordingly"""
@@ -354,6 +370,46 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         raise ValueError("Datetime is required")
     else:
         object.datetime = None
+
+    if 'src' in kwargs:
+        if not Attrib.SRC in supported:
+            raise ValueError("Source is not supported")
+        del kwargs['src']
+        object.src = kwargs['src']
+    elif Attrib.SRC in required:
+        raise ValueError("Source is required")
+
+    if 'begintime' in kwargs:
+        if not Attrib.BEGINTIME in supported:
+            raise ValueError("Begintime is not supported")
+        del kwargs['begintime']
+        object.begintime = parsetime(kwargs['begintime'])
+    elif Attrib.BEGINTIME in required:
+        raise ValueError("Begintime is required")
+
+    if 'endtime' in kwargs:
+        if not Attrib.ENDTIME in supported:
+            raise ValueError("Endtime is not supported")
+        del kwargs['endtime']
+        object.endtime = endtime(kwargs['endtime'])
+    elif Attrib.ENDTIME in required:
+        raise ValueError("Endtime is required")
+
+    if 'srcoffset' in kwargs:
+        if not Attrib.SRCOFFSET in supported:
+            raise ValueError("Srcoffset is not supported")
+        del kwargs['srcoffset']
+        object.srcoffset = endtime(kwargs['srcoffset'])
+    elif Attrib.SRCOFFSET in required:
+        raise ValueError("Srcoffset is required")
+
+    if 'speaker' in kwargs:
+        if not Attrib.SPEAKER in supported:
+            raise ValueError("Speaker is not supported")
+        del kwargs['speaker']
+        object.speaker = endtime(kwargs['speaker'])
+    elif Attrib.SPEAKER in required:
+        raise ValueError("Speaker is required")
 
     if 'auth' in kwargs:
         if kwargs['auth'] in ('no','false'):
