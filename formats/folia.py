@@ -669,6 +669,28 @@ class AbstractElement(object):
             #No text found at all :`(
             raise NoSuchText
 
+    def phoncontent(self, cls='current'):
+        """Get the phonetic content explicitly associated with this element (of the specified class).
+        Returns the PhonContent instance rather than the actual text. Raises NoSuchPhon exception if
+        not found.
+
+        Unlike phon(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
+        """
+        if not self.SPEAKABLE: #only printable elements can hold text
+            raise NoSuchPhon
+
+
+        #Find explicit text content (same class)
+        for e in self:
+            if isinstance(e, PhonContent):
+                if e.cls == cls:
+                    return e
+            elif isinstance(e, Correction):
+                try:
+                    return e.phoncontent(cls)
+                except NoSuchPhon:
+                    pass
+        raise NoSuchPhon
 
     def phon(self, cls='current', previousdelimiter=""):
         """Get the phonetic representation associated with this element (of the specified class), will always be a unicode instance.
@@ -697,7 +719,7 @@ class AbstractElement(object):
 
 
         if self.hasphon(cls):
-            s = self.phoncontent(cls).text()
+            s = self.phoncontent(cls).phon()
         else:
             #Not found, descend into children
             delimiter = ""
@@ -708,7 +730,7 @@ class AbstractElement(object):
                         s += e.phon(cls, delimiter)
                         delimiter = e.gettextdelimiter() #We use TEXTDELIMITER for phon too
                         #delimiter will be buffered and only printed upon next iteration, this prevent the delimiter being output at the end of a sequence
-                    except NoSuchText:
+                    except NoSuchPhon:
                         continue
 
         s = s.strip(' \r\n\t')
@@ -891,6 +913,14 @@ class AbstractElement(object):
             r = self.textcontent(cls)
             return True
         except NoSuchText:
+            return False
+
+    def hasphon(self,cls='current'):
+        """Does this element have phonetic content (of the specified class)"""
+        try:
+            r = self.phoncontent(cls)
+            return True
+        except NoSuchPhon:
             return False
 
     def settext(self, text, cls='current'):
@@ -1234,7 +1264,7 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             replace = Class.findreplaceables(self, set, **kwargs)
-        elif self.TEXTCONTAINER and isstring(child):
+        elif (self.TEXTCONTAINER or self.PHONCONTAINER) and isstring(child):
             #replace will replace ALL text content, removing text markup along the way!
             self.data = []
             return self.append(child, *args,**kwargs)
@@ -1397,7 +1427,7 @@ class AbstractElement(object):
                 elif not (child in omitchildren):
                     otherelements.append(child)
             for child in textelements+otherelements:
-                if self.TEXTCONTAINER and isstring(child):
+                if (self.TEXTCONTAINER or self.PHONCONTAINER) and isstring(child):
                     if len(e) == 0:
                         if e.text:
                             e.text += child
@@ -1451,6 +1481,8 @@ class AbstractElement(object):
             jsonnode['children'] = []
             if self.TEXTCONTAINER:
                 jsonnode['text'] = self.text()
+            if self.PHONCONTAINER:
+                jsonnode['phon'] = self.phon()
             for child in self:
                 if self.TEXTCONTAINER and isstring(child):
                     jsonnode['children'].append(child)
@@ -1518,7 +1550,7 @@ class AbstractElement(object):
         if not node:
             node = self
         for e in self.data:
-            if not self.TEXTCONTAINER or isinstance(e, AbstractElement):
+            if (not self.TEXTCONTAINER and not self.PHONCONTAINER) or isinstance(e, AbstractElement):
                 if ignore is True:
                     try:
                         if not e.auth:
@@ -1781,7 +1813,7 @@ class AbstractElement(object):
 
 
             elements = [] #(including attributes)
-            if cls.TEXTCONTAINER:
+            if cls.TEXTCONTAINER or cls.PHONCONTAINER:
                 elements.append( E.text() )
             done = {}
             if includechildren:
@@ -1847,14 +1879,14 @@ class AbstractElement(object):
         args = []
         kwargs = {}
         text = None #for dcoi support
-        if Class.TEXTCONTAINER and node.text:
+        if (Class.TEXTCONTAINER or Class.PHONCONTAINER) and node.text:
             args.append(node.text)
         for subnode in node:
             if not isinstance(subnode, ElementTree._Comment): #don't trip over comments
                 if subnode.tag.startswith('{' + NSFOLIA + '}'):
                     if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:],file=stderr)
                     args.append(doc.parsexml(subnode, Class) )
-                    if Class.TEXTCONTAINER and subnode.tail:
+                    if (Class.TEXTCONTAINER or Class.PHONCONTAINER) and subnode.tail:
                         args.append(subnode.tail)
                 elif subnode.tag.startswith('{' + NSDCOI + '}'):
                     #Dcoi support
@@ -2907,6 +2939,7 @@ class PhonContent(AbstractElement):
         #    raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.data[0]))
 
 
+
     def phon(self):
         """Obtain the actual phonetic representation (unicode/str instance)"""
         return super(PhonContent,self).phon() #AbstractElement will handle it now, merely overridden to get rid of parameters that dont make sense in this context
@@ -2948,8 +2981,8 @@ class PhonContent(AbstractElement):
         return self.phon()
 
     def __eq__(self, other):
-        if isinstance(other, PhoneticContent):
-            return self.phon() == other.text()
+        if isinstance(other, PhonContent):
+            return self.phon() == other.phon()
         elif isstring(other):
             return self.phon() == u(other)
         else:
@@ -3980,6 +4013,22 @@ class Correction(AbstractAnnotation, AllowGenerateID):
         raise NoSuchText
 
 
+    def phoncontent(self, cls='current'):
+        """Get the phonetic content explicitly associated with this element (of the specified class).
+        Returns the PhonContent instance rather than the actual text. Raises NoSuchPhon exception if
+        not found.
+
+        Unlike phon(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
+        """
+        if cls == 'current':
+            for e in self:
+                if isinstance(e, New) or isinstance(e, Current):
+                    return e.phoncontent(cls)
+        elif cls == 'original':
+            for e in self:
+                if isinstance(e, Original):
+                    return e.phoncontent(cls)
+        raise NoSuchPhon
 
     def text(self, cls = 'current', retaintokenisation=False, previousdelimiter=""):
         if cls == 'current':
@@ -5896,7 +5945,7 @@ class Document(object):
                 for subnode in node:
                     if subnode.tag == '{' + NSFOLIA + '}metadata':
                         self.parsemetadata(subnode)
-                    elif subnode.tag == '{' + NSFOLIA + '}text' and self.mode == Mode.MEMORY:
+                    elif (subnode.tag == '{' + NSFOLIA + '}text' or subnode.tag == '{' + NSFOLIA + '}speech') and self.mode == Mode.MEMORY:
                         if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found Text",file=stderr)
                         self.data.append( self.parsexml(subnode) )
             else:
@@ -6083,8 +6132,8 @@ class Speech(AbstractStructureElement):
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Quote, Sentence, Word,  List,  Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,PhonContent,String, Metric, Correction)
-    XMLTAG = 'text'
+    ACCEPTED_DATA = (Utterance, Gap, Event, Division, Paragraph, Quote, Sentence, Word,  List,  Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,PhonContent,String, Metric, Correction)
+    XMLTAG = 'speech'
     TEXTDELIMITER = "\n\n\n"
     # (both SPEAKABLE and PRINTABLE)
 
