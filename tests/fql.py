@@ -107,6 +107,7 @@ Qcql_context2 = '[ pos = "LID\(.*" ]? [ pos = "ADJ\(.*" ]* [ pos = "N\(.*" ]'
 Qcql_context3 = '[ pos = "N\(.*" ]{2}'
 Qcql_context4 = '[ pos = "WW\(.*" ]+ [] [ pos = "WW\(.*" ]+'
 Qcql_context5 = '[ pos = "VG\(.*" ] [ pos = "WW\(.*" ]* []?'
+Qcql_context6 = '[ pos = "VG\(.*|VZ\.*" ]'
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -659,6 +660,16 @@ class Test4CQL(unittest.TestCase):
         self.assertTrue( ('zodat','ze') in textresults )
         self.assertTrue( ('en','worden','tussen') in textresults )
         self.assertTrue( ('terweil','een') in textresults )
+
+    def test06_context(self):
+        q = fql.Query(cql.cql2fql(Qcql_context6))
+        results = q(self.doc)
+        self.assertTrue( len(results) > 0 )
+
+        for result in results:
+            self.assertIsInstance(result, fql.SpanSet)
+            self.assertEqual(len(result), 1)
+            self.assertTrue(result[0].pos()[:2] == "VZ" or result[0].pos()[:2] == "VG" )
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
