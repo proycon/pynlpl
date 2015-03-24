@@ -4566,7 +4566,10 @@ class RegExp(object):
 
 class Pattern(object):
     """
-    This class describes a pattern over words to be searched for. The ``Document.findwords()`` method can subsequently be called with this pattern, and it will return all the words that match. An example will best illustrate this, first a trivial example of searching for one word::
+    This class describes a pattern over words to be searched for. The
+``Document.findwords()`` method can subsequently be called with this pattern,
+and it will return all the words that match. An example will best illustrate
+this, first a trivial example of searching for one word::
 
         for match in doc.findwords( folia.Pattern('house') ):
             for word in match:
