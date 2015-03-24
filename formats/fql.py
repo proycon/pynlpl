@@ -340,7 +340,7 @@ class Filter(object): #WHERE ....
                 q += "(" + modifier + " " + str(selector) + " HAS " + str(subfilter) + ") "
             else:
                 #original filter can't be reconstructed, place dummy:
-                q += "...\"" + filter.__defaults__[0] +"\""
+                q += "...\"" + str(filter.__defaults__[0]) +"\""
         return q.strip()
 
 
@@ -407,6 +407,7 @@ class Selector(object):
                 raise SyntaxError("Expansion expressions not allowed at this point, got one at position " + str(i) + " in: " + str(q))
             expansion = q[i][1:-1]
             expansion = expansion.split(',')
+            i += 1
             try:
                 if len(expansion) == 1:
                     expansion = (int(expansion), int(expansion))
@@ -436,7 +437,7 @@ class Selector(object):
                 #something we don't handle
                 break
 
-        return Selector(Class,set,id,filter, expansion), i
+        return Selector(Class,set,id,filter, None, expansion), i
 
     def __call__(self, query, contextselector, recurse=True, debug=False): #generator, lazy evaluation!
         if isinstance(contextselector,tuple) and len(contextselector) == 2:
@@ -558,7 +559,7 @@ class Span(object):
         l = len(q)
         while i < l:
             if q.kw(i,"ID") or q[i] in folia.XML2CLASS:
-                target,i = Selector.parse(q,i)
+                target,i = Selector.parse(q,i, True)
                 targets.append(target)
             elif q.kw(i,"&"):
                 #we're gonna have more targets
@@ -575,18 +576,77 @@ class Span(object):
         if debug: print("[FQL EVALUATION DEBUG] Span  - Building span from target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
         backtrack = []
+        l = len(self.targets)
+
+        #find the first non-optional element, it will be our pivot:
+        pivotindex = None
+        for i, target in enumerate(self.targets):
+            if self.targets[i].id or not self.targets[i].expansion or self.targets[i].expansion[0] > 0:
+                pivotindex = i
+                break
+        if pivotindex is None:
+            raise QueryError("All parts in the SPAN expression are optional, at least one non-optional component is required")
+
 
         #get first target
-        for element, target in self.targets[0](query, contextselector, recurse,debug):
-            if debug: print("[FQL EVALUATION DEBUG] Span  - First item of span found  (" + str(element) + ", target="+ str(target)+")",file=sys.stderr)
-            spanset = SpanSet([element])
-            match = True
+        for element, target in self.targets[pivotindex](query, contextselector, recurse,debug):
+            if debug: print("[FQL EVALUATION DEBUG] Span  - First item of span found  (pivotindex=" + str(pivotindex) + ",l=" + str(l) + "," + str(repr(element)) + ")",file=sys.stderr)
+            spanset = SpanSet() #elemnent is added later
+
+            match = True #we attempt to disprove this
+
+
             #now see if consecutive elements match up
-            l = len(self.targets)
-            i = 0
+
+
+            #--- matching prior to pivot -------
+
+            #match optional elements before pivotindex
+            i = pivotindex
+            currentelement = element
+            while i > 0:
+                i -= 1
+                if i < 0: break
+                selector = self.targets[i]
+                minmatches = selector.expansion[0]
+                assert minmatches == 0 #everything before pivot has to have minmatches 0
+                maxmatches = selector.expansion[1]
+                done = False
+
+                matches = 0
+                while True:
+                    prevelement = element
+                    element = element.previous(selector.Class, None)
+                    if not element or (target and target not in element.ancestors()):
+                        if debug: print("[FQL EVALUATION DEBUG] Span  - Prior element not found or out of scope",file=sys.stderr)
+                        done = True #no more elements left
+                        break
+                    elif element and not selector.match(query, element,debug):
+                        if debug: print("[FQL EVALUATION DEBUG] Span  - Prior element does not match filter",file=sys.stderr)
+                        element = prevelement #reset
+                        break
+
+                    if debug: print("[FQL EVALUATION DEBUG] Span  - Prior element matches",file=sys.stderr)
+                    #we have a match
+                    matches += 1
+                    spanset.insert(0,element)
+                    if matches >= maxmatches:
+                        if debug: print("[FQL EVALUATION DEBUG] Span  - Maximum threshold reached for span selector " + str(i) + ", breaking", file=sys.stderr)
+                        break
+
+                if done:
+                    break
+
+            #--- matching pivot and selectors after pivot  -------
+
+            done = False #are we done with this selector?
+            element = currentelement
+            i = pivotindex - 1 #loop does +1 at the start of each iteration, we want to start with the pivotindex
             while i < l:
-                i += 1 #skips the first selector, we already have it
-                if i == l: break
+                i += 1
+                if i == l:
+                    if debug: print("[FQL EVALUATION DEBUG] Span  - No more selectors to try",i,l, file=sys.stderr)
+                    break
                 selector = self.targets[i]
                 if selector.id: #selection by ID, don't care about consecutiveness
                     try:
@@ -608,64 +668,89 @@ class Span(object):
                     else:
                         minmatches = maxmatches = 1
 
+                    if debug: print("[FQL EVALUATION DEBUG] Span  - Preparing to match selector " + str(i) + " of span, expansion={" + str(minmatches) + "," + str(maxmatches) + "}", file=sys.stderr)
                     matches = 0
 
                     while True:
-                        submatch = True
+                        submatch = True #does the element currenty under consideration match? (the match variable is reserved for the entire match)
+                        done = False #are we done with this span selector?
+                        holdelement = False #do not go to next element
 
-                        prevelement = element
-                        #get next element
-                        element = element.next(selector.Class, None)
-                        if debug: print("[FQL EVALUATION DEBUG] Span  - Obtained subsequent item in span: ", repr(element), file=sys.stderr)
+                        if debug: print("[FQL EVALUATION DEBUG] Span  - Processing element with span selector " + str(i) + ": ", repr(element), file=sys.stderr)
 
                         if not element or (target and target not in element.ancestors()):
                             if debug:
                                 if not element:
-                                    print("[FQL EVALUATION DEBUG] Span  - Subsequent element not found",file=sys.stderr)
+                                    print("[FQL EVALUATION DEBUG] Span  - Element not found",file=sys.stderr)
                                 elif target and not target in element.ancestors():
-                                    print("[FQL EVALUATION DEBUG] Span  - Subsequent element out of scope",file=sys.stderr)
+                                    print("[FQL EVALUATION DEBUG] Span  - Element out of scope",file=sys.stderr)
                             submatch = False
                             break
                         elif element and not selector.match(query, element,debug):
-                            if debug: print("[FQL EVALUATION DEBUG] Span  - Subsequent element does not match filter",file=sys.stderr)
+                            if debug: print("[FQL EVALUATION DEBUG] Span  - Element does not match filter",file=sys.stderr)
                             submatch = False
 
                         if submatch:
                             matches += 1
+                            if debug: print("[FQL EVALUATION DEBUG] Span  - Element is a match, got " + str(matches) + " match(es) now", file=sys.stderr)
+
                             if matches > minmatches:
                                 #check if the next selector(s) match too, then we have a point where we might branch two ways
-                                j = 1
-                                while i+j < len(self.targets):
-                                    nextselector = self.targets[i+j]
-                                    if nextselector.match(query, element,debug):
-                                        #save this point for backtracking, when we get stuck, we'll roll back to this point
-                                        backtrack.append( (i+j, prevelement, copy(spanset) ) ) #using prevelement, nextelement will be recomputed after backtracking,   using different selector
-                                    if not nextselector.expansion or nextselector.expansion[0] > 0:
-                                        break
-                                    j += 1
+                                #j = 1
+                                #while i+j < len(self.targets):
+                                #    nextselector = self.targets[i+j]
+                                #    if nextselector.match(query, element,debug):
+                                #        #save this point for backtracking, when we get stuck, we'll roll back to this point
+                                #       backtrack.append( (i+j, prevelement, copy(spanset) ) ) #using prevelement, nextelement will be recomputed after backtracking,   using different selector
+                                #   if not nextselector.expansion or nextselector.expansion[0] > 0:
+                                #        break
+                                #    j += 1
+                                #TODO: implement
+                                pass
+                            elif matches < minmatches:
+                                if debug: print("[FQL EVALUATION DEBUG] Span  - Minimum threshold not reached yet for span selector " + str(i), file=sys.stderr)
 
                             spanset.append(element)
-                            if matches == maxmatches:
-                                break
+                            if matches >= maxmatches:
+                                if debug: print("[FQL EVALUATION DEBUG] Span  - Maximum threshold reached for span selector " + str(i) + ", breaking", file=sys.stderr)
+                                done = True #done with this selector
                         else:
                             if matches < minmatches:
                                 #can we backtrack?
-                                if backtrack:
+                                if backtrack: #(not reached currently)
+                                    if debug: print("[FQL EVALUATION DEBUG] Span  - Backtracking",file=sys.stderr)
                                     index, element, spanset = backtrack.pop()
                                     i = index - 1 #next iteration will do +1 again
+                                    match = True #default
                                     continue
                                 else:
                                     #nope, all is lost, we have no match
+                                    if debug: print("[FQL EVALUATION DEBUG] Span  - Minimum threshold could not be attained for span selector " + str(i), file=sys.stderr)
                                     match = False
                                     break
+                            else:
+                                if debug: print("[FQL EVALUATION DEBUG] Span  - No match for span selector " + str(i) + ", but no problem since matching threshold was already reached", file=sys.stderr)
+                                holdelement = True
+                                done = True
+                                break
+
+                        if not holdelement:
+                            if debug: print("[FQL EVALUATION DEBUG] Span  - Selecting next element for next round", repr(element), file=sys.stderr)
+                            prevelement = element
+                            #get next element
+                            element = element.next(selector.Class, None)
+
+                        if done:
+                            if debug: print("[FQL EVALUATION DEBUG] Span  - Done with span selector " + str(i), repr(element), file=sys.stderr)
+                            break
 
                     if not match: break
 
             if match:
-                if debug: print("[FQL EVALUATION DEBUG] Span   - Span found, returning spanset (" + repr(spanset) + ")",file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Span  - Span found, returning spanset (" + repr(spanset) + ")",file=sys.stderr)
                 yield spanset
             else:
-                if debug: print("[FQL EVALUATION DEBUG] Span   - Span not found",file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Span  - Span not found",file=sys.stderr)
 
 
 
