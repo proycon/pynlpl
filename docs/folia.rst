@@ -393,8 +393,9 @@ Span Annotation Types
 This section lists the available Span annotation elements, the layer that contains
 them is explicitly mentioned as well.
 
-Some of the span annotation elements are complex and take span annotation role
-elements as children, these correspond to components of the span annotation.
+Some of the span annotation elements are complex and take span role elements as
+children, these are normal span annotation elements that occur on a within
+another span annotation (of a particular type) and can not be used standalone.
 
 * ``folia.Chunk`` in ``folia.ChunkingLayer`` - ``chunk`` in ``chunks`` - Shallow parsing.  Not nested .
 * ``folia.CoreferenceChain`` in ``folia.CoreferenceLayer`` - ``coreferencechain`` in ``coreferences`` - Co-references
@@ -411,7 +412,7 @@ elements as children, these correspond to components of the span annotation.
 * ``folia.SemanticRole`` in ``folia.SemanticRolesLayer`` - ``semrole`` in ``semroles`` - Semantic Roles
 
 
-The span annotation role ``folia.HeadSpan`` (``hd``)  may actually be used by
+The span role ``folia.HeadSpan`` (``hd``)  may actually be used by
 most span annotation elements, indicating it's head-part.
 
 
@@ -472,10 +473,10 @@ Then we can add paragraphs, sentences, or other structural elements. The
 Adding annotations
 -------------------------
 
-Adding annotations, or any elements for that matter, is done using the add
-method. We assume that the annotations we add have already been properly
-declared, otherwise an exception will be raised as soon as ``add()`` is
-called. Let's build on the previous example::
+Adding annotations, or any elements for that matter, is done using the
+``add()`` method on the intended parent element. We assume that the annotations
+we add have already been properly declared, otherwise an exception will be
+raised as soon as ``add()`` is called. Let's build on the previous example::
 
     #First we grab the fourth word, 'test', from the sentence
     word = sentence.words(3)
@@ -491,9 +492,9 @@ Note that in the above examples, the ``add()`` method takes a class as first
 argument, and subsequently takes keyword arguments that will be passed to the
 classes' constructor.
 
-A second way of using ``add()`` is by simply passing a child element and
-constructing it prior to adding. The following is equivalent to the above
-example::
+A second way of using ``add()`` is by simply passing a fully instantiated child
+element, thus constructing it prior to adding. The following is equivalent to the
+above example, as the previous method is merely a shortcut for convenience::
 
     #First we grab the fourth word, 'test', from the sentence
     word = sentence.words(3)
@@ -504,12 +505,16 @@ example::
     #Add lemma
     lemma.add( folia.LemmaAnnotation(doc , cls='test') )   
 
-The add method always returns that which was added. 
+The ``add()`` method always returns that which was added, allowing it to be chained.
 
-In the above example we first instantiate a PosAnnotatation and a
-LemmaAnnotation. Instantiation of any element follows the following pattern::
+In the above example we first explicitly instantiate a ``folia.PosAnnotation``
+and a ``folia.LemmaAnnotation``. Instantiation of any FoLiA element (always
+Python class subclassed off ``folia.AbstractElement``) follows the following
+pattern::
 
     Class(document, *children, **kwargs)
+
+Note that the document has to be passed explicitly as first argument to the constructor.
 
 The common attributes are set using equally named keyword arguments:
 
@@ -519,16 +524,20 @@ The common attributes are set using equally named keyword arguments:
  * ``annotator=`` 
  * ``annotatortype=``
  * ``confidence=``
- 
+ * ``src=``
+ * ``speaker=``
+ * ``begintime=``
+ * ``endtime=``
+
 Not all attributes are allowed for all elements, and certain attributes are
-required for certain elements. ValueError exceptions will be raised when these
+required for certain elements. ``ValueError`` exceptions will be raised when these
 constraints are not met.
  
 Instead of setting ``id``. you can also set the keyword argument
 ``generate_id_in`` and pass it another element, an ID will be automatically
 generated, based on the ID of the element passed. When you use the first method
-of appending, instatation with ``generate_id_in`` will take place automatically
-behind the screens when applicable and when ``id`` is not explicitly set.
+of adding elements, instantiation with ``generate_id_in`` will take place automatically
+behind the scenes when applicable and when ``id`` is not explicitly set.
 
 Any extra non-keyword arguments should be FoLiA elements and will be appended
 as the contents of the element, i.e. the children or subelements. Instead of
@@ -603,6 +612,27 @@ and then add a syntax parse, consisting of nested elements::
 
 .. note:: The lower-level ``append()`` method would have had the same effect in the above syntax tree sample.
 
+Deleting annotation
+----------------------
+
+Any element can be deleted by calling the ``remove()`` method of its parent. Suppose we want to delete ``word``::
+
+    word.parent.remove(word)
+
+Copying annotations
+----------------------
+
+A *deep copy* can be made of any element by calling its ``copy()`` method:: 
+
+    word2 = word.copy()
+
+The copy will be without parent and document. If you intend to associate a copy with a new document, then copy as follows instead::
+
+    word2 = word.copy(newdoc)
+
+If you intend to attach the copy somewhere in the same document, you may want to add a suffix for any identifiers in its scope, since duplicate identifiers are not allowed and would raise an exception. This can be specified as the second argument::
+
+    word2 = word.copy(doc, ".copy")
 
 Searching in a FoLiA document
 ================================
