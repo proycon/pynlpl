@@ -106,6 +106,7 @@ Qcql_context = '"de" [ tag="ADJ\(.*" ] [ tag="N\(.*" & lemma!="blah" ]'
 Qcql_context2 = '[ pos = "LID\(.*" ]? [ pos = "ADJ\(.*" ]* [ pos = "N\(.*" ]'
 Qcql_context3 = '[ pos = "N\(.*" ]{2}'
 Qcql_context4 = '[ pos = "WW\(.*" ]+ [] [ pos = "WW\(.*" ]+'
+Qcql_context5 = '[ pos = "VG\(.*" ] [ pos = "WW\(.*" ]* []?'
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -640,6 +641,24 @@ class Test4CQL(unittest.TestCase):
 
         self.assertTrue( ('genummerd','en','gedateerd') in textresults )
         self.assertTrue( ('opgenomen','en','worden','weergegeven') in textresults )
+
+    def test05_context(self):
+        q = fql.Query(cql.cql2fql(Qcql_context5))
+        results = q(self.doc)
+        self.assertTrue( len(results) > 0 )
+
+        textresults = []
+        for result in results:
+            self.assertIsInstance(result, fql.SpanSet)
+            textresults.append(  tuple([w.text() for w in result]) )
+
+        #print(textresults,file=sys.stderr)
+
+        self.assertTrue( ('en','gedateerd','zodat') in textresults )
+        self.assertTrue( ('en','worden','weergegeven','door') in textresults )
+        self.assertTrue( ('zodat','ze') in textresults )
+        self.assertTrue( ('en','worden','tussen') in textresults )
+        self.assertTrue( ('terweil','een') in textresults )
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
