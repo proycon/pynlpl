@@ -103,6 +103,9 @@ Qprepend = "PREPEND w WITH text \"heel\" FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.
 Qcorrect_prepend = "PREPEND w WITH text \"heel\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"insertion\") FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
 
 Qcql_context = '"de" [ tag="ADJ\(.*" ] [ tag="N\(.*" & lemma!="blah" ]'
+Qcql_context2 = '[ pos = "LID\(.*" ]? [ pos = "ADJ\(.*" ]* [ pos = "N\(.*" ]'
+Qcql_context3 = '[ pos = "N\(.*" ]{2}'
+Qcql_context4 = '[ pos = "WW\(.*" ]+ [] [ pos = "WW\(.*" ]+'
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -591,7 +594,52 @@ class Test4CQL(unittest.TestCase):
             self.assertEqual(result[1].pos()[:4], "ADJ(")
             self.assertEqual(result[2].pos()[:2], "N(")
 
+    def test02_context(self):
+        q = fql.Query(cql.cql2fql(Qcql_context2))
+        results = q(self.doc)
+        self.assertTrue( len(results) > 0 )
 
+        textresults = []
+        for result in results:
+            self.assertIsInstance(result, fql.SpanSet)
+            textresults.append(  tuple([w.text() for w in result]) )
+
+        self.assertTrue( ('het','alfabet') in textresults )
+        self.assertTrue( ('vierkante','haken') in textresults )
+        self.assertTrue( ('plaats',) in textresults )
+        self.assertTrue( ('het','originele','handschrift') in textresults )
+        self.assertTrue( ('Een','volle','lijn') in textresults )
+
+    def test03_context(self):
+        q = fql.Query(cql.cql2fql(Qcql_context3))
+        results = q(self.doc)
+        self.assertEqual( len(results), 2 )
+
+        textresults = []
+        for result in results:
+            self.assertIsInstance(result, fql.SpanSet)
+            self.assertEqual(len(result), 2)
+            textresults.append(  tuple([w.text() for w in result]) )
+
+        #print(textresults,file=sys.stderr)
+
+        self.assertTrue( ('naam','stemma') in textresults )
+        self.assertTrue( ('stemma','codicum') in textresults )
+
+    def test04_context(self):
+        q = fql.Query(cql.cql2fql(Qcql_context4))
+        results = q(self.doc)
+        self.assertEqual( len(results),2  )
+
+        textresults = []
+        for result in results:
+            self.assertIsInstance(result, fql.SpanSet)
+            textresults.append(  tuple([w.text() for w in result]) )
+
+        #print(textresults,file=sys.stderr)
+
+        self.assertTrue( ('genummerd','en','gedateerd') in textresults )
+        self.assertTrue( ('opgenomen','en','worden','weergegeven') in textresults )
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'

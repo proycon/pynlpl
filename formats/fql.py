@@ -685,7 +685,6 @@ class Span(object):
                                 elif target and not target in element.ancestors():
                                     print("[FQL EVALUATION DEBUG] Span  - Element out of scope",file=sys.stderr)
                             submatch = False
-                            break
                         elif element and not selector.match(query, element,debug):
                             if debug: print("[FQL EVALUATION DEBUG] Span  - Element does not match filter",file=sys.stderr)
                             submatch = False
@@ -735,12 +734,12 @@ class Span(object):
                                 break
 
                         if not holdelement:
-                            if debug: print("[FQL EVALUATION DEBUG] Span  - Selecting next element for next round", repr(element), file=sys.stderr)
                             prevelement = element
                             #get next element
                             element = element.next(selector.Class, None)
+                            if debug: print("[FQL EVALUATION DEBUG] Span  - Selecting next element for next round", repr(element), file=sys.stderr)
 
-                        if done:
+                        if done or not match:
                             if debug: print("[FQL EVALUATION DEBUG] Span  - Done with span selector " + str(i), repr(element), file=sys.stderr)
                             break
 
