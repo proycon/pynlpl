@@ -1346,7 +1346,7 @@ folia-v0.8" version="0.8">
   %s
 </FoLiA>""" % speechxml
         doc = folia.Document(string=xml)
-        self.assertTrue( xmlcheck( doc['example.speech'].xmlstring(), speechxml) )
+        self.assertTrue( xmlcheck( u(doc['example.speech'].xmlstring()), u(speechxml)) )
 
 class Test4Edit(unittest.TestCase):
 
