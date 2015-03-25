@@ -3277,7 +3277,7 @@ class Word(AbstractStructureElement, AllowCorrections):
     """Word (aka token) element. Holds a word/token and all its related token annotations."""
     XMLTAG = 'w'
     ANNOTATIONTYPE = AnnotationType.TOKEN
-    #ACCEPTED_DATA DEFINED LATER (after Correction)
+    #ACCEPTED_DATA DEFINED LATER
 
     #will actually be determined by gettextdelimiter()
 
@@ -4029,7 +4029,6 @@ class Current(AbstractCorrectionChild):
 class Correction(AbstractAnnotation, AllowGenerateID):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = Attrib.ALL
-    ACCEPTED_DATA = (New,Original,Current, Suggestion, Description, Metric)
     ANNOTATIONTYPE = AnnotationType.CORRECTION
     XMLTAG = 'correction'
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
@@ -4186,11 +4185,9 @@ class Correction(AbstractAnnotation, AllowGenerateID):
     #        ignorelist.append(Suggestion)
     #        return super(Correction,self).select(cls,set,recursive, ignorelist, node)
 
-Original.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, TextContent,PhonContent, String, Correction, Description, Metric)
 
 
 
-String.ACCEPTED_DATA = (TextContent,PhonContent, Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation)
 
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
@@ -4215,7 +4212,6 @@ class AlternativeLayers(AbstractElement):
     SPEAKABLE = False
     AUTH = False
 
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,PhonContent, String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
 
 
 class External(AbstractElement):
@@ -6223,6 +6219,8 @@ class Text(AbstractStructureElement):
 #==============================================================================
 #Setting Accepted data that has been postponed earlier (to allow circular references)
 
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,PhonContent, String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
+String.ACCEPTED_DATA = (TextContent,PhonContent, Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation)
 Paragraph.ACCEPTED_DATA = (Sentence, Quote, Example, Entry, AbstractExtendedTokenAnnotation, Correction, TextContent,PhonContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Head, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
 Sentence.ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description,  Linebreak, Whitespace, Event, Example, Entry, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
 Utterance.ACCEPTED_DATA = (Word,Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
@@ -6234,6 +6232,8 @@ ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Refer
 List.ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, PhonContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part)
 Caption.ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,PhonContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
 AbstractCorrectionChild.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, Sentence, Paragraph, Division, Utterance, TextContent,PhonContent, String, Description, Metric)
+Correction.ACCEPTED_DATA = (New,Original,Current, Suggestion, Description, Metric)
+Original.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, TextContent,PhonContent, String, Correction, Description, Metric)
 Term.ACCEPTED_DATA = (Paragraph, Event, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Definition.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Example.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
