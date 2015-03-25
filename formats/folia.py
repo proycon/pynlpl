@@ -104,7 +104,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE = range(39)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE = range(42)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -4612,17 +4612,30 @@ class StyleFeature(Feature):
     XMLTAG = None
     SUBSET = "style"
 
-class Event(AbstractStructureElement):
-    #ACCEPTED_DATA set at bottom
-    ANNOTATIONTYPE = AnnotationType.EVENT
-    XMLTAG = 'event'
-    OCCURRENCESPERSET = 0
-
 class Note(AbstractStructureElement):
     #ACCEPTED_DATA set at bottom
     ANNOTATIONTYPE = AnnotationType.NOTE
     XMLTAG = 'note'
-    OCCURRENCESPERSET = 0
+
+class Definition(AbstractStructureElement):
+    #ACCEPTED_DATA set at bottom
+    XMLTAG = 'def'
+    ANNOTATIONTYPE = AnnotationType.DEFINITION
+
+class Term(AbstractStructureElement):
+    #ACCEPTED_DATA set at bottom
+    XMLTAG = 'term'
+    ANNOTATIONTYPE = AnnotationType.TERM
+
+class Example(AbstractStructureElement):
+    #ACCEPTED_DATA set at bottom
+    XMLTAG = 'ex'
+    ANNOTATIONTYPE = AnnotationType.EXAMPLE
+
+class Entry(AbstractStructureElement):
+    ACCEPTED_DATA = (Term, Definition, Example, Correction, Description, Metric, Alignment,  AlternativeLayers,AbstractAnnotationLayer)
+    XMLTAG = 'entry'
+
 
 class TimeSegment(AbstractSpanAnnotation):
     ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, Metric)
@@ -4699,7 +4712,6 @@ class Quote(AbstractStructureElement):
 class Sentence(AbstractStructureElement):
     """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
 
-    ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description,  Linebreak, Whitespace, Event, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
     XMLTAG = 's'
     TEXTDELIMITER = ' '
     ANNOTATIONTYPE = AnnotationType.SENTENCE
@@ -4832,7 +4844,6 @@ class Sentence(AbstractStructureElement):
 class Utterance(AbstractStructureElement):
     """Utterance element. A structure element for speech annotation."""
 
-    ACCEPTED_DATA = (Word,Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
     XMLTAG = 'utt'
     TEXTDELIMITER = ' '
     ANNOTATIONTYPE = AnnotationType.UTTERANCE
@@ -4842,11 +4853,9 @@ class Event(AbstractStructureElement):
     #ACCEPTED_DATA set at bottom
     ANNOTATIONTYPE = AnnotationType.EVENT
     XMLTAG = 'event'
-    OCCURRENCESPERSET = 0
 
 class Caption(AbstractStructureElement):
     """Element used for captions for figures or tables, contains sentences"""
-    ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,PhonContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
     OCCURRENCES = 1
     XMLTAG = 'caption'
 
@@ -4866,12 +4875,10 @@ class ListItem(AbstractStructureElement):
 
 class List(AbstractStructureElement):
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
-    ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, PhonContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part)
     XMLTAG = 'list'
     TEXTDELIMITER = '\n'
     ANNOTATIONTYPE = AnnotationType.LIST
 
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Reference, TextContent,PhonContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part)
 
 class Figure(AbstractStructureElement):
     """Element for the representation of a graphical figure. Structure element."""
@@ -4932,22 +4939,18 @@ class Head(AbstractStructureElement):
 
 class Paragraph(AbstractStructureElement):
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
-
-    ACCEPTED_DATA = (Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent,PhonContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Head, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
     XMLTAG = 'p'
     TEXTDELIMITER = "\n\n"
     ANNOTATIONTYPE = AnnotationType.PARAGRAPH
 
 
 class Cell(AbstractStructureElement):
-    ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Note, Reference, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation, Correction, Part)
     XMLTAG = 'cell'
     TEXTDELIMITER = " | "
     REQUIRED_ATTRIBS = (),
     ANNOTATIONTYPE = AnnotationType.TABLE
 
 class Row(AbstractStructureElement):
-    ACCEPTED_DATA = (Cell,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction, Part)
     XMLTAG = 'row'
     TEXTDELIMITER = "\n"
     REQUIRED_ATTRIBS = (),
@@ -4955,7 +4958,6 @@ class Row(AbstractStructureElement):
 
 
 class TableHead(AbstractStructureElement):
-    ACCEPTED_DATA = (Row,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction, Part)
     XMLTAG = 'tablehead'
     REQUIRED_ATTRIBS = (),
     ANNOTATIONTYPE = AnnotationType.TABLE
@@ -4967,7 +4969,6 @@ class Table(AbstractStructureElement):
     ANNOTATIONTYPE = AnnotationType.TABLE
 
 
-Part.ACCEPTED_DATA = (AbstractStructureElement, AbstractExtendedTokenAnnotation, AlternativeLayers, AbstractAnnotationLayer, Correction)
 
 class Query(object):
     """An XPath query on one or more FoLiA documents"""
@@ -6204,7 +6205,7 @@ class Speech(AbstractStructureElement):
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,Attrib.SRC,Attrib.BEGINTIME,Attrib.ENDTIME,Attrib.SPEAKER)
-    ACCEPTED_DATA = (Utterance, Gap, Event, Division, Paragraph, Quote, Sentence, Word,  List,  Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,PhonContent,String, Metric, Correction)
+    ACCEPTED_DATA = (Utterance, Gap, Event, Entry, Example, Division, Paragraph, Quote, Sentence, Word,  List,  Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,PhonContent,String, Metric, Correction)
     XMLTAG = 'speech'
     TEXTDELIMITER = "\n\n\n"
     # (both SPEAKABLE and PRINTABLE)
@@ -6214,7 +6215,7 @@ class Text(AbstractStructureElement):
 
     REQUIRED_ATTRIBS = (Attrib.ID,)
     OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Division, Paragraph, Quote, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description,TextContent,PhonContent,String, Metric, Correction)
+    ACCEPTED_DATA = (Gap, Event, Entry, Example, Division, Paragraph, Quote, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description,TextContent,PhonContent,String, Metric, Correction)
     XMLTAG = 'text'
     TEXTDELIMITER = "\n\n\n"
     # (both SPEAKABLE and PRINTABLE)
@@ -6222,10 +6223,23 @@ class Text(AbstractStructureElement):
 #==============================================================================
 #Setting Accepted data that has been postponed earlier (to allow circular references)
 
+Paragraph.ACCEPTED_DATA = (Sentence, Quote, Example, Entry, AbstractExtendedTokenAnnotation, Correction, TextContent,PhonContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Head, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
+Sentence.ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description,  Linebreak, Whitespace, Event, Example, Entry, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
+Utterance.ACCEPTED_DATA = (Word,Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
+Cell.ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Example, Entry, Note, Reference, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation, Correction, Part)
+Row.ACCEPTED_DATA = (Cell,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction, Part)
+TableHead.ACCEPTED_DATA = (Row,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction, Part)
+Part.ACCEPTED_DATA = (AbstractStructureElement, AbstractExtendedTokenAnnotation, AlternativeLayers, AbstractAnnotationLayer, Correction)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Reference, TextContent,PhonContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part)
+List.ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, PhonContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part)
+Caption.ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,PhonContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
 AbstractCorrectionChild.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, Word, Sentence, Paragraph, Division, Utterance, TextContent,PhonContent, String, Description, Metric)
-Division.ACCEPTED_DATA = (Division, Quote, Gap, Event, Head, Utterance, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
-Event.ACCEPTED_DATA = (Event, Paragraph, Sentence, Division, Word, Head,Utterance,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent,PhonContent, String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Head, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
+Term.ACCEPTED_DATA = (Paragraph, Event, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
+Definition.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
+Example.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
+Division.ACCEPTED_DATA = (Division, Quote, Gap, Event, Example, Entry, Head, Utterance, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
+Event.ACCEPTED_DATA = (Event, Example, Paragraph, Sentence, Division, Word, Head,Utterance,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent,PhonContent, String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
+Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Example, Head, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Quote.ACCEPTED_DATA = (Word, Sentence, Paragraph, Utterance, Division, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
 
 
