@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FoLiA library &mdash; PyNLPl 0.7.0 documentation</title>
+    <title>FoLiA library &mdash; PyNLPl 0.7.3.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.7.0',
+        VERSION:     '0.7.3.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.7.0 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.7.3.1 documentation" href="index.html" />
     <link rel="next" title="Formats" href="formats.html" />
     <link rel="prev" title="Evaluation &amp; Experiments" href="evaluation.html" /> 
   </head>
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="evaluation.html" title="Evaluation &amp; Experiments"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.7.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.7.3.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -55,18 +55,23 @@
             
   <div class="section" id="folia-library">
 <h1>FoLiA library<a class="headerlink" href="#folia-library" title="Permalink to this headline">¶</a></h1>
-<p>This tutorial will introduce the FoLiA Python library, part of PyNLPl. The
+<p>This tutorial will introduce the <strong>FoLiA Python library</strong>, part of PyNLPl. The
 FoLiA library provides an Application Programming Interface for the reading,
 creation and manipulation of FoLiA XML documents. The library works under
-Python 2.7 as well as Python 3. The samples in this documentation follow
-Python 3 conventions.</p>
-<p>Prior to reading this document, it is highly recommended to first read the
+Python 2.7 as well as Python 3, which is the recommended version. The samples
+in this documentation follow Python 3 conventions.</p>
+<p>Prior to reading this document, it is  recommended to first read the
 FoLiA documentation itself and familiarise yourself with the format and
-underlying paradigm. The FoLiA documentation can be found through
-<a class="reference external" href="http://proycon.github.com/folia">http://proycon.github.com/folia</a> . It is especially important to understand the
+underlying paradigm. The FoLiA documentation can be found on the <a href="#id3"><span class="problematic" id="id4">`FoLiA website &lt;
+https://proycon.github.io/folia&gt;`_</span></a>. It is especially important to understand the
 way FoLiA handles sets/classes, declarations, common attributes such as
 annotator/annotatortype and the distinction between various kinds of annotation
 categories such as token annotation and span annotation.</p>
+<p>This Python library is also the foundation of the <a class="reference external" href="https://pypi.python.org/pypi/FoLiA-tools">FoLiA Tools</a> collection, which consists of
+various command line utilities to perform common tasks on FoLiA documents. If
+you&#8217;re merely interested in performing a certain common task, such as a single
+query or conversion, you might want to check there if it contains is a tool that does
+what you want already.</p>
 <div class="section" id="reading-folia">
 <h2>Reading FoLiA<a class="headerlink" href="#reading-folia" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="loading-a-document">
@@ -79,8 +84,12 @@ categories such as token annotation and span annotation.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">doc</span> <span class="o">=</span> <span class="n">folia</span><span class="o">.</span><span class="n">Document</span><span class="p">(</span><span class="nb">file</span><span class="o">=</span><span class="s">&quot;/path/to/document.xml&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This returns an instance that holds the entire document in memory. Note that for large
-FoLiA documents this may consume quite some memory!</p>
+<p>This returns an instance that holds the entire document in memory. Note that
+for large FoLiA documents this may consume quite some memory! If you happened
+to already have the document content in a string, you can load as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">doc</span> <span class="o">=</span> <span class="n">folia</span><span class="o">.</span><span class="n">Document</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="s">&quot;&lt;FoLiA ...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Once you have loaded a document, all data is available for you to read and manipulate as you see fit. We will first illustrate some simple use cases:</p>
 <p>To save a document back the file it was loaded from, we do:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">doc</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
@@ -89,6 +98,10 @@ FoLiA documents this may consume quite some memory!</p>
 <p>Or we can specify a specific filename:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">doc</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;/tmp/document.xml&quot;</span><span class="p">)</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Any content that is in a different XML namespace than the FoLiA namespaces or other supported namespaces (XML, Xlink), will be ignored upon loading and lost when saving.</p>
 </div>
 </div>
 <div class="section" id="printing-text">
@@ -102,8 +115,11 @@ FoLiA documents this may consume quite some memory!</p>
 </pre></div>
 </div>
 <p>For any subelement of the document, you can obtain its text in the same
-fashion. In Python 2, <tt class="docutils literal"><span class="pre">str()</span></tt> returns a UTF-8 encoded <tt class="docutils literal"><span class="pre">str</span></tt> and
-<tt class="docutils literal"><span class="pre">unicode()</span></tt> returns a unicode instance.</p>
+fashion.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In Python 2, both <tt class="docutils literal"><span class="pre">str()</span></tt> as well as <tt class="docutils literal"><span class="pre">unicode()</span></tt> return a unicode instance. You may need to append <tt class="docutils literal"><span class="pre">.encode('utf-8')</span></tt> for proper output.</p>
+</div>
 </div>
 <div class="section" id="index">
 <h3>Index<a class="headerlink" href="#index" title="Permalink to this headline">¶</a></h3>
@@ -113,6 +129,10 @@ dictionary:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">word</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s">&#39;example.p.3.s.5.w.1&#39;</span><span class="p">]</span>
 <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Python 2 users will have to do <tt class="docutils literal"><span class="pre">print</span> <span class="pre">word.text().encode('utf-8')</span></tt> instead, to ensure non-ascii characters are printed properly.</p>
 </div>
 </div>
 <div class="section" id="obtaining-list-of-elements">
@@ -126,7 +146,7 @@ using the FoLiA library.</p>
 </pre></div>
 </div>
 <p>That however gives you one big iteration of words without boundaries. You may
-more likely seek word within sentences. So we first iterate over all sentences,
+more likely want to seek words within sentences. So we first iterate over all sentences,
 then over the words therein:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">sentences</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">sentence</span><span class="o">.</span><span class="n">words</span><span class="p">():</span>
@@ -146,14 +166,14 @@ then over the words therein:</p>
 </div>
 <p>If you want to iterate over all of the child elements of a certain element,
 regardless of what type they are, you can simply do so as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">:</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Sentence</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">subelement</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subelement</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Sentence</span><span class="p">):</span>
         <span class="k">print</span><span class="p">(</span><span class="s">&quot;this is a sentence&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">print</span><span class="p">(</span><span class="s">&quot;this is something else&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>If applied recursively this allows you in principle to traverse the entire
+<p>If applied recursively this allows you to traverse the entire
 element tree, there are however specialised methods available that do this for
 you.</p>
 </div>
@@ -180,45 +200,152 @@ returning them:</p>
 generators.  This implies that the results of the selection are returned one by
 one in the iteration, as opposed to all stored in memory. This also implies
 that you can only iterate over it once, we can not do another iteration over
-the <tt class="docutils literal"><span class="pre">words</span></tt> variable in the above example, unless we reinvtoke the
-<tt class="docutils literal"><span class="pre">select()</span></tt> method to get a new generator.</p>
+the <tt class="docutils literal"><span class="pre">words</span></tt> variable in the above example, unless we reinvoke the
+<tt class="docutils literal"><span class="pre">select()</span></tt> method to get a new generator. Likewise, we can not do
+<tt class="docutils literal"><span class="pre">len(words)</span></tt>, but have to use the <tt class="docutils literal"><span class="pre">count()</span></tt> method instead.</p>
 <p>If you want to have all results in memory in a list, you can simply do the following:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">words</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sentence</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Word</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The select method is by default recursive, set the third argument to False to
 make it non-recursive. The second argument can be used for restricting matches
-to a specific set. The recursion will not go into any non-authoritative
-elements such as alternatives, originals of corrections.</p>
+to a specific set, a tuple of classes. The recursion will not go into any
+non-authoritative elements such as alternatives, originals of corrections.</p>
+</div>
+<div class="section" id="navigating-a-document">
+<h3>Navigating a document<a class="headerlink" href="#navigating-a-document" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="docutils literal"><span class="pre">select()</span></tt> method is your main tool for descending downwards in the document
+tree. There are occassions, however, when you want go upwards or sideways. The
+<tt class="docutils literal"><span class="pre">next()</span></tt> and <tt class="docutils literal"><span class="pre">previous()</span></tt> methods can be used for sideway navigation, they
+return the next or previous element, respectively:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">nextelement</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<span class="n">previouselement</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">previous</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can explicitly filter by passing an element type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">nextword</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">next</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Word</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, the search is constrained not to cross certain boundaries, such as
+sentences and paragraphs. You can do so explicitly as well by passing a list of
+constraints:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">nextword</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">next</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Word</span><span class="p">,</span> <span class="p">[</span><span class="n">folia</span><span class="o">.</span><span class="n">Sentence</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>If you do not want any constraints, pass <tt class="docutils literal"><span class="pre">None</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">nextword</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">next</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Word</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>These methods will return <tt class="docutils literal"><span class="pre">None</span></tt> if no next/previous element was found (of
+the specified type).</p>
+<p>Each element has a <tt class="docutils literal"><span class="pre">parent</span></tt> attributes that links it to its parent:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sentence</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">parent</span>
+</pre></div>
+</div>
+<p>Only for the top-level element (Text), the parent is <tt class="docutils literal"><span class="pre">None</span></tt>. There is also
+the method <tt class="docutils literal"><span class="pre">ancestors()</span></tt> to iterate over all ancestors:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">ancestor</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ancestor</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>If you are looking for ancestors of a specific type, you can pass it as an
+argument:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">ancestor</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">ancestors</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Division</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ancestor</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>If only a single ancestor is desired, use the <tt class="docutils literal"><span class="pre">ancestor()</span></tt> method instead,
+unlike the generator version <tt class="docutils literal"><span class="pre">ancestors()</span></tt>, it will raise an exception if the
+ancestor was not found:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">paragraph</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">ancestor</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Paragraph</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="structure-annotation-types">
+<h3>Structure Annotation Types<a class="headerlink" href="#structure-annotation-types" title="Permalink to this headline">¶</a></h3>
+<p>The FoLiA library discerns various Python classes for structure
+annotation, the corresponding FoLiA XML tag is listed too. Sets and classes can
+be associated with most of these elements to make them more specific, these are
+never prescribed by FoLiA. The list of classes is as follows:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">folia.Cell</span></tt> - <tt class="docutils literal"><span class="pre">cell</span></tt> - A cell in a <tt class="docutils literal"><span class="pre">row</span></tt> in a <tt class="docutils literal"><span class="pre">table</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">folia.Division</span></tt> - <tt class="docutils literal"><span class="pre">div</span></tt> - Used for for example chapters, sections, subsections</li>
+<li><tt class="docutils literal"><span class="pre">folia.Event</span></tt> - <tt class="docutils literal"><span class="pre">event</span></tt> -  Often in new-media data where a chat message, tweet or
+forum post is considered an event.</li>
+<li><tt class="docutils literal"><span class="pre">folia.Figure</span></tt> - <tt class="docutils literal"><span class="pre">figure</span></tt> - A graphic/image</li>
+<li><tt class="docutils literal"><span class="pre">folia.Gap</span></tt> - <tt class="docutils literal"><span class="pre">gap</span></tt> - A gap containing raw un-annotated textual content</li>
+<li><tt class="docutils literal"><span class="pre">folia.Head</span></tt> - <tt class="docutils literal"><span class="pre">head</span></tt> - The head/title of a division (<tt class="docutils literal"><span class="pre">div</span></tt>), used for chapter/section/subsection titles etc..</li>
+<li><tt class="docutils literal"><span class="pre">folia.Linebreak</span></tt> - <tt class="docutils literal"><span class="pre">br</span></tt> - An explicit linebreak/newline</li>
+<li><tt class="docutils literal"><span class="pre">folia.List</span></tt> - <tt class="docutils literal"><span class="pre">list</span></tt> - A list, bulleted or enumerated</li>
+<li><tt class="docutils literal"><span class="pre">folia.ListItem</span></tt> - <tt class="docutils literal"><span class="pre">listitem</span></tt> - An item in a <tt class="docutils literal"><span class="pre">list</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">folia.Note</span></tt> - <tt class="docutils literal"><span class="pre">note</span></tt> - A note, such as a footnote or bibliography reference for instance</li>
+<li><tt class="docutils literal"><span class="pre">folia.Paragraph</span></tt> - <tt class="docutils literal"><span class="pre">p</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">folia.Part</span></tt> - <tt class="docutils literal"><span class="pre">part</span></tt> - An abstract part of a larger structure</li>
+<li><tt class="docutils literal"><span class="pre">folia.Quote</span></tt> - <tt class="docutils literal"><span class="pre">quote</span></tt> - Cited text</li>
+<li><tt class="docutils literal"><span class="pre">folia.Reference</span></tt> - <tt class="docutils literal"><span class="pre">ref</span></tt> - A reference to another structural element,
+used to refer to footnotes (<tt class="docutils literal"><span class="pre">note</span></tt>) for example.</li>
+<li><tt class="docutils literal"><span class="pre">folia.Sentence</span></tt> - <tt class="docutils literal"><span class="pre">s</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">folia.Table</span></tt> - <tt class="docutils literal"><span class="pre">table</span></tt> - A table</li>
+<li><tt class="docutils literal"><span class="pre">folia.TableHead</span></tt> - <tt class="docutils literal"><span class="pre">tablehead</span></tt> - The head of a table, containing cells (<tt class="docutils literal"><span class="pre">cell</span></tt>) with column labels</li>
+<li><tt class="docutils literal"><span class="pre">folia.Row</span></tt> - <tt class="docutils literal"><span class="pre">row</span></tt> - A row in a <tt class="docutils literal"><span class="pre">table</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">folia.Text</span></tt> - <tt class="docutils literal"><span class="pre">text</span></tt> - The root of the document&#8217;s content</li>
+<li><tt class="docutils literal"><span class="pre">folia.Whitespace</span></tt> - <tt class="docutils literal"><span class="pre">whitespace</span></tt> - Explicit vertical whitespace</li>
+<li><tt class="docutils literal"><span class="pre">folia.Word</span></tt>- <tt class="docutils literal"><span class="pre">w</span></tt></li>
+</ul>
+<p>The FoLiA documentation explain all of these in detail.</p>
+<p>FoLiA and this library enforce explicit rules about what elements are allowed
+in what others. Exceptions will be raised when this is about to be violated.</p>
 </div>
 <div class="section" id="common-attributes">
 <h3>Common attributes<a class="headerlink" href="#common-attributes" title="Permalink to this headline">¶</a></h3>
-<p>As you know, the FoLiA paradigm introduces <em>sets</em>, <em>classes</em>, <em>annotator</em> with
-<em>annotator types</em> and <em>confidence</em> values. These attributes are easily
-accessible on any element that has them:</p>
-<blockquote>
-<div><ul class="simple">
-<li><tt class="docutils literal"><span class="pre">element.id</span></tt>        (string)</li>
-<li><tt class="docutils literal"><span class="pre">element.set</span></tt>       (string)</li>
-<li><tt class="docutils literal"><span class="pre">element.cls</span></tt>       (string) Since class is already a reserved keyword in python, the library consistently uses <tt class="docutils literal"><span class="pre">cls</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">element.annotator</span></tt> (string)</li>
-<li><tt class="docutils literal"><span class="pre">element.annotatortype</span></tt> (set to folia.AnnotatorType.MANUAL or  folia.AnnotatorType.AUTO)</li>
-<li><tt class="docutils literal"><span class="pre">element.confidence</span></tt> (float)</li>
-<li><tt class="docutils literal"><span class="pre">element.n</span></tt>         (string)</li>
-<li><tt class="docutils literal"><span class="pre">element.datetime</span></tt>  (datetime.datetime)</li>
+<p>The FoLiA paradigm features <em>sets</em> and <em>classes</em> as primary means to represent
+the actual value (class) of an annotation. A set often corresponds to a tagset,
+such as a set of part-of-speech tags, and a class is one selected value in such a set.</p>
+<p>The paradigm furthermore introduces other comomn attributes to set on
+annotation elements, such as an identifier,  information on the annotator, and
+more. A full list is provided below:</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">element.id</span></tt>        (string) - The unique identifier of the element</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">element.set</span></tt>       (string) - The set the element pertains to.</p>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">element.cls</span></tt>       (string) - The assigned class, of the set above.</dt>
+<dd><p class="first last">Classes correspond with tagsets in this case of many annotation types.
+Note that since class is already a reserved keyword in python, the library consistently uses <tt class="docutils literal"><span class="pre">cls</span></tt></p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">element.annotator</span></tt> (string) - The name or ID of the annotator who added/modified this element</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">element.annotatortype</span></tt> - The type of annotator, can be either <tt class="docutils literal"><span class="pre">folia.AnnotatorType.MANUAL</span></tt> or <tt class="docutils literal"><span class="pre">folia.AnnotatorType.AUTO</span></tt></p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">element.confidence</span></tt> (float) - A confidence value expressing</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">element.datetime</span></tt>  (datetime.datetime) - The date and time when the element was added/modified.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">element.n</span></tt>         (string) - An ordinal label, used for instance in enumerated list contexts, numbered sections, etc..</p>
+</li>
 </ul>
-</div></blockquote>
-<p>Attributes that are not available for certain elements, or not set, default to None.</p>
+<p>The following attributes are specific to a speech context:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">element.src</span></tt>       (string) - A URL or filename referring the an audio or video file containing the speech. Access this attribute using the <tt class="docutils literal"><span class="pre">element.speaker_src()</span></tt> method, as it is inheritable from ancestors.</li>
+<li><tt class="docutils literal"><span class="pre">element.speaker</span></tt>   (string) -  The name of ID of the speaker. Access this attribute using the <tt class="docutils literal"><span class="pre">element.speech_speaker()</span></tt> method, as it is inheritable from ancestors.</li>
+<li><tt class="docutils literal"><span class="pre">element.begintime</span></tt> (4-tuple) - The time in the above source fragment when the phonetic content of this element starts, this is a (hours, minutes,seconds,milliseconds) tuple.</li>
+<li><tt class="docutils literal"><span class="pre">element.endtime</span></tt>   (4-tuple) - The time in the above source fragment when the phonetic content of this element ends, this is a (hours, minutes,seconds,milliseconds) tuple.</li>
+</ul>
+<p>Attributes that are not available for certain elements, or not set, default to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
 </div>
 <div class="section" id="annotations">
 <h3>Annotations<a class="headerlink" href="#annotations" title="Permalink to this headline">¶</a></h3>
-<p>FoLiA is of course a format for linguistic annotation. So let&#8217;s see how to
-obtain annotations. This can be done using <tt class="docutils literal"><span class="pre">annotations()</span></tt> or
-<tt class="docutils literal"><span class="pre">annotation()</span></tt>, which is similar to the <tt class="docutils literal"><span class="pre">select()</span></tt> method, except that it
-will raise an exception when no such annotation is found. The difference
-between <tt class="docutils literal"><span class="pre">annotation()</span></tt> and <tt class="docutils literal"><span class="pre">annotations()</span></tt> is that the former will grab
-only one and raise an exception if there are more between which it can&#8217;t
-disambiguate:</p>
+<p>FoLiA is of course a format for linguistic annotation. Accessing annotation is
+therefore one of the primary functions of this library. This can be done using
+<tt class="docutils literal"><span class="pre">annotations()</span></tt> or <tt class="docutils literal"><span class="pre">annotation()</span></tt>, which is similar to the <tt class="docutils literal"><span class="pre">select()</span></tt>
+method, except that it will raise an exception when no such annotation is
+found. The difference between <tt class="docutils literal"><span class="pre">annotation()</span></tt> and <tt class="docutils literal"><span class="pre">annotations()</span></tt> is that
+the former will grab only one and raise an exception if there are more between
+which it can&#8217;t disambiguate, whereas the second is a generator, but will still
+raise an exception if none is found:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">words</span><span class="p">():</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">pos</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">annotation</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span><span class="p">,</span> <span class="s">&#39;CGN&#39;</span><span class="p">)</span>
@@ -235,9 +362,35 @@ disambiguate:</p>
 <p>Note that the second argument of <tt class="docutils literal"><span class="pre">annotation()</span></tt>, <tt class="docutils literal"><span class="pre">annotations()</span></tt> or
 <tt class="docutils literal"><span class="pre">select()</span></tt> can be used to restrict your selection to a certain set. In the
 above example we restrict ourselves to Part-of-Speech tags in the CGN set.</p>
+<div class="section" id="token-annotation-types">
+<h4>Token Annotation Types<a class="headerlink" href="#token-annotation-types" title="Permalink to this headline">¶</a></h4>
+<p>The following token annotation elements are available in FoLiA, they are
+embedded under a structural element.</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">folia.DomainAnnotation</span></tt> - <tt class="docutils literal"><span class="pre">domain</span></tt> - Domain/genre annotation</li>
+<li><tt class="docutils literal"><span class="pre">folia.PosAnnotation</span></tt> - <tt class="docutils literal"><span class="pre">pos</span></tt> - Part of Speech Annotation</li>
+<li><tt class="docutils literal"><span class="pre">folia.LangAnnotation</span></tt> - <tt class="docutils literal"><span class="pre">lang</span></tt> - Language identification</li>
+<li><tt class="docutils literal"><span class="pre">folia.LemmaAnnotation</span></tt> - <tt class="docutils literal"><span class="pre">lemma</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">folia.SenseAnnotation</span></tt> - <tt class="docutils literal"><span class="pre">sense</span></tt> - Lexical semantic sense annotation</li>
+<li><tt class="docutils literal"><span class="pre">folia.SubjectivityAnnotation</span></tt> - <tt class="docutils literal"><span class="pre">subjectivity</span></tt> - Sentiment analysis / subjectivity annotation</li>
+</ul>
+<p>The following annotation types are somewhat special, as they are the only
+elements for which FoLiA assumes a default set and a default class:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">folia.TextContent</span></tt> - <tt class="docutils literal"><span class="pre">t</span></tt> - Text content, this carries the actual text
+for the structural element in which is it embedded</li>
+<li><tt class="docutils literal"><span class="pre">folia.PhonContent</span></tt> - <tt class="docutils literal"><span class="pre">ph</span></tt> - Phonetic content, this carries a phonetic
+representation</li>
+</ul>
+</div>
 <div class="section" id="span-annotation">
 <h4>Span Annotation<a class="headerlink" href="#span-annotation" title="Permalink to this headline">¶</a></h4>
-<p>We will discuss three ways of accessing span annotation. Span annotation is
+<p>FoLiA distinguishes token annotation and span annotation, token annotation is
+embedded in-line within a structural element, and the annotation therefore
+pertains to that structural element, whereas span annotation is stored
+in a stand-off annotation layer outside the element and refers back to it. Span
+annotation elements typically <em>span</em> over multiple structural elements.</p>
+<p>We will discuss three ways of accessing span annotation. As stated, span annotation is
 contained within an annotation layer of a certain structure element, often a
 sentence. In the first way of accessing span annotation, we do everything explicitly. We
 first obtain the layer, then iterate over the span annotation elements within that layer,
@@ -277,6 +430,38 @@ do this, we use use the <tt class="docutils literal"><span class="pre">findspan(
 </pre></div>
 </div>
 </div>
+<div class="section" id="span-annotation-types">
+<h4>Span Annotation Types<a class="headerlink" href="#span-annotation-types" title="Permalink to this headline">¶</a></h4>
+<p>This section lists the available Span annotation elements, the layer that contains
+them is explicitly mentioned as well.</p>
+<p>Some of the span annotation elements are complex and take span role elements as
+children, these are normal span annotation elements that occur on a within
+another span annotation (of a particular type) and can not be used standalone.</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">folia.Chunk</span></tt> in <tt class="docutils literal"><span class="pre">folia.ChunkingLayer</span></tt> - <tt class="docutils literal"><span class="pre">chunk</span></tt> in <tt class="docutils literal"><span class="pre">chunks</span></tt> - Shallow parsing.  Not nested .</li>
+<li><tt class="docutils literal"><span class="pre">folia.CoreferenceChain</span></tt> in <tt class="docutils literal"><span class="pre">folia.CoreferenceLayer</span></tt> - <tt class="docutils literal"><span class="pre">coreferencechain</span></tt> in <tt class="docutils literal"><span class="pre">coreferences</span></tt> - Co-references</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>Requires the roles <tt class="docutils literal"><span class="pre">folia.CoreferenceLink</span></tt> (<tt class="docutils literal"><span class="pre">coreferencelink</span></tt>) pointing to each coreferenced structure in the chain</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">folia.Dependency</span></tt> in <tt class="docutils literal"><span class="pre">folia.DependencyLayer</span></tt> - <tt class="docutils literal"><span class="pre">dependency</span></tt> in <tt class="docutils literal"><span class="pre">dependencies</span></tt> - Dependency Relations</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>Requires the roles <tt class="docutils literal"><span class="pre">folia.HeadSpan</span></tt> (<tt class="docutils literal"><span class="pre">hd</span></tt>) and <tt class="docutils literal"><span class="pre">folia.DependencyDependent</span></tt> (<tt class="docutils literal"><span class="pre">dep</span></tt>)</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">folia.Entity</span></tt> in <tt class="docutils literal"><span class="pre">folia.EntitiesLayer</span></tt> - <tt class="docutils literal"><span class="pre">entity</span></tt> in <tt class="docutils literal"><span class="pre">entities</span></tt> - Named entities</li>
+<li><tt class="docutils literal"><span class="pre">folia.SyntacticUnit</span></tt> in <tt class="docutils literal"><span class="pre">folia.SyntaxLayer</span></tt> - <tt class="docutils literal"><span class="pre">su</span></tt> in <tt class="docutils literal"><span class="pre">syntax</span></tt> - Syntax.  These elements are generally nested to form syntax trees.</li>
+<li><tt class="docutils literal"><span class="pre">folia.SemanticRole</span></tt> in <tt class="docutils literal"><span class="pre">folia.SemanticRolesLayer</span></tt> - <tt class="docutils literal"><span class="pre">semrole</span></tt> in <tt class="docutils literal"><span class="pre">semroles</span></tt> - Semantic Roles</li>
+</ul>
+<p>The span role <tt class="docutils literal"><span class="pre">folia.HeadSpan</span></tt> (<tt class="docutils literal"><span class="pre">hd</span></tt>)  may actually be used by
+most span annotation elements, indicating it&#8217;s head-part.</p>
+</div>
 </div>
 </div>
 <div class="section" id="editing-folia">
@@ -284,7 +469,7 @@ do this, we use use the <tt class="docutils literal"><span class="pre">findspan(
 <div class="section" id="creating-a-new-document">
 <h3>Creating a new document<a class="headerlink" href="#creating-a-new-document" title="Permalink to this headline">¶</a></h3>
 <p>Creating a new FoliA document, rather than loading an existing one from file,
-can be done by explicitly providing an ID for the new document in the
+is done by explicitly providing the ID for the new document in the
 constructor:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">doc</span> <span class="o">=</span> <span class="n">folia</span><span class="o">.</span><span class="n">Document</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&#39;example&#39;</span><span class="p">)</span>
 </pre></div>
@@ -323,17 +508,19 @@ Then we can add paragraphs, sentences, or other structural elements. The
 <span class="n">sentence</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Word</span><span class="p">,</span> <span class="s">&#39;.&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Advanced Note</strong>:</p>
-<p>The <tt class="docutils literal"><span class="pre">add()</span></tt> method is actually a wrapper around <tt class="docutils literal"><span class="pre">append()</span></tt>, which takes the
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">add()</span></tt> method is actually a wrapper around <tt class="docutils literal"><span class="pre">append()</span></tt>, which takes the
 exact same arguments. It performs extra checks and works for both span
 annotation as well as token annotation. Using <tt class="docutils literal"><span class="pre">append()</span></tt> will be faster.</p>
 </div>
+</div>
 <div class="section" id="adding-annotations">
 <h3>Adding annotations<a class="headerlink" href="#adding-annotations" title="Permalink to this headline">¶</a></h3>
-<p>Adding annotations, or any elements for that matter, is done using the add
-method. We assume that the annotations we add have already been properly
-declared, otherwise an exception will be raised as soon as <tt class="docutils literal"><span class="pre">add()</span></tt> is
-called. Let&#8217;s build on the previous example:</p>
+<p>Adding annotations, or any elements for that matter, is done using the
+<tt class="docutils literal"><span class="pre">add()</span></tt> method on the intended parent element. We assume that the annotations
+we add have already been properly declared, otherwise an exception will be
+raised as soon as <tt class="docutils literal"><span class="pre">add()</span></tt> is called. Let&#8217;s build on the previous example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">#First we grab the fourth word, &#39;test&#39;, from the sentence</span>
 <span class="n">word</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
@@ -347,9 +534,9 @@ called. Let&#8217;s build on the previous example:</p>
 <p>Note that in the above examples, the <tt class="docutils literal"><span class="pre">add()</span></tt> method takes a class as first
 argument, and subsequently takes keyword arguments that will be passed to the
 classes&#8217; constructor.</p>
-<p>A second way of using <tt class="docutils literal"><span class="pre">add()</span></tt> is by simply passing a child element and
-constructing it prior to adding. The following is equivalent to the above
-example:</p>
+<p>A second way of using <tt class="docutils literal"><span class="pre">add()</span></tt> is by simply passing a fully instantiated child
+element, thus constructing it prior to adding. The following is equivalent to the
+above example, as the previous method is merely a shortcut for convenience:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">#First we grab the fourth word, &#39;test&#39;, from the sentence</span>
 <span class="n">word</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
@@ -360,12 +547,15 @@ example:</p>
 <span class="n">lemma</span><span class="o">.</span><span class="n">add</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">LemmaAnnotation</span><span class="p">(</span><span class="n">doc</span> <span class="p">,</span> <span class="n">cls</span><span class="o">=</span><span class="s">&#39;test&#39;</span><span class="p">)</span> <span class="p">)</span>
 </pre></div>
 </div>
-<p>The add method always returns that which was added.</p>
-<p>In the above example we first instantiate a PosAnnotatation and a
-LemmaAnnotation. Instantiation of any element follows the following pattern:</p>
+<p>The <tt class="docutils literal"><span class="pre">add()</span></tt> method always returns that which was added, allowing it to be chained.</p>
+<p>In the above example we first explicitly instantiate a <tt class="docutils literal"><span class="pre">folia.PosAnnotation</span></tt>
+and a <tt class="docutils literal"><span class="pre">folia.LemmaAnnotation</span></tt>. Instantiation of any FoLiA element (always
+Python class subclassed off <tt class="docutils literal"><span class="pre">folia.AbstractElement</span></tt>) follows the following
+pattern:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">Class</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="o">*</span><span class="n">children</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Note that the document has to be passed explicitly as first argument to the constructor.</p>
 <p>The common attributes are set using equally named keyword arguments:</p>
 <blockquote>
 <div><ul class="simple">
@@ -375,16 +565,20 @@ LemmaAnnotation. Instantiation of any element follows the following pattern:</p>
 <li><tt class="docutils literal"><span class="pre">annotator=</span></tt></li>
 <li><tt class="docutils literal"><span class="pre">annotatortype=</span></tt></li>
 <li><tt class="docutils literal"><span class="pre">confidence=</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">src=</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">speaker=</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">begintime=</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">endtime=</span></tt></li>
 </ul>
 </div></blockquote>
 <p>Not all attributes are allowed for all elements, and certain attributes are
-required for certain elements. ValueError exceptions will be raised when these
+required for certain elements. <tt class="docutils literal"><span class="pre">ValueError</span></tt> exceptions will be raised when these
 constraints are not met.</p>
 <p>Instead of setting <tt class="docutils literal"><span class="pre">id</span></tt>. you can also set the keyword argument
 <tt class="docutils literal"><span class="pre">generate_id_in</span></tt> and pass it another element, an ID will be automatically
 generated, based on the ID of the element passed. When you use the first method
-of appending, instatation with <tt class="docutils literal"><span class="pre">generate_id_in</span></tt> will take place automatically
-behind the screens when applicable and when <tt class="docutils literal"><span class="pre">id</span></tt> is not explicitly set.</p>
+of adding elements, instantiation with <tt class="docutils literal"><span class="pre">generate_id_in</span></tt> will take place automatically
+behind the scenes when applicable and when <tt class="docutils literal"><span class="pre">id</span></tt> is not explicitly set.</p>
 <p>Any extra non-keyword arguments should be FoLiA elements and will be appended
 as the contents of the element, i.e. the children or subelements. Instead of
 using non-keyword arguments, you can also use the keyword argument <tt class="docutils literal"><span class="pre">content</span></tt>
@@ -453,128 +647,145 @@ layer.add(
 )
 </pre></div>
 </div>
-<p><strong>Advanced Note</strong>:</p>
-<p>The lower-level <tt class="docutils literal"><span class="pre">append()</span></tt> method would have had the same effect in the above syntax tree sample.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The lower-level <tt class="docutils literal"><span class="pre">append()</span></tt> method would have had the same effect in the above syntax tree sample.</p>
+</div>
+</div>
+<div class="section" id="deleting-annotation">
+<h3>Deleting annotation<a class="headerlink" href="#deleting-annotation" title="Permalink to this headline">¶</a></h3>
+<p>Any element can be deleted by calling the <tt class="docutils literal"><span class="pre">remove()</span></tt> method of its parent. Suppose we want to delete <tt class="docutils literal"><span class="pre">word</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">word</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="copying-annotations">
+<h3>Copying annotations<a class="headerlink" href="#copying-annotations" title="Permalink to this headline">¶</a></h3>
+<p>A <em>deep copy</em> can be made of any element by calling its <tt class="docutils literal"><span class="pre">copy()</span></tt> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">word2</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The copy will be without parent and document. If you intend to associate a copy with a new document, then copy as follows instead:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">word2</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">newdoc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you intend to attach the copy somewhere in the same document, you may want to add a suffix for any identifiers in its scope, since duplicate identifiers are not allowed and would raise an exception. This can be specified as the second argument:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">word2</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="s">&quot;.copy&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="searching-in-a-folia-document">
 <h2>Searching in a FoLiA document<a class="headerlink" href="#searching-in-a-folia-document" title="Permalink to this headline">¶</a></h2>
-<p>If you have loaded a FoLiA document into memory, there are several ways to
-search in it. Iteration over any FoLiA element will iterate over all its
-children. As already discussed, you can of course loop over any annotation
-element using <tt class="docutils literal"><span class="pre">select()</span></tt>, <tt class="docutils literal"><span class="pre">annotation()</span></tt> and <tt class="docutils literal"><span class="pre">annotations()</span></tt>.
+<p>If you have loaded a FoLiA document into memory, you may want to search for a
+particular annotations. You can of course loop over all structural and
+annotation elements using <tt class="docutils literal"><span class="pre">select()</span></tt>, <tt class="docutils literal"><span class="pre">annotation()</span></tt> and <tt class="docutils literal"><span class="pre">annotations()</span></tt>.
 Additionally, <tt class="docutils literal"><span class="pre">Word.findspans()</span></tt> and <tt class="docutils literal"><span class="pre">AbstractAnnotationLayer.findspan()</span></tt>
 are useful methods of finding span annotations covering particular words,
 whereas <tt class="docutils literal"><span class="pre">AbstractSpanAnnotation.wrefs()</span></tt> does the reverse and finds the words
 for a given span annotation element. In addition to these main methods of
-navigation and selection, there are several more high-level functions available
-for searching.</p>
-<p>For this we introduce the <tt class="docutils literal"><span class="pre">folia.Pattern</span></tt> class. This class describes a
-pattern over words to be searched for. The <tt class="docutils literal"><span class="pre">Document.findwords()</span></tt> method can
-subsequently be called with this pattern, and it will return all the words that
-match. An example will best illustrate this, first a trivial example of
-searching for one word:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;----&quot;</span><span class="p">)</span>
+navigation and selection, there is higher-level function available for
+searching, this uses the <strong>FoLiA Query Language</strong> (FQL) or the <strong>Corpus Query
+Language</strong> (CQL).</p>
+<p>These two languages are part of separate libraries that need to be imported:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pynlpl.formats</span> <span class="kn">import</span> <span class="n">fql</span><span class="p">,</span> <span class="n">cql</span>
 </pre></div>
 </div>
-<p>The same can be done for a sequence:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;big&#39;</span><span class="p">,</span> <span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;----&quot;</span><span class="p">)</span>
+<div class="section" id="corpus-query-language-cql">
+<h3>Corpus Query Language (CQL)<a class="headerlink" href="#corpus-query-language-cql" title="Permalink to this headline">¶</a></h3>
+<p>CQL is the easier-language of the two and most suitable for corpus searching.
+It is, however, less flexible than FQL, which is designed specifically for
+FoLiA and can not just query, but also manipulate FoLiA documents in great
+detail.</p>
+<p>CQL was developed for the <a class="reference external" href="http://www.ims.uni-stuttgart.de/forschung/projekte/CorpusWorkbench.html">IMS Corpus Workbench</a>,
+at Stuttgart Univeristy, and is implemented in Sketch Engine, who provide good
+<a class="reference external" href="http://www.sketchengine.co.uk/documentation/wiki/SkE/CorpusQuerying">CQL documentation</a>.</p>
+<p>CQL has to be converted to FQL first, which is then executed on the given document. This is a simple example querying for the word &#8220;house&#8221;:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">doc</span> <span class="o">=</span> <span class="n">folia</span><span class="o">.</span><span class="n">Document</span><span class="p">(</span><span class="nb">file</span><span class="o">=</span><span class="s">&quot;/path/to/some/document.folia.xml&quot;</span><span class="p">)</span>
+<span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="n">cql</span><span class="o">.</span><span class="n">cql2fql</span><span class="p">(</span><span class="s">&#39;&quot;house&quot;&#39;</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="p">)</span> <span class="c">#these will be folia.Word instances (all matching house)</span>
 </pre></div>
 </div>
-<p>The boolean value <tt class="docutils literal"><span class="pre">True</span></tt> acts as a wildcard, matching any word:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="bp">True</span><span class="p">,</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;----&quot;</span><span class="p">)</span>
+<p>Multiple words can be queried:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="n">cql</span><span class="o">.</span><span class="n">cql2fql</span><span class="p">(</span><span class="s">&#39;&quot;the&quot; &quot;big&quot; &quot;house&quot;&#39;</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">word1</span><span class="p">,</span><span class="n">word2</span><span class="p">,</span><span class="n">word3</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">word1</span><span class="p">,</span> <span class="n">word2</span><span class="p">,</span><span class="n">word3</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Alternatively, and more constraning, you may also specify a tuple of alternatives:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,(</span><span class="s">&#39;big&#39;</span><span class="p">,</span><span class="s">&#39;small&#39;</span><span class="p">),</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;----&quot;</span><span class="p">)</span>
+<p>Queries may contain wildcard expressions to match multiple text patterns. Gaps can be specified using []. The following will match any three word combination starting with the and ending with something that starts with house. It will thus match things like &#8220;the big house&#8221; or &#8220;the small household&#8221;:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="n">cql</span><span class="o">.</span><span class="n">cql2fql</span><span class="p">(</span><span class="s">&#39;&quot;the&quot; [] &quot;house.*&quot;&#39;</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">word1</span><span class="p">,</span><span class="n">word2</span><span class="p">,</span><span class="n">word3</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="o">...</span>
 </pre></div>
 </div>
-<p>Or even a regular expression using the <tt class="docutils literal"><span class="pre">folia.RegExp</span></tt> class:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">RegExp</span><span class="p">(</span><span class="s">&#39;b?g&#39;</span><span class="p">),</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;----&quot;</span><span class="p">)</span>
+<p>We can make the gap optional with a question mark, it can be lenghtened with + or * , like regular expressions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="n">cql</span><span class="o">.</span><span class="n">cql2fql</span><span class="p">(</span><span class="s">&#39;&quot;the&quot; []? &quot;house.*&quot;&#39;</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;We matched &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">match</span><span class="p">),</span> <span class="s">&quot; words&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Rather than searching on the text content of the words, you can search on the
-classes of any kind of token annotation using the keyword argument
-<tt class="docutils literal"><span class="pre">matchannotation=</span></tt>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;det&#39;</span><span class="p">,</span><span class="s">&#39;adj&#39;</span><span class="p">,</span><span class="s">&#39;noun&#39;</span><span class="p">,</span><span class="n">matchannotation</span><span class="o">=</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span> <span class="p">)</span> <span class="p">):</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;----&quot;</span><span class="p">)</span>
+<p>Querying is not limited to text, but all of FoLiA&#8217;s annotations can be used. To force our gap consist of one or more adjectives, we do:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="n">cql</span><span class="o">.</span><span class="n">cql2fql</span><span class="p">(</span><span class="s">&#39;&quot;the&quot; [ pos = &quot;a&quot; ]+ &quot;house.*&quot;&#39;</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="o">...</span>
 </pre></div>
 </div>
-<p>The set can be restricted by adding the additional keyword argument
-<tt class="docutils literal"><span class="pre">matchannotationset=</span></tt>. Case sensitivity, by default disabled, can be enabled by setting <tt class="docutils literal"><span class="pre">casesensitive=True</span></tt>.</p>
-<p>Things become even more interesting when different Patterns are combined. A
-match will have to satisfy all patterns:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;house&#39;</span><span class="p">),</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;det&#39;</span><span class="p">,</span><span class="s">&#39;adj&#39;</span><span class="p">,</span><span class="s">&#39;noun&#39;</span><span class="p">,</span><span class="n">matchannotation</span><span class="o">=</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span> <span class="p">)</span> <span class="p">):</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">word</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;----&quot;</span><span class="p">)</span>
+<p>The original CQL attribute here is <tt class="docutils literal"><span class="pre">tag</span></tt> rather than <tt class="docutils literal"><span class="pre">pos</span></tt>, this can be used too. In addition, all FoLiA element types can be used!  Just use their FoLiA tagname.</p>
+<p>Consult the CQL documentation for more. Do note that CQL is very word/token centered, for searching other types of elements, use FQL instead.</p>
+</div>
+<div class="section" id="folia-query-language-fql">
+<h3>FoLiA Query Language (FQL)<a class="headerlink" href="#folia-query-language-fql" title="Permalink to this headline">¶</a></h3>
+<p>FQL is documented <a class="reference external" href="https://github.com/proycon/foliadocserve/blob/master/README.rst">here</a>, a full
+overview is beyond the scope of this documentation. We will just introduce some
+basic selection queries so you can develop an initial impression of the language&#8217;s abilities.</p>
+<p>Selecting a word with a particular text is done as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="s">&#39;SELECT w WHERE text = &quot;house&quot;&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>  <span class="c">#this will be an instance of folia.Word</span>
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">findwords()</span></tt> method can be instructed to also return left and/or right
-context for any match. This is done using the <tt class="docutils literal"><span class="pre">leftcontext=</span></tt> and
-<tt class="docutils literal"><span class="pre">rightcontext=</span></tt> keyword arguments, their values being an integer number of
-the number of context words to include in each match. For instance, we can look
-for the word house and return its immediate neighbours as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">,</span> <span class="n">leftcontext</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rightcontext</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;----&quot;</span><span class="p">)</span>
+<p>Regular expression matching can be done using the <tt class="docutils literal"><span class="pre">MATCHES</span></tt> operator:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="s">&#39;SELECT w WHERE text MATCHES &quot;^house.*$&quot;&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>A match here would thus always consist of three words instead of just one.</p>
-<p>Last, <tt class="docutils literal"><span class="pre">Pattern</span></tt> also has support for variable-width gaps, the asterisk symbol
-has special meaning to this end:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;*&#39;</span><span class="p">,</span><span class="s">&#39;house&#39;</span><span class="p">)</span> <span class="p">):</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;----&quot;</span><span class="p">)</span>
+<p>The classes of other annotation types can be easily queried as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>query = fql.Query(&#39;SELECT w WHERE :pos = &quot;v&quot;&#39; AND :lemma = &quot;be&quot;&#39;)
+for word in query(doc):
+    print(word)
 </pre></div>
 </div>
-<p>Unlike the pattern <tt class="docutils literal"><span class="pre">('a',True,'house')</span></tt>, which by definition is a pattern of
-three words, the pattern in the example above will match gaps of any length (up
-to a certain built-in maximum), so this might include matches such as <em>a very
-nice house</em>.</p>
-<p>Some remarks on these methods of querying are in order. These searches are
-pretty exhaustive and are done by simply iterating over all the words in the
-document. The entire document is loaded in memory and no special indices are involved.
-For single documents this is okay, but when iterating over a corpus of
-thousands of documents, this method is too slow, especially for real-time
-applications. For huge corpora, clever indexing and database management systems
-will be required. This however is beyond the scope of this library.</p>
-<div class="section" id="folia-query-language">
-<h3>FoLiA Query Language<a class="headerlink" href="#folia-query-language" title="Permalink to this headline">¶</a></h3>
-<p>Advanced querying is possible through the <tt class="docutils literal"><span class="pre">fql</span></tt> library, this implements the
-FoLiA Query Language on top of the FoLiA library and allows complex queries,
-not just for retrieval but also to modify the document. Import the library as
-follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pynlpl.formats</span> <span class="kn">import</span> <span class="n">fql</span>
+<p>You can constrain your queries to a particular target selection using the <tt class="docutils literal"><span class="pre">FOR</span></tt> keyword:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="s">&#39;SELECT w WHERE text MATCHES &quot;^house.*$&quot; FOR s WHERE text CONTAINS &quot;sell&quot;&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Then, you can query it as in the following example:</p>
-<div class="highlight-python"><div class="highlight"><pre>doc = folia.Document(file=&quot;/some/document.folia.xml&quot;)
-query = fql.Query(&#39;SELECT pos FOR w WHERE text = &quot;fly&quot;&#39;)
-for pos in query(doc)
-    print(pos.cls)
+<p>This construction also allows you to select the actual annotations. To select all people (a named entity) for words that are not John:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="s">&#39;SELECT entity WHERE class = &quot;person&quot; FOR w WHERE text != &quot;John&quot;&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span> <span class="c">#this will be an instance of folia.Entity</span>
 </pre></div>
 </div>
-<p>The syntax of the FoLiA Query Language is documented here at <a class="reference external" href="https://github.com/proycon/foliadocserve/blob/master/README.rst">https://github.com/proycon/foliadocserve/blob/master/README.rst</a> .</p>
+<p><strong>FOR</strong> statement may be chained, and Explicit IDs can be passed using the <tt class="docutils literal"><span class="pre">ID</span></tt> keyword:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="s">&#39;SELECT entity WHERE class = &quot;person&quot; FOR w WHERE text != &quot;John&quot; FOR div ID &quot;section.21&quot;&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Sets are specified using the <strong>OF</strong> keyword, it can be omitted if there is only one for the annotation type, but will be required otherwise:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">query</span> <span class="o">=</span> <span class="n">fql</span><span class="o">.</span><span class="n">Query</span><span class="p">(</span><span class="s">&#39;SELECT su OF &quot;http://some/syntax/set&quot; WHERE class = &quot;np&quot;&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">su</span> <span class="ow">in</span> <span class="n">query</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">su</span><span class="p">)</span> <span class="c">#this will be an instance of folia.SyntacticUnit</span>
+</pre></div>
+</div>
+<p>We have just covered the <strong>SELECT</strong> keyword, FQL has other keywords for manipulating documents, such as <strong>EDIT</strong>, <strong>ADD</strong>, <strong>APPEND</strong> and <strong>PREPEND</strong>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Consult the FQL documentation at <a class="reference external" href="https://github.com/proycon/foliadocserve/blob/master/README.rst">https://github.com/proycon/foliadocserve/blob/master/README.rst</a> for further documentation on the language.</p>
+</div>
 </div>
 <div class="section" id="streaming-reader">
 <h3>Streaming Reader<a class="headerlink" href="#streaming-reader" title="Permalink to this headline">¶</a></h3>
@@ -591,16 +802,135 @@ want:</p>
     <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The streaming reader also has a <tt class="docutils literal"><span class="pre">findwords()</span></tt> implementation that works the same as the
-one in <tt class="docutils literal"><span class="pre">Document</span></tt>, except that directly retrieving words in context is not possible
-using the reader:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">reader</span> <span class="o">=</span> <span class="n">folia</span><span class="o">.</span><span class="n">Reader</span><span class="p">(</span><span class="s">&quot;my.folia.xml&quot;</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Word</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">reader</span><span class="o">.</span><span class="n">findwords</span><span class="p">(</span> <span class="n">folia</span><span class="o">.</span><span class="n">Pattern</span><span class="p">(</span><span class="s">&#39;house&#39;</span><span class="p">)):</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">match</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;----&quot;</span><span class="p">)</span>
+</div>
+</div>
+<div class="section" id="higher-order-annotations">
+<h2>Higher-Order Annotations<a class="headerlink" href="#higher-order-annotations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="text-markup">
+<h3>Text Markup<a class="headerlink" href="#text-markup" title="Permalink to this headline">¶</a></h3>
+<p>FoLiA has a number of text markup elements, these appear within the
+<tt class="docutils literal"><span class="pre">folia.TextContent</span></tt> (<tt class="docutils literal"><span class="pre">t</span></tt>) element, iterating over the element of a
+<tt class="docutils literal"><span class="pre">folia.TextContent</span></tt> element will first and foremost produce strings, but also
+uncover these markup elements when present. The following markup types exists:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">folia.TextMarkupGap</span></tt> (<tt class="docutils literal"><span class="pre">t-gap</span></tt>) - For marking gaps in the text</li>
+<li><tt class="docutils literal"><span class="pre">folia.TextMarkupString</span></tt> (<tt class="docutils literal"><span class="pre">t-str</span></tt>) - For marking arbitrary substring</li>
+<li><tt class="docutils literal"><span class="pre">folia.TextMarkupStyle</span></tt> (<tt class="docutils literal"><span class="pre">t-style</span></tt>) - For marking style (such as bold, italics, as dictated by the set used)</li>
+<li><tt class="docutils literal"><span class="pre">folia.TextMarkupCorrection</span></tt> (<tt class="docutils literal"><span class="pre">t-correction</span></tt>) - Simple in-line corrections</li>
+<li><tt class="docutils literal"><span class="pre">folia.TextMarkupError</span></tt> (<tt class="docutils literal"><span class="pre">t-error</span></tt>) -  For marking errors</li>
+</ul>
+</div>
+<div class="section" id="features">
+<h3>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h3>
+<p>Features allow a second-order annotation by adding the abilities to assign
+properties and values to any of the existing annotation elements. They follow
+the set/class paradigm by adding the notion of a subset and class relative to
+this subset. The <tt class="docutils literal"><span class="pre">feat()</span></tt> method provides a shortcut that can be used on any
+annotation element to obtain the class of the feature, given a subset. To
+illustrate the concept, take a look at part of speech annotation with some
+features:</p>
+<div class="highlight-python"><div class="highlight"><pre>pos = word.annotation(folia.PosAnnotation)
+if pos.cls = &quot;n&quot;:
+    if pos.feat(&#39;number&#39;) == &#39;plural&#39;:
+        print(&quot;We have a plural noun!&quot;)
+    elif pos.feat(&#39;number&#39;) == &#39;plural&#39;:
+        print(&quot;We have a singular noun!&quot;)
 </pre></div>
 </div>
+<p>The <tt class="docutils literal"><span class="pre">feat()</span></tt> method will return an exception when the feature does not exist.
+Note that the actual subset and class values are defined by the set and not
+FoLiA itself! They are therefore fictitious in the above example.</p>
+<p>The Python class for features is <tt class="docutils literal"><span class="pre">folia.Feature</span></tt>, in the following example we
+add a feature:</p>
+<div class="highlight-python"><div class="highlight"><pre>pos.add(folia.Feature, subset=&quot;gender&quot;, class=&quot;f&quot;)
+</pre></div>
+</div>
+<p>Although FoLiA does not define any sets nor subsets. Some annotation types do
+come with some associated subsets, their use is never mandatory. The advantage
+is that these associated subsets can be directly used as an XML attribute in
+the FoLiA document. The FoLiA library provides extra classes, iall subclassed
+off <tt class="docutils literal"><span class="pre">folia.Feature</span></tt> for these:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">folia.SynsetFeature</span></tt>, for use with <tt class="docutils literal"><span class="pre">folia.SenseAnnotation</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">folia.ActorFeature</span></tt>, for use with <tt class="docutils literal"><span class="pre">folia.Event</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">folia.BegindatetimeFeature</span></tt>, for use with <tt class="docutils literal"><span class="pre">folia.Event</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">folia.EnddatetimeFeature</span></tt>, for use with <tt class="docutils literal"><span class="pre">folia.Event</span></tt></li>
+</ul>
+</div>
+<div class="section" id="alternatives">
+<h3>Alternatives<a class="headerlink" href="#alternatives" title="Permalink to this headline">¶</a></h3>
+<p>A key feature of FoLiA is its ability to make explicit alternative annotations,
+for token annotations, the <tt class="docutils literal"><span class="pre">folia.Alternative</span></tt> (<tt class="docutils literal"><span class="pre">alt</span></tt>) class is used to
+this end. Alternative annotations are embedded in this structure. This implies
+the annotation is not authoritative, but is merely an alternative to the actual
+annotation (if any). Alternatives may typically occur in larger numbers,
+representing a distribution each with a confidence value (not mandatory). Each
+alternative is wrapped in its own <tt class="docutils literal"><span class="pre">folia.Alternative</span></tt> element, as multiple
+elements inside a single alternative are considered dependent and part of the
+same alternative. Combining multiple annotation in one alternative makes sense
+for mixed annotation types, where for instance a pos tag alternative is tied to
+a particular lemma:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">alt</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Alternative</span><span class="p">)</span>
+<span class="n">alt</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span><span class="p">,</span> <span class="nb">set</span><span class="o">=</span><span class="s">&#39;brown-tagset&#39;</span><span class="p">,</span><span class="n">cls</span><span class="o">=</span><span class="s">&#39;n&#39;</span><span class="p">,</span><span class="n">confidence</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">alt</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Alternative</span><span class="p">)</span>   <span class="c">#note that we reassign the variable!</span>
+<span class="n">alt</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span><span class="p">,</span> <span class="nb">set</span><span class="o">=</span><span class="s">&#39;brown-tagset&#39;</span><span class="p">,</span><span class="n">cls</span><span class="o">=</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="n">confidence</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">alt</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Alternative</span><span class="p">)</span>
+<span class="n">alt</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span><span class="p">,</span> <span class="nb">set</span><span class="o">=</span><span class="s">&#39;brown-tagset&#39;</span><span class="p">,</span><span class="n">cls</span><span class="o">=</span><span class="s">&#39;v&#39;</span><span class="p">,</span><span class="n">confidence</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Span annotation elements have a different mechanism for alternatives, for those
+the entire annotation layer is embedded in a <tt class="docutils literal"><span class="pre">folia.AlternativeLayers</span></tt>
+element. This element should be repeated for every type, unless the layers it
+describeds are dependent on it eachother:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">alt</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">AlternativeLayers</span><span class="p">)</span>
+<span class="n">layer</span> <span class="o">=</span> <span class="n">alt</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Entities</span><span class="p">)</span>
+<span class="n">entity</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Entity</span><span class="p">,</span> <span class="n">word1</span><span class="p">,</span><span class="n">word2</span><span class="p">,</span><span class="n">cls</span><span class="o">=</span><span class="s">&quot;person&quot;</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Because the alternative annotations are <strong>non-authoritative</strong>, normal selection
+methods such as <tt class="docutils literal"><span class="pre">select()</span></tt> and <tt class="docutils literal"><span class="pre">annotations()</span></tt> will never yield them,
+unless explicitly told to do so. For this reason, there is an
+<tt class="docutils literal"><span class="pre">alternatives()</span></tt> method on structure elements, for the first category of alternatives.</p>
+</div>
+<div class="section" id="corrections">
+<h3>Corrections<a class="headerlink" href="#corrections" title="Permalink to this headline">¶</a></h3>
+<p>Corrections are one of the most complex annotation types in FoLiA. Corrections
+can be applied not just over text, but over any type of structure annotation,
+token annotation or span annotation. Corrections explicitly preserve the
+original, and recursively so if corrections are done over other corrections.</p>
+<p>Despite their complexity, the library treats correction transparently. Whenever
+you query for a particular element, and it is part of a correction, you get the
+corrected version rather than the original. The original is always <em>non-authoritative</em>
+and normal selection methods will ignore it.</p>
+<p>If you want to deal with correction, you have to explicitly get a
+<tt class="docutils literal"><span class="pre">folia.Correction</span></tt> element. If an element is part of a correction, its
+<tt class="docutils literal"><span class="pre">incorrection()</span></tt> method will give the correction element, if not, it will
+return <tt class="docutils literal"><span class="pre">None</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pos</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">annotation</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span><span class="p">)</span>
+<span class="n">correction</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">incorrection</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">correction</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">correction</span><span class="o">.</span><span class="n">hasoriginal</span><span class="p">():</span>
+        <span class="n">originalpos</span> <span class="o">=</span> <span class="n">correction</span><span class="o">.</span><span class="n">original</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c">#assuming it&#39;s the only element as is customary</span>
+        <span class="c">#originalpos will be an instance of folia.PosAnnotation</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;The original pos was&quot;</span><span class="p">,</span> <span class="n">originalpos</span><span class="o">.</span><span class="n">cls</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Corrections themselves carry a class too, indicating the type of correction (defined by the set used and not by FoLiA).</p>
+<p>Besides <tt class="docutils literal"><span class="pre">original()</span></tt>, corrections distinguish three other types, <tt class="docutils literal"><span class="pre">new()</span></tt> (the corrected version), <tt class="docutils literal"><span class="pre">current()</span></tt> (the current uncorrected version) and <tt class="docutils literal"><span class="pre">suggestions(i)</span></tt> (a suggestion for correction), the former two and latter two usually form pairs, <tt class="docutils literal"><span class="pre">current()</span></tt> and <tt class="docutils literal"><span class="pre">new()</span></tt> can never be used together. Of <tt class="docutils literal"><span class="pre">suggestions(i)</span></tt> there may be multiple, hence the index argument. These return, respectively, instances of <tt class="docutils literal"><span class="pre">folia.Original</span></tt>, <tt class="docutils literal"><span class="pre">folia.New</span></tt>, <tt class="docutils literal"><span class="pre">folia.Current</span></tt> and <tt class="docutils literal"><span class="pre">folia.Suggestion</span></tt>.</p>
+<p>Adding a correction can be done explicitly:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">wrongpos</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">annotation</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span><span class="p">)</span>
+<span class="n">word</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Correction</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">cls</span><span class="o">=</span><span class="s">&quot;n&quot;</span><span class="p">))</span> <span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Original</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">wrongpos</span><span class="p">),</span> <span class="n">cls</span><span class="o">=</span><span class="s">&quot;misclassified&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let&#8217;s settle for a suggestion rather than an actual correction:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">wrongpos</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">annotation</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span><span class="p">)</span>
+<span class="n">word</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">folia</span><span class="o">.</span><span class="n">Correction</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">Suggestion</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">folia</span><span class="o">.</span><span class="n">PosAnnotation</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">cls</span><span class="o">=</span><span class="s">&quot;n&quot;</span><span class="p">)),</span> <span class="n">cls</span><span class="o">=</span><span class="s">&quot;misclassified&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In some instances, when correcting text or structural elements, <tt class="docutils literal"><span class="pre">folia.New()</span></tt> may be
+empty, which would correspond to an <em>deletion</em>. Similarly, <tt class="docutils literal"><span class="pre">folia.Original()</span></tt> may be
+empty, corresponding to an <em>insertion</em>.</p>
+<p>The use of <tt class="docutils literal"><span class="pre">folia.Current()</span></tt> is reserved for use with structure elements, such as words, in combination with suggestions. The structure elements then have to be embedded in <tt class="docutils literal"><span class="pre">folia.Current()</span></tt>. This situation arises for instance when making suggestions for a merge or split.</p>
 </div>
 </div>
 <div class="section" id="module-pynlpl.formats.folia">
@@ -799,6 +1129,11 @@ using the reader:</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="pynlpl.formats.folia.AbstractElement.XLINK">
+<tt class="descname">XLINK</tt><em class="property"> = False</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.XLINK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="pynlpl.formats.folia.AbstractElement.XMLTAG">
 <tt class="descname">XMLTAG</tt><em class="property"> = None</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -824,7 +1159,7 @@ using the reader:</p>
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.addtoindex">
-<tt class="descname">addtoindex</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.addtoindex" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">addtoindex</tt><big>(</big><em>norecurse=[]</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.addtoindex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Makes sure this element (and all subelements), are properly added to the index</p>
 </dd></dl>
 
@@ -874,6 +1209,12 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 </dd></dl>
 
 <dl class="method">
+<dt id="pynlpl.formats.folia.AbstractElement.context">
+<tt class="descname">context</tt><big>(</big><em>size</em>, <em>placeholder=None</em>, <em>scope=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns this word in context, {size} words to the left, the current word, and {size} words to the right</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.copy">
 <tt class="descname">copy</tt><big>(</big><em>newdoc=None</em>, <em>idsuffix=''</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a deep copy of this element and all its children. If idsuffix is a string, if set to True, a random idsuffix will be generated including a random 32-bit hash</p>
@@ -917,6 +1258,12 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 <dt id="pynlpl.formats.folia.AbstractElement.findreplaceables">
 <em class="property">classmethod </em><tt class="descname">findreplaceables</tt><big>(</big><em>Class</em>, <em>parent</em>, <em>set=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.findreplaceables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find replaceable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control. Mostly for internal use.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.AbstractElement.getindex">
+<tt class="descname">getindex</tt><big>(</big><em>child</em>, <em>recursive=True</em>, <em>ignore=True</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.getindex" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the index at which an element occurs, recursive by default!</p>
 </dd></dl>
 
 <dl class="method">
@@ -983,6 +1330,26 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="pynlpl.formats.folia.AbstractElement.leftcontext">
+<tt class="descname">leftcontext</tt><big>(</big><em>size</em>, <em>placeholder=None</em>, <em>scope=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.leftcontext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the left context for an element, as a list. This method crosses sentence/paragraph boundaries by default, which can be restricted by setting scope</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.AbstractElement.next">
+<tt class="descname">next</tt><big>(</big><em>Class=True</em>, <em>scope=True</em>, <em>reverse=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the next element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found. Non-authoritative elements are never returned.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">Class</span></tt>: The class to select; any python class subclassed off <cite>&#8216;AbstractElement`</cite>, may also be a tuple of multiple classes. Set to <tt class="docutils literal"><span class="pre">True</span></tt> to constrain to the same class as that of the current instance, set to <tt class="docutils literal"><span class="pre">None</span></tt> to not constrain at all</li>
+<li><tt class="docutils literal"><span class="pre">scope</span></tt>: A list of classes which are never crossed looking for a next element. Set to <tt class="docutils literal"><span class="pre">True</span></tt> to constrain to a default list of structure elements (Sentence,Paragraph,Division,Event, ListItem,Caption), set to <tt class="docutils literal"><span class="pre">None</span></tt> to not constrain at all.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.originaltext">
 <tt class="descname">originaltext</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.originaltext" title="Permalink to this definition">¶</a></dt>
 <dd><p>Alias for retrieving the original uncorrect text</p>
@@ -1012,9 +1379,17 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 </dd></dl>
 
 <dl class="method">
-<dt id="pynlpl.formats.folia.AbstractElement.recomputevalue">
-<tt class="descname">recomputevalue</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.recomputevalue" title="Permalink to this definition">¶</a></dt>
-<dd><p>Internal method, recompute textual value. Only for elements that are a TEXTCONTAINER</p>
+<dt id="pynlpl.formats.folia.AbstractElement.previous">
+<tt class="descname">previous</tt><big>(</big><em>Class=True</em>, <em>scope=True</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.previous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the previous element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found. Non-authoritative elements are never returned.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">Class</span></tt>: The class to select; any python class subclassed off <cite>&#8216;AbstractElement`</cite>. Set to <tt class="docutils literal"><span class="pre">True</span></tt> to constrain to the same class as that of the current instance, set to <tt class="docutils literal"><span class="pre">None</span></tt> to not constrain at all</li>
+<li><tt class="docutils literal"><span class="pre">scope</span></tt>: A list of classes which are never crossed looking for a next element. Set to <tt class="docutils literal"><span class="pre">True</span></tt> to constrain to a default list of structure elements (Sentence,Paragraph,Division,Event, ListItem,Caption), set to <tt class="docutils literal"><span class="pre">None</span></tt> to not constrain at all.</li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="classmethod">
@@ -1048,6 +1423,12 @@ If a <em>class</em> derived from AbstractElement is passed as first argument, an
 <dt id="pynlpl.formats.folia.AbstractElement.resolveword">
 <tt class="descname">resolveword</tt><big>(</big><em>id</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.resolveword" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.AbstractElement.rightcontext">
+<tt class="descname">rightcontext</tt><big>(</big><em>size</em>, <em>placeholder=None</em>, <em>scope=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.rightcontext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the right context for an element, as a list. This method crosses sentence/paragraph boundaries by default, which can be restricted by setting scope</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.select">
@@ -1146,6 +1527,12 @@ not found.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pynlpl.formats.folia.AbstractElement.updatetext">
+<tt class="descname">updatetext</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.updatetext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal method, recompute textual value. Only for elements that are a TEXTCONTAINER</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pynlpl.formats.folia.AbstractElement.xml">
 <tt class="descname">xml</tt><big>(</big><em>attribs=None</em>, <em>elements=None</em>, <em>skipchildren=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractElement.xml" title="Permalink to this definition">¶</a></dt>
 <dd><p>Serialises the FoLiA element to XML, by returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead.</p>
@@ -1194,6 +1581,11 @@ not found.</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="pynlpl.formats.folia.AbstractSpanAnnotation.addtoindex">
+<tt class="descname">addtoindex</tt><big>(</big><em>norecurse=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractSpanAnnotation.addtoindex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="pynlpl.formats.folia.AbstractSpanAnnotation.annotation">
 <tt class="descname">annotation</tt><big>(</big><em>type</em>, <em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractSpanAnnotation.annotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Will return a <strong>single</strong> annotation (even if there are multiple). Raises a <tt class="docutils literal"><span class="pre">NoSuchAnnotation</span></tt> exception if none was found</p>
@@ -1203,6 +1595,12 @@ not found.</p>
 <dt id="pynlpl.formats.folia.AbstractSpanAnnotation.append">
 <tt class="descname">append</tt><big>(</big><em>child</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractSpanAnnotation.append" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.AbstractSpanAnnotation.copychildren">
+<tt class="descname">copychildren</tt><big>(</big><em>newdoc=None</em>, <em>idsuffix=''</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractSpanAnnotation.copychildren" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator creating a deep copy of the children of this element. If idsuffix is a string, if set to True, a random idsuffix will be generated including a random 32-bit hash</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractSpanAnnotation.hasannotation">
@@ -1413,6 +1811,11 @@ not found.</p>
 <tt class="descname">TEXTDELIMITER</tt><em class="property"> = ''</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractTextMarkup.TEXTDELIMITER" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="attribute">
+<dt id="pynlpl.formats.folia.AbstractTextMarkup.XLINK">
+<tt class="descname">XLINK</tt><em class="property"> = True</em><a class="headerlink" href="#pynlpl.formats.folia.AbstractTextMarkup.XLINK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractTextMarkup.json">
 <tt class="descname">json</tt><big>(</big><em>attribs=None</em>, <em>recurse=True</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractTextMarkup.json" title="Permalink to this definition">¶</a></dt>
@@ -1434,9 +1837,15 @@ not found.</p>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="pynlpl.formats.folia.AbstractTextMarkup.text">
-<tt class="descname">text</tt><big>(</big><em>cls='current'</em>, <em>retaintokenisation=False</em>, <em>previousdelimiter=''</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractTextMarkup.text" title="Permalink to this definition">¶</a></dt>
+<dt id="pynlpl.formats.folia.AbstractTextMarkup.settext">
+<tt class="descname">settext</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractTextMarkup.settext" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.AbstractTextMarkup.text">
+<tt class="descname">text</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.AbstractTextMarkup.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain the text (unicode instance)</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.AbstractTextMarkup.xml">
@@ -1562,6 +1971,11 @@ not found.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="pynlpl.formats.folia.Alignment.XLINK">
+<tt class="descname">XLINK</tt><em class="property"> = True</em><a class="headerlink" href="#pynlpl.formats.folia.Alignment.XLINK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="pynlpl.formats.folia.Alignment.XMLTAG">
 <tt class="descname">XMLTAG</tt><em class="property"> = 'alignment'</em><a class="headerlink" href="#pynlpl.formats.folia.Alignment.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1571,24 +1985,9 @@ not found.</p>
 <tt class="descname">json</tt><big>(</big><em>attribs=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Alignment.json" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="classmethod">
-<dt id="pynlpl.formats.folia.Alignment.parsexml">
-<em class="property">classmethod </em><tt class="descname">parsexml</tt><big>(</big><em>Class</em>, <em>node</em>, <em>doc</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Alignment.parsexml" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="classmethod">
-<dt id="pynlpl.formats.folia.Alignment.relaxng">
-<em class="property">classmethod </em><tt class="descname">relaxng</tt><big>(</big><em>includechildren=True</em>, <em>extraattribs=None</em>, <em>extraelements=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Alignment.relaxng" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="method">
 <dt id="pynlpl.formats.folia.Alignment.resolve">
 <tt class="descname">resolve</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Alignment.resolve" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="pynlpl.formats.folia.Alignment.xml">
-<tt class="descname">xml</tt><big>(</big><em>attribs=None</em>, <em>elements=None</em>, <em>skipchildren=False</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Alignment.xml" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2283,19 +2682,19 @@ not found.</p>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.Corpus">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function Corpus.&lt;lambda&gt; at 0x7f9ccd885950&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Corpus</tt><big>(</big><em>corpusdir</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function Corpus.&lt;lambda&gt; at 0x7f4622c7a9d8&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Corpus" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields a Document on each iteration. Suitable for sequential processing.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.CorpusFiles">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function Corpus.&lt;lambda&gt; at 0x7f9ccd885950&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusFiles</tt><big>(</big><em>corpusdir</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function Corpus.&lt;lambda&gt; at 0x7f4622c7a9d8&gt;</em>, <em>ignoreerrors=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusFiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>A corpus of various FoLiA documents. Yields the filenames on each iteration.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pynlpl.formats.folia.CorpusProcessor">
-<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function CorpusProcessor.&lt;lambda&gt; at 0x7f9ccd885b70&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">CorpusProcessor</tt><big>(</big><em>corpusdir</em>, <em>function</em>, <em>threads=None</em>, <em>extension='xml'</em>, <em>restrict_to_collection=''</em>, <em>conditionf=&lt;function CorpusProcessor.&lt;lambda&gt; at 0x7f4622c7abf8&gt;</em>, <em>maxtasksperchild=100</em>, <em>preindex=False</em>, <em>ordered=True</em>, <em>chunksize=1</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.CorpusProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes a corpus of various FoLiA documents using a parallel processing. Calls a user-defined function with the three-tuple (filename, args, kwargs) for each file in the corpus. The user-defined function is itself responsible for instantiating a FoLiA document! args and kwargs, as received by the custom function, are set through the run() method, which yields the result of the custom function on each iteration.</p>
 <dl class="method">
 <dt id="pynlpl.formats.folia.CorpusProcessor.execute">
@@ -2586,7 +2985,7 @@ not found.</p>
 <dd><p>Structure element representing some kind of division. Divisions may be nested at will, and may include almost all kinds of other structure elements.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Division.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Division'&gt;, &lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Head'&gt;, &lt;class 'pynlpl.formats.folia.Paragraph'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.Table'&gt;, &lt;class 'pynlpl.formats.folia.Note'&gt;, &lt;class 'pynlpl.formats.folia.Reference'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Linebreak'&gt;, &lt;class 'pynlpl.formats.folia.Whitespace'&gt;, &lt;class 'pynlpl.formats.folia.Alternative'&gt;, &lt;class 'pynlpl.formats.folia.AlternativeLayers'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.Part'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Division.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Division'&gt;, &lt;class 'pynlpl.formats.folia.Quote'&gt;, &lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Head'&gt;, &lt;class 'pynlpl.formats.folia.Paragraph'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.Table'&gt;, &lt;class 'pynlpl.formats.folia.Note'&gt;, &lt;class 'pynlpl.formats.folia.Reference'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Linebreak'&gt;, &lt;class 'pynlpl.formats.folia.Whitespace'&gt;, &lt;class 'pynlpl.formats.folia.Alternative'&gt;, &lt;class 'pynlpl.formats.folia.AlternativeLayers'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.Part'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Division.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3668,7 +4067,7 @@ annotation element</p>
 <dd><p>Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes).</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Paragraph.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.String'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Linebreak'&gt;, &lt;class 'pynlpl.formats.folia.Whitespace'&gt;, &lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Head'&gt;, &lt;class 'pynlpl.formats.folia.Note'&gt;, &lt;class 'pynlpl.formats.folia.Reference'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;, &lt;class 'pynlpl.formats.folia.Alternative'&gt;, &lt;class 'pynlpl.formats.folia.AlternativeLayers'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.Part'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Paragraph.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Quote'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.String'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Linebreak'&gt;, &lt;class 'pynlpl.formats.folia.Whitespace'&gt;, &lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Head'&gt;, &lt;class 'pynlpl.formats.folia.Note'&gt;, &lt;class 'pynlpl.formats.folia.Reference'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;, &lt;class 'pynlpl.formats.folia.Alternative'&gt;, &lt;class 'pynlpl.formats.folia.AlternativeLayers'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.Part'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Paragraph.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3711,87 +4110,100 @@ annotation element</p>
 <dl class="class">
 <dt id="pynlpl.formats.folia.Pattern">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Pattern</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Pattern" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class describes a pattern over words to be searched for. The <tt class="docutils literal"><span class="pre">Document.findwords()</span></tt> method can subsequently be called with this pattern, and it will return all the words that match. An example will best illustrate this, first a trivial example of searching for one word:</p>
-<div class="highlight-python"><div class="highlight"><pre>for match in doc.findwords( folia.Pattern(&#39;house&#39;) ):
-    for word in match:
-        print word.id
-    print &quot;----&quot;
-</pre></div>
-</div>
-<p>The same can be done for a sequence:</p>
-<div class="highlight-python"><div class="highlight"><pre>for match in doc.findwords( folia.Pattern(&#39;a&#39;,&#39;big&#39;, &#39;house&#39;) ):
-    for word in match:
-        print word.id
-    print &quot;----&quot;
-</pre></div>
-</div>
-<p>The boolean value <tt class="docutils literal"><span class="pre">True</span></tt> acts as a wildcard, matching any word:</p>
-<div class="highlight-python"><div class="highlight"><pre>for match in doc.findwords( folia.Pattern(&#39;a&#39;,True,&#39;house&#39;) ):
-    for word in match:
-        print word.id, word.text()
-    print &quot;----&quot;
-</pre></div>
-</div>
-<p>Alternatively, and more constraning, you may also specify a tuple of alternatives:</p>
-<div class="highlight-python"><div class="highlight"><pre>for match in doc.findwords( folia.Pattern(&#39;a&#39;,(&#39;big&#39;,&#39;small&#39;),&#39;house&#39;) ):
-    for word in match:
-        print word.id, word.text()
-    print &quot;----&quot;
-</pre></div>
-</div>
-<p>Or even a regular expression using the <tt class="docutils literal"><span class="pre">folia.RegExp</span></tt> class:</p>
-<div class="highlight-python"><div class="highlight"><pre>for match in doc.findwords( folia.Pattern(&#39;a&#39;, folia.RegExp(&#39;b?g&#39;),&#39;house&#39;) ):
-    for word in match:
-        print word.id, word.text()
-    print &quot;----&quot;
-</pre></div>
-</div>
-<p>Rather than searching on the text content of the words, you can search on the
+<dd><blockquote>
+<div>This class describes a pattern over words to be searched for. The</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">Document.findwords()</span></tt> method can subsequently be called with this pattern,
+and it will return all the words that match. An example will best illustrate
+this, first a trivial example of searching for one word:</p>
+<div class="highlight-python"><div class="highlight"><pre>    for match in doc.findwords( folia.Pattern(&#39;house&#39;) ):
+        for word in match:
+            print word.id
+        print &quot;----&quot;
+
+The same can be done for a sequence::
+
+    for match in doc.findwords( folia.Pattern(&#39;a&#39;,&#39;big&#39;, &#39;house&#39;) ):
+        for word in match:
+            print word.id
+        print &quot;----&quot;
+
+The boolean value ``True`` acts as a wildcard, matching any word::
+
+    for match in doc.findwords( folia.Pattern(&#39;a&#39;,True,&#39;house&#39;) ):
+        for word in match:
+            print word.id, word.text()
+        print &quot;----&quot;
+
+Alternatively, and more constraning, you may also specify a tuple of alternatives::
+
+
+    for match in doc.findwords( folia.Pattern(&#39;a&#39;,(&#39;big&#39;,&#39;small&#39;),&#39;house&#39;) ):
+        for word in match:
+            print word.id, word.text()
+        print &quot;----&quot;
+
+Or even a regular expression using the ``folia.RegExp`` class::
+
+
+    for match in doc.findwords( folia.Pattern(&#39;a&#39;, folia.RegExp(&#39;b?g&#39;),&#39;house&#39;) ):
+        for word in match:
+            print word.id, word.text()
+        print &quot;----&quot;
+
+
+Rather than searching on the text content of the words, you can search on the
 classes of any kind of token annotation using the keyword argument
-<tt class="docutils literal"><span class="pre">matchannotation=</span></tt>:</p>
-<div class="highlight-python"><div class="highlight"><pre>for match in doc.findwords( folia.Pattern(&#39;det&#39;,&#39;adj&#39;,&#39;noun&#39;,matchannotation=folia.PosAnnotation ) ):
-    for word in match:
-        print word.id, word.text()
-    print &quot;----&quot;
-</pre></div>
-</div>
-<p>The set can be restricted by adding the additional keyword argument
-<tt class="docutils literal"><span class="pre">matchannotationset=</span></tt>. Case sensitivity, by default disabled, can be enabled by setting <tt class="docutils literal"><span class="pre">casesensitive=True</span></tt>.</p>
-<p>Things become even more interesting when different Patterns are combined. A
-match will have to satisfy all patterns:</p>
-<div class="highlight-python"><div class="highlight"><pre>for match in doc.findwords( folia.Pattern(&#39;a&#39;, True, &#39;house&#39;), folia.Pattern(&#39;det&#39;,&#39;adj&#39;,&#39;noun&#39;,matchannotation=folia.PosAnnotation ) ):
-    for word in match:
-        print word.id, word.text()
-    print &quot;----&quot;
-</pre></div>
-</div>
-<p>The <tt class="docutils literal"><span class="pre">findwords()</span></tt> method can be instructed to also return left and/or right context for any match. This is done using the <tt class="docutils literal"><span class="pre">leftcontext=</span></tt> and <tt class="docutils literal"><span class="pre">rightcontext=</span></tt> keyword arguments, their values being an integer number of the number of context words to include in each match. For instance, we can look for the word house and return its immediate neighbours as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre>for match in doc.findwords( folia.Pattern(&#39;house&#39;) , leftcontext=1, rightcontext=1):
-    for word in match:
-        print word.id
-    print &quot;----&quot;
-</pre></div>
-</div>
-<p>A match here would thus always consist of three words instead of just one.</p>
-<p>Last, <tt class="docutils literal"><span class="pre">Pattern</span></tt> also has support for variable-width gaps, the asterisk symbol
-has special meaning to this end:</p>
-<div class="highlight-python"><div class="highlight"><pre>for match in doc.findwords( folia.Pattern(&#39;a&#39;,&#39;*&#39;,&#39;house&#39;) ):
-    for word in match:
-        print word.id
-    print &quot;----&quot;
-</pre></div>
-</div>
-<p>Unlike the pattern <tt class="docutils literal"><span class="pre">('a',True,'house')</span></tt>, which by definition is a pattern of
+``matchannotation=``::
+
+    for match in doc.findwords( folia.Pattern(&#39;det&#39;,&#39;adj&#39;,&#39;noun&#39;,matchannotation=folia.PosAnnotation ) ):
+        for word in match:
+            print word.id, word.text()
+        print &quot;----&quot;
+
+The set can be restricted by adding the additional keyword argument
+``matchannotationset=``. Case sensitivity, by default disabled, can be enabled by setting ``casesensitive=True``.
+
+Things become even more interesting when different Patterns are combined. A
+match will have to satisfy all patterns::
+
+    for match in doc.findwords( folia.Pattern(&#39;a&#39;, True, &#39;house&#39;), folia.Pattern(&#39;det&#39;,&#39;adj&#39;,&#39;noun&#39;,matchannotation=folia.PosAnnotation ) ):
+        for word in match:
+            print word.id, word.text()
+        print &quot;----&quot;
+
+
+The ``findwords()`` method can be instructed to also return left and/or right context for any match. This is done using the ``leftcontext=`` and ``rightcontext=`` keyword arguments, their values being an integer number of the number of context words to include in each match. For instance, we can look for the word house and return its immediate neighbours as follows::
+
+    for match in doc.findwords( folia.Pattern(&#39;house&#39;) , leftcontext=1, rightcontext=1):
+        for word in match:
+            print word.id
+        print &quot;----&quot;
+
+A match here would thus always consist of three words instead of just one.
+
+Last, ``Pattern`` also has support for variable-width gaps, the asterisk symbol
+has special meaning to this end::
+
+
+    for match in doc.findwords( folia.Pattern(&#39;a&#39;,&#39;*&#39;,&#39;house&#39;) ):
+        for word in match:
+            print word.id
+        print &quot;----&quot;
+
+Unlike the pattern ``(&#39;a&#39;,True,&#39;house&#39;)``, which by definition is a pattern of
 three words, the pattern in the example above will match gaps of any length (up
-to a certain built-in maximum), so this might include matches such as <em>a very
-nice house</em>.</p>
-<p>Some remarks on these methods of querying are in order. These searches are
+to a certain built-in maximum), so this might include matches such as *a very
+nice house*.
+
+Some remarks on these methods of querying are in order. These searches are
 pretty exhaustive and are done by simply iterating over all the words in the
 document. The entire document is loaded in memory and no special indices are involved.
 For single documents this is okay, but when iterating over a corpus of
 thousands of documents, this method is too slow, especially for real-time
 applications. For huge corpora, clever indexing and database management systems
-will be required. This however is beyond the scope of this library.</p>
+will be required. This however is beyond the scope of this library.
+</pre></div>
+</div>
 <dl class="method">
 <dt id="pynlpl.formats.folia.Pattern.resolve">
 <tt class="descname">resolve</tt><big>(</big><em>size</em>, <em>distribution</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Pattern.resolve" title="Permalink to this definition">¶</a></dt>
@@ -3840,10 +4252,10 @@ will be required. This however is beyond the scope of this library.</p>
 <dl class="class">
 <dt id="pynlpl.formats.folia.Quote">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">Quote</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Quote" title="Permalink to this definition">¶</a></dt>
-<dd><p>Quote: a structure element. For quotes/citations. May hold words or sentences.</p>
+<dd><p>Quote: a structure element. For quotes/citations. May hold words, sentences or paragraphs.</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Quote.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Quote'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.String'&gt;, &lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;, &lt;class 'pynlpl.formats.folia.Alternative'&gt;, &lt;class 'pynlpl.formats.folia.AlternativeLayers'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.Part'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Quote.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Paragraph'&gt;, &lt;class 'pynlpl.formats.folia.Division'&gt;, &lt;class 'pynlpl.formats.folia.Quote'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.String'&gt;, &lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Alignment'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;, &lt;class 'pynlpl.formats.folia.Alternative'&gt;, &lt;class 'pynlpl.formats.folia.AlternativeLayers'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;, &lt;class 'pynlpl.formats.folia.Part'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Quote.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -4008,7 +4420,7 @@ will be required. This however is beyond the scope of this library.</p>
 <dl class="class">
 <dt id="pynlpl.formats.folia.SemanticRolesLayer">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">SemanticRolesLayer</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.SemanticRolesLayer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Syntax Layer: Annotation layer for SemnaticRole span annotation elements</p>
+<dd><p>Syntax Layer: Annotation layer for SemanticRole span annotation elements</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.SemanticRolesLayer.ACCEPTED_DATA">
 <tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.SemanticRole'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.SemanticRolesLayer.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
@@ -4422,7 +4834,7 @@ splitword() , mergewords(), deleteword(), insertword() instead</p>
 <dd><p>A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc..</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.Text.ACCEPTED_DATA">
-<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Division'&gt;, &lt;class 'pynlpl.formats.folia.Paragraph'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.Table'&gt;, &lt;class 'pynlpl.formats.folia.Note'&gt;, &lt;class 'pynlpl.formats.folia.Reference'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.String'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Text.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ACCEPTED_DATA</tt><em class="property"> = (&lt;class 'pynlpl.formats.folia.Gap'&gt;, &lt;class 'pynlpl.formats.folia.Event'&gt;, &lt;class 'pynlpl.formats.folia.Division'&gt;, &lt;class 'pynlpl.formats.folia.Paragraph'&gt;, &lt;class 'pynlpl.formats.folia.Quote'&gt;, &lt;class 'pynlpl.formats.folia.Sentence'&gt;, &lt;class 'pynlpl.formats.folia.Word'&gt;, &lt;class 'pynlpl.formats.folia.List'&gt;, &lt;class 'pynlpl.formats.folia.Figure'&gt;, &lt;class 'pynlpl.formats.folia.Table'&gt;, &lt;class 'pynlpl.formats.folia.Note'&gt;, &lt;class 'pynlpl.formats.folia.Reference'&gt;, &lt;class 'pynlpl.formats.folia.AbstractAnnotationLayer'&gt;, &lt;class 'pynlpl.formats.folia.AbstractExtendedTokenAnnotation'&gt;, &lt;class 'pynlpl.formats.folia.Description'&gt;, &lt;class 'pynlpl.formats.folia.TextContent'&gt;, &lt;class 'pynlpl.formats.folia.String'&gt;, &lt;class 'pynlpl.formats.folia.Metric'&gt;, &lt;class 'pynlpl.formats.folia.Correction'&gt;)</em><a class="headerlink" href="#pynlpl.formats.folia.Text.ACCEPTED_DATA" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -4497,6 +4909,11 @@ on structure elements like <tt class="docutils literal"><span class="pre">Paragr
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="pynlpl.formats.folia.TextContent.XLINK">
+<tt class="descname">XLINK</tt><em class="property"> = True</em><a class="headerlink" href="#pynlpl.formats.folia.TextContent.XLINK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="pynlpl.formats.folia.TextContent.XMLTAG">
 <tt class="descname">XMLTAG</tt><em class="property"> = 't'</em><a class="headerlink" href="#pynlpl.formats.folia.TextContent.XMLTAG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -4535,6 +4952,11 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dl class="classmethod">
 <dt id="pynlpl.formats.folia.TextContent.relaxng">
 <em class="property">classmethod </em><tt class="descname">relaxng</tt><big>(</big><em>includechildren=True</em>, <em>extraattribs=None</em>, <em>extraelements=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.TextContent.relaxng" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pynlpl.formats.folia.TextContent.settext">
+<tt class="descname">settext</tt><big>(</big><em>text</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.TextContent.settext" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -4816,12 +5238,6 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="pynlpl.formats.folia.Word.context">
-<tt class="descname">context</tt><big>(</big><em>size</em>, <em>placeholder=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.context" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns this word in context, {size} words to the left, the current word, and {size} words to the right</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="pynlpl.formats.folia.Word.division">
 <tt class="descname">division</tt><big>(</big><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.division" title="Permalink to this definition">¶</a></dt>
 <dd><p>Obtain the deepest division this word is a part of, otherwise return None</p>
@@ -4861,12 +5277,6 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="pynlpl.formats.folia.Word.leftcontext">
-<tt class="descname">leftcontext</tt><big>(</big><em>size</em>, <em>placeholder=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.leftcontext" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the left context for a word. This method crosses sentence/paragraph boundaries</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="pynlpl.formats.folia.Word.lemma">
 <tt class="descname">lemma</tt><big>(</big><em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.lemma" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shortcut: returns the FoLiA class of the lemma annotation (will return only one if there are multiple!)</p>
@@ -4882,12 +5292,6 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dt id="pynlpl.formats.folia.Word.morphemes">
 <tt class="descname">morphemes</tt><big>(</big><em>set=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.morphemes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generator yielding all morphemes (in a particular set if specified). For retrieving one specific morpheme by index, use morpheme() instead</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pynlpl.formats.folia.Word.next">
-<tt class="descname">next</tt><big>(</big><em>scope=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.next" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the next word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,Event, ListItem,Caption by default)</p>
 </dd></dl>
 
 <dl class="method">
@@ -4907,12 +5311,6 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dd><p>Shortcut: returns the FoLiA class of the PoS annotation (will return only one if there are multiple!)</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynlpl.formats.folia.Word.previous">
-<tt class="descname">previous</tt><big>(</big><em>scope=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.previous" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the previous word in the sentence, or None if no next word was found. This method does not cross the boundary of the defined scope (Sentence,Paragraph,Division,ListItem, Caption, Head, Event by default)</p>
-</dd></dl>
-
 <dl class="classmethod">
 <dt id="pynlpl.formats.folia.Word.relaxng">
 <em class="property">classmethod </em><tt class="descname">relaxng</tt><big>(</big><em>includechildren=True</em>, <em>extraattribs=None</em>, <em>extraelements=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.relaxng" title="Permalink to this definition">¶</a></dt>
@@ -4922,12 +5320,6 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dt id="pynlpl.formats.folia.Word.resolveword">
 <tt class="descname">resolveword</tt><big>(</big><em>id</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.resolveword" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="method">
-<dt id="pynlpl.formats.folia.Word.rightcontext">
-<tt class="descname">rightcontext</tt><big>(</big><em>size</em>, <em>placeholder=None</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.Word.rightcontext" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the right context for a word. This method crosses sentence/paragraph boundaries</p>
-</dd></dl>
 
 <dl class="method">
 <dt id="pynlpl.formats.folia.Word.sense">
@@ -4956,7 +5348,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <dl class="class">
 <dt id="pynlpl.formats.folia.WordReference">
 <em class="property">class </em><tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">WordReference</tt><big>(</big><em>doc</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.WordReference" title="Permalink to this definition">¶</a></dt>
-<dd><p>Word reference. Use to refer to words or morphemes from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word or Morpheme objects will be used</p>
+<dd><p>Word reference. Used to refer to words or morphemes from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word or Morpheme objects will be used</p>
 <dl class="attribute">
 <dt id="pynlpl.formats.folia.WordReference.REQUIRED_ATTRIBS">
 <tt class="descname">REQUIRED_ATTRIBS</tt><em class="property"> = (0,)</em><a class="headerlink" href="#pynlpl.formats.folia.WordReference.REQUIRED_ATTRIBS" title="Permalink to this definition">¶</a></dt>
@@ -4979,10 +5371,11 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 
 </dd></dl>
 
-<dl class="function">
+<dl class="attribute">
 <dt id="pynlpl.formats.folia.c">
-<tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">c</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#pynlpl.formats.folia.c" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<tt class="descclassname">pynlpl.formats.folia.</tt><tt class="descname">c</tt><a class="headerlink" href="#pynlpl.formats.folia.c" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#pynlpl.formats.folia.Division" title="pynlpl.formats.folia.Division"><tt class="xref py py-class docutils literal"><span class="pre">Division</span></tt></a></p>
+</dd></dl>
 
 <dl class="function">
 <dt id="pynlpl.formats.folia.commonancestors">
@@ -5065,9 +5458,13 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <li><a class="reference internal" href="#index">Index</a></li>
 <li><a class="reference internal" href="#obtaining-list-of-elements">Obtaining list of elements</a></li>
 <li><a class="reference internal" href="#select-method">Select method</a></li>
+<li><a class="reference internal" href="#navigating-a-document">Navigating a document</a></li>
+<li><a class="reference internal" href="#structure-annotation-types">Structure Annotation Types</a></li>
 <li><a class="reference internal" href="#common-attributes">Common attributes</a></li>
 <li><a class="reference internal" href="#annotations">Annotations</a><ul>
+<li><a class="reference internal" href="#token-annotation-types">Token Annotation Types</a></li>
 <li><a class="reference internal" href="#span-annotation">Span Annotation</a></li>
+<li><a class="reference internal" href="#span-annotation-types">Span Annotation Types</a></li>
 </ul>
 </li>
 </ul>
@@ -5078,11 +5475,21 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
 <li><a class="reference internal" href="#adding-structure">Adding structure</a></li>
 <li><a class="reference internal" href="#adding-annotations">Adding annotations</a></li>
 <li><a class="reference internal" href="#adding-span-annotation">Adding span annotation</a></li>
+<li><a class="reference internal" href="#deleting-annotation">Deleting annotation</a></li>
+<li><a class="reference internal" href="#copying-annotations">Copying annotations</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#searching-in-a-folia-document">Searching in a FoLiA document</a><ul>
-<li><a class="reference internal" href="#folia-query-language">FoLiA Query Language</a></li>
+<li><a class="reference internal" href="#corpus-query-language-cql">Corpus Query Language (CQL)</a></li>
+<li><a class="reference internal" href="#folia-query-language-fql">FoLiA Query Language (FQL)</a></li>
 <li><a class="reference internal" href="#streaming-reader">Streaming Reader</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#higher-order-annotations">Higher-Order Annotations</a><ul>
+<li><a class="reference internal" href="#text-markup">Text Markup</a></li>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#alternatives">Alternatives</a></li>
+<li><a class="reference internal" href="#corrections">Corrections</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-pynlpl.formats.folia">API Reference</a></li>
@@ -5133,7 +5540,7 @@ The parent of the current textcontent&#8217;s parent (counting only Structure El
         <li class="right" >
           <a href="evaluation.html" title="Evaluation &amp; Experiments"
              >previous</a> |</li>
-        <li><a href="index.html">PyNLPl 0.7.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyNLPl 0.7.3.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

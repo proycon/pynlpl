@@ -19,7 +19,7 @@ if not os.path.exists('pynlpl'):
     if not os.path.exists('pynlpl'): os.mkdir('pynlpl')
     os.system('cp -Rpdf ../* pynlpl/ 2> /dev/null')
     os.system('mv -f pynlpl/setup.py pynlpl/setup.cfg .')
-    os.system('cp -f pynlpl/README .')
+    os.system('cp -f pynlpl/README.rst .')
 
     #Do not include unfininished WIP modules:
     os.system('rm -f pynlpl/formats/colibri.py pynlpl/formats/alpino.py pynlpl/foliaprocessing.py pynlpl/grammar.py')
@@ -41,7 +41,7 @@ if sys.version > '3':
 
 setup(
     name = "PyNLPl",
-    version = "0.7.3.1", #edit version in __init__.py as well!
+    version = "0.7.3.5", #edit version in __init__.py as well!
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
     description = ("PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl can be used for example the computation of n-grams, frequency lists and distributions, language models. There are also more complex data types, such as Priority Queues, and search algorithms, such as Beam Search."),
@@ -49,7 +49,7 @@ setup(
     keywords = "nlp computational_linguistics search ngrams language_models linguistics toolkit",
     url = "https://github.com/proycon/pynlpl",
     packages=['pynlpl','pynlpl.clients','pynlpl.lm','pynlpl.formats','pynlpl.mt','pynlpl.tools'],
-    long_description=read('README'),
+    long_description=read('README.rst'),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Topic :: Text Processing :: Linguistic",

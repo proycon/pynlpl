@@ -113,9 +113,16 @@ class TokenExpression(object):
             interval = None #end of query!
         elif s[i] == "{":
             #interval expression, find end:
+            interval = None
             for j in range(i+1, len(s)):
                 if s[j] == "}":
                     interval = s[i+1:j]
+
+            if interval is None:
+                raise SyntaxError("Interval expression started but no end-brace found")
+
+            i += len(interval) + 2
+
             try:
                 if ',' in interval:
                     interval = tuple(int(x) for x in interval.split(","))
@@ -129,7 +136,6 @@ class TokenExpression(object):
                     interval = (int(interval),int(interval))
             except ValueError:
                 raise SyntaxError("Invalid interval: " + interval)
-            i = j + 1
         elif s[i] == "?":
             interval = (0,1)
             i += 1
@@ -186,7 +192,7 @@ def cql2fql(cq):
         if i > 0: fq += " & "
         fq += "w"
         if token.interval:
-            fq += "{" + token.interval[0], token.interval[1]+ "} "
+            fq += " {" + str(token.interval[0]) + "," + str(token.interval[1])+ "} "
         else:
             fq += " "
         if token.attribexprs:
