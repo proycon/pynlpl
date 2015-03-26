@@ -59,10 +59,10 @@ else:
 def xmlcheck(xml,expect):
     #obj1 = lxml.objectify.fromstring(expect)
     #expect = lxml.etree.tostring(obj1)
-    f = open('/tmp/foliatest.fragment.expect.xml','w')
+    f = io.open('/tmp/foliatest.fragment.expect.xml','w',encoding='utf-8')
     f.write(expect)
     f.close()
-    f = open('/tmp/foliatest.fragment.out.xml','w')
+    f = io.open('/tmp/foliatest.fragment.out.xml','w', encoding='utf-8')
     f.write(xml)
     f.close()
 
@@ -1369,7 +1369,8 @@ folia-v0.8" version="0.8">
   %s
 </FoLiA>""" % speechxml
         doc = folia.Document(string=xml)
-        self.assertTrue( xmlcheck( u(doc['example.speech'].xmlstring()), u(speechxml)) )
+        self.assertTrue( xmlcheck( doc['example.speech'].xmlstring(), u(speechxml)) )
+
 
 class Test4Edit(unittest.TestCase):
 
