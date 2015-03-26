@@ -698,10 +698,10 @@ class AbstractElement(object):
                         #No text, that's okay, just continue
                         continue
 
-            if not s.strip() and self.hastext(cls):
+            if not s and self.hastext(cls):
                 s = self.textcontent(cls).text()
 
-            if s or previousdelimiter:
+            if s and previousdelimiter:
                 return previousdelimiter + s
             elif s:
                 return s
@@ -774,35 +774,33 @@ class AbstractElement(object):
                         pass
                     s += e.phon()
             return s
-        if not self.SPEAKABLE: #only readable elements can hold phonetic content
+        elif not self.SPEAKABLE: #only readable elements can hold phonetic content
             raise NoSuchPhon
-
-
-
-        if self.hasphon(cls):
-            s = self.phoncontent(cls).phon()
         else:
-            #Not found, descend into children
+            #Get text from children first
             delimiter = ""
             s = ""
             for e in self:
                 if e.SPEAKABLE and not isinstance(e, PhonContent):
                     try:
                         s += e.phon(cls, delimiter)
+
+                        #delimiter will be buffered and only printed upon next iteration, this prevents the delimiter being outputted at the end of a sequence and to be compounded with other delimiters
                         delimiter = e.gettextdelimiter() #We use TEXTDELIMITER for phon too
-                        #delimiter will be buffered and only printed upon next iteration, this prevent the delimiter being output at the end of a sequence
                     except NoSuchPhon:
+                        #No text, that's okay, just continue
                         continue
 
-        s = s.strip(' \r\n\t')
-        if s and previousdelimiter:
-            return previousdelimiter + s
-        elif s:
-            return s
-        else:
-            #No text found at all :`(
-            raise NoSuchPhon
+            if not s and self.hasphon(cls):
+                s = self.phoncontent(cls).phon()
 
+            if s and previousdelimiter:
+                return previousdelimiter + s
+            elif s:
+                return s
+            else:
+                #No text found at all :`(
+                raise NoSuchPhon
 
     def originaltext(self):
         """Alias for retrieving the original uncorrect text"""
