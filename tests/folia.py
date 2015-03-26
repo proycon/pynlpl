@@ -836,7 +836,7 @@ class Test2Sanity(unittest.TestCase):
         examples = list(entry.select(folia.Example))
         self.assertEqual( len(examples),1 )
 
-    def text046_text(self):
+    def test046a_text(self):
         """Sanity Check - Text serialisation test with linebreaks and whitespaces"""
         p = self.doc['WR-P-E-J-0000000001.p.1'] #this is a bit of a malformed paragraph due to the explicit whitespace and linebreaks in it, but makes for a nice test:
         self.assertEqual( p.text(), """Stemma is een ander woord voor stamboom . In de historische wetenschap wordt zo'n stamboom , onder de naam stemma codicum ( handschriftelijke genealogie ) , gebruikt om de verwantschap tussen handschriftenweer te geven .
@@ -845,6 +845,12 @@ Werkwijze
 
 Hiervoor worden de handschriften genummerd en gedateerd zodat ze op de juiste plaats van hun afstammingsgeschiedenis geplaatst kunnen worden . De hoofdletter A wordt gebruikt voor het originele handschrift . De andere handschriften krijgen ook een letter die verband kan houden met hun plaats van oorsprong óf plaats van bewaring. Verdwenen handschriften waarvan men toch vermoedt dat ze ooit bestaan hebben worden ook in het stemma opgenomen en worden weergegeven door de laatste letters van het alfabet en worden tussen vierkante haken geplaatst .
 Tenslotte gaat men de verwantschap tussen de handschriften aanduiden . Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .""")
+
+
+    def test046b_text(self):
+        """Sanity Check - Text serialisation on lists"""
+        l = self.doc['sandbox.list.1'] #this is a bit of a malformed paragraph due to the explicit whitespace and linebreaks in it, but makes for a nice test:
+        self.assertEqual( l.text(), "Eerste testitem\nTweede testitem")
 
     def test099_write(self):
         """Sanity Check - Writing to file"""
