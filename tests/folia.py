@@ -569,10 +569,10 @@ class Test2Sanity(unittest.TestCase):
         """Sanity check - Text Content"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.4']
 
-        self.assertEqual( s.text(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
+        self.assertEqual( s.text(), 'De hoofdletter A wordt gebruikt voor het originele handschrift .')
         self.assertEqual( s.stricttext(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
         self.assertEqual( s.textcontent().text(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
-        self.assertEqual( s.text('original'), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
+        self.assertEqual( s.textcontent('original').text(), 'De hoofdletter A wordt gebruikt voor het originele handschrift.')
         self.assertRaises( folia.NoSuchText, s.text, 'BLAH' )
 
 
@@ -609,7 +609,7 @@ class Test2Sanity(unittest.TestCase):
 
     def test032_event(self):
         """Sanity Check - Events"""
-        l= self.doc['sandbox.list.1']
+        l= self.doc['sandbox']
         event = l.annotation(folia.Event)
 
         self.assertEqual( event.cls , 'applause')
@@ -836,6 +836,15 @@ class Test2Sanity(unittest.TestCase):
         examples = list(entry.select(folia.Example))
         self.assertEqual( len(examples),1 )
 
+    def text046_text(self):
+        """Sanity Check - Text serialisation test with linebreaks and whitespaces"""
+        p = self.doc['WR-P-E-J-0000000001.p.1'] #this is a bit of a malformed paragraph due to the explicit whitespace and linebreaks in it, but makes for a nice test:
+        self.assertEqual( p.text(), """Stemma is een ander woord voor stamboom . In de historische wetenschap wordt zo'n stamboom , onder de naam stemma codicum ( handschriftelijke genealogie ) , gebruikt om de verwantschap tussen handschriftenweer te geven .
+
+Werkwijze
+
+Hiervoor worden de handschriften genummerd en gedateerd zodat ze op de juiste plaats van hun afstammingsgeschiedenis geplaatst kunnen worden . De hoofdletter A wordt gebruikt voor het originele handschrift . De andere handschriften krijgen ook een letter die verband kan houden met hun plaats van oorsprong óf plaats van bewaring. Verdwenen handschriften waarvan men toch vermoedt dat ze ooit bestaan hebben worden ook in het stemma opgenomen en worden weergegeven door de laatste letters van het alfabet en worden tussen vierkante haken geplaatst .
+Tenslotte gaat men de verwantschap tussen de handschriften aanduiden . Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .""")
 
     def test099_write(self):
         """Sanity Check - Writing to file"""
@@ -1817,7 +1826,8 @@ class Test4Edit(unittest.TestCase):
         #associating text directly with the sentence: de-tokenised by definition!
         s.settext('Stemma is een ander woord voor stamboom.')
         self.assertTrue(s.hastext())
-        self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom.')
+        self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom .') #text still obtained from children rather than directly associated text!!
+        self.assertEqual(s.stricttext(), 'Stemma is een ander woord voor stamboom.')
 
     def test018b_sentencetext(self):
         """Edit Check - Altering sentence text (untokenised by definition)"""
@@ -1827,12 +1837,13 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( s.text(), 'Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .' ) #dynamic from children
 
 
-        s.settext('Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.' )
+        s.settext('Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.' ) #setting the correct text here will cause a mismatch with the text on deeper levels, but is permitted (deep validation should detect it)
+
         s.settext('Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.', 'original' )
 
-        self.assertEqual( s.text(), 'Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.' ) #processed version by default
-        self.assertEqual( s.text('original'), 'Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.' )
+        self.assertEqual( s.text(), 'Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .' ) #from children by default (child has erroneous stippelijn and terweil)
         self.assertTrue( s.hastext('original') )
+        self.assertEqual( s.stricttext('original'), 'Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.' )
 
         self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8"><t>Een volle lijn duidt op een verwantschap, terwijl een stippellijn op een onzekere verwantschap duidt.</t><t class="original">Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.</t><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.1"><t>Een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><quote xml:id="WR-P-E-J-0000000001.p.1.s.8.q.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.2"><t>volle</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="vol"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.3"><t>lijn</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="lijn"/></w></quote><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.4"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.5"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.6"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.7"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.8"><t>,</t><pos class="LET()"/><lemma class=","/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.9"><t>terweil</t><errordetection class="spelling"/><pos class="VG(onder)"/><lemma class="terweil"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.10"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.12"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.13"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14"><t>onzekere</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="onzeker"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14.c.1" class="spelling"><suggestion  auth="no"><t>twijfelachtige</t></suggestion><suggestion  auth="no"><t>ongewisse</t></suggestion></correction></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.15"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.16"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.17"><t>.</t><pos class="LET()"/><lemma class="."/></w></s>'))
 

@@ -568,8 +568,10 @@ class AbstractElement(object):
     OCCURRENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
 
     TEXTDELIMITER = None #Delimiter to use when dynamically gathering text from child elements
+
     PRINTABLE = False #Is this element printable (aka, can its text() method be called?)
     SPEAKABLE = False #Is this element readable phonetically (aka, can its phon() method be called?)
+
     AUTH = True #Authoritative by default. Elements the parser should skip on normal queries are non-authoritative (such as original, alternative)
     TEXTCONTAINER = False #Text containers directly take textual content. (t is a TEXTCONTAINER)
     PHONCONTAINER = False #Phonetic containers directly take phonetic content. (ph is a PHONCONTAINER)
@@ -651,7 +653,7 @@ class AbstractElement(object):
 
 
     def stricttext(self, cls='current'):
-        """Get the text strictly associated with this element (of the specified class). Does not recurse into children, with the sole exception of Corection/New"""
+        """Get the text strictly associated with this element (of the specified class). Does not recurse into children, with the sole exception of Correction/New"""
         return self.textcontent(cls).text()
 
     def toktext(self,cls='current'):
@@ -660,12 +662,15 @@ class AbstractElement(object):
 
     def text(self, cls='current', retaintokenisation=False, previousdelimiter=""):
         """Get the text associated with this element (of the specified class), will always be a unicode instance.
-        If no text is directly associated with the element, it will be obtained from the children. If that doesn't result
-        in any text either, a NoSuchText exception will be raised.
+
+        The text will be constructed from child-elements whereever possible, as they are more specific.
+        If no text can be obtained from the children and the element has itself text associated with
+        it, then that will be used. If no text is found at all, a NoSuchText exception is raised.
+
+        If you are strictly interested in the text explicitly associated with the element, without recursing into children, use the ``stricttext()`` method instead.
 
         If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.
         """
-
 
         if self.TEXTCONTAINER:
             s = ""
@@ -676,38 +681,33 @@ class AbstractElement(object):
                     if s: s += e.TEXTDELIMITER #for AbstractMarkup, will usually be ""
                     s += e.text()
             return s
-        if not self.PRINTABLE: #only printable elements can hold text
+        elif not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
-
-
-        #print >>stderr, repr(self) + '.text()'
-
-        if self.hastext(cls):
-            s = self.textcontent(cls).text()
-            #print >>stderr, "text content: " + s
         else:
-            #Not found, descend into children
+            #Get text from children first
             delimiter = ""
             s = ""
             for e in self:
                 if e.PRINTABLE and not isinstance(e, TextContent):
                     try:
                         s += e.text(cls,retaintokenisation, delimiter)
+
+                        #delimiter will be buffered and only printed upon next iteration, this prevents the delimiter being outputted at the end of a sequence and to be compounded with other delimiters
                         delimiter = e.gettextdelimiter(retaintokenisation)
-                        #delimiter will be buffered and only printed upon next iteration, this prevent the delimiter being output at the end of a sequence
-                        #print >>stderr, "Delimiter for " + repr(e) + ": " + repr(delimiter)
                     except NoSuchText:
+                        #No text, that's okay, just continue
                         continue
 
-        s = s.strip(' \r\n\t')
-        if s and previousdelimiter:
-            #print >>stderr, "Outputting previous delimiter: " + repr(previousdelimiter)
-            return previousdelimiter + s
-        elif s:
-            return s
-        else:
-            #No text found at all :`(
-            raise NoSuchText
+            if not s.strip() and self.hastext(cls):
+                s = self.textcontent(cls).text()
+
+            if s or previousdelimiter:
+                return previousdelimiter + s
+            elif s:
+                return s
+            else:
+                #No text found at all :`(
+                raise NoSuchText
 
     def phoncontent(self, cls='current'):
         """Get the phonetic content explicitly associated with this element (of the specified class).
@@ -813,10 +813,11 @@ class AbstractElement(object):
         """May return a customised text delimiter instead of the default for this class."""
         if self.TEXTDELIMITER is None:
             delimiter = ""
-            #no text delimite rof itself, recurse into children to inherit delimiter
+            #no text delimiter of itself, recurse into children to inherit delimiter
             for child in reversed(self):
-                return child.gettextdelimiter(retaintokenisation)
-            return delimiter
+                if isinstance(child, AbstractElement):
+                    return child.gettextdelimiter(retaintokenisation)
+            return ""
         else:
             return self.TEXTDELIMITER
 
@@ -2585,10 +2586,6 @@ class AbstractTextMarkup(AbstractAnnotation):
         #if self.value and (self.value != self.value.translate(ILLEGAL_UNICODE_CONTROL_CHARACTERS)):
         #    raise ValueError("There are illegal unicode control characters present in Text Markup Content: " + repr(self.value))
 
-    def text(self):
-        """Obtain the text (unicode instance)"""
-        return super(AbstractTextMarkup,self).text() #AbstractElement will handle it now, merely overridden to get rid of parameters that dont make sense in this context
-
     def settext(self, text):
         self.data = [text]
         if not self.data:
@@ -3229,6 +3226,8 @@ class Part(AbstractStructureElement):
     #ACCEPTED_DATA defined later
     XMLTAG = 'part'
     ANNOTATIONTYPE = AnnotationType.PART
+    TEXTDELIMITER = None
+
 
 class Gap(AbstractElement):
     """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
@@ -3260,7 +3259,10 @@ class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has
     ACCEPTED_DATA = ()
     XMLTAG = 'br'
     ANNOTATIONTYPE = AnnotationType.LINEBREAK
-    TEXTDELIMITER = "\n"
+    TEXTDELIMITER = ""
+
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter=""):
+        return previousdelimiter.strip(' ') + "\n"
 
 TextContent.ACCEPTED_DATA = TextContent.ACCEPTED_DATA + (Linebreak,) #shouldn't be necessary because of the multiple inheritance, but something's wrong and this quickly patches it
 
@@ -3270,8 +3272,10 @@ class Whitespace(AbstractStructureElement):
     ACCEPTED_DATA = ()
     XMLTAG = 'whitespace'
     ANNOTATIONTYPE = AnnotationType.WHITESPACE
+    TEXTDELIMITER = ""
 
-    TEXTDELIMITER = "\n\n"
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter=""):
+        return previousdelimiter.strip(' ') + "\n\n"
 
 class Word(AbstractStructureElement, AllowCorrections):
     """Word (aka token) element. Holds a word/token and all its related token annotations."""
@@ -3801,7 +3805,9 @@ class Reference(AbstractStructureElement):
     OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
     PRINTABLE = True
     SPEAKABLE = True
+    TEXTDELIMITER = None
     XMLTAG = 'ref'
+
 
     def __init__(self, doc, *args, **kwargs):
         if 'idref' in kwargs:
@@ -4113,8 +4119,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
         """May return a customised text delimiter instead of the default for this class."""
         for e in self:
             if isinstance(e, New) or isinstance(e, Current):
-                d =  e.gettextdelimiter(retaintokenisation)
-                return d
+                return e.gettextdelimiter(retaintokenisation)
         return ""
 
 
@@ -4696,13 +4701,13 @@ class Quote(AbstractStructureElement):
         return super(Quote, self).append(child, *args, **kwargs)
 
     def gettextdelimiter(self, retaintokenisation=False):
-        #no text delimite rof itself, recurse into children to inherit delimiter
+        #no text delimiter of itself, recurse into children to inherit delimiter
         for child in reversed(self):
             if isinstance(child, Sentence):
                 return "" #if a quote ends in a sentence, we don't want any delimiter
             else:
                 return child.gettextdelimiter(retaintokenisation)
-        return delimiter
+        return self.TEXTDELIMITER
 
 
 class Sentence(AbstractStructureElement):
@@ -4836,6 +4841,14 @@ class Sentence(AbstractStructureElement):
             return self.correctwords([], [newword], **kwargs)
 
 
+    def gettextdelimiter(self, retaintokenisation=False):
+        #no text delimiter of itself, recurse into children to inherit delimiter
+        for child in reversed(self):
+            if isinstance(child, Linebreak) or isinstance(child, Whitespace):
+                return "" #if a sentence ends in a linebreak, we don't want any delimiter
+            else:
+                break
+        return self.TEXTDELIMITER
 
 class Utterance(AbstractStructureElement):
     """Utterance element. A structure element for speech annotation."""
@@ -4867,12 +4880,12 @@ class ListItem(AbstractStructureElement):
     #ACCEPTED_DATA = (List, Sentence) #Defined below
     XMLTAG = 'item'   #(xmltag differs from tagname because I screwed up, this used to be 'listitem' but was inconsistent with the manual, in reading xml it will be translated on the fly to item)
     ANNOTATIONTYPE = AnnotationType.LIST
-
+    TEXTDELIMITER = '\n'
 
 class List(AbstractStructureElement):
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
     XMLTAG = 'list'
-    TEXTDELIMITER = '\n'
+    TEXTDELIMITER = '\n\n'
     ANNOTATIONTYPE = AnnotationType.LIST
 
 
@@ -4881,6 +4894,7 @@ class Figure(AbstractStructureElement):
     ACCEPTED_DATA = (Sentence, Description, Caption, TextContent,PhonContent,String, Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
     XMLTAG = 'figure'
     ANNOTATIONTYPE = AnnotationType.FIGURE
+    TEXTDELIMITER = '\n\n'
 
     def __init__(self, doc, *args, **kwargs):
         if 'src' in kwargs:
@@ -4930,7 +4944,7 @@ class Head(AbstractStructureElement):
 
     ACCEPTED_DATA = (Sentence, Word, Description, Event, Reference, TextContent,PhonContent,String,Alignment, Metric, Linebreak, Whitespace,Gap,  Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, Part)
     OCCURRENCES = 1
-    TEXTDELIMITER = ' '
+    TEXTDELIMITER = '\n\n'
     XMLTAG = 'head'
 
 class Paragraph(AbstractStructureElement):
