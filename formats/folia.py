@@ -104,7 +104,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE = range(42)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE, PHONETIC = range(43)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -1867,6 +1867,22 @@ class AbstractElement(object):
                attribs.append( E.attribute(E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='datetime') )
             elif Attrib.DATETIME in cls.OPTIONAL_ATTRIBS:
                attribs.append( E.optional( E.attribute( E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),  name='datetime') ) )
+            if Attrib.BEGINTIME in cls.REQUIRED_ATTRIBS:
+               attribs.append(E.attribute(name='begintime') )
+            elif Attrib.BEGINTIME in cls.OPTIONAL_ATTRIBS:
+               attribs.append( E.optional( E.attribute(name='begintime') ) )
+            if Attrib.ENDTIME in cls.REQUIRED_ATTRIBS:
+               attribs.append(E.attribute(name='endtime') )
+            elif Attrib.ENDTIME in cls.OPTIONAL_ATTRIBS:
+               attribs.append( E.optional( E.attribute(name='endtime') ) )
+            if Attrib.SRC in cls.REQUIRED_ATTRIBS:
+               attribs.append(E.attribute(name='src') )
+            elif Attrib.SRC in cls.OPTIONAL_ATTRIBS:
+               attribs.append( E.optional( E.attribute(name='src') ) )
+            if Attrib.SPEAKER in cls.REQUIRED_ATTRIBS:
+               attribs.append(E.attribute(name='speaker') )
+            elif Attrib.SPEAKER in cls.OPTIONAL_ATTRIBS:
+               attribs.append( E.optional( E.attribute(name='speaker') ) )
             if cls.XLINK:
                 attribs += [ E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ) ]
             attribs.append( E.optional( E.attribute( name='auth' ) ) )
@@ -3342,6 +3358,12 @@ class Word(AbstractStructureElement, AllowCorrections):
             for m in layer.select(Morpheme, set):
                 yield m
 
+    def phonemes(self,set=None):
+        """Generator yielding all phonemes (in a particular set if specified). For retrieving one specific morpheme by index, use morpheme() instead"""
+        for layer in self.select(PhoneticsLayer):
+            for p in layer.select(Phoneme, set):
+                yield p
+
     def morpheme(self,index, set=None):
         """Returns a specific morpheme, the n'th morpheme (given the particular set if specified)."""
         for layer in self.select(MorphologyLayer):
@@ -3351,6 +3373,13 @@ class Word(AbstractStructureElement, AllowCorrections):
         raise NoSuchAnnotation
 
 
+    def phoneme(self,index, set=None):
+        """Returns a specific phoneme, the n'th morpheme (given the particular set if specified)."""
+        for layer in self.select(PhoneticsLayer):
+            for i, p in enumerate(layer.select(Phoneme, set)):
+                if index == i:
+                    return p
+        raise NoSuchAnnotation
 
     def gettextdelimiter(self, retaintokenisation=False):
         """Returns the text delimiter"""
@@ -3545,10 +3574,10 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         e = super(AbstractSpanAnnotation,self).xml(attribs, elements, True)
         for child in self:
-            if isinstance(child, Word) or isinstance(child, Morpheme):
+            if isinstance(child, Word) or isinstance(child, Morpheme) or isinstance(child, Phoneme):
                 #Include REFERENCES to word items instead of word items themselves
                 attribs['{' + NSFOLIA + '}id'] = child.id
-                if child.text:
+                if child.PRINTABLE:
                     attribs['{' + NSFOLIA + '}t'] = child.text()
                 e.append( E.wref(**attribs) )
             elif not (isinstance(child, Feature) and child.SUBSET): #Don't add pre-defined features, they are already added as attributes
@@ -3558,7 +3587,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
 
 
     def append(self, child, *args, **kwargs):
-        if (isinstance(child, Word) or isinstance(child, Morpheme))  and WordReference in self.ACCEPTED_DATA:
+        if (isinstance(child, Word) or isinstance(child, Morpheme) or isinstance(child, Phoneme))  and WordReference in self.ACCEPTED_DATA:
             #Accept Word instances instead of WordReference, references will be automagically used upon serialisation
             self.data.append(child)
             return child
@@ -3589,7 +3618,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
     def _helper_wrefs(self, targets):
         """Internal helper function"""
         for c in self:
-            if isinstance(c,Word) or isinstance(c,Morpheme): #TODO: add phoneme when it becomes available
+            if isinstance(c,Word) or isinstance(c,Morpheme) or isinstance(c, Phoneme):
                 targets.append(c)
             elif isinstance(c,WordReference):
                 try:
@@ -3619,7 +3648,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
             return targets[index]
 
     def addtoindex(self,norecurse=None):
-        if not norecurse: norecurse = (Word, Morpheme)
+        if not norecurse: norecurse = (Word, Morpheme, Phoneme)
         """Makes sure this element (and all subelements), are properly added to the index"""
         if self.id:
             self.doc.index[self.id] = self
@@ -4196,7 +4225,6 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = Attrib.ALL
-    ACCEPTED_DATA = [AbstractTokenAnnotation, Correction] #adding MorphlogyLayer later
     ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
     XMLTAG = 'alt'
     PRINTABLE = False
@@ -4490,6 +4518,30 @@ class Morpheme(AbstractStructureElement):
                             yield e2
 
 
+class Phoneme(AbstractStructureElement):
+    """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
+    REQUIRED_ATTRIBS = (),
+    OPTIONAL_ATTRIBS = Attrib.ALL
+    ACCEPTED_DATA = (FunctionFeature, Feature,TextContent, PhonContent, String,Metric, Alignment, AbstractTokenAnnotation, Correction, Description)
+    ANNOTATIONTYPE = AnnotationType.PHONETIC
+    XMLTAG = 'phoneme'
+
+    def findspans(self, type,set=None): #TODO: this is a copy of the methods in Morpheme in Word, abstract into separate class and inherit
+        """Find span annotation of the specified type that include this phoneme"""
+        if issubclass(type, AbstractAnnotationLayer):
+           layerclass = type
+        else:
+           layerclass = ANNOTATIONTYPE2LAYERCLASS[type.ANNOTATIONTYPE]
+        e = self
+        while True:
+            if not e.parent: break
+            e = e.parent
+            for layer in e.select(layerclass,set,False):
+                for e2 in layer:
+                    if isinstance(e2, AbstractSpanAnnotation):
+                        if self in e2.wrefs():
+                            yield e2
+
 #class Subentity(AbstractSubtokenAnnotation):
 #    """Subentity element, for named entities within a single token, subtoken annotation element to be used in SubentitiesLayer"""
 #    ACCEPTED_DATA = (Feature,TextContent, Metric)
@@ -4529,7 +4581,12 @@ class MorphologyLayer(AbstractAnnotationLayer):
     XMLTAG = 'morphology'
     ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
 
-Alternative.ACCEPTED_DATA.append( MorphologyLayer)
+class PhoneticsLayer(AbstractAnnotationLayer):
+    """Phonetics Layer: Annotation layer for phonemes subtoken annotation elements. For phonetic analysis."""
+    ACCEPTED_DATA = (Phoneme, Correction)
+    XMLTAG = 'phonetics'
+    ANNOTATIONTYPE = AnnotationType.PHONETIC
+
 #class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
 #    """Subentities Layer: Annotation layer for Subentity subtoken annotation elements. For named entities within a single token."""
 #    ACCEPTED_DATA = (Subentity,)
@@ -4894,22 +4951,6 @@ class Figure(AbstractStructureElement):
     ANNOTATIONTYPE = AnnotationType.FIGURE
     TEXTDELIMITER = '\n\n'
 
-    def __init__(self, doc, *args, **kwargs):
-        if 'src' in kwargs:
-            self.src = kwargs['src']
-            del kwargs['src']
-
-        else:
-            self.src = None
-
-        super(Figure, self).__init__(doc, *args, **kwargs)
-
-    def xml(self, attribs = None,elements = None, skipchildren = False):
-        global NSFOLIA
-        if self.src:
-            if not attribs: attribs = {}
-            attribs['{' + NSFOLIA + '}src'] = self.src
-        return super(Figure, self).xml(attribs, elements, skipchildren)
 
     def json(self, attribs = None, recurse=True):
         if self.src:
@@ -4924,15 +4965,6 @@ class Figure(AbstractStructureElement):
         except:
             raise NoSuchText
 
-    @classmethod
-    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
-        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        if not extraattribs:
-            extraattribs = [ E.optional(E.attribute(name='src')) ]
-        else:
-            extraattribs.append( E.optional(E.attribute(name='src')) )
-        return AbstractStructureElement.relaxng(includechildren, extraattribs, extraelements, cls)
 
 
 
@@ -6231,6 +6263,7 @@ class Text(AbstractStructureElement):
 #==============================================================================
 #Setting Accepted data that has been postponed earlier (to allow circular references)
 
+Alternative.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, MorphologyLayer, PhoneticsLayer)
 Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,PhonContent, String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
 String.ACCEPTED_DATA = (TextContent,PhonContent, Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation)
 Paragraph.ACCEPTED_DATA = (Sentence, Quote, Example, Entry, AbstractExtendedTokenAnnotation, Correction, TextContent,PhonContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Head, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
@@ -6935,5 +6968,5 @@ XML2CLASS['listitem'] = ListItem #backward compatibility (XML tag is 'item' now,
 
 defaultignorelist = [Original,Suggestion,Alternative, AlternativeLayers]
 #default ignore list for token annotation
-defaultignorelist_annotations = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer]
+defaultignorelist_annotations = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer, PhoneticsLayer]
 defaultignorelist_structure = [Original,Suggestion,Alternative, AlternativeLayers,AbstractAnnotationLayer]
