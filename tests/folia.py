@@ -824,6 +824,19 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( len(entities),1 )
         self.assertEqual( entities[0].id , "example.tilburg.university.org" )
 
+
+    def test046_entry(self):
+        """Sanity Check - Checking entry, term, definition and example"""
+        entry = self.doc['entry.1']
+        terms = list(entry.select(folia.Term))
+        self.assertEqual( len(terms),1 )
+        self.assertEqual( terms[0].text() ,"Stemma" )
+        definitions = list(entry.select(folia.Definition))
+        self.assertEqual( len(definitions),2 )
+        examples = list(entry.select(folia.Example))
+        self.assertEqual( len(examples),1 )
+
+
     def test099_write(self):
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
