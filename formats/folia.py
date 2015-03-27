@@ -4155,11 +4155,11 @@ class Correction(AbstractAnnotation, AllowGenerateID):
 
         Unlike text(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the TextContent instance rather than the actual text!
         """
-        if cls == 'current':
+        if cls == 'current' or cls is None:
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
                     return e.textcontent(cls)
-        elif cls == 'original':
+        if cls == 'original' or cls is None:
             for e in self:
                 if isinstance(e, Original):
                     return e.textcontent(cls)
@@ -4173,11 +4173,11 @@ class Correction(AbstractAnnotation, AllowGenerateID):
 
         Unlike phon(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
         """
-        if cls == 'current':
+        if cls == 'current' or cls is None:
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
                     return e.phoncontent(cls)
-        elif cls == 'original':
+        if cls == 'original' or cls is None:
             for e in self:
                 if isinstance(e, Original):
                     return e.phoncontent(cls)
@@ -4185,44 +4185,44 @@ class Correction(AbstractAnnotation, AllowGenerateID):
 
 
     def hastext(self, cls='current',strict=True):
-        if cls == 'current':
+        if cls == 'current' or cls is None:
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
                     return e.hastext(cls,strict)
-        elif cls == 'original':
+        if cls == 'original' or cls is None:
             for e in self:
                 if isinstance(e, Original):
                     return e.hastext(cls,strict)
         return False
 
     def text(self, cls = 'current', retaintokenisation=False, previousdelimiter="",strict=False):
-        if cls == 'current':
+        if cls == 'current' or cls is None:
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
                     return previousdelimiter + e.text(cls, retaintokenisation,strict)
-        elif cls == 'original':
+        if cls == 'original' or cls is None:
             for e in self:
                 if isinstance(e, Original):
                     return previousdelimiter + e.text(cls, retaintokenisation,strict)
         raise NoSuchText
 
     def hasphon(self, cls='current',strict=True):
-        if cls == 'current':
+        if cls == 'current' or cls is None:
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
                     return e.hasphon(cls,strict)
-        elif cls == 'original':
+        if cls == 'original' or cls is None:
             for e in self:
                 if isinstance(e, Original):
                     return e.hasphon(cls,strict)
         return False
 
     def phon(self, cls = 'current', previousdelimiter="",strict=False):
-        if cls == 'current':
+        if cls == 'current' or cls is None:
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
                     return previousdelimiter + e.phon(cls, strict)
-        elif cls == 'original':
+        if cls == 'original' or cls is None:
             for e in self:
                 if isinstance(e, Original):
                     return previousdelimiter + e.phon(cls, strict)
