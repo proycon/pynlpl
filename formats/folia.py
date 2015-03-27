@@ -641,7 +641,7 @@ class AbstractElement(object):
         #Find explicit text content (same class)
         for e in self:
             if isinstance(e, TextContent):
-                if e.cls == cls:
+                if cls is None or e.cls == cls:
                     return e
             elif isinstance(e, Correction):
                 try:
@@ -726,7 +726,7 @@ class AbstractElement(object):
         #Find explicit text content (same class)
         for e in self:
             if isinstance(e, PhonContent):
-                if e.cls == cls:
+                if cls is None or e.cls == cls:
                     return e
             elif isinstance(e, Correction):
                 try:
