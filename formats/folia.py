@@ -607,7 +607,7 @@ class AbstractElement(object):
         if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','speaker','begintime','endtime'):
             return None
         else:
-            return super(AbstractElement, self).getattr(attr)
+            return super(AbstractElement, self).__getattr__(attr)
 
 
     #def __del__(self):
