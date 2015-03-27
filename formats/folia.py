@@ -653,24 +653,27 @@ class AbstractElement(object):
 
 
     def stricttext(self, cls='current'):
-        """Get the text strictly associated with this element (of the specified class). Does not recurse into children, with the sole exception of Correction/New"""
-        return self.textcontent(cls).text()
+        """Alias for text() with strict=True"""
+        return self.text(cls,strict=True)
 
     def toktext(self,cls='current'):
-        """Alias for text with retaintokenisation=True"""
-        return self.text(cls,True)
+        """Alias for text() with retaintokenisation=True"""
+        return self.text(cls,retaintokenisation=True)
 
-    def text(self, cls='current', retaintokenisation=False, previousdelimiter=""):
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter="",strict=False):
         """Get the text associated with this element (of the specified class), will always be a unicode instance.
 
         The text will be constructed from child-elements whereever possible, as they are more specific.
         If no text can be obtained from the children and the element has itself text associated with
         it, then that will be used. If no text is found at all, a NoSuchText exception is raised.
 
-        If you are strictly interested in the text explicitly associated with the element, without recursing into children, use the ``stricttext()`` method instead.
+        If you are strictly interested in the text explicitly associated with the element, without recursing into children, use ``strict=True``
 
         If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.
         """
+
+        if strict:
+            return self.textcontent(cls).text()
 
         if self.TEXTCONTAINER:
             s = ""
@@ -753,14 +756,19 @@ class AbstractElement(object):
 
 
 
-    def phon(self, cls='current', previousdelimiter=""):
+    def phon(self, cls='current', previousdelimiter="", strict=False):
         """Get the phonetic representation associated with this element (of the specified class), will always be a unicode instance.
         If no text is directly associated with the element, it will be obtained from the children. If that doesn't result
-        in any text either, a NoSuchText exception will be raised.
+        in any text either, a NoSuchPhon exception will be raised.
+
+        If you are strictly interested in the phonetic context explicitly associated with the element, without recursing into children, use ``strict=True``
 
         If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.
         """
 
+
+        if strict:
+            return self.textcontent(cls).text()
 
         if self.PHONCONTAINER:
             s = ""
