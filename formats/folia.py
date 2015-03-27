@@ -64,7 +64,7 @@ import random
 
 
 FOLIAVERSION = '0.12.0'
-LIBVERSION = '0.12.0.61' #== FoLiA version + library revision
+LIBVERSION = '0.12.0.62' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -4154,7 +4154,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
         if index is None:
             try:
                 return next(self.select(New,None,False))
-            except IndexError:
+            except StopIteration:
                 raise NoSuchAnnotation
         else:
             for e in self.select(New,None,False):
@@ -4165,7 +4165,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
         if index is None:
             try:
                 return next(self.select(Original,None,False, False))
-            except IndexError:
+            except StopIteration:
                 raise NoSuchAnnotation
         else:
             for e in self.select(Original,None,False, False):
@@ -4176,7 +4176,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
         if index is None:
             try:
                 return next(self.select(Current,None,False))
-            except IndexError:
+            except StopIteration:
                 raise NoSuchAnnotation
         else:
             for e in self.select(Current,None,False):
