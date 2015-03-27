@@ -4183,16 +4183,50 @@ class Correction(AbstractAnnotation, AllowGenerateID):
                     return e.phoncontent(cls)
         raise NoSuchPhon
 
-    def text(self, cls = 'current', retaintokenisation=False, previousdelimiter=""):
+
+    def hastext(self, cls='current',strict=True):
         if cls == 'current':
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
-                    return previousdelimiter + e.text(cls, retaintokenisation)
+                    return e.hastext(cls,strict)
         elif cls == 'original':
             for e in self:
                 if isinstance(e, Original):
-                    return previousdelimiter + e.text(cls, retaintokenisation)
+                    return e.hastext(cls,strict)
+        return False
+
+    def text(self, cls = 'current', retaintokenisation=False, previousdelimiter="",strict=False):
+        if cls == 'current':
+            for e in self:
+                if isinstance(e, New) or isinstance(e, Current):
+                    return previousdelimiter + e.text(cls, retaintokenisation,strict)
+        elif cls == 'original':
+            for e in self:
+                if isinstance(e, Original):
+                    return previousdelimiter + e.text(cls, retaintokenisation,strict)
         raise NoSuchText
+
+    def hasphon(self, cls='current',strict=True):
+        if cls == 'current':
+            for e in self:
+                if isinstance(e, New) or isinstance(e, Current):
+                    return e.hasphon(cls,strict)
+        elif cls == 'original':
+            for e in self:
+                if isinstance(e, Original):
+                    return e.hasphon(cls,strict)
+        return False
+
+    def phon(self, cls = 'current', previousdelimiter="",strict=False):
+        if cls == 'current':
+            for e in self:
+                if isinstance(e, New) or isinstance(e, Current):
+                    return previousdelimiter + e.phon(cls, strict)
+        elif cls == 'original':
+            for e in self:
+                if isinstance(e, Original):
+                    return previousdelimiter + e.phon(cls, strict)
+        raise NoSuchphon
 
     def gettextdelimiter(self, retaintokenisation=False):
         """May return a customised text delimiter instead of the default for this class."""
