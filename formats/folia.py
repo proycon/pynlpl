@@ -1606,7 +1606,7 @@ class AbstractElement(object):
             for child in self:
                 if self.TEXTCONTAINER and isstring(child):
                     jsonnode['children'].append(child)
-                elif not self.PHONTCONTAINER:
+                elif not self.PHONCONTAINER:
                     jsonnode['children'].append(child.json())
 
         if attribs:
