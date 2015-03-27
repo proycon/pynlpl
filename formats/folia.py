@@ -1,4 +1,4 @@
-#----------------------------------------------------------------
+ibute#----------------------------------------------------------------
 # PyNLPl - FoLiA Format Module
 #   by Maarten van Gompel
 #   Centre for Language Studies
@@ -967,21 +967,65 @@ class AbstractElement(object):
             if isinstance(c, AbstractElement):
                 c.setdoc(newdoc)
 
-    def hastext(self,cls='current'):
-        """Does this element have text (of the specified class)"""
-        try:
-            r = self.textcontent(cls)
-            return True
-        except NoSuchText:
-            return False
+    def hastext(self,cls='current',strict=True):
+        """Does this element have text (of the specified class)
 
-    def hasphon(self,cls='current'):
-        """Does this element have phonetic content (of the specified class)"""
-        try:
-            r = self.phoncontent(cls)
-            return True
-        except NoSuchPhon:
+        By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
+        Set strict=False to allow checking whether the children have the text.
+        """
+        if not self.PRINTABLE: #only printable elements can hold text
             return False
+        elif self.TEXTCONTAINER:
+            return True
+        else:
+            try:
+                if strict:
+                    r = self.textcontent(cls)
+                    return True
+                else:
+                    if self.TEXTCONTAINER:
+                        return True
+                    else:
+                        #Check children
+                        for e in self:
+                            if e.PRINTABLE and not isinstance(e, TextContent):
+                                if e.hastext(cls, strict):
+                                    return True
+
+                        r = self.textcontent(cls)  #will raise NoSuchTextException when not found
+                        return True
+            except NoSuchText:
+                return False
+
+    def hasphon(self,cls='current',strict=True):
+        """Does this element have phonetic content (of the specified class)
+
+        By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
+        Set strict=False to allow checking whether the children have the text.
+        """
+        if not self.SPEAKABLE: #only printable elements can hold text
+            return False
+        elif self.PHONCONTAINER:
+            return True
+        else:
+            try:
+                if strict:
+                    r = self.phoncontent(cls)
+                    return True
+                else:
+                    if self.PHONCONTAINER:
+                        return True
+                    else:
+                        #Check children
+                        for e in self:
+                            if e.SPEAKABLE and not isinstance(e, PhonContent):
+                                if e.hasphon(cls, strict):
+                                    return True
+
+                        r = self.phoncontent(cls)  #will raise NoSuchTextException when not found
+                        return True
+            except NoSuchPhon:
+                return False
 
     def settext(self, text, cls='current'):
         """Set the text for this element (and class)"""
