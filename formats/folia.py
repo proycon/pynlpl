@@ -64,7 +64,7 @@ import random
 
 
 FOLIAVERSION = '0.12.0'
-LIBVERSION = '0.12.0.62' #== FoLiA version + library revision
+LIBVERSION = '0.12.0.63' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -562,6 +562,7 @@ class AbstractElement(object):
     REQUIRED_ATTRIBS = () #List of required attributes (Members from the Attrib class)
     OPTIONAL_ATTRIBS = () #List of optional attributes (Members from the Attrib class)
     ACCEPTED_DATA = () #List of accepted data, classes inherited from AbstractElement
+    REQUIRED_DATA = () #List of required data, classes inherited from AbstractElement
     ANNOTATIONTYPE = None #Annotation type (Member of AnnotationType class)
     XMLTAG = None #XML-tag associated with this element
     OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited, default=0)
@@ -1939,8 +1940,6 @@ class AbstractElement(object):
                 attribs += [ E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ) ]
             attribs.append( E.optional( E.attribute( name='auth' ) ) )
 
-            #if cls.ALLOWTEXT:
-            #    attribs.append( E.optional( E.ref(name='t') ) ) #yes, not actually an attrib, I know, but should go here
 
 
             if extraattribs:
@@ -1974,7 +1973,12 @@ class AbstractElement(object):
                     else:
                         try:
                             if c.XMLTAG and not (c.XMLTAG in done):
-                                if c.OCCURRENCES == 1:
+                                if c in cls.REQUIRED_DATA:
+                                    if c.OCCURRENCES == 1:
+                                        elements.append( E.ref(name=c.XMLTAG) )
+                                    else:
+                                        elements.append( E.oneOrMore( E.ref(name=c.XMLTAG) ) )
+                                elif c.OCCURRENCES == 1:
                                     elements.append( E.optional( E.ref(name=c.XMLTAG) ) )
                                 else:
                                     elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )
@@ -3618,6 +3622,7 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set
     PRINTABLE = True
     SPEAKABLE = True
+    REQUIRED_DATA = () #Required roles, these must be present (optional roles are simply in ACCEPTED_DATA)
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
@@ -4526,6 +4531,7 @@ class Dependency(AbstractSpanAnnotation):
     ACCEPTED_DATA = (Description, Feature,Headspan, DependencyDependent, Alignment, Metric)
     ANNOTATIONTYPE = AnnotationType.DEPENDENCY
     XMLTAG = 'dependency'
+    REQUIRED_DATA = (Headspan, DependencyDependent) #Required roles, these must be present (optional roles are simply in ACCEPTED_DATA)
 
     def head(self):
         """Returns the head of the dependency relation. Instance of DependencyHead"""
@@ -4566,6 +4572,7 @@ class CoreferenceChain(AbstractSpanAnnotation):
     ACCEPTED_DATA = (CoreferenceLink,Description, Metric)
     ANNOTATIONTYPE = AnnotationType.COREFERENCE
     XMLTAG = 'coreferencechain'
+    REQUIRED_DATA = (CoreferenceLink,) #Required roles, these must be present (optional roles are simply in ACCEPTED_DATA)
 
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
