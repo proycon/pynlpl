@@ -803,6 +803,7 @@ class Target(object): #FOR/IN... expression
                 endinclusive = False
             elif q.kw(i,"CONTINUOUS"):
                 continuous = True
+                i += 1
             else:
                 break
 
