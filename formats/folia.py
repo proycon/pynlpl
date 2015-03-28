@@ -1572,7 +1572,7 @@ class AbstractElement(object):
         return e
 
 
-    def json(self, attribs=None, recurse=True):
+    def json(self, attribs=None, recurse=True, ignorelist=False):
         jsonnode = {}
 
         jsonnode['type'] = self.XMLTAG
@@ -1608,7 +1608,15 @@ class AbstractElement(object):
                 if self.TEXTCONTAINER and isstring(child):
                     jsonnode['children'].append(child)
                 elif not self.PHONCONTAINER:
-                    jsonnode['children'].append(child.json())
+                    #check ignore list
+                    ignore = False
+                    if ignorelist:
+                        for e in ignorelist:
+                            if isinstance(child,e):
+                                ignore = True
+                                break
+                    if not ignore:
+                        jsonnode['children'].append(child.json(ignorelist=ignorelist))
 
         if attribs:
             for attrib in attribs:
