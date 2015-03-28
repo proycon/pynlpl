@@ -1793,7 +1793,7 @@ class AbstractElement(object):
                     if e is child:
                         returnnext = True
                     elif returnnext:
-                        if e.auth:
+                        if e.auth and not isinstance(e,AbstractAnnotationLayer):
                             if (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
                                 return e
                             else:
@@ -1802,7 +1802,7 @@ class AbstractElement(object):
                                     e = e.data[descendindex]
                                     if not isinstance(e, AbstractElement):
                                         return None #we've gone too far
-                                    if e.auth:
+                                    if e.auth and not isinstance(e,AbstractAnnotationLayer):
                                         if (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
                                             return e
                                         else:
