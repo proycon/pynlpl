@@ -801,7 +801,7 @@ class Target(object): #FOR/IN... expression
             elif q.kw(i,"ENDBEFORE"): #exclusive
                 end,i = Selector.parse(q,i+1)
                 endinclusive = False
-            elif q.kw(i,"CONTINUOUS"): #exclusive
+            elif q.kw(i,"CONTINUOUS"):
                 continuous = True
             else:
                 break
