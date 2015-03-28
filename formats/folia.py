@@ -90,7 +90,6 @@ for ordinal in range(0x20):
 class Mode:
     MEMORY = 0 #The entire FoLiA structure will be loaded into memory. This is the default and is required for any kind of document manipulation.
     XPATH = 1 #The full XML structure will be loaded into memory, but conversion to FoLiA objects occurs only upon querying. The full power of XPath is available.
-    ITERATIVE = 2 #XML element are loaded and conveted to FoLiA objects iteratively on a need-to basis. A subset of XPath is supported. (not implemented, obsolete)
 
 class AnnotatorType:
     UNSET = 0
@@ -2023,6 +2022,16 @@ class AbstractElement(object):
 
         assert issubclass(Class, AbstractElement)
         global NSFOLIA, NSDCOI
+
+        if doc.preparsexmlcallback:
+            result = doc.preparsexmlcallback(node)
+            if not result:
+                return None
+            if isinstance(result, folia.AbstractElement):
+                return result
+
+
+
         dcoi = node.tag.startswith('{' + NSDCOI + '}')
         args = []
         kwargs = {}
@@ -2033,7 +2042,9 @@ class AbstractElement(object):
             if not isinstance(subnode, ElementTree._Comment): #don't trip over comments
                 if subnode.tag.startswith('{' + NSFOLIA + '}'):
                     if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:],file=stderr)
-                    args.append(doc.parsexml(subnode, Class) )
+                    e = doc.parsexml(subnode, Class)
+                    if e is not None:
+                        args.append(e)
                     if (Class.TEXTCONTAINER or Class.PHONCONTAINER) and subnode.tail:
                         args.append(subnode.tail)
                 elif subnode.tag.startswith('{' + NSDCOI + '}'):
@@ -2041,10 +2052,14 @@ class AbstractElement(object):
                     if Class is Text and subnode.tag[nslendcoi:] == 'body':
                         for subsubnode in subnode:
                             if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslendcoi:],file=stderr)
-                            args.append(doc.parsexml(subsubnode, Class) )
+                            e = doc.parsexml(subsubnode, Class)
+                            if e is not None:
+                                args.append(e)
                     else:
                         if doc.debug >= 1: print( "[PyNLPl FoLiA DEBUG] Processing DCOI subnode " + subnode.tag[nslendcoi:],file=stderr)
-                        args.append(doc.parsexml(subnode, Class) )
+                        e = doc.parsexml(subnode, Class)
+                        if e is not None:
+                            args.append(e)
                 elif doc.debug >= 1:
                     print("[PyNLPl FoLiA DEBUG] Ignoring subnode outside of FoLiA namespace: " + subnode.tag,file=stderr)
 
@@ -2121,6 +2136,14 @@ class AbstractElement(object):
                 if not AnnotationType.CORRECTION in doc.annotationdefaults:
                     doc.declare(AnnotationType.CORRECTION, set='http://ilk.uvt.nl/folia/sets/dcoi-corrections.foliaset')
                 instance.correct(generate_id_in=instance, cls=dcoicorrection, original=dcoicorrectionoriginal, new=text)
+
+        if doc.parsexmlcallback:
+            result = doc.parsexmlcallback(instance)
+            if not result:
+                return None
+            if isinstance(result, folia.AbstractElement):
+                return result
+
         return instance
 
     def resolveword(self, id):
@@ -3191,9 +3214,9 @@ class PhonContent(AbstractElement):
         global NSFOLIA
 
         e = super(PhonContent,Class).parsexml(node,doc)
-        if 'offset' in node.attrib:
+        if e and 'offset' in node.attrib:
             e.offset = int(node.attrib['offset'])
-        if 'ref' in node.attrib:
+        if e and 'ref' in node.attrib:
             e.ref = node.attrib['ref']
         return e
 
@@ -3479,7 +3502,7 @@ class Word(AbstractStructureElement, AllowCorrections):
         assert Class is Word
         global NSFOLIA
         instance = super(Word,Class).parsexml(node, doc)
-        if 'space' in node.attrib:
+        if 'space' in node.attrib and instance:
             if node.attrib['space'] == 'no':
                 instance.space = False
         return instance
@@ -3942,10 +3965,11 @@ class Reference(AbstractStructureElement):
         else:
             idref = None
         instance = super(Reference,Class).parsexml(node, doc)
-        if idref:
-            instance.idref = idref
-        if t:
-            instance.type =  t
+        if instance:
+            if idref:
+                instance.idref = idref
+            if t:
+                instance.type =  t
         return instance
 
 
@@ -5376,15 +5400,19 @@ class Document(object):
 
             doc = folia.Document(tree=xmltree)
 
-        Additionally, there are three modes that can be set with the mode= keyword argument:
+        Additionally, there are three modes that can be set with the ``mode=`` keyword argument:
 
              * folia.Mode.MEMORY - The entire FoLiA Document will be loaded into memory. This is the default mode and the only mode in which documents can be manipulated and saved again.
              * folia.Mode.XPATH - The full XML tree will still be loaded into memory, but conversion to FoLiA classes occurs only when queried. This mode can be used when the full power of XPath is required.
-             * folia.Mode.ITERATIVE - Not implemented, obsolete. Use Reader class instead
 
 
         Optional keyword arguments:
 
+            ``setdefinition=``:  A dictionary of set definitions, the key corresponds to the set name, the value is a SetDefinition instance
+            ``loadsetdefinitions=``:  Boolean, download and load set definitions (default: False)
+            ``deepvalidation=``:  Boolean, do deep validation of the document (default: False), implies ``loadsetdefinitions``
+            ``preparsexmlcallback=``:  Callback for a function taking one argument (``node``, an lxml node). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort parsing this element (and all its children)
+            ``parsexmlcallback=``:  Callback for a function taking one argument (``element``, a FoLiA element). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort adding this element (and all its children)
             ``debug=``:  Boolean to enable/disable debug
         """
 
@@ -5409,6 +5437,7 @@ class Document(object):
         self.metadata = NativeMetaData() #will point to XML Element holding IMDI or CMDI metadata
         self.metadatatype = MetaDataType.NATIVE
         self.metadatafile = None #reference to external metadata file
+
 
         self.autodeclare = False #Automatic declarations in case of undeclared elements (will be enabled for DCOI, since DCOI has no declarations)
 
@@ -5477,6 +5506,15 @@ class Document(object):
         else:
             self.bypassleak = True
 
+        if 'preparsexmlcallback' in kwargs:
+            self.preparsexmlcallback = kwargs['parsexmlcallback']
+        else:
+            self.preparsexmlcallback = None
+
+        if 'parsexmlcallback' in kwargs:
+            self.parsexmlcallback = kwargs['parsexmlcallback']
+        else:
+            self.parsexmlcallback = None
 
         if 'id' in kwargs:
             isncname(kwargs['id'])
@@ -6161,7 +6199,9 @@ class Document(object):
                         self.parsemetadata(subnode)
                     elif (subnode.tag == '{' + NSFOLIA + '}text' or subnode.tag == '{' + NSFOLIA + '}speech') and self.mode == Mode.MEMORY:
                         if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found Text",file=stderr)
-                        self.data.append( self.parsexml(subnode) )
+                        e = self.parsexml(subnode)
+                        if e is not None:
+                            self.data.append(e)
             else:
                 #generic handling (FoLiA)
                 if not foliatag in XML2CLASS:
@@ -6187,7 +6227,9 @@ class Document(object):
                     self.setimdi(subnode)
                 elif subnode.tag == '{' + NSDCOI + '}text':
                     if self.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found Text",file=stderr)
-                    self.data.append( self.parsexml(subnode) )
+                    e = self.parsexml(subnode)
+                    if e is not None:
+                        self.data.append( e )
         elif node.tag.startswith('{' + NSDCOI + '}'):
             #generic handling (D-Coi)
             if node.tag[nslendcoi:] in XML2CLASS:
