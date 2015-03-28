@@ -39,9 +39,14 @@ Qselect_target = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w
 Qselect_singlefocus = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdletter\" FOR w RETURN focus FORMAT single-python"
 Qselect_singletarget = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"hoofdletter\" FOR w RETURN target FORMAT single-python"
 
+
+
 Qselect_multitarget_focus = "SELECT lemma OF \"lemmas-nl\" FOR ID \"WR-P-E-J-0000000001.p.1.s.4.w.4\" , ID \"WR-P-E-J-0000000001.p.1.s.4.w.5\""
 Qselect_multitarget = "SELECT lemma OF \"lemmas-nl\" FOR ID \"WR-P-E-J-0000000001.p.1.s.4.w.4\" , ID \"WR-P-E-J-0000000001.p.1.s.4.w.5\" RETURN target"
 Qselect_nestedtargets = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\" RETURN target FORMAT single-python"
+
+Qselect_startend = "SELECT FOR w START ID \"WR-P-E-J-0000000001.p.1.s.2.w.2\" END ID \"WR-P-E-J-0000000001.p.1.s.2.w.4\"" #inclusive
+Qselect_startend2 = "SELECT FOR w START ID \"WR-P-E-J-0000000001.p.1.s.2.w.2\" ENDBEFORE ID \"WR-P-E-J-0000000001.p.1.s.2.w.4\"" #exclusive
 
 Qedit = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
 Qadd = "ADD lemma OF \"lemmas-nl\" WITH class \"hebben\" FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
@@ -576,6 +581,20 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].text(), "heel")
         self.assertEqual(results[0].next(folia.Word).text(), "ander")
 
+    def test30_select_startend(self):
+        q = fql.Query(Qselect_startend)
+        results = q(self.doc)
+        self.assertEqual(len(results), 3)
+        self.assertEqual(results[0].text(), "de")
+        self.assertEqual(results[1].text(), "historische")
+        self.assertEqual(results[2].text(), "wetenschap")
+
+    def test30_select_startend2(self):
+        q = fql.Query(Qselect_startend2)
+        results = q(self.doc)
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0].text(), "de")
+        self.assertEqual(results[1].text(), "historische")
 
 class Test4CQL(unittest.TestCase):
     def setUp(self):

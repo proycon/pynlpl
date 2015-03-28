@@ -35,8 +35,8 @@ MASK_LITERAL = 1
 MASK_EXPRESSION = 2
 MAXEXPANSION = 99
 
-FOLIAVERSION = '0.11.2'
-FQLVERSION = '0.2.1'
+FOLIAVERSION = '0.12.0'
+FQLVERSION = '0.2.2'
 
 class SyntaxError(Exception):
     pass
@@ -755,10 +755,14 @@ class Span(object):
 
 
 class Target(object): #FOR/IN... expression
-    def __init__(self, targets, strict=False,nested = None):
+    def __init__(self, targets, strict=False,nested = None, start=None, end=None,endinclusive=True):
         self.targets = targets #Selector instances
         self.strict = strict #True for IN
         self.nested = nested #in a nested another target
+        self.start = start
+        self.end = end
+        self.endinclusive = endinclusive
+
 
     @staticmethod
     def parse(q, i=0):
@@ -772,6 +776,8 @@ class Target(object): #FOR/IN... expression
 
         targets = []
         nested = None
+        start = end = None
+        endinclusive = True
         l = len(q)
         while i < l:
             if q.kw(i,'SPAN'):
@@ -785,13 +791,21 @@ class Target(object): #FOR/IN... expression
                 i += 1
             elif q.kw(i, ('FOR','IN')):
                 nested,i = Selector.parse(q,i+1)
+            elif q.kw(i,"START"):
+                start,i = Selector.parse(q,i+1)
+            elif q.kw(i,("END","ENDAFTER")): #inclusive
+                end,i = Selector.parse(q,i+1)
+                endinclusive = True
+            elif q.kw(i,"ENDBEFORE"): #exclusive
+                end,i = Selector.parse(q,i+1)
+                endinclusive = False
             else:
                 break
 
         if not targets:
             raise SyntaxError("Expected one or more targets, got " + str(q[i]) + " in: " + str(q))
 
-        return Target(targets,strict,nested), i
+        return Target(targets,strict,nested,start,end,endinclusive), i
 
 
     def __call__(self, query, contextselector, debug=False): #generator, lazy evaluation!
@@ -813,9 +827,28 @@ class Target(object): #FOR/IN... expression
                 selector = self.targets[0]
                 selector.chain(self.targets)
 
+                started = (self.start is None)
+                dobreak = False
+
                 for e,_ in selector(query, contextselector, not self.strict, debug):
-                    if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
-                    yield e
+                    if not started:
+                        if self.start.match(query, e):
+                            if debug: print("[FQL EVALUATION DEBUG] Target - Matched start! Starting from here...",e, file=sys.stderr)
+                            started = True
+                    if started:
+                        if self.end:
+                            if self.end.match(query, e):
+                                if not self.endinclusive:
+                                    if debug: print("[FQL EVALUATION DEBUG] Target - Matched end! Breaking before yielding...",e, file=sys.stderr)
+                                    break
+                                else:
+                                    if debug: print("[FQL EVALUATION DEBUG] Target - Matched end! Breaking after yielding...",e, file=sys.stderr)
+                                    dobreak = True
+                        if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
+                        yield e
+                        if dobreak: break
+
+
 
 
 
