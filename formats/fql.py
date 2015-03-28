@@ -755,13 +755,14 @@ class Span(object):
 
 
 class Target(object): #FOR/IN... expression
-    def __init__(self, targets, strict=False,nested = None, start=None, end=None,endinclusive=True):
+    def __init__(self, targets, strict=False,nested = None, start=None, end=None,endinclusive=True,continuous=False):
         self.targets = targets #Selector instances
         self.strict = strict #True for IN
         self.nested = nested #in a nested another target
         self.start = start
         self.end = end
         self.endinclusive = endinclusive
+        self.continuous = continuous
 
 
     @staticmethod
@@ -778,6 +779,7 @@ class Target(object): #FOR/IN... expression
         nested = None
         start = end = None
         endinclusive = True
+        continuous = False
         l = len(q)
         while i < l:
             if q.kw(i,'SPAN'):
@@ -799,13 +801,15 @@ class Target(object): #FOR/IN... expression
             elif q.kw(i,"ENDBEFORE"): #exclusive
                 end,i = Selector.parse(q,i+1)
                 endinclusive = False
+            elif q.kw(i,"CONTINUOUS"): #exclusive
+                continuous = True
             else:
                 break
 
         if not targets:
             raise SyntaxError("Expected one or more targets, got " + str(q[i]) + " in: " + str(q))
 
-        return Target(targets,strict,nested,start,end,endinclusive), i
+        return Target(targets,strict,nested,start,end,endinclusive, continuous), i
 
 
     def __call__(self, query, contextselector, debug=False): #generator, lazy evaluation!
@@ -840,13 +844,19 @@ class Target(object): #FOR/IN... expression
                             if self.end.match(query, e):
                                 if not self.endinclusive:
                                     if debug: print("[FQL EVALUATION DEBUG] Target - Matched end! Breaking before yielding...",e, file=sys.stderr)
-                                    break
+                                    started = False
+                                    if self.continuous:
+                                        continue
+                                    else:
+                                        break
                                 else:
                                     if debug: print("[FQL EVALUATION DEBUG] Target - Matched end! Breaking after yielding...",e, file=sys.stderr)
+                                    started = False
                                     dobreak = True
                         if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
                         yield e
-                        if dobreak: break
+                        if dobreak and not self.continuous:
+                            break
 
 
 
