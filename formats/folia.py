@@ -6259,11 +6259,11 @@ class Document(object):
                     for e in t.select(Class,set,recursive,ignore):
                         yield e
 
-    def count(self, Class, set=None):
+    def count(self, Class, set=None, recursive=True,ignore=True):
         if self.mode == Mode.MEMORY:
             s = 0
             for t in self.data:
-                s +=  sum( 1 for e in t.select(Class,set,True ) )
+                s +=  sum( 1 for e in t.select(Class,recursive,True ) )
             return s
 
     def paragraphs(self, index = None):

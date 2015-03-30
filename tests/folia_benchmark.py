@@ -59,12 +59,12 @@ def text(**kwargs):
 @timeit
 def countwords(**kwargs):
     """Counting words"""
-    kwargs['doc'].count(folia.Word)
+    kwargs['doc'].count(folia.Word,None, True,[folia.AbstractAnnotationLayer])
 
 @timeit
 def selectwords(**kwargs):
     """Selecting words"""
-    for word in kwargs['doc'].select(folia.Word):
+    for word in kwargs['doc'].words():
         pass
 
 
@@ -106,15 +106,23 @@ def editwordsfql(**kwargs):
 @timeit
 def nextwords(**kwargs):
     """Find neighbour of each word"""
-    for word in kwargs['doc'].select(folia.Word):
+    for word in kwargs['doc'].words():
         word.next()
 
 @timeit
 def addelement(**kwargs):
-    """Adding an annotation (desc) to each word"""
-    for word in kwargs['doc'].select(folia.Word):
+    """Adding a simple annotation (desc) to each word"""
+    for word in kwargs['doc'].words():
         word.append(folia.Description, value="test")
 
+
+
+@timeit
+def ancestors(**kwargs):
+    """Iterating over the ancestors of each word"""
+    for word in kwargs['doc'].words():
+        for ancestor in word.ancestors():
+            pass
 
 @timeit
 def readerwords(**kwargs):
@@ -152,7 +160,7 @@ def main():
                 globals()[f](filename=filename)
 
 
-    for f in ('xml','text','countwords','selectwords','nextwords','selectwordsfql','selectwordsfqlforp','selectwordsfqlxml','selectwordsfqlwhere','editwordsfql' ):
+    for f in ('xml','text','countwords','selectwords','nextwords','ancestors','selectwordsfql','selectwordsfqlforp','selectwordsfqlxml','selectwordsfqlwhere','editwordsfql', 'addelement' ):
         if f in selectedtests or 'all' in selectedtests:
             for filename in files:
                 doc = folia.Document(file=filename)
