@@ -113,8 +113,10 @@ def nextwords(**kwargs):
 def addelement(**kwargs):
     """Adding a simple annotation (desc) to each word"""
     for word in kwargs['doc'].words():
-        word.append(folia.Description, value="test")
-
+        try:
+            word.append(folia.Description, value="test")
+        except folia.DuplicateAnnotationError:
+            pass
 
 
 @timeit
