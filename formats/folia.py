@@ -510,7 +510,7 @@ def xmltreefromfile(filename,bypassleak=False):
         f.close()
         return tree
     else:
-        return ElementTree.parse(file)
+        return ElementTree.parse(filename)
 
 def makeelement(E, tagname, **kwargs):
     if sys.version < '3':
@@ -6261,7 +6261,10 @@ class Document(object):
 
     def count(self, Class, set=None):
         if self.mode == Mode.MEMORY:
-            return sum( 1 for e in t.select(Class,set,True ) for t in self.data  )
+            s = 0
+            for t in self.data:
+                s +=  sum( 1 for e in t.select(Class,set,True ) )
+            return s
 
     def paragraphs(self, index = None):
         """Return a generator of all paragraphs found in the document.
@@ -7007,7 +7010,7 @@ class Reader(object):
                 if '{http://www.w3.org/XML/1998/namespace}id' in node.attrib:
                     id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
                 else:
-                    id = node.attrib['id']
+                    id = node.attrib['XMLid']
                 self.doc = Document(id=id)
                 if 'version' in node.attrib:
                     self.doc.version = node.attrib['version']
