@@ -172,31 +172,31 @@ if sys.version < '3':
                     linenum = s.count("\n") + 1
                     print("In line " + str(linenum) +" : ... ", repr(s[-25:]),file=stderr)
                     raise e
-                return s.replace('xml:id','id').encode('utf-8')
+                return s.replace('xml:id','XMLid').encode('utf-8')
 
             def readline(self):
                 s = unicode(super(BypassLeakFile,self).readline(),'utf-8')
-                return s.replace('xml:id','id').encode('utf-8')
+                return s.replace('xml:id','XMLid').encode('utf-8')
     else:
         #Python 2.6 without io
         class BypassLeakFile(file):
             def read(self,n=0): #pylint: disable=E1003
                 s = unicode(super(BypassLeakFile,self).read(n),'utf-8')
-                return s.replace('xml:id','id').encode('utf-8')
+                return s.replace('xml:id','XMLid').encode('utf-8')
 
             def readline(self): #pylint: disable=E1003
                 s = unicode(super(BypassLeakFile,self).readline(),'utf-8')
-                return s.replace('xml:id','id').encode('utf-8')
+                return s.replace('xml:id','XMLid').encode('utf-8')
 else:
     #Python 3
     class BypassLeakFile(io.FileIO):
         def read(self,n=0): #pylint: disable=E1003
             s = super(BypassLeakFile,self).read(n)
-            return s.replace(b'xml:id',b'id')
+            return s.replace(b'xml:id',b'XMLid')
 
         def readline(self):  #pylint: disable=E1003
             s = super(BypassLeakFile,self).readline()
-            return s.replace(b'xml:id',b'id')
+            return s.replace(b'xml:id',b'XMLid')
 
 
 def parsetime(s):
