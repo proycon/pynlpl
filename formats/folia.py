@@ -5504,7 +5504,7 @@ class Document(object):
         if 'bypassleak' in kwargs:
             self.bypassleak = bool(kwargs['bypassleak'])
         else:
-            self.bypassleak = True
+            self.bypassleak = False
 
         if 'preparsexmlcallback' in kwargs:
             self.preparsexmlcallback = kwargs['parsexmlcallback']

@@ -51,6 +51,12 @@ def xml(**kwargs):
     """XML serialisation"""
     kwargs['doc'].xml()
 
+
+@timeit
+def json(**kwargs):
+    """JSON serialisation"""
+    kwargs['doc'].json()
+
 @timeit
 def text(**kwargs):
     """text serialisation"""
@@ -162,7 +168,7 @@ def main():
                 globals()[f](filename=filename)
 
 
-    for f in ('xml','text','countwords','selectwords','nextwords','ancestors','selectwordsfql','selectwordsfqlforp','selectwordsfqlxml','selectwordsfqlwhere','editwordsfql', 'addelement' ):
+    for f in ('xml','text','json','countwords','selectwords','nextwords','ancestors','selectwordsfql','selectwordsfqlforp','selectwordsfqlxml','selectwordsfqlwhere','editwordsfql', 'addelement' ):
         if f in selectedtests or 'all' in selectedtests:
             for filename in files:
                 doc = folia.Document(file=filename)
