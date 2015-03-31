@@ -156,47 +156,6 @@ class ModeError(Exception):
 
 
 
-#There is a leak in lxml :( , specialise file handler to replace xml:id to id, ugly hack (especially for Python2)
-if sys.version < '3':
-    if 1 == 2 and hasattr(io,'FileIO'): #DISABLED
-        #Python 2.6 with io, 2.7
-        class BypassLeakFile(io.FileIO):
-            def read(self,n=0):
-                try:
-                    s = unicode(super(BypassLeakFile,self).read(n),'utf-8')
-                except UnicodeDecodeError as e:
-                    byte = str(e).split()[5]
-                    position = int(str(e).split()[8].strip(':'))
-                    self.seek(0)
-                    s = super(BypassLeakFile,self).read(position)
-                    linenum = s.count("\n") + 1
-                    print("In line " + str(linenum) +" : ... ", repr(s[-25:]),file=stderr)
-                    raise e
-                return s.replace('xml:id','XMLid').encode('utf-8')
-
-            def readline(self):
-                s = unicode(super(BypassLeakFile,self).readline(),'utf-8')
-                return s.replace('xml:id','XMLid').encode('utf-8')
-    else:
-        #Python 2.6 without io
-        class BypassLeakFile(file):
-            def read(self,n=0): #pylint: disable=E1003
-                s = unicode(super(BypassLeakFile,self).read(n),'utf-8')
-                return s.replace('xml:id','XMLid').encode('utf-8')
-
-            def readline(self): #pylint: disable=E1003
-                s = unicode(super(BypassLeakFile,self).readline(),'utf-8')
-                return s.replace('xml:id','XMLid').encode('utf-8')
-else:
-    #Python 3
-    class BypassLeakFile(io.FileIO):
-        def read(self,n=0): #pylint: disable=E1003
-            s = super(BypassLeakFile,self).read(n)
-            return s.replace(b'xml:id',b'XMLid')
-
-        def readline(self):  #pylint: disable=E1003
-            s = super(BypassLeakFile,self).readline()
-            return s.replace(b'xml:id',b'XMLid')
 
 
 def parsetime(s):
@@ -476,41 +435,23 @@ def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-t
   return None
 
 
-def xmltreefromstring(s, bypassleak=False):
+def xmltreefromstring(s):
        #Internal method, deals with different Python versions, unicode strings versus bytes, and with the leak bug in lxml
        if sys.version < '3':
             #Python 2
-            if isinstance(s,str):
-                if bypassleak:
-                    s = unicode(s,'utf-8')
-                    s = s.replace(' xml:id=', ' XMLid=')
-                    s = s.encode('utf-8')
-            elif isinstance(s,unicode):
-                if bypassleak: s = s.replace(' xml:id=', ' XMLid=')
+            if isinstance(s,unicode):
                 s = s.encode('utf-8')
             else:
                 raise Exception("Expected string, got " + type(s))
-            return ElementTree.parse(StringIO(s))
+            return ElementTree.parse(StringIO(s), ElementTree.XMLParser(collect_ids=False))
        else:
             #Python 3
-            if isinstance(s,bytes):
-                if bypassleak:
-                    s = str(s,'utf-8')
-                    s = s.replace(' xml:id=', ' XMLid=')
-                    s = s.encode('utf-8')
-            elif isinstance(s,str):
-                if bypassleak: s = s.replace(' xml:id=', ' XMLid=')
+            if isinstance(s,str):
                 s = s.encode('utf-8')
-            return ElementTree.parse(BytesIO(s))
+            return ElementTree.parse(BytesIO(s), ElementTree.XMLParser(collect_ids=False))
 
-def xmltreefromfile(filename,bypassleak=False):
-    if bypassleak:
-        f = BypassLeakFile(filename,'rb')
-        tree = ElementTree.parse(f)
-        f.close()
-        return tree
-    else:
-        return ElementTree.parse(filename)
+def xmltreefromfile(filename,):
+    return ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
 
 def makeelement(E, tagname, **kwargs):
     if sys.version < '3':
@@ -1441,10 +1382,7 @@ class AbstractElement(object):
         if not elements: elements = []
 
         if self.id:
-            if self.doc and self.doc.bypassleak:
-                attribs['XMLid'] = self.id
-            else:
-                attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
+            attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
 
         #Some attributes only need to be added if they are not the same as what's already set in the declaration
         if not '{' + NSFOLIA + '}set' in attribs: #do not override if overloaded function already set it
@@ -1636,8 +1574,6 @@ class AbstractElement(object):
             if isinstance(s,bytes):
                 s = str(s,'utf-8')
 
-        if self.doc and self.doc.bypassleak:
-            s = s.replace('XMLid=','xml:id=')
         s = s.replace('ns0:','') #ugly patch to get rid of namespace prefix
         s = s.replace(':ns0','')
         return s
@@ -5502,9 +5438,7 @@ class Document(object):
             self.autodeclare = True
 
         if 'bypassleak' in kwargs:
-            self.bypassleak = bool(kwargs['bypassleak'])
-        else:
-            self.bypassleak = False
+            self.bypassleak = False #obsolete now
 
         if 'preparsexmlcallback' in kwargs:
             self.preparsexmlcallback = kwargs['parsexmlcallback']
@@ -5525,20 +5459,20 @@ class Document(object):
                 f = bz2.BZ2File(self.filename)
                 contents = f.read()
                 f.close()
-                self.tree = xmltreefromstring(contents,self.bypassleak)
+                self.tree = xmltreefromstring(contents)
                 del contents
                 self.parsexml(self.tree.getroot())
             elif self.filename[-3:].lower() == '.gz':
                 f = gzip.GzipFile(self.filename)
                 contents = f.read()
                 f.close()
-                self.tree = xmltreefromstring(contents,self.bypassleak)
+                self.tree = xmltreefromstring(contents)
                 del contents
                 self.parsexml(self.tree.getroot())
             else:
                 self.load(self.filename)
         elif 'string' in kwargs:
-            self.tree = xmltreefromstring(kwargs['string'],self.bypassleak)
+            self.tree = xmltreefromstring(kwargs['string'])
             del kwargs['string']
             self.parsexml(self.tree.getroot())
             if self.mode != Mode.XPATH:
@@ -5569,7 +5503,7 @@ class Document(object):
         #    #f.close()
         #    self.tree = ElementTree.parse(filename)
         #else:
-        self.tree = xmltreefromfile(filename, self.bypassleak)
+        self.tree = xmltreefromfile(filename)
         self.parsexml(self.tree.getroot())
         if self.mode != Mode.XPATH:
             #XML Tree is now obsolete (only needed when partially loaded for xpath queries)
@@ -5777,10 +5711,7 @@ class Document(object):
         global LIBVERSION, FOLIAVERSION
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
         attribs = {}
-        if self.bypassleak:
-            attribs['XMLid'] = self.id
-        else:
-            attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
+        attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
 
         if self.version:
             attribs['version'] = self.version
@@ -6334,8 +6265,6 @@ class Document(object):
             if isinstance(s,bytes):
                 s = str(s,'utf-8')
 
-        if self.bypassleak:
-            s = s.replace('XMLid=','xml:id=')
         s = s.replace('ns0:','') #ugly patch to get rid of namespace prefix
         s = s.replace(':ns0','')
         return s
@@ -6759,7 +6688,7 @@ class SetDefinition(AbstractDefinition):
 def loadsetdefinition(filename):
     global NSFOLIA
     if filename[0] == '/' or filename[0] == '.':
-        tree = ElementTree.parse(filename)
+        tree = ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
     else:
         try:
             f = urlopen(filename)
@@ -6973,7 +6902,6 @@ class Reader(object):
 
             * ``filename``: The filename of the document to read
             * ``target``: The FoLiA element you want to read, passed as a class. For example: ``folia.Sentence``.
-            * ``bypassleak'': Boolean indicating whether to bypass a memory leak in older versions of lxml/libxml2. Set this to true if you are processing a large number of files sequentially on old machines. This comes at the cost of a higher memory footprint, as the raw contents of the file, as opposed to the tree structure, *will* be loaded in memory.
 
         """
 
@@ -6981,13 +6909,10 @@ class Reader(object):
         if not issubclass(self.target, AbstractElement):
             raise ValueError("Target must be subclass of FoLiA element")
         if 'bypassleak' in kwargs:
-            self.bypassleak = bool(kwargs['bypassleak'])
-        else:
-            self.bypassleak = True
+            self.bypassleak = False
 
         self.openstream(filename)
         self.initdoc()
-
 
 
     def findwords(self, *args, **kwargs):
@@ -6996,10 +6921,7 @@ class Reader(object):
             yield x
 
     def openstream(self, filename):
-        if sys.version < '3' or not self.bypassleak:
-            self.stream = io.open(filename,'rb') #no bypassleak!!!!
-        elif self.bypassleak:
-            self.stream = BypassLeakFile(filename,'rb')
+            self.stream = io.open(filename,'rb')
 
     def initdoc(self):
         self.doc = None
@@ -7073,7 +6995,7 @@ def validate(filename,schema=None,deep=False):
         raise IOError("No such file")
 
     try:
-        doc = ElementTree.parse(filename)
+        doc = ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False) )
     except:
         raise MalformedXMLError("Malformed XML!")
 
