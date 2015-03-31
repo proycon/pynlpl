@@ -6901,7 +6901,7 @@ class Reader(object):
         Arguments:
 
             * ``filename``: The filename of the document to read
-            * ``target``: The FoLiA element you want to read, passed as a class. For example: ``folia.Sentence``.
+            * ``target``: The FoLiA element you want to read, passed as a class. For example: ``folia.Sentence``
 
         """
 
@@ -6931,8 +6931,6 @@ class Reader(object):
             if action == "start" and node.tag == "{" + NSFOLIA + "}FoLiA":
                 if '{http://www.w3.org/XML/1998/namespace}id' in node.attrib:
                     id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
-                else:
-                    id = node.attrib['XMLid']
                 self.doc = Document(id=id)
                 if 'version' in node.attrib:
                     self.doc.version = node.attrib['version']
@@ -6963,19 +6961,6 @@ class Reader(object):
 
         self.stream.close()
 
-
-#class WordIndexer(object):
-#    def __init__(self, doc, *args, **kwargs)
-#        self.doc = doc
-#
-#    def __iter__(self):
-#
-#
-#    def savecsv(self, filename):
-#
-#
-#    def savesql(self, filename):
-# in-place prettyprint formatter
 
 def isncname(name):
     #not entirely according to specs http://www.w3.org/TR/REC-xml/#NT-Name , but simplified:
