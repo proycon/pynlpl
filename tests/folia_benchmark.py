@@ -6,7 +6,12 @@ from pynlpl.formats import folia, fql, cql
 import time
 import sys
 import os
-from pympler import asizeof
+import glob
+try:
+    from pympler import asizeof
+except ImportError:
+    print("An extra dependency called pympler is required: install using pip install pympler (or other means)",file=sys.stderr)
+    raise
 
 repetitions = 0
 
@@ -24,23 +29,30 @@ def timeit(f):
         times = []
         for i in range(0, repetitions):
             start = time.time()
-            result = f(*args, **kwargs)
+            try:
+                result = f(*args, **kwargs)
+            except Exception as e:
+                print(" -- ERROR! -- ", e)
+                return None
             times.append(time.time() - start)
-        d =  round(sum(times)  / len(times),4)
-        print('took ' + str(d) + 's (averaged over ' + str(repetitions) + ' runs)')
+        if times:
+            d =  round(sum(times)  / len(times),4)
+            print('took ' + str(d) + 's (averaged over ' + str(len(times)) + ' runs)')
+        else:
+            d = 0
         return result
     return f_timer
 
+
 @timeit
 def loadfile(**kwargs):
-    """Loading file (with xml leak bypass)"""
-    doc = folia.Document(file=kwargs['filename'])
-
-@timeit
-def loadfilenobypass(**kwargs):
-    """Loading file (without xml leak bypass)"""
+    """Loading file"""
     doc = folia.Document(file=kwargs['filename'],bypassleak=False)
 
+@timeit
+def loadfileleakbypass(**kwargs):
+    """Loading file (with xml leak bypass)"""
+    doc = folia.Document(file=kwargs['filename'],bypassleak=True)
 
 @timeit
 def savefile(**kwargs): #careful with SSDs
@@ -143,27 +155,45 @@ def readerwords(**kwargs):
 def main():
     global repetitions, target
     files = []
-    dirs = []
     try:
-        selectedtests = sys.argv[1].split(',')
-        repetitions = int(sys.argv[2])
-        filesordirs = sys.argv[3:]
+        begin = 1
+        if os.path.exists(sys.argv[1]):
+            begin = 1
+            selectedtests = "all"
+            repetitions = 1
+        else:
+            selectedtests = sys.argv[1].split(',')
+            if os.path.exists(sys.argv[2]):
+                repetitions = 1
+                begin = 2
+            else:
+                repetitions = int(sys.argv[2])
+                begin = 3
+        filesordirs = sys.argv[begin:]
     except:
-        print("Syntax: folia_benchmark testfunctions repetitions [file-or-directory]",file=sys.stderr)
+        print("Syntax: folia_benchmark [testfunctions [repetitions]] files-or-directories+",file=sys.stderr)
         print(" testfunctions is a comma separated list of function names, or the special keyword 'all'", file=sys.stderr)
-        print(" tests work either on files or directories, not both!", file=sys.stderr)
+        print(" directories are recursively searched for files with the extension folia.xml, +gz and +bz2 is supported too.", file=sys.stderr)
         sys.exit(2)
 
 
     for fd in filesordirs:
         if not os.path.exists(fd):
-            raise Exception("No such file or directory" + dir)
+            raise Exception("No such file or directory" + fd)
         if os.path.isfile(fd):
             files.append(fd)
         elif os.path.isdir(fd):
-            dirs.append(fd)
+            dirs = [fd]
+            while dirs:
+                dir = dirs.pop(0)
+                for filename in glob.glob(dir + "/*"):
+                    if os.path.isdir(filename):
+                        dirs.append(filename)
+                    elif filename.endswith('.folia.xml') or filename.endswith('.folia.xml.gz') or filename.endswith('.folia.xml.bz2'):
+                        files.append(filename)
 
-    for f in ('loadfile','loadfilenobypass','readerwords'):
+
+    for f in ('loadfile','loadfileleakbypass','readerwords'):
         if f in selectedtests or 'all' in selectedtests:
             for filename in files:
                 globals()[f](filename=filename)
@@ -179,7 +209,7 @@ def main():
         if f in selectedtests or 'all' in selectedtests:
             for filename in files:
                 doc = folia.Document(file=filename)
-                print(" Document " + filename + " -- memory consumption estimated at " + str(round(asizeof.asizeof(doc) / 1024 / 1024,2)) + " MB" + " (filesize " + str(round(os.path.getsize(filename)/1024/1024,2)) + " MB)")
+                print("memtest -- Memory test on document " + filename + " -- memory consumption estimated at " + str(round(asizeof.asizeof(doc) / 1024 / 1024,2)) + " MB" + " (filesize " + str(round(os.path.getsize(filename)/1024/1024,2)) + " MB)")
 
 
 
