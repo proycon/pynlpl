@@ -6,6 +6,7 @@ from pynlpl.formats import folia, fql, cql
 import time
 import sys
 import os
+from pympler import asizeof
 
 repetitions = 0
 
@@ -173,6 +174,13 @@ def main():
             for filename in files:
                 doc = folia.Document(file=filename)
                 globals()[f](doc=doc)
+
+    for f in ('memtest',):
+        if f in selectedtests or 'all' in selectedtests:
+            for filename in files:
+                doc = folia.Document(file=filename)
+                print(" Document " + filename + " -- memory consumption estimated at " + str(round(asizeof.asizeof(doc) / 1024 / 1024,2)) + " MB" + " (filesize " + str(round(os.path.getsize(filename)/1024/1024,2)) + " MB)")
+
 
 
 if __name__ == '__main__':

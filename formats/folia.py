@@ -6973,7 +6973,7 @@ class Reader(object):
 
             * ``filename``: The filename of the document to read
             * ``target``: The FoLiA element you want to read, passed as a class. For example: ``folia.Sentence``.
-            * ``bypassleak'': Boolean indicating whether to bypass a memory leak in lxml. Set this to true if you are processing a large number of files sequentially! This comes at the cost of a higher memory footprint, as the raw contents of the file, as opposed to the tree structure, *will* be loaded in memory.
+            * ``bypassleak'': Boolean indicating whether to bypass a memory leak in older versions of lxml/libxml2. Set this to true if you are processing a large number of files sequentially on old machines. This comes at the cost of a higher memory footprint, as the raw contents of the file, as opposed to the tree structure, *will* be loaded in memory.
 
         """
 
