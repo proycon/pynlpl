@@ -441,8 +441,6 @@ def xmltreefromstring(s):
             #Python 2
             if isinstance(s,unicode):
                 s = s.encode('utf-8')
-            else:
-                raise Exception("Expected string, got " + type(s))
             return ElementTree.parse(StringIO(s), ElementTree.XMLParser(collect_ids=False))
        else:
             #Python 3
