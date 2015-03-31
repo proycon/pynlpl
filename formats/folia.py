@@ -1974,6 +1974,8 @@ class AbstractElement(object):
         text = None #for dcoi support
         if (Class.TEXTCONTAINER or Class.PHONCONTAINER) and node.text:
             args.append(node.text)
+
+
         for subnode in node:
             if not isinstance(subnode, ElementTree._Comment): #don't trip over comments
                 if subnode.tag.startswith('{' + NSFOLIA + '}'):
@@ -6901,17 +6903,16 @@ class Reader(object):
         Arguments:
 
             * ``filename``: The filename of the document to read
-            * ``target``: The FoLiA element you want to read, passed as a class. For example: ``folia.Sentence``
+            * ``target``: The FoLiA element(s) you want to read (with everything contained in its scope). Passed as a class. For example: ``folia.Sentence``, or a tuple of multiple element classes. Can also be set to ``None`` to return all elements, but that would load the full tree structure into memory.
 
         """
 
         self.target = target
-        if not issubclass(self.target, AbstractElement):
+        if not (isinstance(self.target, tuple) or isinstance(self.target, list) or issubclass(self.target, AbstractElement)):
             raise ValueError("Target must be subclass of FoLiA element")
         if 'bypassleak' in kwargs:
             self.bypassleak = False
-
-        self.openstream(filename)
+        self.stream = io.open(filename,'rb')
         self.initdoc()
 
 
@@ -6920,14 +6921,10 @@ class Reader(object):
         for x in findwords(self.doc,self.__iter__,*args,**kwargs):
             yield x
 
-    def openstream(self, filename):
-            self.stream = io.open(filename,'rb')
-
     def initdoc(self):
         self.doc = None
         metadata = False
-        parser = ElementTree.iterparse(self.stream, events=("start","end"))
-        for action, node in parser:
+        for action, node in ElementTree.iterparse(self.stream, events=("start","end")):
             if action == "start" and node.tag == "{" + NSFOLIA + "}FoLiA":
                 if '{http://www.w3.org/XML/1998/namespace}id' in node.attrib:
                     id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
@@ -6941,26 +6938,40 @@ class Reader(object):
                 self.doc.parsemetadata(node)
                 break
 
+
         if not self.doc:
             raise MalformedXMLError("No FoLiA Document found!")
         elif not metadata:
             raise MalformedXMLError("No metadata found!")
 
-        self.stream.seek(0) #reset
+        self.stream.seek(0)
+
 
     def __iter__(self):
         """Iterating over a Reader instance will cause the FoLiA document to be read. This is a generator yielding instances of the object you specified"""
 
-        parser = ElementTree.iterparse(self.stream, events=("end",), tag="{" + NSFOLIA + "}" + self.target.XMLTAG  )
-        for action, node in parser:
-            element = self.target.parsexml(node, self.doc)
-            node.clear() #clean up children
-            while node.getprevious() is not None:
-                del node.getparent()[0]  # clean up preceding siblings
-            yield element
+        if not isinstance(self.target, tuple) or isinstance(self.target,list):
+            target = "{" + NSFOLIA + "}" + self.target.XMLTAG
+            Class = self.target
+            multitargets = False
+        else:
+            multitargets = True
 
+        for action, node in ElementTree.iterparse(self.stream, events=("end",), tag=target):
+            if not multitargets or (multitargets and node.tag.startswith('{' + NSFOLIA + '}')):
+                if not multitargets: Class = XML2CLASS[node.tag[nslen:]]
+                if not multitargets or (multitargets and Class in self.targets):
+                    element = Class.parsexml(node, self.doc)
+                    node.clear() #clean up children
+                    # Also eliminate now-empty references from the root node to
+                    # elem (http://www.ibm.com/developerworks/xml/library/x-hiperfparse/)
+                    #for ancestor in node.xpath('ancestor-or-self::*'):
+                    while node.getprevious() is not None:
+                        del node.getparent()[0]  # clean up preceding siblings
+                    yield element
+
+    def __del__(self):
         self.stream.close()
-
 
 def isncname(name):
     #not entirely according to specs http://www.w3.org/TR/REC-xml/#NT-Name , but simplified:

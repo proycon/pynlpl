@@ -49,10 +49,6 @@ def loadfile(**kwargs):
     """Loading file"""
     doc = folia.Document(file=kwargs['filename'],bypassleak=False)
 
-@timeit
-def loadfileleakbypass(**kwargs):
-    """Loading file (with xml leak bypass)"""
-    doc = folia.Document(file=kwargs['filename'],bypassleak=True)
 
 @timeit
 def savefile(**kwargs): #careful with SSDs
