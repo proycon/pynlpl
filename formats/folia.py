@@ -630,7 +630,7 @@ class AbstractElement(object):
             delimiter = ""
             s = ""
             for e in self:
-                if e.PRINTABLE and not isinstance(e, TextContent):
+                if e.PRINTABLE and not isinstance(e, TextContent) and not isinstance(e, String):
                     try:
                         s += e.text(cls,retaintokenisation, delimiter)
 
@@ -728,7 +728,7 @@ class AbstractElement(object):
             delimiter = ""
             s = ""
             for e in self:
-                if e.SPEAKABLE and not isinstance(e, PhonContent):
+                if e.SPEAKABLE and not isinstance(e, PhonContent) and not isinstance(e,String):
                     try:
                         s += e.phon(cls, delimiter)
 
@@ -2803,6 +2803,8 @@ class TextContent(AbstractElement):
             kwargs['cls'] = 'current'
 
         super(TextContent,self).__init__(doc, *args, **kwargs)
+
+        doc.textclasses.add(self.cls)
 
         if not self.data:
             raise ValueError("Empty text content elements are not allowed")
@@ -5375,6 +5377,8 @@ class Document(object):
         self.metadatafile = None #reference to external metadata file
 
 
+        self.textclasses = set() #will contain the text classes found
+
         self.autodeclare = False #Automatic declarations in case of undeclared elements (will be enabled for DCOI, since DCOI has no declarations)
 
         if 'setdefinitions' in kwargs:
@@ -6245,13 +6249,20 @@ class Document(object):
 
 
 
-    def text(self, retaintokenisation=False):
-        """Returns the text of the entire document (returns a unicode instance)"""
+    def text(self, cls='current', retaintokenisation=False):
+        """Returns the text of the entire document (returns a unicode instance)
+        """
+
+        #backward compatibility, old versions didn't have cls as first argument, so if a boolean is passed first we interpret it as the 2nd:
+        if cls is True or cls is False:
+            retaintokenisation = cls
+            cls = 'current'
+
         s = ""
         for c in self.data:
             if s: s += "\n\n\n"
             try:
-                s += c.text('current',retaintokenisation)
+                s += c.text(cls, retaintokenisation)
             except NoSuchText:
                 continue
         return s
