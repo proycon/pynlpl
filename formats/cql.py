@@ -108,6 +108,8 @@ class TokenExpression(object):
                     attribexprs.append(attribexpr)
                 else:
                     raise SyntaxError("Unexpected char whilst parsing token expression,  position " + str(i) + ": " + s[i])
+        else:
+            raise SyntaxError("Expected token expression starting with either \" or [, got: " + s[i])
 
         if i == len(s):
             interval = None #end of query!

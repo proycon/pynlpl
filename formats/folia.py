@@ -600,7 +600,7 @@ class AbstractElement(object):
         return self.text(cls,retaintokenisation=True)
 
     def text(self, cls='current', retaintokenisation=False, previousdelimiter="",strict=False):
-        """Get the text associated with this element (of the specified class), will always be a unicode instance.
+        """Get the text associated with this element (of the specified class)  (will always be a unicode instance in python 2)
 
         The text will be constructed from child-elements whereever possible, as they are more specific.
         If no text can be obtained from the children and the element has itself text associated with
