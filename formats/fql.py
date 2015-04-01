@@ -1796,6 +1796,8 @@ class Query(object):
                 else:
                     if wrap:
                         s = "[ "
+                    else:
+                        s = ""
                     for e in responseselection:
                         if isinstance(e, SpanSet):
                             s += json.dumps([ e2.json() for e2 in e ] ) + ", "
