@@ -1795,9 +1795,16 @@ class Query(object):
                         return ""
                 else:
                     if wrap:
-                        return json.dumps([ e.json() for e in responseselection ] )
-                    else:
-                        return json.dumps([ e.json() for e in responseselection ] )[1:-1]
+                        s = "[ "
+                    for e in responseselection:
+                        if isinstance(e, SpanSet):
+                            s += json.dumps([ e2.json() for e2 in e ] ) + ", "
+                        else:
+                            s += json.dumps(e.json()) + ", "
+                    s = s.strip(", ")
+                    if wrap:
+                        s += "]"
+                    return s
             else: #python and undefined formats
                 if debug: print("[FQL EVALUATION DEBUG] Query  - Returning python",file=sys.stderr)
                 return responseselection
