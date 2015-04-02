@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #----------------------------------------------------------------
 # PyNLPl - FoLiA Format Module
 #   by Maarten van Gompel
@@ -3002,7 +3003,6 @@ class PhonContent(AbstractElement):
         """Example::
 
                 phon = folia.PhonContent(doc, 'hɛˈləʊ̯')
-
                 phon = folia.PhonContent(doc, 'hɛˈləʊ̯', cls="original")
 
         """
