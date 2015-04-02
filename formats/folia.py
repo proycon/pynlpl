@@ -442,15 +442,24 @@ def xmltreefromstring(s):
             #Python 2
             if isinstance(s,unicode):
                 s = s.encode('utf-8')
-            return ElementTree.parse(StringIO(s), ElementTree.XMLParser(collect_ids=False))
+            try:
+                return ElementTree.parse(StringIO(s), ElementTree.XMLParser(collect_ids=False))
+            except TypeError:
+                return ElementTree.parse(StringIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
        else:
             #Python 3
             if isinstance(s,str):
                 s = s.encode('utf-8')
-            return ElementTree.parse(BytesIO(s), ElementTree.XMLParser(collect_ids=False))
+            try:
+                return ElementTree.parse(BytesIO(s), ElementTree.XMLParser(collect_ids=False))
+            except TypeError:
+                return ElementTree.parse(StringIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
 
 def xmltreefromfile(filename,):
-    return ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
+    try:
+        return ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
+    except TypeError:
+        return ElementTree.parse(filename, ElementTree.XMLParser()) #older lxml, may leak!!
 
 def makeelement(E, tagname, **kwargs):
     if sys.version < '3':
@@ -6699,7 +6708,10 @@ class SetDefinition(AbstractDefinition):
 def loadsetdefinition(filename):
     global NSFOLIA
     if filename[0] == '/' or filename[0] == '.':
-        tree = ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
+        try:
+            tree = ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
+        except TypeError:
+            tree = ElementTree.parse(filename, ElementTree.XMLParser())
     else:
         try:
             f = urlopen(filename)
@@ -7000,7 +7012,10 @@ def validate(filename,schema=None,deep=False):
         raise IOError("No such file")
 
     try:
-        doc = ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False) )
+        try:
+            doc = ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False) )
+        except TypeError:
+            doc = ElementTree.parse(filename, ElementTree.XMLParser() ) #older lxml, may leak!
     except:
         raise MalformedXMLError("Malformed XML!")
 
