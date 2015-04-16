@@ -2762,6 +2762,7 @@ class TextContent(AbstractElement):
     OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
 
     TEXTCONTAINER = True #This element is a direct text container
+    PRINTABLE = True
     ACCEPTED_DATA = (AbstractTextMarkup,)
     ROOTELEMENT = True
     XLINK = True
