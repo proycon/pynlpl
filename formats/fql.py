@@ -494,6 +494,7 @@ class Selector(object):
                     elif isinstance(e, SpanSet):
                         yield e, e
                     else:
+                        #print("DEBUG: doing select " + selector.Class.__name__ + " (recurse=" + str(recurse)+") on " + repr(e))
                         for candidate  in e.select(selector.Class, selector.set, recurse):
                             try:
                                 if candidate.changedbyquery is query:
@@ -813,10 +814,10 @@ class Target(object): #FOR/IN... expression
         return Target(targets,strict,nested,start,end,endinclusive, repeat), i
 
 
-    def __call__(self, query, contextselector, debug=False): #generator, lazy evaluation!
+    def __call__(self, query, contextselector, recurse, debug=False): #generator, lazy evaluation!
         if self.nested:
             if debug: print("[FQL EVALUATION DEBUG] Target - Deferring to nested target first",file=sys.stderr)
-            contextselector = (self.nested, (query, contextselector))
+            contextselector = (self.nested, (query, contextselector, not self.strict))
 
         if debug: print("[FQL EVALUATION DEBUG] Target - Chaining and calling target selectors (" + str(len(self.targets)) + ")",file=sys.stderr)
 
@@ -825,7 +826,7 @@ class Target(object): #FOR/IN... expression
                 for span in self.targets:
                     if not isinstance(span, Span): raise ParseError("SPAN statement may not be mixed with non-span statements in a single selection")
                     if debug: print("[FQL EVALUATION DEBUG] Target - Evaluation span ",file=sys.stderr)
-                    for spanset in span(query, contextselector, not self.strict, debug):
+                    for spanset in span(query, contextselector, recurse, debug):
                         if debug: print("[FQL EVALUATION DEBUG] Target - Yielding spanset ",file=sys.stderr)
                         yield spanset
             else:
@@ -835,7 +836,7 @@ class Target(object): #FOR/IN... expression
                 started = (self.start is None)
                 dobreak = False
 
-                for e,_ in selector(query, contextselector, not self.strict, debug):
+                for e,_ in selector(query, contextselector, recurse, debug):
                     if not started:
                         if self.start.match(query, e):
                             if debug: print("[FQL EVALUATION DEBUG] Target - Matched start! Starting from here...",e, file=sys.stderr)
@@ -1405,7 +1406,8 @@ class Action(object): #Action expression
                     if contextselector is query.doc and action.focus.Class in ('ALL',folia.Text):
                         focusselector = ( (x,x) for x in query.doc )  #Patch to make root-level SELECT ALL work as intended
                     else:
-                        focusselector = action.focus(query,contextselector, True, debug)
+                        strict = query.targets and query.targets.strict
+                        focusselector = action.focus(query,contextselector, not strict, debug)
                     for focus, target in focusselector:
                         if target and action.action != "SUBSTITUTE":
                             if isinstance(target, SpanSet):
@@ -1691,7 +1693,7 @@ class Query(object):
         if self.action:
             targetselector = doc
             if self.targets and not (isinstance(self.targets.targets[0], Selector) and self.targets.targets[0].Class in ("ALL", folia.Text)):
-                targetselector = (self.targets, (self, targetselector, debug)) #function recipe to get the generator for the targets, (f, *args)
+                targetselector = (self.targets, (self, targetselector, True, debug)) #function recipe to get the generator for the targets, (f, *args) (first is always recursive)
 
             focusselection, targetselection = self.action(self, targetselector, debug) #selecting focus elements further constrains the target selection (if any), return values will be lists
 

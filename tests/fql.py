@@ -48,6 +48,11 @@ Qselect_nestedtargets = "SELECT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\
 Qselect_startend = "SELECT FOR w START ID \"WR-P-E-J-0000000001.p.1.s.2.w.2\" END ID \"WR-P-E-J-0000000001.p.1.s.2.w.4\"" #inclusive
 Qselect_startend2 = "SELECT FOR w START ID \"WR-P-E-J-0000000001.p.1.s.2.w.2\" ENDBEFORE ID \"WR-P-E-J-0000000001.p.1.s.2.w.4\"" #exclusive
 
+
+Qin = "SELECT ph IN w"
+Qin2 = "SELECT ph IN term"
+Qin2ref = "SELECT ph FOR term"
+
 Qedit = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
 Qadd = "ADD lemma OF \"lemmas-nl\" WITH class \"hebben\" FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
 Qeditadd = "EDIT lemma OF \"lemmas-nl\" WITH class \"hebben\" FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
@@ -596,6 +601,31 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].text(), "de")
         self.assertEqual(results[1].text(), "historische")
 
+    def test31_in(self):
+        q = fql.Query(Qin)
+        results = q(self.doc)
+        self.assertEqual(len(results), 2)
+
+    def test31b_in2(self):
+        q = fql.Query(Qin2)
+        results = q(self.doc)
+        self.assertEqual(len(results), 0)
+
+    def test31c_in2ref(self):
+        q = fql.Query(Qin2ref)
+        results = q(self.doc)
+        self.assertEqual(len(results), 6) #includes ph under phoneme
+
+    def test31d_tfor(self):
+        q = fql.Query("SELECT t FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.2\"")
+        results = q(self.doc)
+        self.assertEqual(len(results), 3) #includes t under morpheme
+
+    def test31e_tin(self):
+        q = fql.Query("SELECT t IN w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.2\"")
+        results = q(self.doc)
+        self.assertEqual(len(results), 1)
+
 class Test4CQL(unittest.TestCase):
     def setUp(self):
         self.doc = folia.Document(string=FOLIAEXAMPLE)
@@ -689,6 +719,8 @@ class Test4CQL(unittest.TestCase):
             self.assertIsInstance(result, fql.SpanSet)
             self.assertEqual(len(result), 1)
             self.assertTrue(result[0].pos()[:2] == "VZ" or result[0].pos()[:2] == "VG" )
+
+
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
