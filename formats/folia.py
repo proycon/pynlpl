@@ -1001,7 +1001,7 @@ class AbstractElement(object):
                     self.doc.index[id] = self
 
         for e in self: #recursive for all children
-            e.setdocument(doc)
+            if isinstance(e,AbstractElement): e.setdocument(doc)
 
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
