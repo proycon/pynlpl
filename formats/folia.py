@@ -154,7 +154,8 @@ class ModeError(Exception):
     pass
 
 
-
+class CorrectionHandling:
+    EITHER,CURRENT, ORIGINAL = range(3)
 
 
 
@@ -576,12 +577,14 @@ class AbstractElement(object):
                 return e.value
         raise NoSuchAnnotation
 
-    def textcontent(self, cls='current'):
+    def textcontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
         """Get the text explicitly associated with this element (of the specified class).
         Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
         not found.
 
         Unlike text(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the TextContent instance rather than the actual text!
+
+        The correctionhandling argument specifies what text to retrieve when corrections are encountered. The default is CorrectionHandling.CURRENT, which will retrieve the corrected/current text. You can set this to ORIGINAL if you want the text prior to correction, and EITHER if you don't care.
         """
         if not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
@@ -594,7 +597,7 @@ class AbstractElement(object):
                     return e
             elif isinstance(e, Correction):
                 try:
-                    return e.textcontent(cls)
+                    return e.textcontent(cls, correctionhandling)
                 except NoSuchText:
                     pass
         raise NoSuchText
@@ -609,7 +612,7 @@ class AbstractElement(object):
         """Alias for text() with retaintokenisation=True"""
         return self.text(cls,retaintokenisation=True)
 
-    def text(self, cls='current', retaintokenisation=False, previousdelimiter="",strict=False):
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
         """Get the text associated with this element (of the specified class)  (will always be a unicode instance in python 2)
 
         The text will be constructed from child-elements whereever possible, as they are more specific.
@@ -619,10 +622,12 @@ class AbstractElement(object):
         If you are strictly interested in the text explicitly associated with the element, without recursing into children, use ``strict=True``
 
         If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.
+
+        The correctionhandling argument specifies what text to retrieve when corrections are encountered. The default is CorrectionHandling.CURRENT, which will retrieve the corrected/current text. You can set this to ORIGINAL if you want the text prior to correction, and EITHER if you don't care.
         """
 
         if strict:
-            return self.textcontent(cls).text()
+            return self.textcontent(cls, correctionhandling).text()
 
         if self.TEXTCONTAINER:
             s = ""
@@ -642,7 +647,7 @@ class AbstractElement(object):
             for e in self:
                 if e.PRINTABLE and not isinstance(e, TextContent) and not isinstance(e, String):
                     try:
-                        s += e.text(cls,retaintokenisation, delimiter)
+                        s += e.text(cls,retaintokenisation, delimiter,False,correctionhandling)
 
                         #delimiter will be buffered and only printed upon next iteration, this prevents the delimiter being outputted at the end of a sequence and to be compounded with other delimiters
                         delimiter = e.gettextdelimiter(retaintokenisation)
@@ -650,8 +655,8 @@ class AbstractElement(object):
                         #No text, that's okay, just continue
                         continue
 
-            if not s and self.hastext(cls):
-                s = self.textcontent(cls).text()
+            if not s and self.hastext(cls, correctionhandling):
+                s = self.textcontent(cls, correctionhandling).text()
 
             if s and previousdelimiter:
                 return previousdelimiter + s
@@ -661,7 +666,7 @@ class AbstractElement(object):
                 #No text found at all :`(
                 raise NoSuchText
 
-    def phoncontent(self, cls='current'):
+    def phoncontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
         """Get the phonetic content explicitly associated with this element (of the specified class).
         Returns the PhonContent instance rather than the actual text. Raises NoSuchPhon exception if
         not found.
@@ -679,7 +684,7 @@ class AbstractElement(object):
                     return e
             elif isinstance(e, Correction):
                 try:
-                    return e.phoncontent(cls)
+                    return e.phoncontent(cls, correctionhandling)
                 except NoSuchPhon:
                     pass
         raise NoSuchPhon
@@ -705,7 +710,7 @@ class AbstractElement(object):
 
 
 
-    def phon(self, cls='current', previousdelimiter="", strict=False):
+    def phon(self, cls='current', previousdelimiter="", strict=False,correctionhandling=CorrectionHandling.CURRENT):
         """Get the phonetic representation associated with this element (of the specified class), will always be a unicode instance.
         If no text is directly associated with the element, it will be obtained from the children. If that doesn't result
         in any text either, a NoSuchPhon exception will be raised.
@@ -717,7 +722,7 @@ class AbstractElement(object):
 
 
         if strict:
-            return self.textcontent(cls).text()
+            return self.phoncontent(cls,correctionhandling).phon()
 
         if self.PHONCONTAINER:
             s = ""
@@ -740,7 +745,7 @@ class AbstractElement(object):
             for e in self:
                 if e.SPEAKABLE and not isinstance(e, PhonContent) and not isinstance(e,String):
                     try:
-                        s += e.phon(cls, delimiter)
+                        s += e.phon(cls, delimiter,False,correctionhandling)
 
                         #delimiter will be buffered and only printed upon next iteration, this prevents the delimiter being outputted at the end of a sequence and to be compounded with other delimiters
                         delimiter = e.gettextdelimiter() #We use TEXTDELIMITER for phon too
@@ -749,7 +754,7 @@ class AbstractElement(object):
                         continue
 
             if not s and self.hasphon(cls):
-                s = self.phoncontent(cls).phon()
+                s = self.phoncontent(cls,correctionhandling).phon()
 
             if s and previousdelimiter:
                 return previousdelimiter + s
@@ -759,9 +764,9 @@ class AbstractElement(object):
                 #No text found at all :`(
                 raise NoSuchPhon
 
-    def originaltext(self):
+    def originaltext(self,cls='original'):
         """Alias for retrieving the original uncorrect text"""
-        return self.text('original')
+        return self.text(cls,correctionhandling=CorrectionHandling.ORIGINAL)
 
 
     def gettextdelimiter(self, retaintokenisation=False):
@@ -924,7 +929,7 @@ class AbstractElement(object):
             if isinstance(c, AbstractElement):
                 c.setdoc(newdoc)
 
-    def hastext(self,cls='current',strict=True):
+    def hastext(self,cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT):
         """Does this element have text (of the specified class)
 
         By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
@@ -937,7 +942,7 @@ class AbstractElement(object):
         else:
             try:
                 if strict:
-                    r = self.textcontent(cls)
+                    r = self.textcontent(cls, correctionhandling)
                     return True
                 else:
                     if self.TEXTCONTAINER:
@@ -946,15 +951,15 @@ class AbstractElement(object):
                         #Check children
                         for e in self:
                             if e.PRINTABLE and not isinstance(e, TextContent):
-                                if e.hastext(cls, strict):
+                                if e.hastext(cls, strict, correctionhandling):
                                     return True
 
-                        r = self.textcontent(cls)  #will raise NoSuchTextException when not found
+                        r = self.textcontent(cls, correctionhandling)  #will raise NoSuchTextException when not found
                         return True
             except NoSuchText:
                 return False
 
-    def hasphon(self,cls='current',strict=True):
+    def hasphon(self,cls='current',strict=True,correctionhandling=CorrectionHandling.CURRENT):
         """Does this element have phonetic content (of the specified class)
 
         By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
@@ -967,7 +972,7 @@ class AbstractElement(object):
         else:
             try:
                 if strict:
-                    r = self.phoncontent(cls)
+                    r = self.phoncontent(cls, correctionhandling)
                     return True
                 else:
                     if self.PHONCONTAINER:
@@ -976,7 +981,7 @@ class AbstractElement(object):
                         #Check children
                         for e in self:
                             if e.SPEAKABLE and not isinstance(e, PhonContent):
-                                if e.hasphon(cls, strict):
+                                if e.hasphon(cls, strict, correctionhandling):
                                     return True
 
                         r = self.phoncontent(cls)  #will raise NoSuchTextException when not found
@@ -3310,7 +3315,7 @@ class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has
     ANNOTATIONTYPE = AnnotationType.LINEBREAK
     TEXTDELIMITER = ""
 
-    def text(self, cls='current', retaintokenisation=False, previousdelimiter=""):
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter="", strict=False, correctionhandling=None):
         return previousdelimiter.strip(' ') + "\n"
 
 TextContent.ACCEPTED_DATA = TextContent.ACCEPTED_DATA + (Linebreak,) #shouldn't be necessary because of the multiple inheritance, but something's wrong and this quickly patches it
@@ -3323,7 +3328,7 @@ class Whitespace(AbstractStructureElement):
     ANNOTATIONTYPE = AnnotationType.WHITESPACE
     TEXTDELIMITER = ""
 
-    def text(self, cls='current', retaintokenisation=False, previousdelimiter=""):
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter="", strict=False,correctionhandling=None):
         return previousdelimiter.strip(' ') + "\n\n"
 
 class Word(AbstractStructureElement, AllowCorrections):
@@ -4133,84 +4138,90 @@ class Correction(AbstractAnnotation, AllowGenerateID):
             return True
         return False
 
-    def textcontent(self, cls='current'):
+    def textcontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
         """Get the text explicitly associated with this element (of the specified class).
         Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
         not found.
 
         Unlike text(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the TextContent instance rather than the actual text!
         """
-        if cls == 'current' or cls is None:
+        if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
+        if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
-                    return e.textcontent(cls)
-        if cls == 'original' or cls is None:
+                    return e.textcontent(cls,correctionhandling)
+        if correctionhandling in (CorrectionHandling.ORIGINAL, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, Original):
-                    return e.textcontent(cls)
+                    return e.textcontent(cls,correctionhandling)
         raise NoSuchText
 
 
-    def phoncontent(self, cls='current'):
+    def phoncontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
         """Get the phonetic content explicitly associated with this element (of the specified class).
         Returns the PhonContent instance rather than the actual text. Raises NoSuchPhon exception if
         not found.
 
         Unlike phon(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
         """
-        if cls == 'current' or cls is None:
+        if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
+        if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
-                    return e.phoncontent(cls)
-        if cls == 'original' or cls is None:
+                    return e.phoncontent(cls, correctionhandling)
+        if correctionhandling in (CorrectionHandling.ORIGINAL, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, Original):
-                    return e.phoncontent(cls)
+                    return e.phoncontent(cls, correctionhandling)
         raise NoSuchPhon
 
 
-    def hastext(self, cls='current',strict=True):
-        if cls == 'current' or cls is None:
+    def hastext(self, cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT):
+        if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
+        if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
-                    return e.hastext(cls,strict)
-        if cls == 'original' or cls is None:
+                    return e.hastext(cls,strict, correctionhandling)
+        if correctionhandling in (CorrectionHandling.ORIGINAL, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, Original):
-                    return e.hastext(cls,strict)
+                    return e.hastext(cls,strict, correctionhandling)
         return False
 
-    def text(self, cls = 'current', retaintokenisation=False, previousdelimiter="",strict=False):
-        if cls == 'current' or cls is None:
+    def text(self, cls = 'current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
+        if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
+        if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
-                    return previousdelimiter + e.text(cls, retaintokenisation,strict)
-        if cls == 'original' or cls is None:
+                    return previousdelimiter + e.text(cls, retaintokenisation,"", strict, correctionhandling)
+        if correctionhandling in (CorrectionHandling.ORIGINAL, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, Original):
-                    return previousdelimiter + e.text(cls, retaintokenisation,strict)
+                    return previousdelimiter + e.text(cls, retaintokenisation,"", strict, correctionhandling)
         raise NoSuchText
 
-    def hasphon(self, cls='current',strict=True):
-        if cls == 'current' or cls is None:
+    def hasphon(self, cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT):
+        if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
+        if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
-                    return e.hasphon(cls,strict)
-        if cls == 'original' or cls is None:
+                    return e.hasphon(cls,strict, correctionhandling)
+        if correctionhandling in (CorrectionHandling.ORIGINAL, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, Original):
-                    return e.hasphon(cls,strict)
+                    return e.hasphon(cls,strict, correctionhandling)
         return False
 
-    def phon(self, cls = 'current', previousdelimiter="",strict=False):
-        if cls == 'current' or cls is None:
+    def phon(self, cls = 'current', previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
+        if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
+        if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
-                    return previousdelimiter + e.phon(cls, strict)
-        if cls == 'original' or cls is None:
+                    return previousdelimiter + e.phon(cls, "", strict, correctionhandling)
+        if correctionhandling in (CorrectionHandling.ORIGINAL, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, Original):
-                    return previousdelimiter + e.phon(cls, strict)
+                    return previousdelimiter + e.phon(cls, "", correctionhandling)
         raise NoSuchphon
 
     def gettextdelimiter(self, retaintokenisation=False):
