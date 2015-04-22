@@ -3898,6 +3898,12 @@ class Reference(AbstractStructureElement):
             attribs['type'] = self.type
         return super(Reference,self).xml(attribs,elements, skipchildren)
 
+    def json(self, attribs=None, recurse=True, ignorelist=False):
+        if attribs is None: attribs = {}
+        if self.idref:
+            attribs['idref'] = self.idref
+        return super(Reference,self).json(attribs,recurse,ignorelist)
+
     def resolve(self):
         if self.idref:
             return self.doc[self.idref]
