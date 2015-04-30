@@ -4240,7 +4240,10 @@ class Correction(AbstractAnnotation, AllowGenerateID):
 
     def new(self,index = None):
         if index is None:
-            return next(self.select(New,None,False))
+            try:
+                return next(self.select(New,None,False))
+            except StopIteration:
+                raise NoSuchAnnotation
         else:
             for e in self.select(New,None,False):
                 return e[index]
@@ -4248,7 +4251,10 @@ class Correction(AbstractAnnotation, AllowGenerateID):
 
     def original(self,index=None):
         if index is None:
-            return next(self.select(Original,None,False, False))
+            try:
+                return next(self.select(Original,None,False, False))
+            except StopIteration:
+                raise NoSuchAnnotation
         else:
             for e in self.select(Original,None,False, False):
                 return e[index]
@@ -4256,7 +4262,10 @@ class Correction(AbstractAnnotation, AllowGenerateID):
 
     def current(self,index=None):
         if index is None:
-            return next(self.select(Current,None,False))
+            try:
+                return next(self.select(Current,None,False))
+            except StopIteration:
+                raise NoSuchAnnotation
         else:
             for e in self.select(Current,None,False):
                 return e[index]
