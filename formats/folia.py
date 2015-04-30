@@ -2208,7 +2208,7 @@ class AllowCorrections(object):
                 except:
                     raise ValueError("reuse= must point to an existing correction (id or instance)! Got " + str(kwargs['reuse']))
 
-            suggestionsonly = (not c.hasnew() and not c.hasoriginal() and c.hassuggestions())
+            suggestionsonly = (not c.hasnew(True) and not c.hasoriginal(True) and c.hassuggestions(True))
 
             if 'new' in kwargs and c.hascurrent():
                 #can't add new if there's current, so first set original to current, and then delete current
@@ -4124,23 +4124,26 @@ class Correction(AbstractAnnotation, AllowGenerateID):
         self._setmaxid(e)
         return e
 
-    def hasnew(self):
-        for _ in  self.select(New,None,False, False):
+    def hasnew(self,allowempty=False):
+        for e in  self.select(New,None,False, False):
+            if not allowempty and len(e) == 0: continue
             return True
         return False
 
-    def hasoriginal(self):
-        for _ in self.select(Original,None,False, False):
+    def hasoriginal(self,allowempty=False):
+        for e in self.select(Original,None,False, False):
+            if not allowempty and len(e) == 0: continue
             return True
         return False
 
-    def hascurrent(self):
-        for _ in self.select(Current,None,False, False):
+    def hascurrent(self, allowempty=False):
+        for e in self.select(Current,None,False, False):
             return True
         return False
 
-    def hassuggestions(self):
-        for _ in self.select(Suggestion,None,False, False):
+    def hassuggestions(self,allowempty=False):
+        for e in self.select(Suggestion,None,False, False):
+            if not allowempty and len(e) == 0: continue
             return True
         return False
 
