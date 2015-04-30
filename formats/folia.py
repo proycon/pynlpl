@@ -4138,6 +4138,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
 
     def hascurrent(self, allowempty=False):
         for e in self.select(Current,None,False, False):
+            if not allowempty and len(e) == 0: continue
             return True
         return False
 
