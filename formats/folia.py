@@ -1751,7 +1751,7 @@ class AbstractElement(object):
                         returnnext = True
                     elif returnnext:
                         if e.auth and not isinstance(e,AbstractAnnotationLayer):
-                            if (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
+                            if Class is None or (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
                                 return e
                             else:
                                 #this is not yet the element of the type we are looking for, we are going to descend again in the very leftmost (rightmost if reversed) branch only
@@ -1760,7 +1760,7 @@ class AbstractElement(object):
                                     if not isinstance(e, AbstractElement):
                                         return None #we've gone too far
                                     if e.auth and not isinstance(e,AbstractAnnotationLayer):
-                                        if (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
+                                        if Class is None or (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
                                             return e
                                         else:
                                             #descend deeper
