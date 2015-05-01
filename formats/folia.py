@@ -3306,7 +3306,6 @@ class Gap(AbstractElement):
         return ""
 
 
-
 class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has a double role!!
     """Line break element, signals a line break"""
     REQUIRED_ATTRIBS = ()
@@ -3330,6 +3329,7 @@ class Whitespace(AbstractStructureElement):
 
     def text(self, cls='current', retaintokenisation=False, previousdelimiter="", strict=False,correctionhandling=None):
         return previousdelimiter.strip(' ') + "\n\n"
+
 
 class Word(AbstractStructureElement, AllowCorrections):
     """Word (aka token) element. Holds a word/token and all its related token annotations."""
@@ -6394,7 +6394,7 @@ ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Refer
 List.ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, PhonContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part)
 Caption.ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,PhonContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
 AbstractCorrectionChild.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, AbstractStructureElement, TextContent,PhonContent, Correction, String, Description, Metric)
-Correction.ACCEPTED_DATA = (New,Original,Current, Suggestion, Description, Metric)
+Correction.ACCEPTED_DATA = (New,Original,Current, Suggestion, ErrorDetection, Description, Metric)
 Term.ACCEPTED_DATA = (Paragraph, Event, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Definition.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Example.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
