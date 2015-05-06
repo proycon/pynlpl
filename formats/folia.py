@@ -104,7 +104,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE,  SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(43)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(43)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -161,19 +161,22 @@ class CorrectionHandling:
 
 
 def parsetime(s):
-    #parses time in HH:MM:SS:mmmm format, returns a four-tuple
+    #parses time in HH:MM:SS.mmm format, returns a four-tuple
     try:
-        fields = s.split(':')
-        H = int(fields[0])
-        M = int(fields[1])
-        S = int(fields[2])
-        if len(fields) > 3:
-            m = int(fields[3])
+        fields = s.split('.')
+        subfields = fields[0].split(':')
+        H = int(subfields[0])
+        M = int(subfields[1])
+        S = int(subfields[2])
+        if len(subfields) > 3:
+            m = int(subfields[3])
         else:
             m = 0
+        if len(fields) > 1:
+            m = int(fields[1])
         return (H,M,S,m)
     except:
-        raise ValueError("Invalid timestamp, must be in HH:MM:SS:mmmm format: " + s)
+        raise ValueError("Invalid timestamp, must be in HH:MM:SS.mmm format: " + s)
 
 
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
