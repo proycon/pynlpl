@@ -65,7 +65,7 @@ import random
 
 
 FOLIAVERSION = '0.12.0'
-LIBVERSION = '0.12.0.64' #== FoLiA version + library revision
+LIBVERSION = '0.12.0.65' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -3866,6 +3866,9 @@ class AbstractCorrectionChild(AbstractElement):
     SPEAKABLE = True
     ROOTELEMENT = False
 
+    def generate_id(self, cls):
+        #Delegate ID generation to parent
+        return self.parent.generate_id(cls)
 
 class Reference(AbstractStructureElement):
     ACCEPTED_DATA = (TextContent, PhonContent, String, Description, Metric)
