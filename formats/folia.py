@@ -64,8 +64,8 @@ import gzip
 import random
 
 
-FOLIAVERSION = '0.12.0'
-LIBVERSION = '0.12.0.65' #== FoLiA version + library revision
+FOLIAVERSION = '0.12.1'
+LIBVERSION = '0.12.1.65' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -104,7 +104,7 @@ class Attrib:
 Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER)
 
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE, PHONETIC = range(43)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE,  SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(43)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -3400,7 +3400,7 @@ class Word(AbstractStructureElement, AllowCorrections):
 
     def phonemes(self,set=None):
         """Generator yielding all phonemes (in a particular set if specified). For retrieving one specific morpheme by index, use morpheme() instead"""
-        for layer in self.select(PhoneticsLayer):
+        for layer in self.select(PhonologyLayer):
             for p in layer.select(Phoneme, set):
                 yield p
 
@@ -3415,7 +3415,7 @@ class Word(AbstractStructureElement, AllowCorrections):
 
     def phoneme(self,index, set=None):
         """Returns a specific phoneme, the n'th morpheme (given the particular set if specified)."""
-        for layer in self.select(PhoneticsLayer):
+        for layer in self.select(PhonologyLayer):
             for i, p in enumerate(layer.select(Phoneme, set)):
                 if index == i:
                     return p
@@ -4620,7 +4620,7 @@ class Phoneme(AbstractStructureElement):
     REQUIRED_ATTRIBS = (),
     OPTIONAL_ATTRIBS = Attrib.ALL
     ACCEPTED_DATA = (FunctionFeature, Feature,TextContent, PhonContent, String,Metric, Alignment, AbstractTokenAnnotation, Correction, Description)
-    ANNOTATIONTYPE = AnnotationType.PHONETIC
+    ANNOTATIONTYPE = AnnotationType.PHONOLOGICAL
     XMLTAG = 'phoneme'
 
     def findspans(self, type,set=None): #TODO: this is a copy of the methods in Morpheme in Word, abstract into separate class and inherit
@@ -4678,11 +4678,11 @@ class MorphologyLayer(AbstractAnnotationLayer):
     XMLTAG = 'morphology'
     ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
 
-class PhoneticsLayer(AbstractAnnotationLayer):
-    """Phonetics Layer: Annotation layer for phonemes subtoken annotation elements. For phonetic analysis."""
+class PhonologyLayer(AbstractAnnotationLayer):
+    """Phonology Layer: Annotation layer for phonemes subtoken annotation elements. For phonetic analysis."""
     ACCEPTED_DATA = (Phoneme, Correction)
-    XMLTAG = 'phonetics'
-    ANNOTATIONTYPE = AnnotationType.PHONETIC
+    XMLTAG = 'phonology'
+    ANNOTATIONTYPE = AnnotationType.PHONOLOGICAL
 
 #class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
 #    """Subentities Layer: Annotation layer for Subentity subtoken annotation elements. For named entities within a single token."""
@@ -6383,7 +6383,7 @@ class Text(AbstractStructureElement):
 #==============================================================================
 #Setting Accepted data that has been postponed earlier (to allow circular references)
 
-Alternative.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, MorphologyLayer, PhoneticsLayer)
+Alternative.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, MorphologyLayer, PhonologyLayer)
 Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,PhonContent, String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
 String.ACCEPTED_DATA = (TextContent,PhonContent, Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation)
 Paragraph.ACCEPTED_DATA = (Sentence, Quote, Example, Entry, AbstractExtendedTokenAnnotation, Correction, TextContent,PhonContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Head, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
@@ -7080,5 +7080,5 @@ XML2CLASS['listitem'] = ListItem #backward compatibility (XML tag is 'item' now,
 
 defaultignorelist = [Original,Suggestion,Alternative, AlternativeLayers]
 #default ignore list for token annotation
-defaultignorelist_annotations = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer, PhoneticsLayer]
+defaultignorelist_annotations = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer, PhonologyLayer]
 defaultignorelist_structure = [Original,Suggestion,Alternative, AlternativeLayers,AbstractAnnotationLayer]
