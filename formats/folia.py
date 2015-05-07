@@ -1458,11 +1458,11 @@ class AbstractElement(object):
 
         if not '{' + NSFOLIA + '}begintime' in attribs: #do not override if caller already set it
             if self.begintime:
-                attribs['{' + NSFOLIA + '}begintime'] = "%02d:%02d:%02d:%03d" % self.begintime
+                attribs['{' + NSFOLIA + '}begintime'] = "%02d:%02d:%02d.%03d" % self.begintime
 
         if not '{' + NSFOLIA + '}endtime' in attribs: #do not override if caller already set it
             if self.endtime:
-                attribs['{' + NSFOLIA + '}endtime'] = "%02d:%02d:%02d:%03d" % self.endtime
+                attribs['{' + NSFOLIA + '}endtime'] = "%02d:%02d:%02d.%03d" % self.endtime
 
 
         if self.XLINK and self.href:
