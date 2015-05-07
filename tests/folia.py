@@ -1314,14 +1314,14 @@ folia-v0.8" version="0.8">
     </annotations>
   </metadata>
   <speech xml:id="example.speech" src="helloworld.ogg" speaker="proycon">
-    <utt xml:id="example.speech.utt.1" begintime="00:00:00" endtime="00:00:02:012">
+    <utt xml:id="example.speech.utt.1" begintime="00:00:00" endtime="00:00:02.012">
         <ph>həlˈəʊ wˈɜːld</ph>
     </utt>
     <utt xml:id="example.speech.utt.2">
         <w xml:id="example.speech.utt.2.w.1" begintime="00:00:00" endtime="00:00:01">
           <ph>həlˈəʊ</ph>
         </w>
-        <w xml:id="example.speech.utt.2.w.2" begintime="00:00:01:267" endtime="00:00:02:012">
+        <w xml:id="example.speech.utt.2.w.2" begintime="00:00:01:267" endtime="00:00:02.012">
            <ph>wˈɜːld</ph>
         </w>
     </utt>
@@ -1347,14 +1347,14 @@ folia-v0.8" version="0.8">
     def test104c_speech(self):
         """Sanity Check - Testing serialisation of speech data with speech attributes"""
         speechxml = """<speech xmlns="http://ilk.uvt.nl/folia" xml:id="example.speech" src="helloworld.ogg" speaker="proycon">
-        <utt xml:id="example.speech.utt.1" begintime="00:00:00:000" endtime="00:00:02:012">
+        <utt xml:id="example.speech.utt.1" begintime="00:00:00:000" endtime="00:00:02.012">
         <ph>həlˈəʊ wˈɜːld</ph>
     </utt>
     <utt xml:id="example.speech.utt.2">
-        <w xml:id="example.speech.utt.2.w.1" begintime="00:00:00:000" endtime="00:00:01:000">
+        <w xml:id="example.speech.utt.2.w.1" begintime="00:00:00:000" endtime="00:00:01.000">
           <ph>həlˈəʊ</ph>
         </w>
-        <w xml:id="example.speech.utt.2.w.2" begintime="00:00:01:267" endtime="00:00:02:012">
+        <w xml:id="example.speech.utt.2.w.2" begintime="00:00:01:267" endtime="00:00:02.012">
            <ph>wˈɜːld</ph>
         </w>
     </utt>
