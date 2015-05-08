@@ -65,7 +65,7 @@ import random
 
 
 FOLIAVERSION = '0.12.1'
-LIBVERSION = '0.12.1.65' #== FoLiA version + library revision
+LIBVERSION = '0.12.1.66' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -4061,6 +4061,38 @@ class Suggestion(AbstractCorrectionChild):
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     AUTH = False
 
+    def __init__(self,  doc, *args, **kwargs):
+        self.split = None
+        self.merge = None
+        super(Suggestion,self).__init__(doc, *args, **kwargs)
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        global NSFOLIA
+        kwargs = {}
+        e = super(Suggestion,Class).parsexml(node, doc)
+        if 'split' in node.attrib:
+            e.split = node.attrib['split']
+        if 'merge' in node.attrib:
+            e.merge = node.attrib['merge']
+        return e
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        if not attribs: attribs= {}
+
+        if self.split: attribs['split']  = self.split
+        if self.merge: attribs['merge']  = self.merge
+
+        return super(Suggestion, self).xml(attribs, elements, skipchildren)
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        global NSFOLIA
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
+        if not extraattribs: extraattribs = []
+        extraattribs.append( E.optional(E.attribute(name='split' )))
+        extraattribs.append( E.optional(E.attribute(name='merge' )))
+        return super(Suggestion, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class New(AbstractCorrectionChild):
     REQUIRED_ATTRIBS = (),
