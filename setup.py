@@ -41,7 +41,7 @@ if sys.version > '3':
 
 setup(
     name = "PyNLPl",
-    version = "0.7.6.1", #edit version in __init__.py as well!
+    version = "0.7.6.2", #edit version in __init__.py as well!
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
     description = ("PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl can be used for example the computation of n-grams, frequency lists and distributions, language models. There are also more complex data types, such as Priority Queues, and search algorithms, such as Beam Search."),
