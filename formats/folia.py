@@ -2881,15 +2881,6 @@ class TextContent(AbstractElement):
         else:
             return False
 
-    #append is implemented, the default suffices
-
-    def postappend(self):
-        """(Method for internal usage, see ``AbstractElement.postappend()``)"""
-        if isinstance(self.parent, Original):
-            if self.cls == 'current': self.cls = 'original'
-
-        #assert (self.testreference() == True)
-        super(TextContent, self).postappend()
 
 
     def finddefaultreference(self):
