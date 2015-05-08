@@ -21,10 +21,12 @@ class State(object):
         self.final = True # ending state
 
 class NFA(object):
+    """Non-deterministic finite state automaton. Can be used to DFA as well if you take care your state transitions are not ambiguous and epsilon is empty."""
+
     def __init__(self, initialstate):
         self.initialstate = initialstate
 
-    def match(self, sequence):
+    def run(self, sequence, mustmatchall=False):
         def add(self, state, states):
             """add state and recursively add epsilon transitions"""
             assert isinstance(state, State)
@@ -37,7 +39,7 @@ class NFA(object):
         current_states = set()
         add(self.initialstate, current_states)
 
-        for value in sequence:
+        for offset, value in enumerate(sequence):
             next_states = set()
             for state in current_states:
                 for matchfunction, trans_state in state.transitions:
@@ -45,13 +47,26 @@ class NFA(object):
                         add(trans_state, next_states)
 
             current_states = next_states
+            if not mustmatchall:
+                for s in current_states:
+                    if s.final:
+                        yield offset+1
 
-        for s in current_states:
-            if s.final:
-                return True
-        return False
+        if mustmatchall:
+            for s in current_states:
+                if s.final:
+                    yield offset+1
 
 
+    def match(self, sequence):
+        try:
+            return (next(self.run(sequence,True)) == len(sequence))
+        except StopIteration:
+            return False
 
-
+    def find(self, sequence):
+        l = len(sequence)
+        for i in range(0,l):
+            for length in self.run(sequence):
+                yield sequence[i:i+length]
 
