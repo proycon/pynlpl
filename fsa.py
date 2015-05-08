@@ -17,7 +17,7 @@
 class State(object):
     def __init__(self):
         self.epsilon = [] # epsilon-closure
-        self.transitions = {} # value --> state   (values must be hashable)
+        self.transitions = [] # (matchfunction(value), state)   (values must be hashable)
         self.final = True # ending state
 
 class NFA(object):
@@ -40,9 +40,9 @@ class NFA(object):
         for value in sequence:
             next_states = set()
             for state in current_states:
-                if value in state.transitions.keys():
-                    trans_state = state.transitions[c]
-                    add(trans_state, next_states)
+                for matchfunction, trans_state in state.transitions:
+                    if matchfunction(value):
+                        add(trans_state, next_states)
 
             current_states = next_states
 
