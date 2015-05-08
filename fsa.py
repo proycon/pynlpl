@@ -21,7 +21,7 @@ class State(object):
         self.final = True # ending state
 
 class NFA(object):
-    """Non-deterministic finite state automaton. Can be used to DFA as well if you take care your state transitions are not ambiguous and epsilon is empty."""
+    """Non-deterministic finite state automaton. Can be used to model DFAs as well if your state transitions are not ambiguous and epsilon is empty."""
 
     def __init__(self, initialstate):
         self.initialstate = initialstate

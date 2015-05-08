@@ -184,6 +184,20 @@ class Query(object):
     def __getitem__(self,index):
         return self.tokenexprs[index]
 
+    def __call__(self, **tokens):
+        """Execute the CQL expression, pass a list of tokens/annotations using keyword arguments: text, pos, lemma, etc"""
+        if not tokens:
+            raise Exception("Pass a list of tokens/annotation using keyword arguments! (text,pos,lemma, or others)")
+
+        for v in tokens.values():
+            l = len(v)
+
+        if not all( (len(v) == l for k,v in tokens.items() ) ):
+            raise Exception("All lists passed as keyword arguments must represent the same tokens and thus have the same length!")
+
+        raise NotImplementedError #TODO
+
+
 
 def cql2fql(cq):
     fq = "SELECT FOR SPAN "
