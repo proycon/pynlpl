@@ -4053,8 +4053,16 @@ class Suggestion(AbstractCorrectionChild):
     AUTH = False
 
     def __init__(self,  doc, *args, **kwargs):
-        self.split = None
-        self.merge = None
+        if 'split' in kwargs:
+            self.split = kwargs['split']
+            del kwargs['split']
+        else:
+            self.split = None
+        if 'merge' in kwargs:
+            self.merge = kwargs['merge']
+            del kwargs['merge']
+        else:
+            self.merge = None
         super(Suggestion,self).__init__(doc, *args, **kwargs)
 
     @classmethod
