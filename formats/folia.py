@@ -65,7 +65,7 @@ import random
 
 
 FOLIAVERSION = '0.12.1'
-LIBVERSION = '0.12.1.66' #== FoLiA version + library revision
+LIBVERSION = '0.12.1.67' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -6427,7 +6427,7 @@ Correction.ACCEPTED_DATA = (New,Original,Current, Suggestion, ErrorDetection, De
 Term.ACCEPTED_DATA = (Paragraph, Event, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Definition.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Example.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Division.ACCEPTED_DATA = (Division, Quote, Gap, Event, Example, Entry, Head, Utterance, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
+Division.ACCEPTED_DATA = (Division, Quote, Gap, Event, Example, Entry, Head, Utterance, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part, TextContent, PhonContent)
 Event.ACCEPTED_DATA = (Event, Example, Paragraph, Sentence, Division, Word, Head,Utterance,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent,PhonContent, String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Example, Head, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Quote.ACCEPTED_DATA = (Word, Sentence, Paragraph, Utterance, Division, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
