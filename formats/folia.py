@@ -4093,6 +4093,15 @@ class Suggestion(AbstractCorrectionChild):
         extraattribs.append( E.optional(E.attribute(name='merge' )))
         return super(Suggestion, cls).relaxng(includechildren, extraattribs, extraelements)
 
+    def json(self, attribs = None, recurse=True,ignorelist=False):
+        if self.split:
+            if not attribs: attribs = {}
+            attribs['split'] = self.split
+        if self.merge:
+            if not attribs: attribs = {}
+            attribs['merge'] = self.merge
+        return super(Suggestion, self).json(attribs, recurse, ignorelist)
+
 class New(AbstractCorrectionChild):
     REQUIRED_ATTRIBS = (),
     OPTIONAL_ATTRIBS = (),
