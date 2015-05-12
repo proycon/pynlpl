@@ -4119,6 +4119,9 @@ class New(AbstractCorrectionChild):
                 return False
         return True
 
+    def correct(self, **kwargs):
+        self.parent.correct(**kwargs)
+
 class Original(AbstractCorrectionChild):
     REQUIRED_ATTRIBS = (),
     OPTIONAL_ATTRIBS = (),
@@ -4152,6 +4155,9 @@ class Current(AbstractCorrectionChild):
             else:
                 return False
         return True
+
+    def correct(self, **kwargs):
+        self.parent.correct(**kwargs)
 
 class Correction(AbstractAnnotation, AllowGenerateID):
     REQUIRED_ATTRIBS = ()
@@ -4339,6 +4345,23 @@ class Correction(AbstractAnnotation, AllowGenerateID):
             if isinstance(e, New) or isinstance(e, Current):
                 return str(e)
 
+    def correct(self, **kwargs):
+        if 'new' in kwargs:
+            if not 'nooriginal' in kwargs: #if not an insertion
+                kwargs['original'] = self
+        elif 'current' in kwargs:
+            kwargs['current'] = self
+
+        if 'insertindex' in kwargs:
+            #recompute insertindex
+            index = self.parent.getindex(self)
+            if index != -1:
+                kwargs['insertindex'] = index
+                if 'insertindex_offset' in kwargs:
+                    kwargs['insertindex'] += kwargs['insertindex_offset']
+            else:
+                raise Exception("Can't find insertion point for higher-order correction")
+        self.parent.correct(**kwargs)
 
     #obsolete
     #def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):
