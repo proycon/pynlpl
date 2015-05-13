@@ -128,6 +128,7 @@ Qmerge2 = "SUBSTITUTE w WITH text \"onweer\" (AS CORRECTION OF \"http://raw.gith
 
 
 Qdeletion2 = "DELETE w ID \"correctionexample.s.8.w.3\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"redundantword\")"
+#Qdeletion2b = "SUBSTITUTE w ID \"correctionexample.s.8.w.3\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"redundantword\") FOR SPAN ID \"correctionexample.s.8.correction.1\""
 
 #insertions when there is an existing suggestion, SUBSTITUTE insead of APPEND/PREPEND:
 Qinsertion2 = "SUBSTITUTE w WITH text \".\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"missingpunctuation\") FOR SPAN ID \"correctionexample.s.9.correction.1\""
@@ -770,11 +771,13 @@ class Test4Evaluation(unittest.TestCase):
     def test3_deletion2(self):
         """Deletion (higher-order)"""
         q = fql.Query(Qdeletion2)
-        results = q(self.doc)
+        results = q(self.doc, True,True)
         self.assertEqual(len(results), 1)
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].hastext(), False)
-        self.assertEqual(results[0].originaltext('current'), "een")
+        self.assertEqual(results[0].original().text(), "een")
+        self.assertEqual(results[0].previous(None).id, "correctionexample.s.8.w.2")
+        self.assertEqual(results[0].next(None).id, "correctionexample.s.8.w.4")
 
     def test3_insertion2(self):
         """Substitute - Insertion (higher-order)"""

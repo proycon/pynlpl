@@ -1005,7 +1005,10 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
     def __call__(self, query, action, focus, target,debug=False):
         """Action delegates to this function"""
+        if debug: print("[FQL EVALUATION DEBUG] Correction - Processing ", repr(focus),file=sys.stderr)
+
         isspan = isinstance(action.focus.Class, folia.AbstractSpanAnnotation)
+
 
         actionassignments = {} #make a copy
         for key, value in action.assignments.items():
@@ -1116,9 +1119,12 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
             yield parent.correct(**kwargs) #generator
         elif action.action == "DELETE":
+            if debug: print("[FQL EVALUATION DEBUG] Correction - Deleting ", repr(focus), " (in " + repr(focus.parent) + ")",file=sys.stderr)
             if not focus: raise QueryError("DELETE AS CORRECTION did not find a focus to operate on")
             kwargs['original'] = focus
-            yield focus.parent.correct(**kwargs) #generator
+            kwargs['new'] = [] #empty new
+            c = focus.parent.correct(**kwargs) #generator
+            yield c
         else:
             raise QueryError("Correction does not handle action " + action.action)
 
