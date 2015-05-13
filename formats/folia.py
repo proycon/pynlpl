@@ -2197,6 +2197,9 @@ class AllowCorrections(object):
     def correct(self, **kwargs):
         """Apply a correction (TODO: documentation to be written still)"""
 
+        if 'insertindex_offset' in kwargs:
+            del kwargs['insertindex_offset'] #dealt with in an earlier stage
+
         if 'confidence' in kwargs and kwargs['confidence'] is None:
             del kwargs['confidence']
 
@@ -2237,6 +2240,7 @@ class AllowCorrections(object):
             del kwargs['insertindex']
         else:
             insertindex = -1 #append
+
         if 'nooriginal' in kwargs and kwargs['nooriginal']:
             nooriginal = True
             del kwargs['nooriginal']
@@ -4359,6 +4363,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
                 kwargs['insertindex'] = index
                 if 'insertindex_offset' in kwargs:
                     kwargs['insertindex'] += kwargs['insertindex_offset']
+                    del kwargs['insetindex_offset']
             else:
                 raise Exception("Can't find insertion point for higher-order correction")
         return self.parent.correct(**kwargs)
