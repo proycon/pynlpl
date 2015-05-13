@@ -641,7 +641,7 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertEqual(len(results), 1)
 
-    def test29b_correct_delete(self):
+    def test32_correct_delete(self):
         """Deletion as correction"""
         q = fql.Query(Qcorrect_delete)
         results = q(self.doc)
