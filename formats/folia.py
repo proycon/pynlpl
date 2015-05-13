@@ -4120,7 +4120,7 @@ class New(AbstractCorrectionChild):
         return True
 
     def correct(self, **kwargs):
-        self.parent.correct(**kwargs)
+        return self.parent.correct(**kwargs)
 
 class Original(AbstractCorrectionChild):
     REQUIRED_ATTRIBS = (),
@@ -4157,7 +4157,7 @@ class Current(AbstractCorrectionChild):
         return True
 
     def correct(self, **kwargs):
-        self.parent.correct(**kwargs)
+        return self.parent.correct(**kwargs)
 
 class Correction(AbstractAnnotation, AllowGenerateID):
     REQUIRED_ATTRIBS = ()
@@ -4361,7 +4361,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
                     kwargs['insertindex'] += kwargs['insertindex_offset']
             else:
                 raise Exception("Can't find insertion point for higher-order correction")
-        self.parent.correct(**kwargs)
+        return self.parent.correct(**kwargs)
 
     #obsolete
     #def select(self, cls, set=None, recursive=True,  ignorelist=[], node=None):

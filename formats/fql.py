@@ -1111,6 +1111,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 if index == -1:
                     raise QueryError("Insertion point for APPEND action not found")
                 kwargs['insertindex'] = index+1
+                kwargs['insertindex_offset'] = 1 #used by correct if it needs to recompute the index
                 kwargs['nooriginal'] = True
 
             yield parent.correct(**kwargs) #generator

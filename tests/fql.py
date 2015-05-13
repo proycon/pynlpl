@@ -119,6 +119,10 @@ Qcql_context4 = '[ pos = "WW\(.*" ]+ [] [ pos = "WW\(.*" ]+'
 Qcql_context5 = '[ pos = "VG\(.*" ] [ pos = "WW\(.*" ]* []?'
 Qcql_context6 = '[ pos = "VG\(.*|VZ\.*" ]'
 
+#test 4: advanced corrections (higher order corrections):
+Qsplit2 = "SUBSTITUTE w WITH text \"Ik\" SUBSTITUTE w WITH text \"hoor\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"runonerror\") FOR SPAN ID \"correctionexample.s.4.w.1\""
+
+
 class Test1UnparsedQuery(unittest.TestCase):
 
     def test1_basic(self):
@@ -720,6 +724,20 @@ class Test4CQL(unittest.TestCase):
             self.assertEqual(len(result), 1)
             self.assertTrue(result[0].pos()[:2] == "VZ" or result[0].pos()[:2] == "VG" )
 
+class Test4Evaluation(unittest.TestCase):
+    """Advanced corrections"""
+    def setUp(self):
+        self.doc = folia.Document(string=FOLIACORRECTIONEXAMPLE)
+
+    def test1_split2(self):
+        """Substitute - Split (higher-order)"""
+        q = fql.Query(Qsplit2)
+        results = q(self.doc)
+        self.assertEqual(len(results), 1)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].text(), "Ik hoor")
+
+
 
 
 if os.path.exists('../../FoLiA'):
@@ -735,6 +753,9 @@ f = io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8')
 FOLIAEXAMPLE = f.read()
 f.close()
 
+f = io.open(FOLIAPATH + '/test/correctionexample.xml', 'r',encoding='utf-8')
+FOLIACORRECTIONEXAMPLE = f.read()
+f.close()
 
 if __name__ == '__main__':
     unittest.main()
