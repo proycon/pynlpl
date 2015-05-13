@@ -126,9 +126,11 @@ Qsplit2 = "SUBSTITUTE w WITH text \"Ik\" SUBSTITUTE w WITH text \"hoor\" (AS COR
 
 Qmerge2 = "SUBSTITUTE w WITH text \"onweer\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"spliterror\") FOR SPAN ID \"correctionexample.s.4.w.2\" & ID \"correctionexample.s.4.w.3\""
 
-#Qinsertion2 = "APPEND w WITH text \".\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"missingpunctuation\") FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
 
 Qdeletion2 = "DELETE w ID \"correctionexample.s.8.w.3\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"redundantword\")"
+
+#insertions when there is an existing suggestion, SUBSTITUTE insead of APPEND/PREPEND:
+Qinsertion2 = "SUBSTITUTE w WITH text \".\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"missingpunctuation\") FOR SPAN ID \"correctionexample.s.9.correction.1\""
 
 
 
@@ -766,7 +768,7 @@ class Test4Evaluation(unittest.TestCase):
         self.assertEqual(results[0].text(), "onweer")
 
     def test3_deletion2(self):
-        """Substitute - Deletion (higher-order)"""
+        """Deletion (higher-order)"""
         q = fql.Query(Qdeletion2)
         results = q(self.doc)
         self.assertEqual(len(results), 1)
@@ -774,6 +776,14 @@ class Test4Evaluation(unittest.TestCase):
         self.assertEqual(results[0].hastext(), False)
         self.assertEqual(results[0].originaltext('current'), "een")
 
+    def test3_deletion2(self):
+        """Substitute - Insertion (higher-order)"""
+        q = fql.Query(Qinsertion2)
+        results = q(self.doc)
+        self.assertEqual(len(results), 1)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].text(), '.')
+        self.assertIsInstance(results[0].original()[0], folia.Correction)
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
