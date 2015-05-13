@@ -122,6 +122,7 @@ Qcql_context6 = '[ pos = "VG\(.*|VZ\.*" ]'
 #test 4: advanced corrections (higher order corrections):
 Qsplit2 = "SUBSTITUTE w WITH text \"Ik\" SUBSTITUTE w WITH text \"hoor\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"runonerror\") FOR SPAN ID \"correctionexample.s.4.w.1\""
 
+Qmerge2 = "SUBSTITUTE w WITH text \"onweer\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"spliterror\") FOR SPAN ID \"correctionexample.s.4.w.2\" & ID \"correctionexample.s.4.w.3\""
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -725,7 +726,7 @@ class Test4CQL(unittest.TestCase):
             self.assertTrue(result[0].pos()[:2] == "VZ" or result[0].pos()[:2] == "VG" )
 
 class Test4Evaluation(unittest.TestCase):
-    """Advanced corrections"""
+    """Higher-order corrections  (corrections on corrections)"""
     def setUp(self):
         self.doc = folia.Document(string=FOLIACORRECTIONEXAMPLE)
 
@@ -737,6 +738,13 @@ class Test4Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].text(), "Ik hoor")
 
+    def test2_merge2(self):
+        """Substitute - Merge (higher-order)"""
+        q = fql.Query(Qmerge2)
+        results = q(self.doc)
+        self.assertEqual(len(results), 1)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].text(), "onweer")
 
 
 
