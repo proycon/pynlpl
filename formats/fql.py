@@ -1409,6 +1409,7 @@ class Action(object): #Action expression
                     else:
                         strict = query.targets and query.targets.strict
                         focusselector = action.focus(query,contextselector, not strict, debug)
+                    if debug: print("[FQL EVALUATION DEBUG] Action - Obtaining focus...",file=sys.stderr)
                     for focus, target in focusselector:
                         if target and action.action != "SUBSTITUTE":
                             if isinstance(target, SpanSet):
@@ -1426,8 +1427,8 @@ class Action(object): #Action expression
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, processing using form ", repr(focus),file=sys.stderr)
                                 processed_form.append(focus)
                                 focusselection += list(action.form(query, action,focus,target,debug))
-                            elif debug:
-                                print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
+                            else:
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
                                 continue
                         else:
                             if isinstance(focus,SpanSet):
@@ -1435,13 +1436,13 @@ class Action(object): #Action expression
                                     if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result (spanset), adding ", repr(target),file=sys.stderr)
                                     focusselection.append(target)
                                 else:
-                                    print("[FQL EVALUATION DEBUG] Action - Focus result (spanset) already obtained, skipping... ", repr(target),file=sys.stderr)
+                                    if debug: print("[FQL EVALUATION DEBUG] Action - Focus result (spanset) already obtained, skipping... ", repr(target),file=sys.stderr)
                                     continue
                             elif not any(x is focus for x in  focusselection):
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Got focus result, adding ", repr(focus),file=sys.stderr)
                                 focusselection.append(focus)
-                            elif debug:
-                                print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
+                            else:
+                                if debug: print("[FQL EVALUATION DEBUG] Action - Focus result already obtained, skipping... ", repr(focus),file=sys.stderr)
                                 continue
 
                             if action.action == "EDIT":

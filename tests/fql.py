@@ -112,6 +112,8 @@ Qsuggest_split = "SUBSTITUTE (AS CORRECTION OF \"http://raw.github.com/proycon/f
 Qprepend = "PREPEND w WITH text \"heel\" FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
 Qcorrect_prepend = "PREPEND w WITH text \"heel\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"insertion\") FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
 
+Qcorrect_delete = "DELETE w ID \"WR-P-E-J-0000000001.p.1.s.8.w.6\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"redundantword\")"
+
 Qcql_context = '"de" [ tag="ADJ\(.*" ] [ tag="N\(.*" & lemma!="blah" ]'
 Qcql_context2 = '[ pos = "LID\(.*" ]? [ pos = "ADJ\(.*" ]* [ pos = "N\(.*" ]'
 Qcql_context3 = '[ pos = "N\(.*" ]{2}'
@@ -123,6 +125,14 @@ Qcql_context6 = '[ pos = "VG\(.*|VZ\.*" ]'
 Qsplit2 = "SUBSTITUTE w WITH text \"Ik\" SUBSTITUTE w WITH text \"hoor\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"runonerror\") FOR SPAN ID \"correctionexample.s.4.w.1\""
 
 Qmerge2 = "SUBSTITUTE w WITH text \"onweer\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"spliterror\") FOR SPAN ID \"correctionexample.s.4.w.2\" & ID \"correctionexample.s.4.w.3\""
+
+#Qinsertion2 = "APPEND w WITH text \".\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"missingpunctuation\") FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
+
+Qdeletion2 = "DELETE w ID \"correctionexample.s.8.w.3\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"redundantword\")"
+
+
+
+
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -631,6 +641,15 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertEqual(len(results), 1)
 
+    def test29b_correct_delete(self):
+        """Deletion as correction"""
+        q = fql.Query(Qcorrect_delete)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "redundantword")
+        self.assertEqual(results[0].hastext(), False)
+        self.assertEqual(results[0].text(correctionhandling=folia.CorrectionHandling.ORIGINAL), "een")
+
 class Test4CQL(unittest.TestCase):
     def setUp(self):
         self.doc = folia.Document(string=FOLIAEXAMPLE)
@@ -746,6 +765,14 @@ class Test4Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].text(), "onweer")
 
+    def test3_deletion2(self):
+        """Substitute - Deletion (higher-order)"""
+        q = fql.Query(Qdeletion2)
+        results = q(self.doc)
+        self.assertEqual(len(results), 1)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].hastext(), False)
+        self.assertEqual(results[0].originaltext('current'), "een")
 
 
 if os.path.exists('../../FoLiA'):
