@@ -776,7 +776,7 @@ class Test4Evaluation(unittest.TestCase):
         self.assertEqual(results[0].hastext(), False)
         self.assertEqual(results[0].originaltext('current'), "een")
 
-    def test3_deletion2(self):
+    def test3_insertion2(self):
         """Substitute - Insertion (higher-order)"""
         q = fql.Query(Qinsertion2)
         results = q(self.doc)
