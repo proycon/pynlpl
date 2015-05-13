@@ -771,7 +771,7 @@ class Test4Evaluation(unittest.TestCase):
     def test3_deletion2(self):
         """Deletion (higher-order)"""
         q = fql.Query(Qdeletion2)
-        results = q(self.doc, True,True)
+        results = q(self.doc)
         self.assertEqual(len(results), 1)
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].hastext(), False)
