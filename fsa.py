@@ -15,10 +15,19 @@
 
 
 class State(object):
-    def __init__(self):
-        self.epsilon = [] # epsilon-closure
-        self.transitions = [] # (matchfunction(value), state)   (values must be hashable)
-        self.final = True # ending state
+    def __init__(self, **kwargs):
+        if 'transitions' in kwargs:
+            self.epsilon = kwargs['epsilon'] # epsilon-closure (lis of states)
+        else:
+            self.epsilon = [] # epsilon-closure
+        if 'transitions' in kwargs:
+            self.transitions = kwargs['transitions']
+        else:
+            self.transitions = [] # (matchfunction(value), state)   (values must be hashable)
+        if 'final' in kwargs:
+            self.final = bool(kwargs['final']) # ending state
+        else:
+            self.final = False
 
 class NFA(object):
     """Non-deterministic finite state automaton. Can be used to model DFAs as well if your state transitions are not ambiguous and epsilon is empty."""
