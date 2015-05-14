@@ -15,6 +15,8 @@
 
 from __future__ import print_function, unicode_literals, division, absolute_import
 
+from pynlpl.fsa import State, NFA
+
 OPERATORS = ('=','!=')
 MAXINTERVAL = 99
 
@@ -152,6 +154,7 @@ class TokenExpression(object):
 
         return TokenExpression(attribexprs,interval),i
 
+
     def __len__(self):
         return len(self.attribexprs)
 
@@ -161,6 +164,50 @@ class TokenExpression(object):
 
     def __getitem__(self,index):
         return self.attribexprs[index]
+
+    def nfa(self, nextstate):
+        """Returns an initial state for an NFA"""
+        if self.interval:
+            mininterval, maxinterval = self.interval
+            nextstate2 = nextstate
+            for i in range(maxinterval):
+                state = State(transitions=[(self.match, nextstate2)])
+                if i+1> self.mininterval:
+                    if nextstate is not nextstate2: state.transitions.append((self.match, nextstate))
+                    if maxinterval == MAXINTERVAL:
+                        state.transitions.epsilon.append(state)
+                        break
+                nextstate2 = state
+            return state
+        else:
+            state = State(transitions=[(self.match, nextstate)])
+            return state
+
+
+    def match(self, value):
+        match = False
+        for j, attribexpr in enumerate(token):
+            annottype = attribexpr.attribute
+            if annottype == 'text': annottype = 'word'
+            if attribexpr.operator == "!=":
+                negate = True
+            elif attribexpr.operator == "==":
+                negate = False
+            else:
+                raise Exception("Unexpected operator " + attribexpr.operator)
+
+            if len(attribexpr.valueexpr) > 1:
+                expr = re.compile("^(" + "|".join(attribexpr.valueexpr) + ")$")
+            else:
+                expr = re.compile("^" + attribexpr.valueexpr[0] + '$')
+            match = (expr.match(value[annottype]) is not None)
+            if negate:
+                match = not match
+            if not match:
+                return False
+        return True
+
+
 
 class Query(object):
     def __init__(self, s):
@@ -184,8 +231,22 @@ class Query(object):
     def __getitem__(self,index):
         return self.tokenexprs[index]
 
+    def nfa(self):
+        """convert the expression into an NFA"""
+        finalstate = State(final=True)
+        nextstate = finalstate
+        for tokenexpr in reversed(self):
+            state = tokenexpr.nfa(nextstate)
+            nextstate = state
+        return NFA(state)
+
+
     def __call__(self, **tokens):
         """Execute the CQL expression, pass a list of tokens/annotations using keyword arguments: text, pos, lemma, etc"""
+
+        #convert the expression into an NFA
+        nfa = self.nfa()
+
         if not tokens:
             raise Exception("Pass a list of tokens/annotation using keyword arguments! (text,pos,lemma, or others)")
 
