@@ -86,7 +86,7 @@ class NFA(object):
         l = len(sequence)
         for i in range(0,l):
             for length in self.run(sequence[i:], False, debug):
-                yield sequence[:length]
+                yield sequence[i:i+length]
 
     def __iter__(self):
         return iter(self._states(self.initialstate))
