@@ -90,5 +90,13 @@ class Test1(unittest.TestCase):
         self.assertEqual(len(result[0]),1) #result 1 consists of one word
         self.assertEqual(result[0][0]['word'],"the")
 
+    def test2(self):
+        q = cql.Query("[ pos = \"det\" ]")
+        result = q(tokens)
+        self.assertEqual(len(result),3)
+        self.assertEqual(result[0][0]['word'],"This")
+        self.assertEqual(result[1][0]['word'],"a")
+        self.assertEqual(result[2][0]['word'],"the")
+
 if __name__ == '__main__':
     unittest.main()
