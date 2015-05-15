@@ -12,6 +12,7 @@
 #   Licensed under GPLv3
 #
 #----------------------------------------------------------------
+import sys
 
 
 class State(object):
@@ -29,13 +30,15 @@ class State(object):
         else:
             self.final = False
 
+
+
 class NFA(object):
     """Non-deterministic finite state automaton. Can be used to model DFAs as well if your state transitions are not ambiguous and epsilon is empty."""
 
     def __init__(self, initialstate):
         self.initialstate = initialstate
 
-    def run(self, sequence, mustmatchall=False):
+    def run(self, sequence, mustmatchall=False,debug=False):
         def add(state, states):
             """add state and recursively add epsilon transitions"""
             assert isinstance(state, State)
@@ -47,8 +50,10 @@ class NFA(object):
 
         current_states = set()
         add(self.initialstate, current_states)
+        if debug: print("Current states: ", repr(current_states),file=sys.stderr)
 
         for offset, value in enumerate(sequence):
+            if debug: print("Value: ", repr(value),file=sys.stderr)
             next_states = set()
             for state in current_states:
                 for matchfunction, trans_state in state.transitions:
@@ -56,6 +61,7 @@ class NFA(object):
                         add(trans_state, next_states)
 
             current_states = next_states
+            if debug: print("Current states: ", repr(current_states),file=sys.stderr)
             if not mustmatchall:
                 for s in current_states:
                     if s.final:
@@ -79,3 +85,38 @@ class NFA(object):
             for length in self.run(sequence):
                 yield sequence[i:i+length]
 
+    def __iter__(self):
+        return iter(self._states(self.initialstate))
+
+    def _states(self, state, processedstates=[]):
+        """Iterate over all states in no particular order"""
+        processedstates.append(state)
+
+        for nextstate in state.epsilon:
+            if not nextstate in processedstates:
+                self._states(nextstate, processedstates)
+
+        for _, nextstate in state.transitions:
+            if not nextstate in processedstates:
+                self._states(nextstate, processedstates)
+
+        return processedstates
+
+    def __repr__(self):
+        out = []
+        for state in self:
+            staterep = repr(state)
+            if state is self.initialstate:
+                staterep += " (INITIAL)"
+            for nextstate in state.epsilon:
+                nextstatrep = repr(nextstate)
+                if nextstate.final:
+                    nextstaterep += " (FINAL)"
+                out.append( staterep + " -e-> " + nextstaterep )
+            for _, nextstate in state.transitions:
+                nextstaterep = repr(nextstate)
+                if nextstate.final:
+                    nextstaterep += " (FINAL)"
+                out.append( staterep + " ---> " + nextstaterep )
+
+        return "\n".join(out)

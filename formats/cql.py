@@ -17,6 +17,7 @@ from __future__ import print_function, unicode_literals, division, absolute_impo
 
 from pynlpl.fsa import State, NFA
 import re
+import sys
 
 OPERATORS = ('=','!=')
 MAXINTERVAL = 99
@@ -242,7 +243,7 @@ class Query(object):
         return NFA(state)
 
 
-    def __call__(self, tokens):
+    def __call__(self, tokens, debug=False):
         """Execute the CQL expression, pass a list of tokens/annotations using keyword arguments: word, pos, lemma, etc"""
 
         if not tokens:
@@ -253,8 +254,10 @@ class Query(object):
 
         #convert the expression into an NFA
         nfa = self.nfa()
+        if debug:
+            print(repr(nfa), file=sys.stderr)
 
-        return list(nfa.run(tokens))
+        return list(nfa.run(tokens,False,debug))
 
 
 
