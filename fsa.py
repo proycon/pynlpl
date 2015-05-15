@@ -16,7 +16,7 @@
 
 class State(object):
     def __init__(self, **kwargs):
-        if 'transitions' in kwargs:
+        if 'epsilon' in kwargs:
             self.epsilon = kwargs['epsilon'] # epsilon-closure (lis of states)
         else:
             self.epsilon = [] # epsilon-closure
@@ -36,7 +36,7 @@ class NFA(object):
         self.initialstate = initialstate
 
     def run(self, sequence, mustmatchall=False):
-        def add(self, state, states):
+        def add(state, states):
             """add state and recursively add epsilon transitions"""
             assert isinstance(state, State)
             if state in states:

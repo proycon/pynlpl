@@ -16,6 +16,7 @@
 from __future__ import print_function, unicode_literals, division, absolute_import
 
 from pynlpl.fsa import State, NFA
+import re
 
 OPERATORS = ('=','!=')
 MAXINTERVAL = 99
@@ -186,12 +187,12 @@ class TokenExpression(object):
 
     def match(self, value):
         match = False
-        for j, attribexpr in enumerate(token):
+        for j, attribexpr in enumerate(self):
             annottype = attribexpr.attribute
             if annottype == 'text': annottype = 'word'
             if attribexpr.operator == "!=":
                 negate = True
-            elif attribexpr.operator == "==":
+            elif attribexpr.operator == "=":
                 negate = False
             else:
                 raise Exception("Unexpected operator " + attribexpr.operator)
@@ -241,17 +242,14 @@ class Query(object):
         return NFA(state)
 
 
-    def __call__(self, **tokens):
+    def __call__(self, tokens):
         """Execute the CQL expression, pass a list of tokens/annotations using keyword arguments: word, pos, lemma, etc"""
 
         if not tokens:
             raise Exception("Pass a list of tokens/annotation using keyword arguments! (word,pos,lemma, or others)")
 
-        for v in tokens.values():
+        for v in tokens:
             l = len(v)
-
-        if not all( (len(v) == l for k,v in tokens.items() ) ):
-            raise Exception("All lists passed as keyword arguments must represent the same tokens and thus have the same length!")
 
         #convert the expression into an NFA
         nfa = self.nfa()
