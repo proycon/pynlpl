@@ -131,5 +131,27 @@ class Test1(unittest.TestCase):
         self.assertEqual(result[1][1]['word'],"new")
         self.assertEqual(result[1][2]['word'],"module")
 
+    def test6(self):
+        q = cql.Query("[ pos = \"det\" ] []+ [ pos = \"n\" ]")
+        result = q(tokens)
+        self.assertEqual(len(result),2)
+        self.assertEqual(result[0][0]['word'],"a")
+        self.assertEqual(result[0][1]['word'],"first")
+        self.assertEqual(result[0][2]['word'],"test")
+        self.assertEqual(result[1][0]['word'],"the")
+        self.assertEqual(result[1][1]['word'],"new")
+        self.assertEqual(result[1][2]['word'],"module")
+
+    def test7(self):
+        q = cql.Query("[ pos = \"det\" ] []* [ pos = \"n\" ]")
+        result = q(tokens)
+        self.assertEqual(len(result),2)
+        self.assertEqual(result[0][0]['word'],"a")
+        self.assertEqual(result[0][1]['word'],"first")
+        self.assertEqual(result[0][2]['word'],"test")
+        self.assertEqual(result[1][0]['word'],"the")
+        self.assertEqual(result[1][1]['word'],"new")
+        self.assertEqual(result[1][2]['word'],"module")
+
 if __name__ == '__main__':
     unittest.main()
