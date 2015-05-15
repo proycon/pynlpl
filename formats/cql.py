@@ -242,10 +242,10 @@ class Query(object):
 
 
     def __call__(self, **tokens):
-        """Execute the CQL expression, pass a list of tokens/annotations using keyword arguments: text, pos, lemma, etc"""
+        """Execute the CQL expression, pass a list of tokens/annotations using keyword arguments: word, pos, lemma, etc"""
 
         if not tokens:
-            raise Exception("Pass a list of tokens/annotation using keyword arguments! (text,pos,lemma, or others)")
+            raise Exception("Pass a list of tokens/annotation using keyword arguments! (word,pos,lemma, or others)")
 
         for v in tokens.values():
             l = len(v)
