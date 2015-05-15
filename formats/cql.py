@@ -257,7 +257,7 @@ class Query(object):
         if debug:
             print(repr(nfa), file=sys.stderr)
 
-        return list(nfa.run(tokens,False,debug))
+        return list(nfa.find(tokens,debug))
 
 
 

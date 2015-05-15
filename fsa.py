@@ -50,9 +50,10 @@ class NFA(object):
 
         current_states = set()
         add(self.initialstate, current_states)
-        if debug: print("Current states: ", repr(current_states),file=sys.stderr)
+        if debug: print("Starting run, current states: ", repr(current_states),file=sys.stderr)
 
         for offset, value in enumerate(sequence):
+            if not current_states: break
             if debug: print("Value: ", repr(value),file=sys.stderr)
             next_states = set()
             for state in current_states:
@@ -65,11 +66,13 @@ class NFA(object):
             if not mustmatchall:
                 for s in current_states:
                     if s.final:
+                        if debug: print("Final state reached",file=sys.stderr)
                         yield offset+1
 
         if mustmatchall:
             for s in current_states:
                 if s.final:
+                    if debug: print("Final state reached",file=sys.stderr)
                     yield offset+1
 
 
@@ -79,11 +82,11 @@ class NFA(object):
         except StopIteration:
             return False
 
-    def find(self, sequence):
+    def find(self, sequence, debug=False):
         l = len(sequence)
         for i in range(0,l):
-            for length in self.run(sequence):
-                yield sequence[i:i+length]
+            for length in self.run(sequence[i:], False, debug):
+                yield sequence[:length]
 
     def __iter__(self):
         return iter(self._states(self.initialstate))
