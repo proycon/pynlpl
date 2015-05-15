@@ -174,7 +174,7 @@ class TokenExpression(object):
             nextstate2 = nextstate
             for i in range(maxinterval):
                 state = State(transitions=[(self.match, nextstate2)])
-                if i+1> self.mininterval:
+                if i+1> mininterval:
                     if nextstate is not nextstate2: state.transitions.append((self.match, nextstate))
                     if maxinterval == MAXINTERVAL:
                         state.transitions.epsilon.append(state)
