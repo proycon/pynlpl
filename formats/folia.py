@@ -433,7 +433,7 @@ def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-t
         else:
             values["microsecond"] = values["microsecond"][1:]
             values["microsecond"] += "0" * (6 - len(values["microsecond"]))
-            values = dict((k, int(v)) for k, v in values.items() if not k.startswith("tz"))
+        values = dict((k, int(v)) for k, v in values.items() if not k.startswith("tz"))
         try:
             return datetime(**values) # , tz
         except ValueError:
