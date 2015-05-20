@@ -454,9 +454,9 @@ def xmltreefromstring(s):
     else:
         #Python 3
         if isinstance(s,str):
-            s = s.encode('utf-8')
+            b = s.encode('utf-8')
         try:
-            return ElementTree.parse(BytesIO(s), ElementTree.XMLParser(collect_ids=False))
+            return ElementTree.parse(BytesIO(b), ElementTree.XMLParser(collect_ids=False))
         except TypeError:
             return ElementTree.parse(StringIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
 
