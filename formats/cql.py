@@ -170,25 +170,25 @@ class TokenExpression(object):
     def nfa(self, nextstate):
         """Returns an initial state for an NFA"""
         if self.interval:
-            mininterval, maxinterval = self.interval
+            mininterval, maxinterval = self.interval #pylint: disable=unpacking-non-sequence
             nextstate2 = nextstate
             for i in range(maxinterval):
-                state = State(transitions=[(self.match, nextstate2)])
+                state = State(transitions=[(self,self.match, nextstate2)])
                 if i+1> mininterval:
-                    if nextstate is not nextstate2: state.transitions.append((self.match, nextstate))
+                    if nextstate is not nextstate2: state.transitions.append((self,self.match, nextstate))
                     if maxinterval == MAXINTERVAL:
                         state.epsilon.append(state)
                         break
                 nextstate2 = state
             return state
         else:
-            state = State(transitions=[(self.match, nextstate)])
+            state = State(transitions=[(self,self.match, nextstate)])
             return state
 
 
     def match(self, value):
         match = False
-        for j, attribexpr in enumerate(self):
+        for _, attribexpr in enumerate(self):
             annottype = attribexpr.attribute
             if annottype == 'text': annottype = 'word'
             if attribexpr.operator == "!=":
@@ -248,9 +248,6 @@ class Query(object):
 
         if not tokens:
             raise Exception("Pass a list of tokens/annotation using keyword arguments! (word,pos,lemma, or others)")
-
-        for v in tokens:
-            l = len(v)
 
         #convert the expression into an NFA
         nfa = self.nfa()

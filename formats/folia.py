@@ -36,8 +36,8 @@ LXE=True
 
 from lxml.builder import ElementMaker
 if sys.version < '3':
-    from StringIO import StringIO
-    from urllib import urlopen
+    from StringIO import StringIO #pylint: disable=import-error
+    from urllib import urlopen #pylint: disable=no-name-in-module
 else:
     from io import StringIO,  BytesIO
     from urllib.request import urlopen #pylint: disable=E0611
@@ -412,52 +412,52 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
 
 def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-to-parse-xsddatetime-format
-  """Returns (datetime, tz offset in minutes) or (None, None)."""
-  m = re.match(""" ^
-    (?P<year>-?[0-9]{4}) - (?P<month>[0-9]{2}) - (?P<day>[0-9]{2})
-    T (?P<hour>[0-9]{2}) : (?P<minute>[0-9]{2}) : (?P<second>[0-9]{2})
-    (?P<microsecond>\.[0-9]{1,6})?
-    (?P<tz>
-      Z | (?P<tz_hr>[-+][0-9]{2}) : (?P<tz_min>[0-9]{2})
-    )?
-    $ """, s, re.X)
-  if m is not None:
-    values = m.groupdict()
-    if values["tz"] in ("Z", None):
-      tz = 0
-    else:
-      tz = int(values["tz_hr"]) * 60 + int(values["tz_min"])
-    if values["microsecond"] is None:
-      values["microsecond"] = 0
-    else:
-      values["microsecond"] = values["microsecond"][1:]
-      values["microsecond"] += "0" * (6 - len(values["microsecond"]))
-    values = dict((k, int(v)) for k, v in values.items() if not k.startswith("tz"))
-    try:
-      return datetime(**values) # , tz
-    except ValueError:
-      pass
-  return None
+    """Returns (datetime, tz offset in minutes) or (None, None)."""
+    m = re.match(""" ^
+        (?P<year>-?[0-9]{4}) - (?P<month>[0-9]{2}) - (?P<day>[0-9]{2})
+        T (?P<hour>[0-9]{2}) : (?P<minute>[0-9]{2}) : (?P<second>[0-9]{2})
+        (?P<microsecond>\.[0-9]{1,6})?
+        (?P<tz>
+        Z | (?P<tz_hr>[-+][0-9]{2}) : (?P<tz_min>[0-9]{2})
+        )?
+        $ """, s, re.X)
+    if m is not None:
+        values = m.groupdict()
+        if values["tz"] in ("Z", None):
+            tz = 0
+        else:
+            tz = int(values["tz_hr"]) * 60 + int(values["tz_min"])
+        if values["microsecond"] is None:
+          values["microsecond"] = 0
+        else:
+            values["microsecond"] = values["microsecond"][1:]
+            values["microsecond"] += "0" * (6 - len(values["microsecond"]))
+            values = dict((k, int(v)) for k, v in values.items() if not k.startswith("tz"))
+        try:
+            return datetime(**values) # , tz
+        except ValueError:
+            pass
+    return None
 
 
 def xmltreefromstring(s):
-       #Internal method, deals with different Python versions, unicode strings versus bytes, and with the leak bug in lxml
-       if sys.version < '3':
-            #Python 2
-            if isinstance(s,unicode):
-                s = s.encode('utf-8')
-            try:
-                return ElementTree.parse(StringIO(s), ElementTree.XMLParser(collect_ids=False))
-            except TypeError:
-                return ElementTree.parse(StringIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
-       else:
-            #Python 3
-            if isinstance(s,str):
-                s = s.encode('utf-8')
-            try:
-                return ElementTree.parse(BytesIO(s), ElementTree.XMLParser(collect_ids=False))
-            except TypeError:
-                return ElementTree.parse(StringIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
+    #Internal method, deals with different Python versions, unicode strings versus bytes, and with the leak bug in lxml
+    if sys.version < '3':
+        #Python 2
+        if isinstance(s,unicode): #pylint: disable=undefined-variable
+            s = s.encode('utf-8')
+        try:
+            return ElementTree.parse(StringIO(s), ElementTree.XMLParser(collect_ids=False))
+        except TypeError:
+            return ElementTree.parse(StringIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
+    else:
+        #Python 3
+        if isinstance(s,str):
+            s = s.encode('utf-8')
+        try:
+            return ElementTree.parse(BytesIO(s), ElementTree.XMLParser(collect_ids=False))
+        except TypeError:
+            return ElementTree.parse(StringIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
 
 def xmltreefromfile(filename,):
     try:
@@ -1092,7 +1092,7 @@ class AbstractElement(object):
         if self.id:
             self.doc.index[self.id] = self
         for e in self.data:
-            if all([not isinstance(e, C) for x in norecurse]):
+            if all([not isinstance(e, C) for C in norecurse]):
                 try:
                     e.addtoindex(norecurse)
                 except AttributeError:
@@ -1237,7 +1237,7 @@ class AbstractElement(object):
             raise Exception("Too many arguments specified. Only possible when first argument is a class and not an instance")
 
         #Do the actual appending
-        if not Class and (isinstance(child,str) or (sys.version < '3' and isinstance(child,unicode))) and TextContent in self.ACCEPTED_DATA:
+        if not Class and (isinstance(child,str) or (sys.version < '3' and isinstance(child,unicode))) and TextContent in self.ACCEPTED_DATA: #pylint: disable=undefined-variable
             #you can pass strings directly (just for convenience), will be made into textcontent automatically.
             child = TextContent(self.doc, child )
             self.data.insert(index, child)
@@ -1585,7 +1585,7 @@ class AbstractElement(object):
         s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')
         if sys.version < '3':
             if isinstance(s, str):
-                s = unicode(s,'utf-8')
+                s = unicode(s,'utf-8') #pylint: disable=undefined-variable
         else:
             if isinstance(s,bytes):
                 s = str(s,'utf-8')
@@ -1979,7 +1979,7 @@ class AbstractElement(object):
             result = doc.preparsexmlcallback(node)
             if not result:
                 return None
-            if isinstance(result, folia.AbstractElement):
+            if isinstance(result, AbstractElement):
                 return result
 
 
@@ -2095,7 +2095,7 @@ class AbstractElement(object):
             result = doc.parsexmlcallback(instance)
             if not result:
                 return None
-            if isinstance(result, folia.AbstractElement):
+            if isinstance(result, AbstractElement):
                 return result
 
         return instance
@@ -2803,7 +2803,7 @@ class TextContent(AbstractElement):
             self.offset = None
 
         if 'ref' in kwargs: #reference to offset
-            if isinstance(self.ref, AbstractElement):
+            if isinstance(kwargs['ref'], AbstractElement):
                 self.ref = kwargs['ref']
             else:
                 try:
@@ -3027,7 +3027,7 @@ class PhonContent(AbstractElement):
             self.offset = None
 
         if 'ref' in kwargs: #reference to offset
-            if isinstance(self.ref, AbstractElement):
+            if isinstance(kwargs['ref'], AbstractElement):
                 self.ref = kwargs['ref']
             else:
                 try:
@@ -3290,7 +3290,7 @@ class Gap(AbstractElement):
 
     def __init__(self, doc, *args, **kwargs):
         if 'content' in kwargs:
-            self.content = kwargs['content']
+            self.value = kwargs['content']
             del kwargs['content']
         elif 'description' in kwargs:
             self.description = kwargs['description']
@@ -3668,10 +3668,10 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
                 c._helper_wrefs(targets) #recursion
             elif isinstance(c, Correction) and c.auth: #recurse into corrections
                 for e in c:
-                  if isinstance(e, AbstractCorrectionChild) and e.auth:
-                    if e2 in e:
-                        if isinstance(e2, AbstractSpanAnnotation):
-                            e2._helper_wrefs(targets) #recursion
+                    if isinstance(e, AbstractCorrectionChild) and e.auth:
+                        for e2 in e:
+                            if isinstance(e2, AbstractSpanAnnotation):
+                                e2._helper_wrefs(targets) #recursion
 
     def wrefs(self, index = None):
         """Returns a list of word references, these can be Words but also Morphemes or Phonemes.
@@ -4176,7 +4176,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
 
     def append(self, child, *args, **kwargs):
         """See ``AbstractElement.append()``"""
-        e = super(AbstractAnnotation,self).append(child, *args, **kwargs)
+        e = super(Correction,self).append(child, *args, **kwargs)
         self._setmaxid(e)
         return e
 
@@ -4288,7 +4288,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
             for e in self:
                 if isinstance(e, Original):
                     return previousdelimiter + e.phon(cls, "", correctionhandling)
-        raise NoSuchphon
+        raise NoSuchPhon
 
     def gettextdelimiter(self, retaintokenisation=False):
         """May return a customised text delimiter instead of the default for this class."""
@@ -6376,7 +6376,7 @@ class Document(object):
         s = ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
         if sys.version < '3':
             if isinstance(s, str):
-                s = unicode(s,'utf-8')
+                s = unicode(s,'utf-8') #pylint: disable=undefined-variable
         else:
             if isinstance(s,bytes):
                 s = str(s,'utf-8')

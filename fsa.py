@@ -25,11 +25,12 @@ class State(object):
         if 'transitions' in kwargs:
             self.transitions = kwargs['transitions']
         else:
-            self.transitions = [] # (matchfunction(value), state)   (values must be hashable)
+            self.transitions = [] #(matchitem, matchfunction(value), state)
         if 'final' in kwargs:
             self.final = bool(kwargs['final']) # ending state
         else:
             self.final = False
+        self.transitioned = None #will be a tuple (state, matchitem) indicating how this state was reached
 
 
 
@@ -58,8 +59,9 @@ class NFA(object):
             if debug: print("Value: ", repr(value),file=sys.stderr)
             next_states = set()
             for state in current_states:
-                for matchfunction, trans_state in state.transitions:
+                for matchitem, matchfunction, trans_state in state.transitions:
                     if matchfunction(value):
+                        trans_state.transitioned = (state, matchitem)
                         add(trans_state, next_states)
 
             current_states = next_states
@@ -79,7 +81,7 @@ class NFA(object):
 
     def match(self, sequence):
         try:
-            return (next(self.run(sequence,True)) == len(sequence))
+            return next(self.run(sequence,True)) == len(sequence)
         except StopIteration:
             return False
 
@@ -92,7 +94,7 @@ class NFA(object):
     def __iter__(self):
         return iter(self._states(self.initialstate))
 
-    def _states(self, state, processedstates=[]):
+    def _states(self, state, processedstates=[]): #pylint: disable=dangerous-default-value
         """Iterate over all states in no particular order"""
         processedstates.append(state)
 
@@ -113,14 +115,14 @@ class NFA(object):
             if state is self.initialstate:
                 staterep += " (INITIAL)"
             for nextstate in state.epsilon:
-                nextstatrep = repr(nextstate)
-                if nextstate.final:
-                    nextstaterep += " (FINAL)"
-                out.append( staterep + " -e-> " + nextstaterep )
-            for _, nextstate in state.transitions:
                 nextstaterep = repr(nextstate)
                 if nextstate.final:
                     nextstaterep += " (FINAL)"
-                out.append( staterep + " ---> " + nextstaterep )
+                out.append( staterep + " -e-> " + nextstaterep )
+            for item, _, nextstate in state.transitions:
+                nextstaterep = repr(nextstate)
+                if nextstate.final:
+                    nextstaterep += " (FINAL)"
+                out.append( staterep + " -(" + repr(item) + ")-> " + nextstaterep )
 
         return "\n".join(out)
