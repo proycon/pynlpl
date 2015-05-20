@@ -6737,7 +6737,7 @@ def loadsetdefinition(filename):
         except:
             raise DeepValidationError("Unable to download " + filename)
         try:
-            tree = xmltreefromstring(u(f.read()))
+            tree = xmltreefromstring(f.read())
         except IOError:
             raise DeepValidationError("Unable to download " + filename)
         f.close()
