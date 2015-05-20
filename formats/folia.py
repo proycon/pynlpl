@@ -455,6 +455,8 @@ def xmltreefromstring(s):
         #Python 3
         if isinstance(s,str):
             b = s.encode('utf-8')
+        else:
+            b = s
         try:
             return ElementTree.parse(BytesIO(b), ElementTree.XMLParser(collect_ids=False))
         except TypeError:
