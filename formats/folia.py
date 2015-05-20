@@ -454,15 +454,13 @@ def xmltreefromstring(s):
     else:
         #Python 3
         if isinstance(s,str):
-            b = s.encode('utf-8')
-        else:
-            b = s
+            s = s.encode('utf-8')
         try:
-            return ElementTree.parse(BytesIO(b), ElementTree.XMLParser(collect_ids=False))
+            return ElementTree.parse(BytesIO(s), ElementTree.XMLParser(collect_ids=False))
         except TypeError:
-            return ElementTree.parse(StringIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
+            return ElementTree.parse(BytesIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
 
-def xmltreefromfile(filename,):
+def xmltreefromfile(filename):
     try:
         return ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
     except TypeError:
