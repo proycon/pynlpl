@@ -14,6 +14,7 @@
 #
 #----------------------------------------------------------------
 
+#pylint: disable=redefined-builtin,trailing-whitespace,superfluous-parens,bad-classmethod-argument
 
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -65,7 +66,7 @@ import random
 
 
 FOLIAVERSION = '0.12.1'
-LIBVERSION = '0.12.1.69' #== FoLiA version + library revision
+LIBVERSION = '0.12.1.70' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -179,7 +180,7 @@ def parsetime(s):
         raise ValueError("Invalid timestamp, must be in HH:MM:SS.mmm format: " + s)
 
 
-def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
+def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs): 
     """Internal function, parses common FoLiA attributes and sets up the instance accordingly"""
 
     object.doc = doc #The FoLiA root document
@@ -207,7 +208,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         if not Attrib.CLASS in supported and not Attrib.SETONLY in supported:
             raise ValueError("Set is not supported on " + object.__class__.__name__)
         if not kwargs['set']:
-            object.set ="undefined";
+            object.set ="undefined"
         else:
             object.set = kwargs['set']
         del kwargs['set']
@@ -222,7 +223,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     elif annotationtype in doc.annotationdefaults and len(doc.annotationdefaults[annotationtype]) == 1:
         object.set = list(doc.annotationdefaults[annotationtype].keys())[0]
     elif object.ANNOTATIONTYPE == AnnotationType.TEXT:
-        object.set = "undefined"; #text content needs never be declared (for backward compatibility) and is in set 'undefined'
+        object.set = "undefined" #text content needs never be declared (for backward compatibility) and is in set 'undefined'
     elif Attrib.CLASS in required or Attrib.SETONLY in required:
         raise ValueError("Set is required for " + object.__class__.__name__)
 
@@ -285,7 +286,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             raise ValueError("Confidence is not supported")
         try:
             object.confidence = float(kwargs['confidence'])
-            assert (object.confidence >= 0.0 and object.confidence <= 1.0)
+            assert object.confidence >= 0.0 and object.confidence <= 1.0
         except:
             raise ValueError("Confidence must be a floating point number between 0 and 1, got " + repr(kwargs['confidence']) )
         del kwargs['confidence']
@@ -428,7 +429,7 @@ def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-t
         else:
             tz = int(values["tz_hr"]) * 60 + int(values["tz_min"])
         if values["microsecond"] is None:
-          values["microsecond"] = 0
+            values["microsecond"] = 0
         else:
             values["microsecond"] = values["microsecond"][1:]
             values["microsecond"] += "0" * (6 - len(values["microsecond"]))
@@ -480,7 +481,7 @@ def makeelement(E, tagname, **kwargs):
                 for k,v in kwargs.items():
                     e.attrib[k.encode('utf-8')] = v
                 return e
-            except ValueError as e2:
+            except ValueError:
                 print(e,file=stderr)
                 print("tagname=",tagname,file=stderr)
                 print("kwargs=",kwargs,file=stderr)
@@ -499,7 +500,7 @@ def commonancestors(Class, *args):
         else:
             removeancestors = []
             for a in commonancestors:
-                if not (a in ancestors):
+                if not a in ancestors:
                     removeancestors.append(a)
             for a in removeancestors:
                 commonancestors.remove(a)
@@ -1391,7 +1392,6 @@ class AbstractElement(object):
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
         """Serialises the FoLiA element to XML, by returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead."""
-        global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
 
         if not attribs: attribs = {}
@@ -1498,7 +1498,7 @@ class AbstractElement(object):
                         textelements.insert(0, child)
                     else:
                         textelements.append(child)
-                elif not (child in omitchildren):
+                elif not child in omitchildren:
                     otherelements.append(child)
             for child in textelements+otherelements:
                 if (self.TEXTCONTAINER or self.PHONCONTAINER) and isstring(child):
@@ -1516,7 +1516,7 @@ class AbstractElement(object):
 
                 else:
                     xml = child.xml() #may return None in rare occassions, meaning we wan to skip
-                    if not (xml is None):
+                    if not xml is None:
                         e.append(xml)
 
         if elements: #extra elements
@@ -1595,7 +1595,7 @@ class AbstractElement(object):
         return s
 
 
-    def select(self, Class, set=None, recursive=True,  ignore=True, node=None):
+    def select(self, Class, set=None, recursive=True,  ignore=True, node=None): #pylint: disable=bad-classmethod-argument,redefined-builtin
         """Select child elements of the specified class.
 
         A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into.
@@ -1835,133 +1835,132 @@ class AbstractElement(object):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None, origclass = None):
-            """Returns a RelaxNG definition for this element (as an XML element (lxml.etree) rather than a string)"""
+        """Returns a RelaxNG definition for this element (as an XML element (lxml.etree) rather than a string)"""
 
-            global NSFOLIA
-            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
 
-            if origclass: cls = origclass
+        if origclass: cls = origclass
 
-            preamble = []
-            try:
-                if cls.__doc__:
-                    E2 = ElementMaker(namespace="http://relaxng.org/ns/annotation/0.9", nsmap={'a':'http://relaxng.org/ns/annotation/0.9'} )
-                    preamble.append(E2.documentation(cls.__doc__))
-            except AttributeError:
-                pass
-
-
-            attribs = []
-            if Attrib.ID in cls.REQUIRED_ATTRIBS:
-                attribs.append( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") )
-            elif Attrib.ID in cls.OPTIONAL_ATTRIBS:
-                attribs.append( E.optional( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") ) )
-            if Attrib.CLASS in cls.REQUIRED_ATTRIBS:
-                #Set is a tough one, we can't require it as it may be defined in the declaration: we make it optional and need schematron to resolve this later
-                attribs.append( E.attribute(name='class') )
-                attribs.append( E.optional( E.attribute( name='set' ) ) )
-            elif Attrib.CLASS in cls.OPTIONAL_ATTRIBS:
-                attribs.append( E.optional( E.attribute(name='class') ) )
-                attribs.append( E.optional( E.attribute( name='set' ) ) )
-            if Attrib.ANNOTATOR in cls.REQUIRED_ATTRIBS or Attrib.ANNOTATOR in cls.OPTIONAL_ATTRIBS:
-               #Similarly tough
-               attribs.append( E.optional( E.attribute(name='annotator') ) )
-               attribs.append( E.optional( E.attribute(name='annotatortype') ) )
-            if Attrib.CONFIDENCE in cls.REQUIRED_ATTRIBS:
-               attribs.append(  E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') )
-            elif Attrib.CONFIDENCE in cls.OPTIONAL_ATTRIBS:
-               attribs.append(  E.optional( E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') ) )
-            if Attrib.N in cls.REQUIRED_ATTRIBS:
-               attribs.append( E.attribute( name='n') )
-            elif Attrib.N in cls.OPTIONAL_ATTRIBS:
-               attribs.append( E.optional( E.attribute( name='n') ) )
-            if Attrib.DATETIME in cls.REQUIRED_ATTRIBS:
-               attribs.append( E.attribute(E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='datetime') )
-            elif Attrib.DATETIME in cls.OPTIONAL_ATTRIBS:
-               attribs.append( E.optional( E.attribute( E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),  name='datetime') ) )
-            if Attrib.BEGINTIME in cls.REQUIRED_ATTRIBS:
-               attribs.append(E.attribute(name='begintime') )
-            elif Attrib.BEGINTIME in cls.OPTIONAL_ATTRIBS:
-               attribs.append( E.optional( E.attribute(name='begintime') ) )
-            if Attrib.ENDTIME in cls.REQUIRED_ATTRIBS:
-               attribs.append(E.attribute(name='endtime') )
-            elif Attrib.ENDTIME in cls.OPTIONAL_ATTRIBS:
-               attribs.append( E.optional( E.attribute(name='endtime') ) )
-            if Attrib.SRC in cls.REQUIRED_ATTRIBS:
-               attribs.append(E.attribute(name='src') )
-            elif Attrib.SRC in cls.OPTIONAL_ATTRIBS:
-               attribs.append( E.optional( E.attribute(name='src') ) )
-            if Attrib.SPEAKER in cls.REQUIRED_ATTRIBS:
-               attribs.append(E.attribute(name='speaker') )
-            elif Attrib.SPEAKER in cls.OPTIONAL_ATTRIBS:
-               attribs.append( E.optional( E.attribute(name='speaker') ) )
-            if cls.XLINK:
-                attribs += [ E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ) ]
-            attribs.append( E.optional( E.attribute( name='auth' ) ) )
+        preamble = []
+        try:
+            if cls.__doc__:
+                E2 = ElementMaker(namespace="http://relaxng.org/ns/annotation/0.9", nsmap={'a':'http://relaxng.org/ns/annotation/0.9'} )
+                preamble.append(E2.documentation(cls.__doc__))
+        except AttributeError:
+            pass
 
 
+        attribs = []
+        if Attrib.ID in cls.REQUIRED_ATTRIBS:
+            attribs.append( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") )
+        elif Attrib.ID in cls.OPTIONAL_ATTRIBS:
+            attribs.append( E.optional( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") ) )
+        if Attrib.CLASS in cls.REQUIRED_ATTRIBS:
+            #Set is a tough one, we can't require it as it may be defined in the declaration: we make it optional and need schematron to resolve this later
+            attribs.append( E.attribute(name='class') )
+            attribs.append( E.optional( E.attribute( name='set' ) ) )
+        elif Attrib.CLASS in cls.OPTIONAL_ATTRIBS:
+            attribs.append( E.optional( E.attribute(name='class') ) )
+            attribs.append( E.optional( E.attribute( name='set' ) ) )
+        if Attrib.ANNOTATOR in cls.REQUIRED_ATTRIBS or Attrib.ANNOTATOR in cls.OPTIONAL_ATTRIBS:
+            #Similarly tough
+            attribs.append( E.optional( E.attribute(name='annotator') ) )
+            attribs.append( E.optional( E.attribute(name='annotatortype') ) )
+        if Attrib.CONFIDENCE in cls.REQUIRED_ATTRIBS:
+            attribs.append(  E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') )
+        elif Attrib.CONFIDENCE in cls.OPTIONAL_ATTRIBS:
+            attribs.append(  E.optional( E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') ) )
+        if Attrib.N in cls.REQUIRED_ATTRIBS:
+            attribs.append( E.attribute( name='n') )
+        elif Attrib.N in cls.OPTIONAL_ATTRIBS:
+            attribs.append( E.optional( E.attribute( name='n') ) )
+        if Attrib.DATETIME in cls.REQUIRED_ATTRIBS:
+            attribs.append( E.attribute(E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='datetime') )
+        elif Attrib.DATETIME in cls.OPTIONAL_ATTRIBS:
+            attribs.append( E.optional( E.attribute( E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),  name='datetime') ) )
+        if Attrib.BEGINTIME in cls.REQUIRED_ATTRIBS:
+            attribs.append(E.attribute(name='begintime') )
+        elif Attrib.BEGINTIME in cls.OPTIONAL_ATTRIBS:
+            attribs.append( E.optional( E.attribute(name='begintime') ) )
+        if Attrib.ENDTIME in cls.REQUIRED_ATTRIBS:
+            attribs.append(E.attribute(name='endtime') )
+        elif Attrib.ENDTIME in cls.OPTIONAL_ATTRIBS:
+            attribs.append( E.optional( E.attribute(name='endtime') ) )
+        if Attrib.SRC in cls.REQUIRED_ATTRIBS:
+            attribs.append(E.attribute(name='src') )
+        elif Attrib.SRC in cls.OPTIONAL_ATTRIBS:
+            attribs.append( E.optional( E.attribute(name='src') ) )
+        if Attrib.SPEAKER in cls.REQUIRED_ATTRIBS:
+            attribs.append(E.attribute(name='speaker') )
+        elif Attrib.SPEAKER in cls.OPTIONAL_ATTRIBS:
+            attribs.append( E.optional( E.attribute(name='speaker') ) )
+        if cls.XLINK:
+            attribs += [ E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ) ]
+        attribs.append( E.optional( E.attribute( name='auth' ) ) )
 
-            if extraattribs:
-                    for e in extraattribs:
-                        attribs.append(e) #s
 
 
-            elements = [] #(including attributes)
-            if cls.TEXTCONTAINER or cls.PHONCONTAINER:
-                elements.append( E.text() )
-            done = {}
-            if includechildren:
-                for c in cls.ACCEPTED_DATA:
-                    if c.__name__[:8] == 'Abstract' and inspect.isclass(c):
-                        for c2 in globals().values():
-                            try:
-                                if inspect.isclass(c2) and issubclass(c2, c):
-                                    try:
-                                        if c2.XMLTAG and not (c2.XMLTAG in done):
-                                            if c2.OCCURRENCES == 1:
-                                                elements.append( E.optional( E.ref(name=c2.XMLTAG) ) )
-                                            else:
-                                                elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
-                                            done[c2.XMLTAG] = True
-                                    except AttributeError:
-                                        continue
-                            except TypeError:
-                                pass
-                    elif issubclass(c, Feature) and c.SUBSET:
-                        attribs.append( E.optional( E.attribute(name=c.SUBSET)))  #features as attributes
-                    else:
+        if extraattribs:
+            for e in extraattribs:
+                attribs.append(e) #s
+
+
+        elements = [] #(including attributes)
+        if cls.TEXTCONTAINER or cls.PHONCONTAINER:
+            elements.append( E.text() )
+        done = {}
+        if includechildren:
+            for c in cls.ACCEPTED_DATA:
+                if c.__name__[:8] == 'Abstract' and inspect.isclass(c):
+                    for c2 in globals().values():
                         try:
-                            if c.XMLTAG and not (c.XMLTAG in done):
-                                if c in cls.REQUIRED_DATA:
-                                    if c.OCCURRENCES == 1:
-                                        elements.append( E.ref(name=c.XMLTAG) )
-                                    else:
-                                        elements.append( E.oneOrMore( E.ref(name=c.XMLTAG) ) )
-                                elif c.OCCURRENCES == 1:
-                                    elements.append( E.optional( E.ref(name=c.XMLTAG) ) )
-                                else:
-                                    elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )
-                                done[c.XMLTAG] = True
-                        except AttributeError:
-                            continue
-
-            if extraelements:
-                    for e in extraelements:
-                        elements.append( e )
-
-            if elements:
-                if len(elements) > 1:
-                    attribs.append( E.interleave(*elements) )
+                            if inspect.isclass(c2) and issubclass(c2, c):
+                                try:
+                                    if c2.XMLTAG and not c2.XMLTAG in done:
+                                        if c2.OCCURRENCES == 1:
+                                            elements.append( E.optional( E.ref(name=c2.XMLTAG) ) )
+                                        else:
+                                            elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
+                                        done[c2.XMLTAG] = True
+                                except AttributeError:
+                                    continue
+                        except TypeError:
+                            pass
+                elif issubclass(c, Feature) and c.SUBSET:
+                    attribs.append( E.optional( E.attribute(name=c.SUBSET)))  #features as attributes
                 else:
-                    attribs.append( *elements )
+                    try:
+                        if c.XMLTAG and not c.XMLTAG in done:
+                            if c in cls.REQUIRED_DATA:
+                                if c.OCCURRENCES == 1:
+                                    elements.append( E.ref(name=c.XMLTAG) )
+                                else:
+                                    elements.append( E.oneOrMore( E.ref(name=c.XMLTAG) ) )
+                            elif c.OCCURRENCES == 1:
+                                elements.append( E.optional( E.ref(name=c.XMLTAG) ) )
+                            else:
+                                elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )
+                            done[c.XMLTAG] = True
+                    except AttributeError:
+                        continue
 
-            if not attribs:
-                attribs.append( E.empty() )
+        if extraelements:
+            for e in extraelements:
+                elements.append( e )
 
-            return E.define( E.element(*(preamble + attribs), **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
+        if elements:
+            if len(elements) > 1:
+                attribs.append( E.interleave(*elements) )
+            else:
+                attribs.append( *elements )
+
+        if not attribs:
+            attribs.append( E.empty() )
+
+        return E.define( E.element(*(preamble + attribs), **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
 
     @classmethod
-    def parsexml(Class, node, doc):
+    def parsexml(Class, node, doc): #pylint: disable=bad-classmethod-argument
         """Internal class method used for turning an XML element into an instance of the Class.
 
         Args:
@@ -1973,7 +1972,6 @@ class AbstractElement(object):
         """
 
         assert issubclass(Class, AbstractElement)
-        global NSFOLIA, NSDCOI
 
         if doc.preparsexmlcallback:
             result = doc.preparsexmlcallback(node)
@@ -2019,13 +2017,11 @@ class AbstractElement(object):
 
 
 
-        id = None
         if dcoi:
             dcoipos = dcoilemma = dcoicorrection = dcoicorrectionoriginal = None
         for key, value in node.attrib.items():
             if key[0] == '{' or key =='XMLid':
                 if key == '{http://www.w3.org/XML/1998/namespace}id' or key == 'XMLid':
-                    id = value
                     key = 'id'
                 elif key.startswith( '{' + NSFOLIA + '}'):
                     key = key[nslen:]
@@ -2164,7 +2160,6 @@ class Description(AbstractElement):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
 
         if not attribs:
@@ -2181,7 +2176,6 @@ class Description(AbstractElement):
 
     @classmethod
     def parsexml(Class, node, doc):
-        global NSFOLIA
         kwargs = {}
         kwargs['value'] = node.text
         return Description(doc, **kwargs)
@@ -2189,7 +2183,6 @@ class Description(AbstractElement):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
@@ -2332,11 +2325,11 @@ class AllowCorrections(object):
                         suggestion.annotatortype = c.annotatortype
 
             if 'annotator' in kwargs:
-                c.annotator = kwargs['annotator']
+                c.annotator = kwargs['annotator'] #pylint: disable=attribute-defined-outside-init
             if 'annotatortype' in kwargs:
-                c.annotatortype = kwargs['annotatortype']
+                c.annotatortype = kwargs['annotatortype'] #pylint: disable=attribute-defined-outside-init
             if 'confidence' in kwargs:
-                c.confidence = float(kwargs['confidence'])
+                c.confidence = float(kwargs['confidence']) #pylint: disable=attribute-defined-outside-init
             c.addtoindex()
             del kwargs['reuse']
         else:
@@ -2429,7 +2422,7 @@ class AllowGenerateID(object):
         try:
             self.maxid
         except AttributeError:
-            self.maxid = {}
+            self.maxid = {}#pylint: disable=attribute-defined-outside-init
         try:
             if child.id and child.XMLTAG:
                 fields = child.id.split(self.doc.IDSEPARATOR)
@@ -2439,8 +2432,8 @@ class AllowGenerateID(object):
                         #print "set maxid on " + repr(self) + ", " + child.XMLTAG + " to " + fields[-1]
                     else:
                         if self.maxid[child.XMLTAG] < int(fields[-1]):
-                           self.maxid[child.XMLTAG] = int(fields[-1])
-                           #print "set maxid on " + repr(self) + ", " + child.XMLTAG + " to " + fields[-1]
+                            self.maxid[child.XMLTAG] = int(fields[-1])
+                            #print "set maxid on " + repr(self) + ", " + child.XMLTAG + " to " + fields[-1]
 
         except AttributeError:
             pass
@@ -2482,27 +2475,9 @@ class AllowGenerateID(object):
         try:
             self.maxid
         except AttributeError:
-            self.maxid = {}
+            self.maxid = {}#pylint: disable=attribute-defined-outside-init
         self.maxid[xmltag] = maxid #Set MAX ID
         return id
-
-        #i = 0
-        #while True:
-        #    i += 1
-        #    print i
-        #    if self.id:
-        #        id = self.id
-        #    else:
-        #        #this element has no ID, fall back to closest parent ID:
-        #        e = self
-        #        while e.parent:
-        #            if e.id:
-        #                id = e.id
-        #                break
-        #            e = e.parent
-        #    id = id + '.' + xmltag + '.' + str(self._getmaxid(xmltag) + i)
-        #    if not id in self.doc.index:
-        #        return id
 
 
 class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
@@ -2670,7 +2645,6 @@ class AbstractTextMarkup(AbstractAnnotation):
 
     @classmethod
     def parsexml(Class, node, doc):
-        global NSFOLIA
         if 'id' in node.attrib:
             idref = node.attrib['id']
             del node.attrib['id']
@@ -2683,7 +2657,6 @@ class AbstractTextMarkup(AbstractAnnotation):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
         if not extraattribs: extraattribs = []
         extraattribs.append( E.optional(E.attribute(name='id' ))) #id reference
@@ -2725,7 +2698,6 @@ class TextMarkupCorrection(AbstractTextMarkup):
 
     @classmethod
     def parsexml(Class, node, doc):
-        global NSFOLIA
         if 'original' in node.attrib:
             original = node.attrib['original']
             del node.attrib['original']
@@ -2738,7 +2710,6 @@ class TextMarkupCorrection(AbstractTextMarkup):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
         if not extraattribs: extraattribs = []
         extraattribs.append( E.optional(E.attribute(name='original' )))
@@ -2781,7 +2752,6 @@ class TextContent(AbstractElement):
 
 
     def __init__(self, doc, *args, **kwargs):
-        global ILLEGAL_UNICODE_CONTROL_CHARACTERS
         """Example::
 
                 text = folia.TextContent(doc, 'test')
@@ -2932,8 +2902,6 @@ class TextContent(AbstractElement):
     @classmethod
     def parsexml(Class, node, doc):
         """(Method for internal usage, see AbstractElement)"""
-        global NSFOLIA
-
         e = super(TextContent,Class).parsexml(node,doc)
         if 'offset' in node.attrib:
             e.offset = int(node.attrib['offset'])
@@ -2944,7 +2912,6 @@ class TextContent(AbstractElement):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
 
         attribs = {}
@@ -2978,7 +2945,6 @@ class TextContent(AbstractElement):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
         if not extraattribs: extraattribs = []
         extraattribs.append( E.optional(E.attribute(name='offset' )))
@@ -3111,9 +3077,8 @@ class PhonContent(AbstractElement):
     def postappend(self):
         """(Method for internal usage, see ``AbstractElement.postappend()``)"""
         if isinstance(self.parent, Original):
-            if self.cls == 'current': self.cls = 'original'
+            if self.cls == 'current': self.cls = 'original' #pylint: disable=attribute-defined-outside-init
 
-        #assert (self.testreference() == True)
         super(PhonContent, self).postappend()
 
 
@@ -3148,7 +3113,7 @@ class PhonContent(AbstractElement):
 
 
     @classmethod
-    def findreplaceables(Class, parent, set, **kwargs):
+    def findreplaceables(Class, parent, set, **kwargs):#pylint: disable=bad-classmethod-argument
         """(Method for internal usage, see AbstractElement)"""
         #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
         if not 'cls' in kwargs:
@@ -3160,10 +3125,8 @@ class PhonContent(AbstractElement):
 
 
     @classmethod
-    def parsexml(Class, node, doc):
+    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
         """(Method for internal usage, see AbstractElement)"""
-        global NSFOLIA
-
         e = super(PhonContent,Class).parsexml(node,doc)
         if e and 'offset' in node.attrib:
             e.offset = int(node.attrib['offset'])
@@ -3174,9 +3137,6 @@ class PhonContent(AbstractElement):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        global NSFOLIA
-        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-
         attribs = {}
         if not self.offset is None:
             attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
@@ -3208,7 +3168,6 @@ class PhonContent(AbstractElement):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
         if not extraattribs: extraattribs = []
         extraattribs.append( E.optional(E.attribute(name='offset' )))
@@ -3245,7 +3204,6 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
         return self.value
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
 
         if not attribs:
@@ -3263,13 +3221,11 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
     @classmethod
-    def parsexml(Class, node, doc):
-        global NSFOLIA
+    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
         kwargs = {}
         kwargs['value'] = node.text
         return Content(doc, **kwargs)
@@ -3449,9 +3405,8 @@ class Word(AbstractStructureElement, AllowCorrections):
             raise
 
     @classmethod
-    def parsexml(Class, node, doc):
+    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
         assert Class is Word
-        global NSFOLIA
         instance = super(Word,Class).parsexml(node, doc)
         if 'space' in node.attrib and instance:
             if node.attrib['space'] == 'no':
@@ -3473,7 +3428,6 @@ class Word(AbstractStructureElement, AllowCorrections):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         if not extraattribs:
             extraattribs = [ E.optional(E.attribute(name='space')) ]
@@ -3492,9 +3446,9 @@ class Word(AbstractStructureElement, AllowCorrections):
     def findspans(self, type,set=None):
         """Find span annotation of the specified type that includes this word"""
         if issubclass(type, AbstractAnnotationLayer):
-           layerclass = type
+            layerclass = type
         else:
-           layerclass = ANNOTATIONTYPE2LAYERCLASS[type.ANNOTATIONTYPE]
+            layerclass = ANNOTATIONTYPE2LAYERCLASS[type.ANNOTATIONTYPE]
         e = self
         while True:
             if not e.parent: break
@@ -3514,7 +3468,7 @@ class Feature(AbstractElement):
     XMLTAG = 'feat'
     SUBSET = None
 
-    def __init__(self,doc, *args, **kwargs):
+    def __init__(self,doc, *args, **kwargs): #pylint: disable=super-init-not-called
         """Required keyword arguments:
 
            * ``subset=``: the subset
@@ -3552,7 +3506,6 @@ class Feature(AbstractElement):
             self.cls = self.cls.strftime("%Y-%m-%dT%H:%M:%S")
 
     def xml(self):
-        global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
         attribs = {}
         if self.subset != self.SUBSET:
@@ -3568,7 +3521,6 @@ class Feature(AbstractElement):
 
     @classmethod
     def relaxng(cls, includechildren=True, extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.element(E.attribute(name='subset'), E.attribute(name='class'),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
 
@@ -3608,7 +3560,6 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        global NSFOLIA
         if not attribs: attribs = {}
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         e = super(AbstractSpanAnnotation,self).xml(attribs, elements, True)
@@ -3687,8 +3638,8 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
             return targets[index]
 
     def addtoindex(self,norecurse=None):
-        if not norecurse: norecurse = (Word, Morpheme, Phoneme)
         """Makes sure this element (and all subelements), are properly added to the index"""
+        if not norecurse: norecurse = (Word, Morpheme, Phoneme)
         if self.id:
             self.doc.index[self.id] = self
         for e in self.data:
@@ -3819,14 +3770,12 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
         for span in self.select(AbstractSpanAnnotation,None,True):
             if tuple(span.wrefs()) == words:
-               return span
+                return span
         raise NoSuchAnnotation
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None, origclass = None):
         """Returns a RelaxNG definition for this element (as an XML element (lxml.etree) rather than a string)"""
-
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
         if not extraattribs:
             extraattribs = []
@@ -3847,15 +3796,15 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
 
 class String(AbstractElement, AllowTokenAnnotation):
-   """String"""
-   #ACCEPTED_DATA = DEFINED LATER!!
-   XMLTAG = 'str'
-   REQUIRED_ATTRIBS = ()
-   OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
-   ANNOTATIONTYPE = AnnotationType.STRING
-   OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
-   OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
-   PRINTABLE = True
+    """String"""
+    #ACCEPTED_DATA = DEFINED LATER!!
+    XMLTAG = 'str'
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
+    ANNOTATIONTYPE = AnnotationType.STRING
+    OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
+    OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
+    PRINTABLE = True
 
 class AbstractCorrectionChild(AbstractElement):
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME,Attrib.N)
@@ -3912,8 +3861,7 @@ class Reference(AbstractStructureElement):
             return self
 
     @classmethod
-    def parsexml(Class, node, doc):
-        global NSFOLIA
+    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
         if 'id' in node.attrib:
             idref = node.attrib['id']
             del node.attrib['id']
@@ -3935,7 +3883,6 @@ class Reference(AbstractStructureElement):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
         if not extraattribs: extraattribs = []
         extraattribs.append( E.attribute(name='id'))
@@ -3946,7 +3893,7 @@ class AlignReference(AbstractElement):
     REQUIRED_ATTRIBS = (Attrib.ID,)
     XMLTAG = 'aref'
 
-    def __init__(self, doc, *args, **kwargs):
+    def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
         if not 'id' in kwargs:
             raise Exception("ID required for AlignReference")
@@ -3978,8 +3925,7 @@ class AlignReference(AbstractElement):
             self.href = None
 
     @classmethod
-    def parsexml(Class, node, doc):
-        global NSFOLIA
+    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
         assert Class is AlignReference or issubclass(Class, AlignReference)
 
         #special handling for word references
@@ -3994,9 +3940,8 @@ class AlignReference(AbstractElement):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-            global NSFOLIA
-            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-            return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), E.attribute(E.text(), name='type'), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), E.attribute(E.text(), name='type'), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
     def resolve(self, alignmentcontext):
         if not alignmentcontext.href:
@@ -4006,7 +3951,6 @@ class AlignReference(AbstractElement):
             raise NotImplementedError
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        global NSFOLIA
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
 
         if not attribs:
@@ -4070,9 +4014,7 @@ class Suggestion(AbstractCorrectionChild):
         super(Suggestion,self).__init__(doc, *args, **kwargs)
 
     @classmethod
-    def parsexml(Class, node, doc):
-        global NSFOLIA
-        kwargs = {}
+    def parsexml(Class, node, doc): #pylint: disable=bad-classmethod-argument
         e = super(Suggestion,Class).parsexml(node, doc)
         if 'split' in node.attrib:
             e.split = node.attrib['split']
@@ -4090,7 +4032,6 @@ class Suggestion(AbstractCorrectionChild):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
         if not extraattribs: extraattribs = []
         extraattribs.append( E.optional(E.attribute(name='split' )))
@@ -4114,7 +4055,7 @@ class New(AbstractCorrectionChild):
 
 
     @classmethod
-    def addable(Class, parent, set=None, raiseexceptions=True):
+    def addable(Class, parent, set=None, raiseexceptions=True):#pylint: disable=bad-classmethod-argument
         if not super(New,Class).addable(parent,set,raiseexceptions): return False
         if any( ( isinstance(c, Current) for c in parent ) ):
             if raiseexceptions:
@@ -4134,12 +4075,12 @@ class Original(AbstractCorrectionChild):
     AUTH = False
 
     @classmethod
-    def addable(Class, parent, set=None, raiseexceptions=True):
+    def addable(Class, parent, set=None, raiseexceptions=True):#pylint: disable=bad-classmethod-argument
         if not super(Original,Class).addable(parent,set,raiseexceptions): return False
         if any( ( isinstance(c, Current)  for c in parent ) ):
-             if raiseexceptions:
+            if raiseexceptions:
                 raise Exception("Can't add Original item to Correction if there is a Current item")
-             else:
+            else:
                 return False
         return True
 
@@ -4421,7 +4362,7 @@ class External(AbstractElement):
     AUTH = True
 
 
-    def __init__(self, doc, *args, **kwargs):
+    def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
         if not 'source' in kwargs:
             raise Exception("Source required for External")
@@ -4476,7 +4417,6 @@ class External(AbstractElement):
 
     @classmethod
     def parsexml(Class, node, doc):
-        global NSFOLIA
         assert Class is External or issubclass(Class, External)
         #special handling for external
         source = node.attrib['src']
@@ -4502,7 +4442,6 @@ class External(AbstractElement):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        global NSFOLIA
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.element(E.attribute(E.text(), name='src'), E.optional(E.attribute(E.text(), name='include')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
@@ -4520,11 +4459,11 @@ class WordReference(AbstractElement):
     XMLTAG = 'wref'
     #ANNOTATIONTYPE = AnnotationType.TOKEN
 
-    def __init__(self, doc, *args, **kwargs):
+    def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
         if not 'idref' in kwargs and not 'id' in kwargs:
             raise Exception("ID required for WordReference")
-        assert(isinstance(doc,Document))
+        assert isinstance(doc,Document)
         self.doc = doc
         if 'idref' in kwargs:
             self.id = kwargs['idref']
@@ -4541,8 +4480,7 @@ class WordReference(AbstractElement):
         self.auth = True
 
     @classmethod
-    def parsexml(Class, node, doc):
-        global NSFOLIA
+    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
         assert Class is WordReference or issubclass(Class, WordReference)
         #special handling for word references
         id = node.attrib['id']
@@ -4555,9 +4493,8 @@ class WordReference(AbstractElement):
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-            global NSFOLIA
-            E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-            return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
 
 
@@ -4672,9 +4609,9 @@ class Morpheme(AbstractStructureElement):
     def findspans(self, type,set=None):
         """Find span annotation of the specified type that include this word"""
         if issubclass(type, AbstractAnnotationLayer):
-           layerclass = type
+            layerclass = type
         else:
-           layerclass = ANNOTATIONTYPE2LAYERCLASS[type.ANNOTATIONTYPE]
+            layerclass = ANNOTATIONTYPE2LAYERCLASS[type.ANNOTATIONTYPE]
         e = self
         while True:
             if not e.parent: break
@@ -4697,9 +4634,9 @@ class Phoneme(AbstractStructureElement):
     def findspans(self, type,set=None): #TODO: this is a copy of the methods in Morpheme in Word, abstract into separate class and inherit
         """Find span annotation of the specified type that include this phoneme"""
         if issubclass(type, AbstractAnnotationLayer):
-           layerclass = type
+            layerclass = type
         else:
-           layerclass = ANNOTATIONTYPE2LAYERCLASS[type.ANNOTATIONTYPE]
+            layerclass = ANNOTATIONTYPE2LAYERCLASS[type.ANNOTATIONTYPE]
         e = self
         while True:
             if not e.parent: break
@@ -5363,7 +5300,7 @@ this, first a trivial example of searching for one word::
             raise Exception("Can only resize patterns with * wildcards")
 
         nrofwildcards = 0
-        for i,x in enumerate(self.sequence):
+        for x in self.sequence:
             if x == '*':
                 nrofwildcards += 1
 
@@ -5371,7 +5308,7 @@ this, first a trivial example of searching for one word::
 
         wildcardnr = 0
         newsequence = []
-        for i,x in enumerate(self.sequence):
+        for x in self.sequence:
             if x == '*':
                 newsequence += [True] * distribution[wildcardnr]
                 wildcardnr += 1
@@ -5422,7 +5359,6 @@ class Document(object):
     IDSEPARATOR = '.'
 
     def __init__(self, *args, **kwargs):
-        global FOLIAVERSION
         """Start/load a FoLiA document:
 
         There are four sources of input for loading a FoLiA document::
@@ -5604,7 +5540,6 @@ class Document(object):
 
     def load(self, filename):
         """Load a FoLiA or D-Coi XML file"""
-        global LXE
         #if LXE and self.mode != Mode.XPATH:
         #    #workaround for xml:id problem (disabled)
         #    #f = open(filename)
@@ -5771,7 +5706,7 @@ class Document(object):
                     elif value == AnnotatorType.AUTO:
                         attribs['{' + NSFOLIA + '}' + key] = 'auto'
                 elif key == 'datetime':
-                     attribs['{' + NSFOLIA + '}' + key] = value.strftime("%Y-%m-%dT%H:%M:%S") #proper iso-formatting
+                    attribs['{' + NSFOLIA + '}' + key] = value.strftime("%Y-%m-%dT%H:%M:%S") #proper iso-formatting
                 elif value:
                     attribs['{' + NSFOLIA + '}' + key] = value
             if label:
@@ -5807,7 +5742,7 @@ class Document(object):
                     elif value == AnnotatorType.AUTO:
                         jsonnode[key] = 'auto'
                 elif key == 'datetime':
-                     jsonnode[key] = value.strftime("%Y-%m-%dT%H:%M:%S") #proper iso-formatting
+                    jsonnode[key] = value.strftime("%Y-%m-%dT%H:%M:%S") #proper iso-formatting
                 elif value:
                     jsonnode[key] = value
             if label:
@@ -5817,7 +5752,6 @@ class Document(object):
         return l
 
     def xml(self):
-        global LIBVERSION, FOLIAVERSION
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
@@ -5923,7 +5857,6 @@ class Document(object):
                             self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
                         except DeepValidationError:
                             print("WARNING: Set " + set + " could not be downloaded, ignoring!",file=sys.stderr) #warning and ignore
-                            pass
 
                 #Set defaults
                 if type in self.annotationdefaults and set in self.annotationdefaults[type]:
@@ -6006,7 +5939,6 @@ class Document(object):
 
 
     def setimdi(self, node):
-        global LXE
         #TODO: node or filename
         ns = {'imdi': 'http://www.mpi.nl/IMDI/Schema/IMDI'}
         self.metadatatype = MetaDataType.IMDI
@@ -6087,7 +6019,7 @@ class Document(object):
         """
         if not (value is None):
             if (self.metadatatype == MetaDataType.NATIVE):
-                 self.metadata['title'] = value
+                self.metadata['title'] = value
             else:
                 self._title = value
         if (self.metadatatype == MetaDataType.NATIVE):
@@ -6104,7 +6036,7 @@ class Document(object):
         """
         if not (value is None):
             if (self.metadatatype == MetaDataType.NATIVE):
-                 self.metadata['date'] = value
+                self.metadata['date'] = value
             else:
                 self._date = value
         if (self.metadatatype == MetaDataType.NATIVE):
@@ -6121,7 +6053,7 @@ class Document(object):
         """
         if not (value is None):
             if (self.metadatatype == MetaDataType.NATIVE):
-                 self.metadata['publisher'] = value
+                self.metadata['publisher'] = value
             else:
                 self._publisher = value
         if (self.metadatatype == MetaDataType.NATIVE):
@@ -6138,7 +6070,7 @@ class Document(object):
         """
         if not (value is None):
             if (self.metadatatype == MetaDataType.NATIVE):
-                 self.metadata['license'] = value
+                self.metadata['license'] = value
             else:
                 self._license = value
         if (self.metadatatype == MetaDataType.NATIVE):
@@ -6155,7 +6087,7 @@ class Document(object):
         """
         if not (value is None):
             if (self.metadatatype == MetaDataType.NATIVE):
-                 self.metadata['language'] = value
+                self.metadata['language'] = value
             else:
                 self._language = value
         if (self.metadatatype == MetaDataType.NATIVE):
@@ -6197,9 +6129,6 @@ class Document(object):
 
     def parsexml(self, node, ParentClass = None):
         """Main XML parser, will invoke class-specific XML parsers. For internal use."""
-        global XML2CLASS, NSFOLIA, NSDCOI, LXE
-
-
         if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)):
             node = node.getroot()
         elif isstring(node):
@@ -6245,7 +6174,7 @@ class Document(object):
             else:
                 #generic handling (FoLiA)
                 if not foliatag in XML2CLASS:
-                        raise Exception("Unknown FoLiA XML tag: " + foliatag)
+                    raise Exception("Unknown FoLiA XML tag: " + foliatag)
                 Class = XML2CLASS[foliatag]
                 return Class.parsexml(node,self)
         elif node.tag == '{' + NSDCOI + '}DCOI':
@@ -6602,7 +6531,6 @@ class ConstraintDefinition(object):
 
     @classmethod
     def parsexml(Class, node, constraintindex):
-        global NSFOLIA
         assert node.tag == '{' + NSFOLIA + '}constraint'
 
         if 'ref' in node.attrib:
@@ -6648,7 +6576,6 @@ class ClassDefinition(AbstractDefinition):
 
     @classmethod
     def parsexml(Class, node, constraintindex):
-        global NSFOLIA
         assert node.tag == '{' + NSFOLIA + '}class'
         if 'label' in node.attrib:
             label = node.attrib['label']
@@ -6691,7 +6618,6 @@ class SubsetDefinition(AbstractDefinition):
 
     @classmethod
     def parsexml(Class, node, constraintindex= {}):
-        global NSFOLIA
         assert node.tag == '{' + NSFOLIA + '}subset'
 
         if 'type' in node.attrib:
@@ -6747,7 +6673,6 @@ class SetDefinition(AbstractDefinition):
 
     @classmethod
     def parsexml(Class, node):
-        global NSFOLIA
         assert node.tag == '{' + NSFOLIA + '}set'
         classes = []
         subsets= []
@@ -6801,7 +6726,6 @@ class SetDefinition(AbstractDefinition):
 
 
 def loadsetdefinition(filename):
-    global NSFOLIA
     if filename[0] == '/' or filename[0] == '.':
         try:
             tree = ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
@@ -6825,7 +6749,6 @@ def loadsetdefinition(filename):
 
 
 def relaxng_declarations():
-    global NSFOLIA
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     for key, value in vars(AnnotationType).items():
         if key[0] != '_':
@@ -6833,7 +6756,6 @@ def relaxng_declarations():
 
 
 def relaxng(filename=None):
-    global NSFOLIA, LXE
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     grammar = E.grammar( E.start ( E.element( #FoLiA
                 E.attribute(name='id',ns="http://www.w3.org/XML/1998/namespace"),
@@ -6888,126 +6810,126 @@ def relaxng(filename=None):
 
 
 def findwords(doc, worditerator, *args, **kwargs):
-        if 'leftcontext' in kwargs:
-            leftcontext = int(kwargs['leftcontext'])
-            del kwargs['leftcontext']
-        else:
-            leftcontext = 0
-        if 'rightcontext' in kwargs:
-            rightcontext =  int(kwargs['rightcontext'])
-            del kwargs['rightcontext']
-        else:
-            rightcontext = 0
-        if 'maxgapsize' in kwargs:
-            maxgapsize = int(kwargs['maxgapsize'])
-            del kwargs['maxgapsize']
-        else:
-            maxgapsize = 10
-        for key in kwargs.keys():
-            raise Exception("Unknown keyword parameter: " + key)
+    if 'leftcontext' in kwargs:
+        leftcontext = int(kwargs['leftcontext'])
+        del kwargs['leftcontext']
+    else:
+        leftcontext = 0
+    if 'rightcontext' in kwargs:
+        rightcontext =  int(kwargs['rightcontext'])
+        del kwargs['rightcontext']
+    else:
+        rightcontext = 0
+    if 'maxgapsize' in kwargs:
+        maxgapsize = int(kwargs['maxgapsize'])
+        del kwargs['maxgapsize']
+    else:
+        maxgapsize = 10
+    for key in kwargs.keys():
+        raise Exception("Unknown keyword parameter: " + key)
 
-        matchcursor = 0
-        matched = []
+    matchcursor = 0
+    matched = []
 
-        #shortcut for when no Pattern is passed, make one on the fly
-        if len(args) == 1 and not isinstance(args[0], Pattern):
-            if not isinstance(args[0], list) and not isinstance(args[0], tuple):
-                args[0] = [args[0]]
-            args[0] = Pattern(*args[0])
+    #shortcut for when no Pattern is passed, make one on the fly
+    if len(args) == 1 and not isinstance(args[0], Pattern):
+        if not isinstance(args[0], list) and not isinstance(args[0], tuple):
+            args[0] = [args[0]]
+        args[0] = Pattern(*args[0])
 
 
 
-        unsetwildcards = False
-        variablewildcards = None
-        prevsize = -1
-        minsize = 99999
-        #sanity check
-        for i, pattern in enumerate(args):
-            if not isinstance(pattern, Pattern):
-                raise TypeError("You must pass instances of Sequence to findwords")
-            if prevsize > -1 and len(pattern) != prevsize:
-                raise Exception("If multiple patterns are provided, they must all have the same length!")
-            if pattern.variablesize():
-                if not variablewildcards and i > 0:
-                    unsetwildcards = True
-                else:
-                    if variablewildcards and pattern.variablewildcards() != variablewildcards:
-                        raise Exception("If multiple patterns are provided with variable wildcards, then these wildcards must all be in the same positions!")
-                    variablewildcards = pattern.variablewildcards()
-            elif variablewildcards:
+    unsetwildcards = False
+    variablewildcards = None
+    prevsize = -1
+    minsize = 99999
+    #sanity check
+    for i, pattern in enumerate(args):
+        if not isinstance(pattern, Pattern):
+            raise TypeError("You must pass instances of Sequence to findwords")
+        if prevsize > -1 and len(pattern) != prevsize:
+            raise Exception("If multiple patterns are provided, they must all have the same length!")
+        if pattern.variablesize():
+            if not variablewildcards and i > 0:
                 unsetwildcards = True
-            prevsize = len(pattern)
+            else:
+                if variablewildcards and pattern.variablewildcards() != variablewildcards:
+                    raise Exception("If multiple patterns are provided with variable wildcards, then these wildcards must all be in the same positions!")
+                variablewildcards = pattern.variablewildcards()
+        elif variablewildcards:
+            unsetwildcards = True
+        prevsize = len(pattern)
 
-        if unsetwildcards:
-            #one pattern determines a fixed length whilst others are variable, rewrite all to fixed length
-            #converting multi-span * wildcards into single-span 'True' wildcards
-            for pattern in args:
-                if pattern.variablesize():
-                    pattern.sequence = [ True if x == '*' else x for x in pattern.sequence ]
-            variablesize = False
+    if unsetwildcards:
+        #one pattern determines a fixed length whilst others are variable, rewrite all to fixed length
+        #converting multi-span * wildcards into single-span 'True' wildcards
+        for pattern in args:
+            if pattern.variablesize():
+                pattern.sequence = [ True if x == '*' else x for x in pattern.sequence ]
+        variablesize = False
 
-        if variablewildcards:
-            #one or more items have a * wildcard, which may span multiple tokens. Resolve this to a wider range of simpler patterns
+    if variablewildcards:
+        #one or more items have a * wildcard, which may span multiple tokens. Resolve this to a wider range of simpler patterns
 
-            #we're not commited to a particular size, expand to various ones
-            for size in range(len(variablewildcards), maxgapsize+1):
-                for distribution in  pynlpl.algorithms.sum_to_n(size, len(variablewildcards)): #gap distributions, (amount) of 'True' wildcards
-                    patterns = []
-                    for pattern in args:
-                        if pattern.variablesize():
-                            patterns += list(pattern.resolve(size,distribution))
-                        else:
-                            patterns.append( pattern )
-                    for match in findwords(doc, worditerator,*patterns, **{'leftcontext':leftcontext,'rightcontext':rightcontext}):
-                        yield match
-
-        else:
-            patterns = args
-            buffers = []
-
-            for word in worditerator():
-                buffers.append( [] ) #Add a new empty buffer for every word
-                match = [None] * len(buffers)
-                for pattern in patterns:
-                    #find value to match against
-                    if not pattern.matchannotation:
-                        value = word.text()
+        #we're not commited to a particular size, expand to various ones
+        for size in range(len(variablewildcards), maxgapsize+1):
+            for distribution in  pynlpl.algorithms.sum_to_n(size, len(variablewildcards)): #gap distributions, (amount) of 'True' wildcards
+                patterns = []
+                for pattern in args:
+                    if pattern.variablesize():
+                        patterns += list(pattern.resolve(size,distribution))
                     else:
-                        if pattern.matchannotationset:
-                            items = list(word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative]))
-                        else:
-                            try:
-                                set = doc.defaultset(pattern.matchannotation.ANNOTATIONTYPE)
-                                items = list(word.select(pattern.matchannotation, set, True, [Original, Suggestion, Alternative] ))
-                            except KeyError:
-                                continue
-                        if len(items) == 1:
-                            value = items[0].cls
-                        else:
-                            continue
+                        patterns.append( pattern )
+                for match in findwords(doc, worditerator,*patterns, **{'leftcontext':leftcontext,'rightcontext':rightcontext}):
+                    yield match
 
-                    if not pattern.casesensitive:
-                        value = value.lower()
+    else:
+        patterns = args
+        buffers = []
 
-
-                    for i, buffer in enumerate(buffers):
-                        if match[i] is False:
-                            continue
-                        matchcursor = len(buffer)
-                        if (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
-                            match[i] = True
-                        else:
-                            match[i] = False
-
-
-                for buffer, matches in list(zip(buffers, match)):
-                    if matches:
-                        buffer.append(word) #add the word
-                        if len(buffer) == len(pattern.sequence):
-                            yield buffer[0].leftcontext(leftcontext) + buffer + buffer[-1].rightcontext(rightcontext)
-                            buffers.remove(buffer)
+        for word in worditerator():
+            buffers.append( [] ) #Add a new empty buffer for every word
+            match = [None] * len(buffers)
+            for pattern in patterns:
+                #find value to match against
+                if not pattern.matchannotation:
+                    value = word.text()
+                else:
+                    if pattern.matchannotationset:
+                        items = list(word.select(pattern.matchannotation, pattern.matchannotationset, True, [Original, Suggestion, Alternative]))
                     else:
-                        buffers.remove(buffer) #remove buffer
+                        try:
+                            set = doc.defaultset(pattern.matchannotation.ANNOTATIONTYPE)
+                            items = list(word.select(pattern.matchannotation, set, True, [Original, Suggestion, Alternative] ))
+                        except KeyError:
+                            continue
+                    if len(items) == 1:
+                        value = items[0].cls
+                    else:
+                        continue
+
+                if not pattern.casesensitive:
+                    value = value.lower()
+
+
+                for i, buffer in enumerate(buffers):
+                    if match[i] is False:
+                        continue
+                    matchcursor = len(buffer)
+                    if (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
+                        match[i] = True
+                    else:
+                        match[i] = False
+
+
+            for buffer, matches in list(zip(buffers, match)):
+                if matches:
+                    buffer.append(word) #add the word
+                    if len(buffer) == len(pattern.sequence):
+                        yield buffer[0].leftcontext(leftcontext) + buffer + buffer[-1].rightcontext(rightcontext)
+                        buffers.remove(buffer)
+                else:
+                    buffers.remove(buffer) #remove buffer
 
 class Reader(object):
     """Streaming FoLiA reader. The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found. If you are querying a corpus of large FoLiA documents for a specific structure, then it is strongly recommend to use the Reader rather than the standard Document!"""
@@ -7138,14 +7060,14 @@ XML2CLASS = {}
 ANNOTATIONTYPE2CLASS = {}
 ANNOTATIONTYPE2XML = {}
 ANNOTATIONTYPE2LAYERCLASS = {}
-for c in list(vars().values()):
-    if hasattr(c,'XMLTAG') and hasattr(c,'ANNOTATIONTYPE'):
-        XML2CLASS[c.XMLTAG] = c
-        if issubclass(c,AbstractAnnotationLayer):
-            ANNOTATIONTYPE2LAYERCLASS[c.ANNOTATIONTYPE] = c
-        if c.ROOTELEMENT:
-            ANNOTATIONTYPE2CLASS[c.ANNOTATIONTYPE] = c
-            ANNOTATIONTYPE2XML[c.ANNOTATIONTYPE] = c.XMLTAG
+for _c in list(vars().values()):
+    if hasattr(_c,'XMLTAG') and hasattr(_c,'ANNOTATIONTYPE'):
+        XML2CLASS[_c.XMLTAG] = _c
+        if issubclass(_c,AbstractAnnotationLayer):
+            ANNOTATIONTYPE2LAYERCLASS[_c.ANNOTATIONTYPE] = _c
+        if _c.ROOTELEMENT:
+            ANNOTATIONTYPE2CLASS[_c.ANNOTATIONTYPE] = _c
+            ANNOTATIONTYPE2XML[_c.ANNOTATIONTYPE] = _c.XMLTAG
 
 XML2CLASS['listitem'] = ListItem #backward compatibility (XML tag is 'item' now, consistent with manual)
 
