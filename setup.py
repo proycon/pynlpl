@@ -17,7 +17,7 @@ if not os.path.exists('pynlpl'):
     os.mkdir('build')
     os.chdir('build')
     if not os.path.exists('pynlpl'): os.mkdir('pynlpl')
-    os.system('cp -Rpdf ../* pynlpl/ 2> /dev/null')
+    os.system('cp -Rpf ../* pynlpl/ 2> /dev/null')
     os.system('mv -f pynlpl/setup.py pynlpl/setup.cfg .')
     os.system('cp -f pynlpl/README.rst .')
 
@@ -41,7 +41,7 @@ if sys.version > '3':
 
 setup(
     name = "PyNLPl",
-    version = "0.7.6.5", #edit version in __init__.py as well!
+    version = "0.7.6.6", #edit version in __init__.py as well!
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
     description = ("PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl can be used for example the computation of n-grams, frequency lists and distributions, language models. There are also more complex data types, such as Priority Queues, and search algorithms, such as Beam Search."),
