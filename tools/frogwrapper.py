@@ -4,6 +4,9 @@
 
 #Frog Wrapper with XML input and FoLiA output support
 
+
+from __future__ import print_function, unicode_literals, division, absolute_import
+
 import getopt
 import lxml.etree
 import sys
@@ -21,19 +24,19 @@ from pynlpl.clients.frogclient import FrogClient
 def legacyout(i, word,lemma,morph,pos):
     if word:
         out = str(i + 1) + "\t" + word + "\t" + lemma + "\t" + morph + "\t" + pos
-        print out.encode('utf-8')
+        print(out.encode('utf-8'))
     else:
-        print
+        print()
 
 def usage():
     print >>sys.stderr,"frogwrapper.py  [options]"
     print >>sys.stderr,"------------------------------------------------------"
     print >>sys.stderr,"Input file:"
     print >>sys.stderr,"\t--txt=[file]       Plaintext input"
-    print >>sys.stderr,"\t--xml=[file]       XML Input"        
+    print >>sys.stderr,"\t--xml=[file]       XML Input"
     print >>sys.stderr,"\t--folia=[file]     FoLiA XML Input"
     print >>sys.stderr,"Frog settings:"
-    print >>sys.stderr,"\t-p [port]          Port the Frog server is running on"    
+    print >>sys.stderr,"\t-p [port]          Port the Frog server is running on"
     print >>sys.stderr,"Output type:"
     print >>sys.stderr,"\t--id=[ID]          ID for outputted FoLiA XML Document"
     print >>sys.stderr,"\t--legacy           Use legacy columned output instead of FoLiA"
@@ -48,12 +51,12 @@ def usage():
     print >>sys.stderr,"\t-P                 One paragraph per line"
     print >>sys.stderr,"\t-I                 Value in first column (tab seperated) is ID!"
     print >>sys.stderr,"\t-E [encoding]      Encoding of input file (default: utf-8)"
-    
+
 try:
     opts, files = getopt.getopt(sys.argv[1:], "hSPINEp:o", ["txt=","xml=", "folia=","id=",'legacy','tok','selectsen=','selectpar=','idattrib='])
-except getopt.GetoptError, err:
+except getopt.GetoptError as err:
     # print help information and exit:
-    print str(err)
+    print(str(err))
     usage()
     sys.exit(1)
 
@@ -68,7 +71,7 @@ mode='s'
 xpathselect = ''
 idattrib=''
 port = None
-save = False 
+save = False
 
 for o, a in opts:
     if o == "-h":
@@ -80,7 +83,7 @@ for o, a in opts:
         mode = 's'
     elif o == "-P":
         mode = 'p'
-    elif o == "-p":        
+    elif o == "-p":
         port = int(a)
     elif o == "-N":
         mode = 'n'
@@ -111,9 +114,9 @@ for o, a in opts:
     else:
         print >>sys.stderr, "ERROR: Unknown option:",o
         sys.exit(1)
-        
+
 if not port:
-    print >> sys.stderr,"ERROR: No port specified to connect to Frog server"    
+    print >> sys.stderr,"ERROR: No port specified to connect to Frog server"
     sys.exit(2)
 elif (not textfile and not xmlfile and not foliafile):
     print >> sys.stderr,"ERROR: Specify a file with either --txt, --xml or --folia"
@@ -135,9 +138,9 @@ if textfile:
             idmap.append(id.strip())
         else:
             idmap.append(None)
-        data.append(line.strip())        
+        data.append(line.strip())
     f.close()
-        
+
 if xmlfile:
     xmldoc = lxml.etree.parse(xmlfile)
     for node in xmldoc.xpath(xpathselect):
@@ -150,20 +153,20 @@ if xmlfile:
         else:
             idmap.append(None)
         data.append(node.text)
-        
+
 if foliafile:
     foliadoc = folia.Document(file=foliafile)
     if not foliadoc.declared(folia.AnnotationType.TOKEN):
         foliadoc.declare(folia.AnnotationType.TOKEN, set='http://ilk.uvt.nl/folia/sets/ucto-nl.foliaset', annotator='Frog',annotatortype=folia.AnnotatorType.AUTO)
-    if not foliadoc.declared(folia.AnnotationType.POS):        
+    if not foliadoc.declared(folia.AnnotationType.POS):
         foliadoc.declare(folia.AnnotationType.POS, set='http://ilk.uvt.nl/folia/sets/cgn-legacy.foliaset', annotator='Frog',annotatortype=folia.AnnotatorType.AUTO)
-    if not foliadoc.declared(folia.AnnotationType.LEMMA):                
-        foliadoc.declare(folia.AnnotationType.LEMMA, set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset', annotator='Frog',annotatortype=folia.AnnotatorType.AUTO)        
-    foliadoc.language('nld')    
+    if not foliadoc.declared(folia.AnnotationType.LEMMA):
+        foliadoc.declare(folia.AnnotationType.LEMMA, set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset', annotator='Frog',annotatortype=folia.AnnotatorType.AUTO)
+    foliadoc.language('nld')
     text = foliadoc.data[-1]
-    
-    for p in foliadoc.paragraphs():    
-        found_s = False  
+
+    for p in foliadoc.paragraphs():
+        found_s = False
         for s in p.sentences():
             found_w = False
             for w in s.words():
@@ -174,15 +177,15 @@ if foliafile:
                 words = s.words()
                 response = frogclient.process(" ".join([unicode(w) for w in words]))
                 for i, (word, lemma, morph, pos) in enumerate(response):
-                    if legacy: legacyout(i,word,lemma,morph,pos)                    
+                    if legacy: legacyout(i,word,lemma,morph,pos)
                     if unicode(words[i]) == word:
                         if lemma:
                             words[i].append( folia.LemmaAnnotation(foliadoc, cls=lemma) )
                         if pos:
-                            words[i].append( folia.PosAnnotation(foliadoc, cls=pos) )  
+                            words[i].append( folia.PosAnnotation(foliadoc, cls=pos) )
                     else:
                         print >>sys.stderr,"WARNING: Out of sync after calling Frog! ", i, word
-                    
+
             else:
                 #pass untokenised sentence
                 try:
@@ -191,45 +194,45 @@ if foliafile:
                     continue
                 response = frogclient.process(sentext)
                 for i, (word, lemma, morph, pos) in enumerate(response):
-                    if legacy: legacyout(i,word,lemma,morph,pos)                             
+                    if legacy: legacyout(i,word,lemma,morph,pos)
                     if word:
-                        w = folia.Word(foliadoc, text=word, generate_id_in=s)                                                
+                        w = folia.Word(foliadoc, text=word, generate_id_in=s)
                         if lemma:
-                            w.append( folia.LemmaAnnotation(foliadoc, cls=lemma) ) 
+                            w.append( folia.LemmaAnnotation(foliadoc, cls=lemma) )
                         if pos:
-                            w.append( folia.PosAnnotation(foliadoc, cls=pos) )  
-                        s.append(w) 
-                
+                            w.append( folia.PosAnnotation(foliadoc, cls=pos) )
+                        s.append(w)
+
             if not found_s:
                 #pass paragraph
                 try:
                     partext = p.text()
                 except folia.NoSuchText:
                     continue
-                    
-                s = folia.Sentence(foliadoc, generate_id_in=p)         
+
+                s = folia.Sentence(foliadoc, generate_id_in=p)
                 response = frogclient.process(partext)
                 for i, (word, lemma, morph, pos) in enumerate(response):
                     if (not word or i == len(response) - 1) and len(s) > 0:
-                        #gap or end of response: terminate sentence      
+                        #gap or end of response: terminate sentence
                         p.append(s)
-                        s = folia.Sentence(foliadoc, generate_id_in=p)         
+                        s = folia.Sentence(foliadoc, generate_id_in=p)
                     elif word:
-                        w = folia.Word(foliadoc, text=word, generate_id_in=s)                                                
+                        w = folia.Word(foliadoc, text=word, generate_id_in=s)
                         if lemma:
-                            w.append( folia.LemmaAnnotation(foliadoc, cls=lemma) ) 
+                            w.append( folia.LemmaAnnotation(foliadoc, cls=lemma) )
                         if pos:
-                            w.append( folia.PosAnnotation(foliadoc, cls=pos) )  
-                        s.append(w) 
-            
-    
-else:        
+                            w.append( folia.PosAnnotation(foliadoc, cls=pos) )
+                        s.append(w)
+
+
+else:
     foliadoc = folia.Document(id=foliaid)
     foliadoc.declare(folia.AnnotationType.TOKEN, set='http://ilk.uvt.nl/folia/sets/ucto-nl.foliaset', annotator='Frog',annotatortype=folia.AnnotatorType.AUTO)
     foliadoc.declare(folia.AnnotationType.POS, set='http://ilk.uvt.nl/folia/sets/cgn-legacy.foliaset', annotator='Frog',annotatortype=folia.AnnotatorType.AUTO)
     foliadoc.declare(folia.AnnotationType.LEMMA, set='http://ilk.uvt.nl/folia/sets/mblem-nl.foliaset', annotator='Frog',annotatortype=folia.AnnotatorType.AUTO)
     foliadoc.language('nld')
-    text = folia.Text(foliadoc, id=foliadoc.id + '.text.1') 
+    text = folia.Text(foliadoc, id=foliadoc.id + '.text.1')
     foliadoc.append(text)
 
 
@@ -237,51 +240,51 @@ else:
     for (fragment, id) in zip(data,idmap):
         if mode == 's' or mode == 'n':
             if id:
-                s = folia.Sentence(foliadoc, id=id)            
+                s = folia.Sentence(foliadoc, id=id)
             else:
-                s = folia.Sentence(foliadoc, generate_id_in=text) 
+                s = folia.Sentence(foliadoc, generate_id_in=text)
         elif mode == 'p':
             if id:
-                p = folia.Paragraph(foliadoc, id=id)            
+                p = folia.Paragraph(foliadoc, id=id)
             else:
-                p = folia.Paragraph(foliadoc, generate_id_in=text) 
-            s = folia.Sentence(foliadoc, generate_id_in=p)         
-        
+                p = folia.Paragraph(foliadoc, generate_id_in=text)
+            s = folia.Sentence(foliadoc, generate_id_in=p)
+
         curid = s.id
         response = frogclient.process(fragment)
         for i, (word, lemma, morph, pos) in enumerate(response):
-            if legacy: 
-                legacyout(i,word,lemma,morph,pos)                
+            if legacy:
+                legacyout(i,word,lemma,morph,pos)
                 continue
-                
+
             if word:
-                w = folia.Word(foliadoc, text=word, generate_id_in=s)                                                
+                w = folia.Word(foliadoc, text=word, generate_id_in=s)
                 if lemma:
-                    w.append( folia.LemmaAnnotation(foliadoc, cls=lemma) ) 
+                    w.append( folia.LemmaAnnotation(foliadoc, cls=lemma) )
                 if pos:
-                    w.append( folia.PosAnnotation(foliadoc, cls=pos) )  
+                    w.append( folia.PosAnnotation(foliadoc, cls=pos) )
                 s.append(w)
             if (not word or i == len(response) - 1) and len(s) > 0:
                 #gap or end of response: terminate sentence
                 if mode == 'p':
                     p.append(s)
                     if (i == len(response) - 1):
-                        text.append(p)                    
+                        text.append(p)
                 elif mode == 'n' or (mode == 's' and i == len(response) - 1):
                     text.append(s)
                 elif mode == 's':
                     continue
-                    
+
                 if i < len(response) - 1: #not done yet?
                     #create new sentence
-                    if mode == 'p':                        
+                    if mode == 'p':
                         s = folia.Sentence(foliadoc, generate_id_in=p)
                     elif mode == 'n' and id:
                         #no id for this unforeseen sentence, make something up
-                        s = folia.Sentence(foliadoc, id=curid+'.X')           
-                        print >>sys.stderr,"WARNING: Sentence found that was not in original"                     
+                        s = folia.Sentence(foliadoc, id=curid+'.X')
+                        print("WARNING: Sentence found that was not in original",file=sys.stderr)
 
 if not legacy:
-    print foliadoc.xmlstring()
+    print(foliadoc.xmlstring())
 if save and foliafile:
     foliadoc.save()

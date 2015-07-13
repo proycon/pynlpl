@@ -1,5 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #-*- coding:utf-8 -*-
+
+
+from __future__ import print_function, unicode_literals, division, absolute_import
 
 import glob
 import sys
@@ -15,13 +18,13 @@ from pynlpl.formats import cgn
 import lxml.etree
 
 def process(target):
-    print "Processing " + target
+    print("Processing " + target)
     if os.path.isdir(target):
-        print "Descending into directory " + target
+        print("Descending into directory " + target)
         for f in glob.glob(target + '/*'):
             process(f)
     elif os.path.isfile(target) and target[-4:] == '.xml':            
-        print "Loading " + target
+        print("Loading " + target)
         try:
             doc = folia.Document(file=target)
         except lxml.etree.XMLSyntaxError:
@@ -37,10 +40,10 @@ def process(target):
                 word.replace( cgn.parse_cgn_postag(pos.cls) )
                 changed = True
             except cgn.InvalidTagException:
-                print >>sys.stderr, "WARNING: INVALID TAG " + pos.cls
+                print("WARNING: INVALID TAG " + pos.cls,file=sys.stderr)
                 continue
         if changed:
-            print "Saving..."
+            print("Saving...")
             doc.save()
 
 target = sys.argv[1]

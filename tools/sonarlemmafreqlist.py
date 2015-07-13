@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+
+from __future__ import print_function, unicode_literals, division, absolute_import
+
 import sys
 import os
 
@@ -19,7 +22,7 @@ poshead_freqlist = FrequencyList()
 pos_freqlist = FrequencyList()
 
 for i, doc in enumerate(Corpus(sonardir)):
-    print >>sys.stderr, "#" + str(i) + " Processing " + doc.filename
+    print("#" + str(i) + " Processing " + doc.filename,file=sys.stderr)
     for word, id, pos, lemma in doc:
         freqlist.count(word)
         if lemma and pos:
@@ -33,4 +36,4 @@ lemmapos_freqlist.save('sonarlemmaposfreqlist.txt')
 poshead_freqlist.save('sonarposheadfreqlist.txt')
 pos_freqlist.save('sonarposfreqlist.txt')
             
-print unicode(freqlist).encode('utf-8')
+print(unicode(freqlist).encode('utf-8'))

@@ -1,5 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #-*- coding:utf-8 -*-
+
+from __future__ import print_function, unicode_literals, division, absolute_import
 
 import sys
 import os
@@ -20,7 +22,7 @@ poshead_freqlist = FrequencyList()
 pos_freqlist = FrequencyList()
 
 for i, doc in enumerate(Corpus(sonardir)):
-    print >>sys.stderr, "#" + str(i) + " Processing " + doc.filename
+    print("#" + str(i) + " Processing " + doc.filename,file=sys.stderr)
     for word, id, pos, lemma in doc:
         freqlist.count(word)
         if lemma and pos:
