@@ -28,7 +28,7 @@ def process(target):
         try:
             doc = folia.Document(file=target)
         except lxml.etree.XMLSyntaxError:
-            print >>sys.stderr, "UNABLE TO LOAD " + target + " (XML SYNTAX ERROR!)"
+            print("UNABLE TO LOAD " + target + " (XML SYNTAX ERROR!)",file=sys.stderr)
             return None
         changed = False
         for word in doc.words():
