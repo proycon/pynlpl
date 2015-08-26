@@ -36,7 +36,7 @@ MASK_EXPRESSION = 2
 MAXEXPANSION = 99
 
 FOLIAVERSION = '0.12.1'
-FQLVERSION = '0.2.3'
+FQLVERSION = '0.2.4'
 
 class SyntaxError(Exception):
     pass
@@ -824,7 +824,7 @@ class Target(object): #FOR/IN... expression
         if self.targets:
             if isinstance(self.targets[0], Span):
                 for span in self.targets:
-                    if not isinstance(span, Span): raise ParseError("SPAN statement may not be mixed with non-span statements in a single selection")
+                    if not isinstance(span, Span): raise QueryError("SPAN statement may not be mixed with non-span statements in a single selection")
                     if debug: print("[FQL EVALUATION DEBUG] Target - Evaluation span ",file=sys.stderr)
                     for spanset in span(query, contextselector, recurse, debug):
                         if debug: print("[FQL EVALUATION DEBUG] Target - Yielding spanset ",file=sys.stderr)
@@ -986,7 +986,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 suggestion = ( {}, {} )
                 if isinstance(q[i], UnparsedQuery):
                     if not q[i].kw(0,'SUBSTITUTE') and not q[i].kw(0,'ADD'):
-                        raise ParseError("Subexpression after SUGGESTION, expected ADD or SUBSTITUTE, got " + str(q[i]))
+                        raise SyntaxError("Subexpression after SUGGESTION, expected ADD or SUBSTITUTE, got " + str(q[i]))
                     Correction.parsesubstitute(q[i],suggestion)
                     i += 1
                 elif q.kw(i,'MERGE'):
@@ -1143,16 +1143,33 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if not doc.declared(folia.Correction, self.set):
                 doc.declare(folia.Correction, self.set)
 
+    def append(self, query, substitution, contextselector, debug):
+        kwargs = {}
+        if self.set:
+            kwargs['set'] = self.set
+        for key, value in self.assignments.items():
+            if key == 'class': key = 'cls'
+            kwargs[key] = value
+        self.autodeclare(query.doc)
+
+        raise NotImplementedError
+
+    def prepend(self, query, substitution, contextselector, debug):
+        kwargs = {}
+        if self.set:
+            kwargs['set'] = self.set
+        for key, value in self.assignments.items():
+            if key == 'class': key = 'cls'
+            kwargs[key] = value
+        self.autodeclare(query.doc)
+
     def substitute(self, query, substitution, contextselector, debug):
         kwargs = {}
         if self.set:
             kwargs['set'] = self.set
-
         for key, value in self.assignments.items():
             if key == 'class': key = 'cls'
             kwargs[key] = value
-
-
         self.autodeclare(query.doc)
 
 
@@ -1163,7 +1180,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 contextselector = contextselector[0](*contextselector[1])
             target = list(contextselector)[0]
             if not isinstance(target, SpanSet):
-                raise QueryError("SUBTITUTE expects target SPAN")
+                raise QueryError("SUBSTITUTE expects target SPAN")
 
             prev = target[0].parent
             for e in target[1:]:
@@ -1185,6 +1202,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             kwargs['original'] =  substitution['span']
             if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Initialising correction",file=sys.stderr)
             kwargs['new'] = [] #stuff will be appended
+
 
         if self.suggestions:
             kwargs['suggestions'] = [] #stuff will be appended
@@ -1229,9 +1247,9 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 suggestionchildren.append( focus.Class(query.doc, **subassignments))
                 action = action.nextaction
 
-            if 'split' in suggestionassignments and suggestionassignments['split'] is True:
+            if 'split' in suggestionassignments and suggestionassignments['split']:
                 suggestionassignments['split'] = focus.ancestor(folia.StructureElement).id
-            if 'merge' in suggestionassignments and suggestionassignments['merge'] is True:
+            if 'merge' in suggestionassignments and suggestionassignments['merge']:
                 suggestionassignments['merge'] = focus.ancestor(folia.StructureElement).id
             kwargs['suggestions'].append( folia.Suggestion(query.doc,*suggestionchildren, **suggestionassignments )   )
 
@@ -1307,8 +1325,8 @@ class Action(object): #Action expression
         assignments = {}
 
         i += 1
-        if (action == 'SUBSTITUTE') and (isinstance(q[i],UnparsedQuery)):
-            focus = None   #We have a SUBSTITUTE (AS CORRECTION) expression
+        if (action in ('SUBSTITUTE','APPEND','PREPEND')) and (isinstance(q[i],UnparsedQuery)):
+            focus = None   #We have a SUBSTITUTE/APPEND/PREPEND (AS CORRECTION) expression
         elif (action == 'SELECT') and q.kw(i,('FOR','IN')): #select statement  without focus, pure target
             focus = None
         else:
@@ -1398,6 +1416,20 @@ class Action(object): #Action expression
             #we have a SUBSTITUTE (AS CORRECTION) statement with no correction but only suggestions
             #defer substitute to form
             result = self.form.substitute(query, None, contextselector, debug)
+            focusselection = [result]
+            constrainedtargetselection = []
+            #(no further chaining possible in this setup)
+        elif self.action == 'PREPEND' and not self.focus and self.form:
+            #we have a PREPEND (AS CORRECTION) statement with no correction but only suggestions
+            #defer substitute to form
+            result = self.form.prepend(query, None, contextselector, debug)
+            focusselection = [result]
+            constrainedtargetselection = []
+            #(no further chaining possible in this setup)
+        elif self.action == 'APPEND' and not self.focus and self.form:
+            #we have a APPEND (AS CORRECTION) statement with no correction but only suggestions
+            #defer substitute to form
+            result = self.form.append(query, None, contextselector, debug)
             focusselection = [result]
             constrainedtargetselection = []
             #(no further chaining possible in this setup)
