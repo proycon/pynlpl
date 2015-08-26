@@ -985,10 +985,19 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 i+= 1
                 suggestion = ( {}, {} )
                 if isinstance(q[i], UnparsedQuery):
-                    if not q[i].kw(0,'SUBSTITUTE'):
-                        raise ParseError("Subexpression after SUGGESTION, expected SUBSTITUTE, got " + str(q[i]))
+                    if not q[i].kw(0,'SUBSTITUTE') and not q[i].kw(0,'ADD'):
+                        raise ParseError("Subexpression after SUGGESTION, expected ADD or SUBSTITUTE, got " + str(q[i]))
                     Correction.parsesubstitute(q[i],suggestion)
                     i += 1
+                elif q.kw(i,'MERGE'):
+                    suggestion[0]['merge'] = True
+                    i+= 1
+                elif q.kw(i,'SPLIT'):
+                    suggestion[0]['split'] = True
+                    i+= 1
+                elif q.kw(i,'DELETION'):
+                    #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
+                    i+= 1
                 elif not q.kw(i,'WITH'):
                     i = getassignments(q, i, suggestion[0], focus) #subassignments (the actual element in the suggestion)
                 if q.kw(i,'WITH'):
@@ -1220,6 +1229,10 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 suggestionchildren.append( focus.Class(query.doc, **subassignments))
                 action = action.nextaction
 
+            if 'split' in suggestionassignments and suggestionassignments['split'] is True:
+                suggestionassignments['split'] = focus.ancestor(folia.StructureElement).id
+            if 'merge' in suggestionassignments and suggestionassignments['merge'] is True:
+                suggestionassignments['merge'] = focus.ancestor(folia.StructureElement).id
             kwargs['suggestions'].append( folia.Suggestion(query.doc,*suggestionchildren, **suggestionassignments )   )
 
         if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Returning correction",file=sys.stderr)
