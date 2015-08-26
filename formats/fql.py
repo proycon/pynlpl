@@ -1143,7 +1143,13 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if not doc.declared(folia.Correction, self.set):
                 doc.declare(folia.Correction, self.set)
 
-    def append(self, query, substitution, contextselector, debug):
+    def prepend(self, query, content, contextselector, debug):
+        return self.insert(query, content, contextselector, 0, debug)
+
+    def append(self, query, content, contextselector, debug):
+        return self.insert(query, content, contextselector, 1, debug)
+
+    def insert(self,  query, content, contextselector, offset, debug):
         kwargs = {}
         if self.set:
             kwargs['set'] = self.set
@@ -1152,16 +1158,33 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             kwargs[key] = value
         self.autodeclare(query.doc)
 
-        raise NotImplementedError
+        if not content:
+            #suggestions only, no subtitution obtained from main action yet, we have to process it still
+            if debug: print("[FQL EVALUATION DEBUG] Correction.insert - Initialising for suggestions only",file=sys.stderr)
+            if isinstance(contextselector,tuple) and len(contextselector) == 2:
+                contextselector = contextselector[0](*contextselector[1])
+            target = list(contextselector)[0]
+            if not isinstance(target, SpanSet):
+                raise QueryError("SUBSTITUTE expects target SPAN")
 
-    def prepend(self, query, substitution, contextselector, debug):
-        kwargs = {}
-        if self.set:
-            kwargs['set'] = self.set
-        for key, value in self.assignments.items():
-            if key == 'class': key = 'cls'
-            kwargs[key] = value
-        self.autodeclare(query.doc)
+            prev = target.parent
+
+            insertindex = 0
+            #find insertion index:
+            for i, e in enumerate(target.parent):
+                if e is target[0]:
+                    insertindex = i
+                    break
+
+            content = {'parent': target.parent,'new':[]}
+            kwargs['insertindex'] = insertindex + offset
+        else:
+            kwargs['insertindex'] = content['index'] + offset
+            if debug: print("[FQL EVALUATION DEBUG] Correction.insert - Initialising correction",file=sys.stderr)
+            kwargs['new'] = [] #stuff will be appended
+
+        kwargs['nooriginal'] = True #this is an insertion, there is no original
+        kwargs = self.assemblesuggestions(query,content,debug,kwargs)
 
     def substitute(self, query, substitution, contextselector, debug):
         kwargs = {}
@@ -1203,7 +1226,13 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Initialising correction",file=sys.stderr)
             kwargs['new'] = [] #stuff will be appended
 
+        kwargs = self.assemblesuggestions(query,substitution,debug,kwargs)
 
+        if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Returning correction",file=sys.stderr)
+        return substitution['parent'].correct(**kwargs)
+
+
+    def assemblesuggestions(self, query, substitution, debug, kwargs):
         if self.suggestions:
             kwargs['suggestions'] = [] #stuff will be appended
 
@@ -1253,8 +1282,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 suggestionassignments['merge'] = focus.ancestor(folia.StructureElement).id
             kwargs['suggestions'].append( folia.Suggestion(query.doc,*suggestionchildren, **suggestionassignments )   )
 
-        if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Returning correction",file=sys.stderr)
-        return substitution['parent'].correct(**kwargs)
+        return kwargs
+
 
 def getassignments(q, i, assignments,  focus=None):
     l = len(q)
