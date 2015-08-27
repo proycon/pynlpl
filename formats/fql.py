@@ -1208,7 +1208,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             prev = target[0].parent
             for e in target[1:]:
                 if e.parent != prev:
-                    raise QueryError("SUBSTITUTE can only be performed when the target items share the same parent")
+                    raise QueryError("SUBSTITUTE can only be performed when the target items share the same parent. First parent is " + repr(prev) + ", parent of " + repr(e) + " is " + repr(e.parent))
 
             insertindex = 0
             #find insertion index:
