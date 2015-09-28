@@ -110,7 +110,7 @@ class UnparsedQuery(object):
                                 s2 = s[i+1:j]
                                 break
                     if not s2 is None:
-                        self.q.append(s2)
+                        self.q.append(s2.replace('\\"','"')) #undo escaped quotes
                         self.mask.append(MASK_LITERAL)
                         i = j
                         begin = i+1
@@ -175,7 +175,7 @@ class UnparsedQuery(object):
             if m == MASK_NORMAL:
                 s.append(w)
             elif m == MASK_LITERAL:
-                s.append('"' + w + '"')
+                s.append('"' + w.replace('"','\\"') + '"')
             elif m == MASK_EXPRESSION:
                 s.append('(' + str(w) + ')')
         return " ".join(s)
