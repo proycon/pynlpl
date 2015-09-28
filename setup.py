@@ -60,6 +60,7 @@ setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
+    zip_safe=False,
     #include_package_data=True,
     #package_data = {'': ['*.wsgi','*.js','*.xsl','*.gif','*.png','*.xml','*.html','*.jpg','*.svg','*.rng'] },
     install_requires=['lxml >= 2.2','httplib2 >= 0.6','numpy'],
