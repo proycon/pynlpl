@@ -1163,11 +1163,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if debug: print("[FQL EVALUATION DEBUG] Correction.insert - Initialising for suggestions only",file=sys.stderr)
             if isinstance(contextselector,tuple) and len(contextselector) == 2:
                 contextselector = contextselector[0](*contextselector[1])
-            target = list(contextselector)[0]
-            if not isinstance(target, SpanSet):
-                raise QueryError("SUBSTITUTE expects target SPAN")
+            target = list(contextselector)[0] #not a spanset
 
-            prev = target.parent
 
             insertindex = 0
             #find insertion index:
