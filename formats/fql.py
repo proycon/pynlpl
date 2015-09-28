@@ -1254,8 +1254,13 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
         for subassignments, suggestionassignments in self.suggestions:
             suggestionchildren = []
-            action = subassignments['substitute']
-            del subassignments['substitute']
+            if 'substitute' in subassignments:
+                #SUBTITUTE (or synonym ADD)
+                action = subassignments['substitute']
+                del subassignments['substitute']
+            else:
+                #we have a suggested deletion
+                action = None
             if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Adding suggestion",file=sys.stderr)
             while action:
                 subassignments = copy(subassignments) #assignment for the element in the suggestion
