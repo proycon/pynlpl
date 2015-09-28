@@ -1261,7 +1261,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             else:
                 #we have a suggested deletion
                 action = None
-            if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Adding suggestion",file=sys.stderr)
+            if debug: print("[FQL EVALUATION DEBUG] Correction.assemblesuggestions - Adding suggestion",file=sys.stderr)
             while action:
                 subassignments = copy(subassignments) #assignment for the element in the suggestion
                 if isinstance(action.focus, tuple) and len(action.focus) == 2:
