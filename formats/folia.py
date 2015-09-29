@@ -1737,6 +1737,8 @@ class AbstractElement(object):
         if Class is True: Class = self.__class__
         if scope is True: scope = STRUCTURESCOPE
 
+        structural = Class is not None and issubclass(Class,AbstractStructureElement)
+
         if reverse:
             order = reversed
             descendindex = -1
@@ -1752,22 +1754,25 @@ class AbstractElement(object):
                 for e in order(parent):
                     if e is child:
                         returnnext = True
-                    elif returnnext:
-                        if e.auth and not isinstance(e,AbstractAnnotationLayer):
-                            if Class is None or (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
-                                return e
-                            else:
-                                #this is not yet the element of the type we are looking for, we are going to descend again in the very leftmost (rightmost if reversed) branch only
-                                while e.data:
-                                    e = e.data[descendindex]
-                                    if not isinstance(e, AbstractElement):
-                                        return None #we've gone too far
-                                    if e.auth and not isinstance(e,AbstractAnnotationLayer):
-                                        if Class is None or (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
-                                            return e
-                                        else:
-                                            #descend deeper
-                                            continue
+                    elif returnnext and e.auth and not isinstance(e,AbstractAnnotationLayer) and (not structural or (structural and (not isinstance(e,(AbstractAnnotation,TextContent)) ) )):
+                        if structural and isinstance(e,Correction):
+                            if not list(e.select(AbstractStructureElement)): #skip-over non-structural correction
+                                continue
+
+                        if Class is None or (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
+                            return e
+                        else:
+                            #this is not yet the element of the type we are looking for, we are going to descend again in the very leftmost (rightmost if reversed) branch only
+                            while e.data:
+                                e = e.data[descendindex]
+                                if not isinstance(e, AbstractElement):
+                                    return None #we've gone too far
+                                if e.auth and not isinstance(e,AbstractAnnotationLayer):
+                                    if Class is None or (isinstance(Class,tuple) and (any(isinstance(e,C) for C in Class))) or isinstance(e,Class):
+                                        return e
+                                    else:
+                                        #descend deeper
+                                        continue
                         return None
 
             #generational iteration

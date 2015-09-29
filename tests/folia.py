@@ -486,6 +486,13 @@ class Test2Sanity(unittest.TestCase):
         self.assertTrue( isinstance(prevw, folia.Word) )
         self.assertEqual( prevw.text(),  "zo'n" )
 
+    def test021b_previousword_noscope(self):
+        """Sanity Check - Obtaining previous word without scope constraint"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.4.w.1']
+        prevw = w.previous(folia.Word, None)
+        self.assertTrue( isinstance(prevw, folia.Word) )
+        self.assertEqual( prevw.text(),  "." )
+
     def test022_nextword(self):
         """Sanity Check - Obtaining next word"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.7']
