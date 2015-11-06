@@ -65,8 +65,8 @@ import gzip
 import random
 
 
-FOLIAVERSION = '0.12.1'
-LIBVERSION = '0.12.1.70' #== FoLiA version + library revision
+FOLIAVERSION = '0.12.2'
+LIBVERSION = '0.12.2.71' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -6402,7 +6402,7 @@ ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Refer
 List.ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, PhonContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part)
 Caption.ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,PhonContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
 AbstractCorrectionChild.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, AbstractStructureElement, TextContent,PhonContent, Correction, String, Description, Metric)
-Correction.ACCEPTED_DATA = (New,Original,Current, Suggestion, ErrorDetection, Description, Metric)
+Correction.ACCEPTED_DATA = (New,Original,Current, Suggestion, ErrorDetection, Description, Metric, Feature)
 Term.ACCEPTED_DATA = (Paragraph, Event, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Definition.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Example.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
