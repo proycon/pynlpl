@@ -3244,7 +3244,7 @@ class Part(AbstractStructureElement):
 
 class Gap(AbstractElement):
     """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
-    ACCEPTED_DATA = (Content, Description, Part)
+    ACCEPTED_DATA = (Content, Feature, Metric, Description, Part)
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
     ANNOTATIONTYPE = AnnotationType.GAP
     XMLTAG = 'gap'
@@ -3268,7 +3268,7 @@ class Gap(AbstractElement):
 class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has a double role!!
     """Line break element, signals a line break"""
     REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = ()
+    ACCEPTED_DATA = (Feature,Metric, Description)
     XMLTAG = 'br'
     ANNOTATIONTYPE = AnnotationType.LINEBREAK
     TEXTDELIMITER = ""
@@ -3281,7 +3281,7 @@ TextContent.ACCEPTED_DATA = TextContent.ACCEPTED_DATA + (Linebreak,) #shouldn't 
 class Whitespace(AbstractStructureElement):
     """Whitespace element, signals a vertical whitespace"""
     REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = ()
+    ACCEPTED_DATA = (Feature,Metric, Description)
     XMLTAG = 'whitespace'
     ANNOTATIONTYPE = AnnotationType.WHITESPACE
     TEXTDELIMITER = ""
@@ -3976,7 +3976,7 @@ class Alignment(AbstractElement):
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     XMLTAG = 'alignment'
     ANNOTATIONTYPE = AnnotationType.ALIGNMENT
-    ACCEPTED_DATA = (AlignReference, Description, Metric)
+    ACCEPTED_DATA = (AlignReference, Description, Metric, Feature)
     PRINTABLE = False
     SPEAKABLE = False
     XLINK = True
@@ -4578,7 +4578,7 @@ class CoreferenceLink(AbstractSpanRole):
     """Coreference link. Used in coreferencechain."""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
-    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, ModalityFeature, TimeFeature,LevelFeature, Metric)
+    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, Feature, ModalityFeature, TimeFeature,LevelFeature, Metric)
     ANNOTATIONTYPE = AnnotationType.COREFERENCE
     XMLTAG = 'coreferencelink'
     ROOTELEMENT = False
@@ -4594,7 +4594,7 @@ class CoreferenceChain(AbstractSpanAnnotation):
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, Metric)
+    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, Metric, Feature)
     ANNOTATIONTYPE = AnnotationType.SEMROLE
     XMLTAG = 'semrole'
 
