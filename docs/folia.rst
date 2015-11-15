@@ -822,7 +822,7 @@ FoLiA itself! They are therefore fictitious in the above example.
 The Python class for features is ``folia.Feature``, in the following example we
 add a feature::
 
-    pos.add(folia.Feature, subset="gender", class="f")
+    pos.add(folia.Feature, subset="gender", cls="f")
 
 Although FoLiA does not define any sets nor subsets. Some annotation types do
 come with some associated subsets, their use is never mandatory. The advantage
