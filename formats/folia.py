@@ -3244,7 +3244,6 @@ class Part(AbstractStructureElement):
 
 class Gap(AbstractElement):
     """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
-    ACCEPTED_DATA = (Content, Description, Part)
     OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
     ANNOTATIONTYPE = AnnotationType.GAP
     XMLTAG = 'gap'
@@ -3268,7 +3267,6 @@ class Gap(AbstractElement):
 class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has a double role!!
     """Line break element, signals a line break"""
     REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = ()
     XMLTAG = 'br'
     ANNOTATIONTYPE = AnnotationType.LINEBREAK
     TEXTDELIMITER = ""
@@ -3281,7 +3279,6 @@ TextContent.ACCEPTED_DATA = TextContent.ACCEPTED_DATA + (Linebreak,) #shouldn't 
 class Whitespace(AbstractStructureElement):
     """Whitespace element, signals a vertical whitespace"""
     REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = ()
     XMLTAG = 'whitespace'
     ANNOTATIONTYPE = AnnotationType.WHITESPACE
     TEXTDELIMITER = ""
@@ -3976,7 +3973,7 @@ class Alignment(AbstractElement):
     OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
     XMLTAG = 'alignment'
     ANNOTATIONTYPE = AnnotationType.ALIGNMENT
-    ACCEPTED_DATA = (AlignReference, Description, Metric)
+    ACCEPTED_DATA = (AlignReference, Description, Metric, Feature)
     PRINTABLE = False
     SPEAKABLE = False
     XLINK = True
@@ -4578,7 +4575,7 @@ class CoreferenceLink(AbstractSpanRole):
     """Coreference link. Used in coreferencechain."""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
-    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, ModalityFeature, TimeFeature,LevelFeature, Metric)
+    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, Feature, ModalityFeature, TimeFeature,LevelFeature, Metric)
     ANNOTATIONTYPE = AnnotationType.COREFERENCE
     XMLTAG = 'coreferencelink'
     ROOTELEMENT = False
@@ -4594,7 +4591,7 @@ class CoreferenceChain(AbstractSpanAnnotation):
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
     REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, Metric)
+    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, Metric, Feature)
     ANNOTATIONTYPE = AnnotationType.SEMROLE
     XMLTAG = 'semrole'
 
@@ -6389,28 +6386,30 @@ class Text(AbstractStructureElement):
 #Setting Accepted data that has been postponed earlier (to allow circular references)
 
 Alternative.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, MorphologyLayer, PhonologyLayer)
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,PhonContent, String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference)
-String.ACCEPTED_DATA = (TextContent,PhonContent, Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation)
+Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,PhonContent, String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference, Feature)
+String.ACCEPTED_DATA = (TextContent,PhonContent, Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation, Feature)
 Paragraph.ACCEPTED_DATA = (Word, Sentence, Quote, Example, Entry, AbstractExtendedTokenAnnotation, Correction, TextContent,PhonContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Head, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
 Sentence.ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description,  Linebreak, Whitespace, Event, Example, Entry, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
-Utterance.ACCEPTED_DATA = (Word,Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
-Cell.ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Example, Entry, Note, Reference, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation, Correction, Part)
+Utterance.ACCEPTED_DATA = (Word,Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part, Feature)
+Cell.ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Example, Entry, Note, Reference, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation, Correction, Part, Feature)
 Row.ACCEPTED_DATA = (Cell,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction, Part)
 TableHead.ACCEPTED_DATA = (Row,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction, Part)
 Part.ACCEPTED_DATA = (AbstractStructureElement, AbstractExtendedTokenAnnotation, AlternativeLayers, AbstractAnnotationLayer, Correction)
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Reference, TextContent,PhonContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part)
-List.ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, PhonContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part)
-Caption.ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,PhonContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
+ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Reference, TextContent,PhonContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part, Feature)
+List.ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, PhonContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part, Feature)
+Caption.ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,PhonContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part, Feature)
 AbstractCorrectionChild.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, AbstractStructureElement, TextContent,PhonContent, Correction, String, Description, Metric)
 Correction.ACCEPTED_DATA = (New,Original,Current, Suggestion, ErrorDetection, Description, Metric, Feature)
 Term.ACCEPTED_DATA = (Paragraph, Event, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Definition.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Example.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Division.ACCEPTED_DATA = (Division, Quote, Gap, Event, Example, Entry, Head, Utterance, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part, TextContent, PhonContent)
+Division.ACCEPTED_DATA = (Division, Quote, Gap, Event, Example, Entry, Head, Utterance, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part, TextContent, PhonContent, Feature)
 Event.ACCEPTED_DATA = (Event, Example, Paragraph, Sentence, Division, Word, Head,Utterance,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent,PhonContent, String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
 Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Example, Head, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Quote.ACCEPTED_DATA = (Word, Sentence, Paragraph, Utterance, Division, Quote, TextContent, String,Gap, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
-
+Quote.ACCEPTED_DATA = (Word, Sentence, Paragraph, Utterance, Division, Quote, TextContent, String,Gap, Feature, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
+Gap.ACCEPTED_DATA = (Content, Feature, Metric, Description, Part)
+Linebreak.ACCEPTED_DATA = (Feature,Metric, Description)
+Whitespace.ACCEPTED_DATA = (Feature,Metric, Description)
 
 #==============================================================================
 
