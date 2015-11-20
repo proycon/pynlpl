@@ -20,6 +20,7 @@ if not os.path.exists('pynlpl'):
     os.system('cp -Rpf ../* pynlpl/ 2> /dev/null')
     os.system('mv -f pynlpl/setup.py pynlpl/setup.cfg .')
     os.system('cp -f pynlpl/README.rst .')
+    os.system('cp -f pynlpl/LICENSE .')
 
     #Do not include unfininished WIP modules:
     os.system('rm -f pynlpl/formats/colibri.py pynlpl/formats/alpino.py pynlpl/foliaprocessing.py pynlpl/grammar.py')
