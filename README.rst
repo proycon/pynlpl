@@ -4,12 +4,15 @@ PyNLPl - Python Natural Language Processing Library
 .. image:: https://travis-ci.org/proycon/pynlpl.svg?branch=master
     :target: https://travis-ci.org/proycon/pynlpl
 
-PyNLPl, pronounced as "pineapple", is a Python library for Natural Language
-Processing. It is a collection of various independent or loosely interdependent
-modules useful for common, and less common, NLP tasks. PyNLPl can be used for
-example the computation of n-grams, frequency lists and distributions, language
-models. There are also more complex data types, such as Priority Queues, and
-search algorithms, such as Beam Search.
+PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language
+Processing. It contains various modules useful for common, and less common, NLP
+tasks. PyNLPl can be used for basic tasks such as the extraction of n-grams and
+frequency lists, and to build simple language model. There are also more
+complex data types and algorithms. Moreover, there are parsers for file formats
+common in NLP (e.g. FoLiA/Giza/Moses/ARPA/Timbl/CQL). There are also clients to
+interface with various NLP specific servers. PyNLPl most notably features a
+very extensive library for working with FoLiA XML (Format for Linguistic
+Annotatation).
 
 The library is a divided into several packages and modules. It works on Python
 2.7, as well as Python 3.
