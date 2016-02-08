@@ -46,6 +46,7 @@ else:
 
 from copy import copy, deepcopy
 from pynlpl.formats.imdi import RELAXNG_IMDI
+import pynlpl.formats.foliaspec as foliaspec
 from datetime import datetime
 #from dateutil.parser import parse as parse_datetime
 import pynlpl.algorithms
@@ -65,13 +66,13 @@ import gzip
 import random
 
 
-FOLIAVERSION = '0.12.2'
-LIBVERSION = '0.12.2.72' #== FoLiA version + library revision
+FOLIAVERSION = foliaspec.version
+LIBVERSION = FOLIAVERSION + '.72' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
 
-NSFOLIA = "http://ilk.uvt.nl/folia"
+NSFOLIA = foliaspec.namespace
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 nslen = len(NSFOLIA) + 2
 nslendcoi = len(NSDCOI) + 2
@@ -99,13 +100,17 @@ class AnnotatorType:
     MANUAL = 2
 
 
-class Attrib:
-    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY, BEGINTIME, ENDTIME, SRC, SPEAKER = range(11) #for later
+#class Attrib:
+#    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY, BEGINTIME, ENDTIME, SRC, SPEAKER = range(11) #for later
 
-Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER)
+Attrib = foliaspec.Attrib
 
-class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(43)
+#Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER)
+
+AnnotationType = foliaspec.AnnotationType
+
+#class AnnotationType:
+#    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(43)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -6410,6 +6415,8 @@ Quote.ACCEPTED_DATA = (Word, Sentence, Paragraph, Utterance, Division, Quote, Te
 Gap.ACCEPTED_DATA = (Content, Feature, Metric, Description, Part)
 Linebreak.ACCEPTED_DATA = (Feature,Metric, Description)
 Whitespace.ACCEPTED_DATA = (Feature,Metric, Description)
+
+foliaspec.init({ c.__name__ for c in globals().values() if inspect.isclass(c) and isinstance(c, AbstractElement) })
 
 #==============================================================================
 
