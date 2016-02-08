@@ -31,8 +31,8 @@ from pynlpl.evaluation import filesampler
 def main():
     parser = argparse.ArgumentParser(description="Extracts random samples from datasets, supports multiple parallel datasets (such as parallel corpora), provided that corresponding data is on the same line.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-t','--testsetsize', help="Test set size (lines)", type=float, action='store',default=0)
-    parser.add_argument('-d','--devsetsite', help="Development set size (lines)", type=float, action='store',default=0)
-    parser.add_argument('-T','--trainsetsite', help="Training set size (lines), leave unassigned (0) to automatically use all of the remaining data", type=float, action='store',default=0)
+    parser.add_argument('-d','--devsetsize', help="Development set size (lines)", type=float, action='store',default=0)
+    parser.add_argument('-T','--trainsetsize', help="Training set size (lines), leave unassigned (0) to automatically use all of the remaining data", type=float, action='store',default=0)
     parser.add_argument('-S','--seed', help="Seed for random number generator", type=int, action='store',default=0)
     parser.add_argument('files', type=str, nargs='+', help="The data sets to sample from, must be of equal size (i.e., same number of lines)")
 
