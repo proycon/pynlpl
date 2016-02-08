@@ -31,8 +31,6 @@ def read(fname):
 entry_points = {}
 if sys.version > '3':
     entry_points = {    'console_scripts': [
-            'pynlpl-classencoder = pynlpl.tools.classencoder:main',
-            'pynlpl-classdecoder = pynlpl.tools.classdecoder:main',
             'pynlpl-computepmi = pynlpl.tools.computepmi:main',
             'pynlpl-sampler = pynlpl.tools.sampler:main',
             'pynlpl-makefreqlist = pynlpl.tools.freqlist:main',
@@ -42,7 +40,7 @@ if sys.version > '3':
 
 setup(
     name = "PyNLPl",
-    version = "0.7.6.11", #edit version in __init__.py as well!
+    version = "0.7.6.13", #edit version in __init__.py as well!
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
     description = ("PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl can be used for basic tasks such as the extraction of n-grams and frequency lists, and to build simple language model. There are also more complex data types and algorithms. Moreover, there are parsers for file formats common in NLP (e.g. FoLiA/Giza/Moses/ARPA/Timbl/CQL). There are also clients to interface with various NLP specific servers. PyNLPl most notably features a very extensive library for working with FoLiA XML (Format for Linguistic Annotation)."),
