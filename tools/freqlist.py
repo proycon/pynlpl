@@ -18,54 +18,32 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 
-import getopt
+import argparse
 import sys
-import codecs
+import io
 
 from pynlpl.statistics import FrequencyList, Distribution
 from pynlpl.textprocessors import Windower, crude_tokenizer
 
-def usage():
-    print("freqlist.py -n 1  file1 (file2) etc..",file=sys.stderr)
-    print("\t-n number   n-gram size (default: 1)",file=sys.stderr)
-    print("\t-i          case-insensitve",file=sys.stderr)
-    print("\t-e encoding (default: utf-8)",file=sys.stderr)
-
 def main():
-    try:
-        opts, files = getopt.getopt(sys.argv[1:], "hn:ie:", ["help"])
-    except getopt.GetoptError as err:
-        # print help information and exit:
-        print(str(err),file=sys.stderr)
-        usage()
-        sys.exit(2)
+    parser = argparse.ArgumentParser(description="Generate an n-gram frequency list", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-n','--ngramsize', help="N-gram size", type=int, action='store',default=1)
+    parser.add_argument('-i','--caseinsensitive', help="Case insensitive", type=bool, action='store',default=False)
+    parser.add_argument('-e','--encoding', help="Character encoding", type=str, action='store',default='utf-8')
+    parser.add_argument('files', type=str, nargs='+', help="The data sets to sample from, must be of equal size (i.e., same number of lines)")
 
-    testsetsize = devsetsize = 0
-    casesensitive = True
-    encoding = 'utf-8'
-    n = 1
+    args = parser.parse_args()
 
-    for o, a in opts:
-        if o == "-n":
-            n = int(a)
-        elif o == "-i":
-            casesensitive =  False
-        elif o == "-e":
-            encoding = a
-        else:
-            print("ERROR: Unknown option:",o,file=sys.stderr)
-            sys.exit(1)
-
-    if not files:
-        print >>sys.stderr, "No files specified"
+    if not args.files:
+        print("No files specified", file=sys.stderr)
         sys.exit(1)
 
-    freqlist = FrequencyList(None, casesensitive)
-    for filename in files:
-        f = codecs.open(filename,'r',encoding)
+    freqlist = FrequencyList(None, args.caseinsensitive)
+    for filename in args.files:
+        f = io.open(filename,'r',encoding=args.encoding)
         for line in f:
-            if n > 1:
-                freqlist.append(Windower(crude_tokenizer(line),n))
+            if args.ngramsize > 1:
+                freqlist.append(Windower(crude_tokenizer(line),args.ngramsize))
             else:
                 freqlist.append(crude_tokenizer(line))
 
