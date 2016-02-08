@@ -28,7 +28,7 @@ from pynlpl.textprocessors import Windower, crude_tokenizer
 def main():
     parser = argparse.ArgumentParser(description="Generate an n-gram frequency list", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-n','--ngramsize', help="N-gram size", type=int, action='store',default=1)
-    parser.add_argument('-i','--caseinsensitive', help="Case insensitive", action="store_true"))
+    parser.add_argument('-i','--caseinsensitive', help="Case insensitive", action="store_true")
     parser.add_argument('-e','--encoding', help="Character encoding", type=str, action='store',default='utf-8')
     parser.add_argument('files', type=str, nargs='+', help="The data sets to sample from, must be of equal size (i.e., same number of lines)")
 
