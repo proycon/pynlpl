@@ -52,7 +52,7 @@ def main():
         print("ERROR: Specify at least one file!",file=sys.stderr)
         sys.exit(2)
 
-    filesampler(args, args.testsetsize, args.devsetsize, args.trainsetsize)
+    filesampler(args.files, args.testsetsize, args.devsetsize, args.trainsetsize)
 
 if __name__ == '__main__':
     main()
