@@ -1387,7 +1387,6 @@ folia-v0.8" version="0.8">
     <complexalignment-annotation />
     <alignment-annotation set="blah" />
 </annotations>
-</metadata>
 <text xml:id="test.text">
     <p xml:id="p.1">
 	<s xml:id="p.1.s.1"><t>Dit is een test.</t></s>
