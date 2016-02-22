@@ -4732,6 +4732,7 @@ class SemanticRolesLayer(AbstractAnnotationLayer):
 
 class ComplexAlignmentLayer(AbstractAnnotationLayer):
     """Complex alignment layer"""
+    ACCEPTED_DATA = (ComplexAlignment,Description,Correction)
     XMLTAG = 'complexalignments'
     ANNOTATIONTYPE = AnnotationType.COMPLEXALIGNMENT
 

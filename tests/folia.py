@@ -1383,10 +1383,12 @@ folia-v0.8" version="0.8">
         """Sanity Check - Complex alignment"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
-<annotations>
+<metadata type="native">
+ <annotations>
     <complexalignment-annotation />
     <alignment-annotation set="blah" />
-</annotations>
+ </annotations>
+</metadata>
 <text xml:id="test.text">
     <p xml:id="p.1">
 	<s xml:id="p.1.s.1"><t>Dit is een test.</t></s>
