@@ -369,6 +369,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( target, self.doc['WR-P-E-J-0000000001.p.1.s.3.w.5'] )
 
 
+
     def test020a_spanannotation(self):
         """Sanity Check - Span Annotation (Syntax)"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
@@ -1377,6 +1378,35 @@ folia-v0.8" version="0.8">
 </FoLiA>""" % speechxml
         doc = folia.Document(string=xml)
         self.assertTrue( xmlcheck( doc['example.speech'].xmlstring(), u(speechxml)) )
+
+    def test105_complexalignment(self):
+        """Sanity Check - Complex alignment"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
+<annotations>
+    <complexalignment-annotation />
+    <alignment-annotation set="blah" />
+</annotations>
+</metadata>
+<text xml:id="test.text">
+    <p xml:id="p.1">
+	<s xml:id="p.1.s.1"><t>Dit is een test.</t></s>
+	<s xml:id="p.1.s.2"><t>Ik wil kijken of het werkt.</t></s>
+	<complexalignments>
+	    <complexalignment>
+		<alignment>
+		    <aref id="p.1.s.1" type="s" />
+		    <aref id="p.1.s.2" type="s" />
+		</alignment>
+		<alignment class="translation" xlink:href="en.folia.xml" xlink:type="simple">
+		    <aref id="p.1.s.1" type="s" />
+		</alignment>
+	    </complexalignment>
+	</complexalignments>
+    </p>
+</text>
+</FoLiA>"""
+        doc = folia.Document(string=xml)
 
 
 class Test4Edit(unittest.TestCase):
