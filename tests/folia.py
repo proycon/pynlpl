@@ -1408,6 +1408,14 @@ folia-v0.8" version="0.8">
 </text>
 </FoLiA>"""
         doc = folia.Document(string=xml)
+        self.assertTrue(doc.xml() is not None) #serialisation check
+
+        l = doc.paragraphs(0).annotation(folia.ComplexAlignmentLayer)
+        ca = list(l.annotations(folia.ComplexAlignment))
+        self.assertEqual(len(ca),1)
+        alignments = list(ca[0].select(folia.Alignment))
+        self.assertEqual(len(alignments),2)
+
 
 
 class Test4Edit(unittest.TestCase):

@@ -4614,6 +4614,20 @@ class ComplexAlignment(AbstractAnnotation):
     REQUIRED_DATA = () #Required roles, these must be present (optional roles are simply in ACCEPTED_DATA)
 
 
+    #same as for AbstractSpanAnnotation, which this technically is not (hence copy)
+    def hasannotation(self,Class,set=None):
+        """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
+        return self.count(Class,set,True,defaultignorelist_annotations)
+
+    #same as for AbstractSpanAnnotation, which this technically is not (hence copy)
+    def annotation(self, type, set=None):
+        """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
+        l = self.count(type,set,True,defaultignorelist_annotations)
+        if len(l) >= 1:
+            return l[0]
+        else:
+            raise NoSuchAnnotation()
+
 class FunctionFeature(Feature):
     """Function feature, to be used with morphemes"""
     SUBSET = 'function' #associated subset
