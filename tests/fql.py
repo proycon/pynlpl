@@ -134,6 +134,7 @@ Qdeletion2 = "DELETE w ID \"correctionexample.s.8.w.3\" (AS CORRECTION OF \"http
 Qinsertion2 = "SUBSTITUTE w WITH text \".\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"missingpunctuation\") FOR SPAN ID \"correctionexample.s.9.correction.1\""
 
 
+Qsuggest_insertion = "PREPEND (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"insertion\" SUGGESTION (ADD w WITH text \"heel\")) FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
 
 
 
@@ -652,6 +653,15 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].cls, "redundantword")
         self.assertEqual(results[0].hastext(), False)
         self.assertEqual(results[0].text(correctionhandling=folia.CorrectionHandling.ORIGINAL), "een")
+
+    def test33_suggest_insertion(self):
+        """Insertion as suggestion (prepend)"""
+        q = fql.Query(Qsuggest_insertion)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "insertion")
+        self.assertEqual(results[0].suggestions(0).text(), "heel")
+       #self.assertEqual(results[0].next(folia.Word).text(), "ander")
 
 class Test4CQL(unittest.TestCase):
     def setUp(self):
