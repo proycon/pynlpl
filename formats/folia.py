@@ -66,7 +66,7 @@ import random
 
 
 FOLIAVERSION = '0.12.2'
-LIBVERSION = '0.12.2.73' #== FoLiA version + library revision
+LIBVERSION = '0.12.2.74' #== FoLiA version + library revision
 
 
 #0.9.1.31 is the first version with Python 3 support
@@ -4298,6 +4298,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
         for e in self:
             if isinstance(e, New) or isinstance(e, Current):
                 return str(e)
+        return ""
 
     def correct(self, **kwargs):
         if 'new' in kwargs:
