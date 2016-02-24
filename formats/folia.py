@@ -4295,10 +4295,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
         return str(self)
 
     def __str__(self):
-        for e in self:
-            if isinstance(e, New) or isinstance(e, Current):
-                return str(e)
-        return ""
+        return self.text(self, 'current', False, "",False, CorrectionHandling.EITHER)
 
     def correct(self, **kwargs):
         if 'new' in kwargs:
