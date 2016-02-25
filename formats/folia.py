@@ -4,8 +4,8 @@
 #   by Maarten van Gompel
 #   Centre for Language Studies
 #   Radboud University Nijmegen
-#   http://proycon.github.com/folia
-#   http://www.github.com/proycon/pynlpl
+#   https://proycon.github.io/folia
+#   httsp://github.com/proycon/pynlpl
 #   proycon AT anaproy DOT nl
 #
 #   Module for reading, editing and writing FoLiA XML
@@ -15,6 +15,9 @@
 #----------------------------------------------------------------
 
 #pylint: disable=redefined-builtin,trailing-whitespace,superfluous-parens,bad-classmethod-argument
+
+#foliaspec:header
+#blah blah..
 
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -66,24 +69,22 @@ import gzip
 import random
 
 
+#foliaspec:version:FOLIAVERSION
 FOLIAVERSION = foliaspec.version
-LIBVERSION = FOLIAVERSION + '.72' #== FoLiA version + library revision
 
+LIBVERSION = FOLIAVERSION + '.72' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
+#foliaspec:namespace:NSFOLIA
 NSFOLIA = foliaspec.namespace
+
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 nslen = len(NSFOLIA) + 2
 nslendcoi = len(NSDCOI) + 2
-STRUCTURESCOPE = [] #redefined later
 
 TMPDIR = "/tmp/" #will be used for downloading temporary data (external subdocuments)
 
-defaultignorelist = [] #Will be set at end of file! Only here so pylint won't complain
-#default ignore list for token annotation
-defaultignorelist_annotations = [] #Will be set at end of file! Only here so pylint won't complain
-defaultignorelist_structure = [] #Will be set at end of file! Only here so pylint won't complain
 
 ILLEGAL_UNICODE_CONTROL_CHARACTERS = {} #XML does not like unicode control characters
 for ordinal in range(0x20):
@@ -100,17 +101,13 @@ class AnnotatorType:
     MANUAL = 2
 
 
-#class Attrib:
-#    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY, BEGINTIME, ENDTIME, SRC, SPEAKER = range(11) #for later
+#foliaspec:attributes
+class Attrib:
+    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY, BEGINTIME, ENDTIME, SRC, SPEAKER = range(11) #for later
 
-Attrib = foliaspec.Attrib
-
-#Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER)
-
-AnnotationType = foliaspec.AnnotationType
-
-#class AnnotationType:
-#    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(43)
+#foliaspec:annotationtype
+class AnnotationType:
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(43)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -516,7 +513,7 @@ def commonancestors(Class, *args):
 class AbstractElement(object):
     """This is the abstract base class from which all FoLiA elements are derived. This class should not be instantiated directly, but can useful if you want to check if a variable is an instance of any FoLiA element: isinstance(x, AbstractElement). It contains methods and variables also commonly inherited."""
 
-
+    #foliaspec:defaultproperties
     REQUIRED_ATTRIBS = () #List of required attributes (Members from the Attrib class)
     OPTIONAL_ATTRIBS = () #List of optional attributes (Members from the Attrib class)
     ACCEPTED_DATA = () #List of accepted data, classes inherited from AbstractElement
@@ -525,18 +522,16 @@ class AbstractElement(object):
     XMLTAG = None #XML-tag associated with this element
     OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited, default=0)
     OCCURRENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
-
     TEXTDELIMITER = None #Delimiter to use when dynamically gathering text from child elements
-
     PRINTABLE = False #Is this element printable (aka, can its text() method be called?)
     SPEAKABLE = False #Is this element readable phonetically (aka, can its phon() method be called?)
-
-    AUTH = True #Authoritative by default. Elements the parser should skip on normal queries are non-authoritative (such as original, alternative)
+    XLINK = False #Can this element carry simple xlink references?
     TEXTCONTAINER = False #Text containers directly take textual content. (t is a TEXTCONTAINER)
     PHONCONTAINER = False #Phonetic containers directly take phonetic content. (ph is a PHONCONTAINER)
 
-    ROOTELEMENT = True #Is this the main/root element representaive of the annotation type? Not including annotation layers
-    XLINK = False #Can this element carry simple xlink references?
+    #to be decided whether these should be included in foliaspec default properties:
+    AUTH = True #Authoritative by default. Elements the parser should skip on normal queries are non-authoritative (such as original, alternative)
+    ROOTELEMENT = True #Is this the main/root element representative of the annotation type? Not including annotation layers
 
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document) and not doc is None:
@@ -1630,7 +1625,7 @@ class AbstractElement(object):
         """
 
         #if ignorelist is True:
-        #    ignorelist = defaultignorelist
+        #    ignorelist = default_ignore
 
         if not node:
             node = self
@@ -2370,7 +2365,7 @@ class AllowTokenAnnotation(AllowCorrections):
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
         found = False
-        for e in self.select(Class,set,True,defaultignorelist_annotations):
+        for e in self.select(Class,set,True,default_ignore_annotations):
             found = True
             yield e
         if not found:
@@ -2378,11 +2373,11 @@ class AllowTokenAnnotation(AllowCorrections):
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        return sum( 1 for _ in self.select(Class,set,True,defaultignorelist_annotations))
+        return sum( 1 for _ in self.select(Class,set,True,default_ignore_annotations))
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        for e in self.select(type,set,True,defaultignorelist_annotations):
+        for e in self.select(type,set,True,default_ignore_annotations):
             return e
         raise NoSuchAnnotation()
 
@@ -2526,11 +2521,11 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return self.select(Word,None,True,defaultignorelist_structure)
+            return self.select(Word,None,True,default_ignore_structure)
         else:
             if index < 0:
-                index = self.count(Word,None,True,defaultignorelist_structure) + index
-            for i, e in enumerate(self.select(Word,None,True,defaultignorelist_structure)):
+                index = self.count(Word,None,True,default_ignore_structure) + index
+            for i, e in enumerate(self.select(Word,None,True,default_ignore_structure)):
                 if i == index:
                     return e
             raise IndexError
@@ -2543,11 +2538,11 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the generator of all
         """
         if index is None:
-            return self.select(Paragraph,None,True,defaultignorelist_structure)
+            return self.select(Paragraph,None,True,default_ignore_structure)
         else:
             if index < 0:
-                index = self.count(Paragraph,None,True,defaultignorelist_structure) + index
-            for i,e in enumerate(self.select(Paragraph,None,True,defaultignorelist_structure)):
+                index = self.count(Paragraph,None,True,default_ignore_structure) + index
+            for i,e in enumerate(self.select(Paragraph,None,True,default_ignore_structure)):
                 if i == index:
                     return e
             raise IndexError
@@ -2559,11 +2554,11 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning a generator of all
         """
         if index is None:
-            return self.select(Sentence,None,True,defaultignorelist_structure)
+            return self.select(Sentence,None,True,default_ignore_structure)
         else:
             if index < 0:
-                index = self.count(Sentence,None,True,defaultignorelist_structure) + index
-            for i,e in enumerate(self.select(Sentence,None,True,defaultignorelist_structure)):
+                index = self.count(Sentence,None,True,default_ignore_structure) + index
+            for i,e in enumerate(self.select(Sentence,None,True,default_ignore_structure)):
                 if i == index:
                     return e
             raise IndexError
@@ -3602,11 +3597,11 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        return self.count(Class,set,True,defaultignorelist_annotations)
+        return self.count(Class,set,True,default_ignore_annotations)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.count(type,set,True,defaultignorelist_annotations)
+        l = self.count(type,set,True,default_ignore_annotations)
         if len(l) >= 1:
             return l[0]
         else:
@@ -3729,7 +3724,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
         found = False
-        for e in self.select(Class,set,True,defaultignorelist_annotations):
+        for e in self.select(Class,set,True,default_ignore_annotations):
             found = True
             yield e
         if not found:
@@ -3737,11 +3732,11 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        return self.count(Class,set,True,defaultignorelist_annotations)
+        return self.count(Class,set,True,default_ignore_annotations)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        for e in self.select(type,set,True,defaultignorelist_annotations):
+        for e in self.select(type,set,True,default_ignore_annotations):
             return e
         raise NoSuchAnnotation()
 
@@ -4324,7 +4319,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
     #        return super(Correction,self).select(cls,set,recursive, ignorelist, node)
     #    else:
     #        if ignorelist is True:
-    #            ignorelist = copy(defaultignorelist)
+    #            ignorelist = copy(default_ignore)
     #        else:
     #            ignorelist = copy(ignorelist) #we don't want to alter a passed ignorelist (by ref)
     #        ignorelist.append(Original)
@@ -6278,12 +6273,12 @@ class Document(object):
 
         If an index is specified, return the n'th word only (starting at 0)"""
         if index is None:
-            return self.select(Word,None,True,defaultignorelist_structure)
+            return self.select(Word,None,True,default_ignore_structure)
         else:
             if index < 0:
-                index = sum(t.count(Word,None,True,defaultignorelist_structure) for t in self.data)  + index
+                index = sum(t.count(Word,None,True,default_ignore_structure) for t in self.data)  + index
             for t in self.data:
-                for i, e in enumerate(t.select(Word,None,True,defaultignorelist_structure)):
+                for i, e in enumerate(t.select(Word,None,True,default_ignore_structure)):
                     if i == index:
                         return e
             raise IndexError
@@ -6388,8 +6383,10 @@ class Text(AbstractStructureElement):
     # (both SPEAKABLE and PRINTABLE)
 
 #==============================================================================
-#Setting Accepted data that has been postponed earlier (to allow circular references)
+#foliaspec:header
+#(twice, better safe than sorry)
 
+#foliaspec:setelementproperties
 Alternative.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, MorphologyLayer, PhonologyLayer)
 Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,PhonContent, String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference, Feature)
 String.ACCEPTED_DATA = (TextContent,PhonContent, Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation, Feature)
@@ -6416,7 +6413,6 @@ Gap.ACCEPTED_DATA = (Content, Feature, Metric, Description, Part)
 Linebreak.ACCEPTED_DATA = (Feature,Metric, Description)
 Whitespace.ACCEPTED_DATA = (Feature,Metric, Description)
 
-foliaspec.init({ c.__name__ for c in globals().values() if inspect.isclass(c) and isinstance(c, AbstractElement) })
 
 #==============================================================================
 
@@ -7064,6 +7060,7 @@ def validate(filename,schema=None,deep=False):
     if deep:
         doc = Document(tree=doc, deepvalidation=True)
 
+#foliaspec:structurescope
 #structure scope above the sentence level, used by next() and previous() methods
 STRUCTURESCOPE = (Sentence, Paragraph, Division, ListItem, Text, Event, Caption, Head)
 
@@ -7080,9 +7077,14 @@ for _c in list(vars().values()):
             ANNOTATIONTYPE2CLASS[_c.ANNOTATIONTYPE] = _c
             ANNOTATIONTYPE2XML[_c.ANNOTATIONTYPE] = _c.XMLTAG
 
-XML2CLASS['listitem'] = ListItem #backward compatibility (XML tag is 'item' now, consistent with manual)
+XML2CLASS['listitem'] = ListItem #backward compatibility for erroneous old FoLiA versions (XML tag is 'item' now, consistent with manual)
 
-defaultignorelist = [Original,Suggestion,Alternative, AlternativeLayers]
+#foliaspec:default_ignore
+default_ignore = [Original,Suggestion,Alternative, AlternativeLayers]
+
+#foliaspec:default_ignore_annotations
 #default ignore list for token annotation
-defaultignorelist_annotations = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer, PhonologyLayer]
-defaultignorelist_structure = [Original,Suggestion,Alternative, AlternativeLayers,AbstractAnnotationLayer]
+default_ignore_annotations = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer, PhonologyLayer]
+
+#foliaspec:default_ignore_structure
+default_ignore_structure = [Original,Suggestion,Alternative, AlternativeLayers,AbstractAnnotationLayer]
