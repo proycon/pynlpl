@@ -1754,7 +1754,7 @@ class AbstractElement(object):
                 for e in order(parent):
                     if e is child:
                         returnnext = True
-                    elif returnnext and e.auth and not isinstance(e,AbstractAnnotationLayer) and (not structural or (structural and (not isinstance(e,(AbstractAnnotation,TextContent)) ) )):
+                    elif returnnext and e.auth and not isinstance(e,AbstractAnnotationLayer) and (not structural or (structural and (not isinstance(e,(AbstractTokenAnnotation,TextContent)) ) )):
                         if structural and isinstance(e,Correction):
                             if not list(e.select(AbstractStructureElement)): #skip-over non-structural correction
                                 continue
@@ -2576,10 +2576,8 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
     def __eq__(self, other):
         return super(AbstractStructureElement, self).__eq__(other)
 
-class AbstractAnnotation(AbstractElement):
-    pass
 
-class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID):
+class AbstractTokenAnnotation(AbstractElement, AllowGenerateID):
     """Abstract element, all token annotation elements are derived from this class"""
 
     OCCURRENCESPERSET = 1 #Do not allow duplicates within the same set
@@ -2597,7 +2595,7 @@ class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation):
     pass
 
 
-class AbstractTextMarkup(AbstractAnnotation):
+class AbstractTextMarkup(AbstractElement):
     PRINTABLE = True
     TEXTDELIMITER = ""
     #ACCEPTED_DATA is defined after this class
@@ -3541,7 +3539,7 @@ class Metric(AbstractElement):
     OPTIONAL_ATTRIBS = Attrib.ALL
     ACCEPTED_DATA = (Feature, ValueFeature, Description)
 
-class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID):
+class AbstractSubtokenAnnotation(AbstractElement, AllowGenerateID):
     """Abstract element, all subtoken annotation elements are derived from this class"""
 
     REQUIRED_ATTRIBS = ()
@@ -3550,7 +3548,7 @@ class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID):
     PRINTABLE = True
     SPEAKABLE = True
 
-class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrections):
+class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections):
     """Abstract element, all span annotation elements are derived from this class"""
 
     REQUIRED_ATTRIBS = ()
@@ -4106,7 +4104,7 @@ class Current(AbstractCorrectionChild):
     def correct(self, **kwargs):
         return self.parent.correct(**kwargs)
 
-class Correction(AbstractAnnotation, AllowGenerateID):
+class Correction(AbstractElement, AllowGenerateID):
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = Attrib.ALL
     ANNOTATIONTYPE = AnnotationType.CORRECTION
