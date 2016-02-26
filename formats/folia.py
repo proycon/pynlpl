@@ -6639,20 +6639,16 @@ def validate(filename,schema=None,deep=False):
 #structure scope above the sentence level, used by next() and previous() methods
 STRUCTURESCOPE = (Sentence, Paragraph, Division, ListItem, Text, Event, Caption, Head)
 
-XML2CLASS = {}
-ANNOTATIONTYPE2CLASS = {}
+#foliaspec:annotationtype_string_map
 ANNOTATIONTYPE2XML = {}
-ANNOTATIONTYPE2LAYERCLASS = {}
-for _c in list(vars().values()):
-    if hasattr(_c,'XMLTAG') and hasattr(_c,'ANNOTATIONTYPE'):
-        XML2CLASS[_c.XMLTAG] = _c
-        if issubclass(_c,AbstractAnnotationLayer):
-            ANNOTATIONTYPE2LAYERCLASS[_c.ANNOTATIONTYPE] = _c
-        if _c.ROOTELEMENT:
-            ANNOTATIONTYPE2CLASS[_c.ANNOTATIONTYPE] = _c
-            ANNOTATIONTYPE2XML[_c.ANNOTATIONTYPE] = _c.XMLTAG
+
+#foliaspec:string_class_map
+XML2CLASS = {}
 
 XML2CLASS['listitem'] = ListItem #backward compatibility for erroneous old FoLiA versions (XML tag is 'item' now, consistent with manual)
+
+#foliaspec:annotationtype_layerclass_map
+ANNOTATIONTYPE2LAYERCLASS = {}
 
 #foliaspec:default_ignore
 default_ignore = [Original,Suggestion,Alternative, AlternativeLayers]
