@@ -4,6 +4,7 @@
 #   by Maarten van Gompel
 #   Centre for Language Studies
 #   Radboud University Nijmegen
+#
 #   https://proycon.github.io/folia
 #   httsp://github.com/proycon/pynlpl
 #   proycon AT anaproy DOT nl
@@ -15,9 +16,6 @@
 #----------------------------------------------------------------
 
 #pylint: disable=redefined-builtin,trailing-whitespace,superfluous-parens,bad-classmethod-argument
-
-#foliaspec:header
-#blah blah..
 
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -516,8 +514,6 @@ class AbstractElement(object):
     #foliaspec:defaultproperties
     #...
 
-    #to be decided whether these should be included in foliaspec default properties:
-    ROOTELEMENT = True #Is this the main/root element representative of the annotation type? Not including annotation layers
 
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document) and not doc is None:
@@ -2569,7 +2565,6 @@ class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation):
 
 
 class AbstractTextMarkup(AbstractElement):
-    ROOTELEMENT = False
 
     def __init__(self, doc, *args, **kwargs):
         if 'idref' in kwargs:
@@ -2700,8 +2695,6 @@ class TextContent(AbstractElement):
         * ``ref=``: The instance to point to, this points to the element holding the text content element, not the text content element itself.
         * ``offset=``: The offset where this text is found, offsets start at 0
     """
-
-    ROOTELEMENT = True
 
 
     def __init__(self, doc, *args, **kwargs):
@@ -2915,7 +2908,6 @@ class PhonContent(AbstractElement):
         * ``ref=``: The instance to point to, this points to the element holding the text content element, not the text content element itself.
         * ``offset=``: The offset where this text is found, offsets start at 0
     """
-    ROOTELEMENT = True
 
     def __init__(self, doc, *args, **kwargs):
         global ILLEGAL_UNICODE_CONTROL_CHARACTERS
@@ -3559,7 +3551,6 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
     """Annotation layers for Span Annotation are derived from this abstract base class"""
     #OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.SETONLY,) #TODO: handle SETONLY in new scheme
 
-    ROOTELEMENT = False #only annotation elements are considered root elements
 
     def __init__(self, doc, *args, **kwargs):
         if 'set' in kwargs:
@@ -4352,7 +4343,6 @@ class LevelFeature(Feature):
 
 class CoreferenceLink(AbstractSpanRole):
     """Coreference link. Used in coreferencechain."""
-    ROOTELEMENT = False
 
 class CoreferenceChain(AbstractSpanAnnotation):
     """Coreference chain. Consists of coreference links."""
