@@ -511,10 +511,6 @@ def commonancestors(Class, *args):
 class AbstractElement(object):
     """This is the abstract base class from which all FoLiA elements are derived. This class should not be instantiated directly, but can useful if you want to check if a variable is an instance of any FoLiA element: isinstance(x, AbstractElement). It contains methods and variables also commonly inherited."""
 
-    #foliaspec:defaultproperties
-    #...
-
-
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document) and not doc is None:
             raise Exception("Expected first parameter to be instance of Document, got " + str(type(doc)))
@@ -6659,6 +6655,9 @@ default_ignore_annotations = [Original,Suggestion,Alternative, AlternativeLayers
 
 #foliaspec:default_ignore_structure
 default_ignore_structure = [Original,Suggestion,Alternative, AlternativeLayers,AbstractAnnotationLayer]
+
+#foliaspec:defaultproperties
+#.... to be inserted automatically..
 
 #foliaspec:setelementproperties
 #.... to be inserted automatically..
