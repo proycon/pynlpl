@@ -6633,12 +6633,12 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-02-29 15:06:03, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-02-29 15:09:40, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
-#foliaspec:structurescope
+#foliaspec:structurescope:STRUCTURESCOPE
 #Structure scope above the sentence level, used by next() and previous() methods
-structurescope = (Sentence, Paragraph, Division, ListItem, Text, Event, Caption, Head)
+STRUCTURESCOPE = (Sentence, Paragraph, Division, ListItem, Text, Event, Caption, Head)
 
 #foliaspec:annotationtype_string_map
 #A mapping from annotation types to strings (xml tag)
