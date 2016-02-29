@@ -6633,7 +6633,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-02-29 15:09:40, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-02-29 15:18:12, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -6645,18 +6645,13 @@ STRUCTURESCOPE = (Sentence, Paragraph, Division, ListItem, Text, Event, Caption,
 ANNOTATIONTYPE2XML = {
     AnnotationType.ALIGNMENT:  "alignment" ,
     AnnotationType.CHUNKING:  "chunk" ,
-    AnnotationType.CHUNKING:  "chunking" ,
     AnnotationType.COMPLEXALIGNMENT:  "complexalignment" ,
-    AnnotationType.COMPLEXALIGNMENT:  "complexalignments" ,
     AnnotationType.COREFERENCE:  "coreferencechain" ,
-    AnnotationType.COREFERENCE:  "coreferences" ,
     AnnotationType.CORRECTION:  "correction" ,
     AnnotationType.DEFINITION:  "def" ,
-    AnnotationType.DEPENDENCY:  "dependencies" ,
     AnnotationType.DEPENDENCY:  "dependency" ,
     AnnotationType.DIVISION:  "div" ,
     AnnotationType.DOMAIN:  "domain" ,
-    AnnotationType.ENTITY:  "entities" ,
     AnnotationType.ENTITY:  "entity" ,
     AnnotationType.ENTRY:  "entry" ,
     AnnotationType.ERRORDETECTION:  "errordetection" ,
@@ -6669,22 +6664,18 @@ ANNOTATIONTYPE2XML = {
     AnnotationType.LIST:  "list" ,
     AnnotationType.METRIC:  "metric" ,
     AnnotationType.MORPHOLOGICAL:  "morpheme" ,
-    AnnotationType.MORPHEME:  "morphology" ,
     AnnotationType.NOTE:  "note" ,
     AnnotationType.PARAGRAPH:  "p" ,
     AnnotationType.PART:  "part" ,
     AnnotationType.PHON:  "ph" ,
     AnnotationType.PHONOLOGICAL:  "phoneme" ,
-    AnnotationType.PHONEME:  "phonology" ,
     AnnotationType.POS:  "pos" ,
     AnnotationType.SEMROLE:  "semrole" ,
-    AnnotationType.SEMROLE:  "semroles" ,
     AnnotationType.SENSE:  "sense" ,
     AnnotationType.SENTENCE:  "s" ,
     AnnotationType.STRING:  "str" ,
     AnnotationType.SUBJECTIVITY:  "subjectivity" ,
     AnnotationType.SYNTAX:  "su" ,
-    AnnotationType.SYNTAX:  "syntax" ,
     AnnotationType.TABLE:  "table" ,
     AnnotationType.TERM:  "term" ,
     AnnotationType.TEXT:  "t" ,
@@ -6694,7 +6685,6 @@ ANNOTATIONTYPE2XML = {
     AnnotationType.STRING:  "t-str" ,
     AnnotationType.STYLE:  "t-style" ,
     AnnotationType.TIMESEGMENT:  "timesegment" ,
-    AnnotationType.TIMESEGMENT:  "timing" ,
     AnnotationType.UTTERANCE:  "utt" ,
     AnnotationType.WHITESPACE:  "whitespace" ,
     AnnotationType.TOKEN:  "w" ,
@@ -6837,7 +6827,6 @@ AbstractElement.XMLTAG = None
 #Sets all element properties for all elements
 #------ AbstractAnnotationLayer -------
 AbstractAnnotationLayer.ACCEPTED_DATA = (Correction, Description)
-AbstractAnnotationLayer.PRIMARYELEMENT = False
 AbstractAnnotationLayer.PRINTABLE = False
 AbstractAnnotationLayer.SPEAKABLE = False
 #------ AbstractCorrectionChild -------
@@ -6922,6 +6911,7 @@ Chunk.XMLTAG = "chunk"
 #------ ChunkingLayer -------
 ChunkingLayer.ACCEPTED_DATA = (Chunk, Correction, Description)
 ChunkingLayer.ANNOTATIONTYPE = AnnotationType.CHUNKING
+ChunkingLayer.PRIMARYELEMENT = False
 ChunkingLayer.XMLTAG = "chunking"
 #------ ComplexAlignment -------
 ComplexAlignment.ACCEPTED_DATA = (Alignment, Description, Feature, Metric)
@@ -6934,6 +6924,7 @@ ComplexAlignment.XMLTAG = "complexalignment"
 #------ ComplexAlignmentLayer -------
 ComplexAlignmentLayer.ACCEPTED_DATA = (ComplexAlignment, Correction, Description)
 ComplexAlignmentLayer.ANNOTATIONTYPE = AnnotationType.COMPLEXALIGNMENT
+ComplexAlignmentLayer.PRIMARYELEMENT = False
 ComplexAlignmentLayer.XMLTAG = "complexalignments"
 #------ Content -------
 Content.OCCURRENCES = 1
@@ -6946,6 +6937,7 @@ CoreferenceChain.XMLTAG = "coreferencechain"
 #------ CoreferenceLayer -------
 CoreferenceLayer.ACCEPTED_DATA = (CoreferenceChain, Correction, Description)
 CoreferenceLayer.ANNOTATIONTYPE = AnnotationType.COREFERENCE
+CoreferenceLayer.PRIMARYELEMENT = False
 CoreferenceLayer.XMLTAG = "coreferences"
 #------ CoreferenceLink -------
 CoreferenceLink.ACCEPTED_DATA = (Alignment, Description, Feature, Headspan, LevelFeature, Metric, ModalityFeature, TimeFeature, WordReference)
@@ -6971,6 +6963,7 @@ Definition.XMLTAG = "def"
 #------ DependenciesLayer -------
 DependenciesLayer.ACCEPTED_DATA = (Correction, Dependency, Description)
 DependenciesLayer.ANNOTATIONTYPE = AnnotationType.DEPENDENCY
+DependenciesLayer.PRIMARYELEMENT = False
 DependenciesLayer.XMLTAG = "dependencies"
 #------ Dependency -------
 Dependency.ACCEPTED_DATA = (Alignment, DependencyDependent, Description, Feature, Headspan, Metric)
@@ -6997,6 +6990,7 @@ EnddatetimeFeature.XMLTAG = None
 #------ EntitiesLayer -------
 EntitiesLayer.ACCEPTED_DATA = (Correction, Description, Entity)
 EntitiesLayer.ANNOTATIONTYPE = AnnotationType.ENTITY
+EntitiesLayer.PRIMARYELEMENT = False
 EntitiesLayer.XMLTAG = "entities"
 #------ Entity -------
 Entity.ACCEPTED_DATA = (Alignment, Description, Feature, Metric, WordReference)
@@ -7092,6 +7086,7 @@ Morpheme.XMLTAG = "morpheme"
 #------ MorphologyLayer -------
 MorphologyLayer.ACCEPTED_DATA = (Correction, Description, Morpheme)
 MorphologyLayer.ANNOTATIONTYPE = AnnotationType.MORPHEME
+MorphologyLayer.PRIMARYELEMENT = False
 MorphologyLayer.XMLTAG = "morphology"
 #------ New -------
 New.OCCURRENCES = 1
@@ -7134,6 +7129,7 @@ Phoneme.XMLTAG = "phoneme"
 #------ PhonologyLayer -------
 PhonologyLayer.ACCEPTED_DATA = (Correction, Description, Phoneme)
 PhonologyLayer.ANNOTATIONTYPE = AnnotationType.PHONEME
+PhonologyLayer.PRIMARYELEMENT = False
 PhonologyLayer.XMLTAG = "phonology"
 #------ PosAnnotation -------
 PosAnnotation.ACCEPTED_DATA = (Description, Feature, HeadFeature, Metric)
@@ -7159,6 +7155,7 @@ SemanticRole.XMLTAG = "semrole"
 #------ SemanticRolesLayer -------
 SemanticRolesLayer.ACCEPTED_DATA = (Correction, Description, SemanticRole)
 SemanticRolesLayer.ANNOTATIONTYPE = AnnotationType.SEMROLE
+SemanticRolesLayer.PRIMARYELEMENT = False
 SemanticRolesLayer.XMLTAG = "semroles"
 #------ SenseAnnotation -------
 SenseAnnotation.ACCEPTED_DATA = (Description, Feature, Metric, SynsetFeature)
@@ -7201,6 +7198,7 @@ SyntacticUnit.XMLTAG = "su"
 #------ SyntaxLayer -------
 SyntaxLayer.ACCEPTED_DATA = (Correction, Description, SyntacticUnit)
 SyntaxLayer.ANNOTATIONTYPE = AnnotationType.SYNTAX
+SyntaxLayer.PRIMARYELEMENT = False
 SyntaxLayer.XMLTAG = "syntax"
 #------ Table -------
 Table.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part, Row, TableHead)
@@ -7254,6 +7252,7 @@ TimeSegment.XMLTAG = "timesegment"
 #------ TimingLayer -------
 TimingLayer.ACCEPTED_DATA = (Correction, Description, TimeSegment)
 TimingLayer.ANNOTATIONTYPE = AnnotationType.TIMESEGMENT
+TimingLayer.PRIMARYELEMENT = False
 TimingLayer.XMLTAG = "timing"
 #------ Utterance -------
 Utterance.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Gap, Metric, Note, Part, PhonContent, Quote, Reference, Sentence, String, TextContent, Word)
