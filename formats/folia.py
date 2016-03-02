@@ -421,7 +421,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
 def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-to-parse-xsddatetime-format
     """Returns (datetime, tz offset in minutes) or (None, None)."""
-    m = re.match(""" ^
+    m = re.match(r""" ^
         (?P<year>-?[0-9]{4}) - (?P<month>[0-9]{2}) - (?P<day>[0-9]{2})
         T (?P<hour>[0-9]{2}) : (?P<minute>[0-9]{2}) : (?P<second>[0-9]{2})
         (?P<microsecond>\.[0-9]{1,6})?
@@ -431,10 +431,10 @@ def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-t
         $ """, s, re.X)
     if m is not None:
         values = m.groupdict()
-        if values["tz"] in ("Z", None):
-            tz = 0
-        else:
-            tz = int(values["tz_hr"]) * 60 + int(values["tz_min"])
+        #if values["tz"] in ("Z", None):
+        #    tz = 0
+        #else:
+        #    tz = int(values["tz_hr"]) * 60 + int(values["tz_min"])
         if values["microsecond"] is None:
             values["microsecond"] = 0
         else:
@@ -480,11 +480,11 @@ def makeelement(E, tagname, **kwargs):
             for k,v in kwargs.items():
                 kwargs2[k.encode('utf-8')] = v.encode('utf-8')
                 #return E._makeelement(tagname.encode('utf-8'), **{ k.encode('utf-8'): v.encode('utf-8') for k,v in kwargs.items() } )   #In one go fails on some older Python 2.6s
-            return E._makeelement(tagname.encode('utf-8'), **kwargs2 )
+            return E._makeelement(tagname.encode('utf-8'), **kwargs2 ) #pylint: disable=protected-access
         except ValueError as e:
             try:
                 #older versions of lxml may misbehave, compensate:
-                e =  E._makeelement(tagname.encode('utf-8'))
+                e =  E._makeelement(tagname.encode('utf-8')) #pylint: disable=protected-access
                 for k,v in kwargs.items():
                     e.attrib[k.encode('utf-8')] = v
                 return e
@@ -494,19 +494,19 @@ def makeelement(E, tagname, **kwargs):
                 print("kwargs=",kwargs,file=stderr)
                 raise e
     else:
-        return E._makeelement(tagname,**kwargs)
+        return E._makeelement(tagname,**kwargs) #pylint: disable=protected-access
 
 
 def commonancestors(Class, *args):
     """Generator over common ancestors, of the Class specified, of the current element and the other specified elements"""
-    commonancestors = None
+    commonancestors = None #pylint: disable=redefined-outer-name
     for sibling in args:
         ancestors = list( sibling.ancestors(Class) )
         if commonancestors is None:
             commonancestors = copy(ancestors)
         else:
             removeancestors = []
-            for a in commonancestors:
+            for a in commonancestors: #pylint: disable=not-an-iterable
                 if not a in ancestors:
                     removeancestors.append(a)
             for a in removeancestors:
@@ -761,7 +761,6 @@ class AbstractElement(object):
     def gettextdelimiter(self, retaintokenisation=False):
         """May return a customised text delimiter instead of the default for this class."""
         if self.TEXTDELIMITER is None:
-            delimiter = ""
             #no text delimiter of itself, recurse into children to inherit delimiter
             for child in reversed(self):
                 if isinstance(child, AbstractElement):
@@ -796,11 +795,11 @@ class AbstractElement(object):
     def __ne__(self, other):
         return not (self == other)
 
-    def __eq__(self, other):
+    def __eq__(self, other): #pylint: disable=too-many-return-statements
         if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - " + repr(self) + " vs " + repr(other),file=stderr)
 
         #Check if we are of the same time
-        if type(self) != type(other):
+        if type(self) != type(other): #pylint: disable=unidiomatic-typecheck
             if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Type mismatch: " + str(type(self)) + " vs " + str(type(other)),file=stderr)
             return False
 
@@ -899,7 +898,7 @@ class AbstractElement(object):
             for e in self:
                 try:
                     e.addidsuffix(idsuffix, recursive)
-                except:
+                except Exception:
                     pass
 
     def setparents(self):
@@ -918,7 +917,7 @@ class AbstractElement(object):
             if isinstance(c, AbstractElement):
                 c.setdoc(newdoc)
 
-    def hastext(self,cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT):
+    def hastext(self,cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT): #pylint: disable=too-many-return-statements
         """Does this element have text (of the specified class)
 
         By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
@@ -931,24 +930,21 @@ class AbstractElement(object):
         else:
             try:
                 if strict:
-                    r = self.textcontent(cls, correctionhandling)
+                    self.textcontent(cls, correctionhandling) #will raise NoSuchTextException when not found
                     return True
                 else:
-                    if self.TEXTCONTAINER:
-                        return True
-                    else:
-                        #Check children
-                        for e in self:
-                            if e.PRINTABLE and not isinstance(e, TextContent):
-                                if e.hastext(cls, strict, correctionhandling):
-                                    return True
+                    #Check children
+                    for e in self:
+                        if e.PRINTABLE and not isinstance(e, TextContent):
+                            if e.hastext(cls, strict, correctionhandling):
+                                return True
 
-                        r = self.textcontent(cls, correctionhandling)  #will raise NoSuchTextException when not found
-                        return True
+                    self.textcontent(cls, correctionhandling)  #will raise NoSuchTextException when not found
+                    return True
             except NoSuchText:
                 return False
 
-    def hasphon(self,cls='current',strict=True,correctionhandling=CorrectionHandling.CURRENT):
+    def hasphon(self,cls='current',strict=True,correctionhandling=CorrectionHandling.CURRENT): #pylint: disable=too-many-return-statements
         """Does this element have phonetic content (of the specified class)
 
         By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
@@ -961,20 +957,17 @@ class AbstractElement(object):
         else:
             try:
                 if strict:
-                    r = self.phoncontent(cls, correctionhandling)
+                    self.phoncontent(cls, correctionhandling)
                     return True
                 else:
-                    if self.PHONCONTAINER:
-                        return True
-                    else:
-                        #Check children
-                        for e in self:
-                            if e.SPEAKABLE and not isinstance(e, PhonContent):
-                                if e.hasphon(cls, strict, correctionhandling):
-                                    return True
+                    #Check children
+                    for e in self:
+                        if e.SPEAKABLE and not isinstance(e, PhonContent):
+                            if e.hasphon(cls, strict, correctionhandling):
+                                return True
 
-                        r = self.phoncontent(cls)  #will raise NoSuchTextException when not found
-                        return True
+                    self.phoncontent(cls)  #will raise NoSuchTextException when not found
+                    return True
             except NoSuchPhon:
                 return False
 
@@ -1017,7 +1010,7 @@ class AbstractElement(object):
                         found = True
                         break
                     c = c.__base__
-            except:
+            except Exception:
                 pass
             if not found:
                 if raiseexceptions:
@@ -1127,7 +1120,7 @@ class AbstractElement(object):
         else:
             try:
                 set = child.set
-            except:
+            except AttributeError:
                 set = None
 
         #Check if a Class rather than an instance was passed
@@ -1135,7 +1128,7 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             if Class.addable(self, set):
-                if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS):
+                if 'id' not in kwargs and 'generate_id_in' not in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS):
                     kwargs['generate_id_in'] = self
                 child = Class(self.doc, *args, **kwargs)
         elif args:
@@ -1157,7 +1150,7 @@ class AbstractElement(object):
                 child.parent = self
             elif PhonContent in self.ACCEPTED_DATA:
                 #you can pass strings directly (just for convenience), will be made into phoncontent automatically (note that textcontent always takes precedence, so you most likely will have to do it explicitly)
-                child = PhonContent(self.doc, child )
+                child = PhonContent(self.doc, child ) #pylint: disable=redefined-variable-type 
                 self.data.append(child)
                 child.parent = self
             else:
@@ -1208,7 +1201,7 @@ class AbstractElement(object):
         else:
             try:
                 set = child.set
-            except:
+            except AttributeError:
                 set = None
 
         #Check if a Class rather than an instance was passed
@@ -1216,7 +1209,7 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             if Class.addable(self, set):
-                if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
+                if 'id' not in kwargs and 'generate_id_in' not in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
                     kwargs['generate_id_in'] = self
                 child = Class(self.doc, *args, **kwargs)
         elif args:
@@ -1230,7 +1223,7 @@ class AbstractElement(object):
             child.parent = self
         elif Class or (isinstance(child, AbstractElement) and child.__class__.addable(self, set)): #(prevents calling addable again if already done above)
             if 'alternative' in kwargs and kwargs['alternative']:
-                child = Alternative(self.doc, child, generate_id_in=self)
+                child = Alternative(self.doc, child, generate_id_in=self) #pylint: disable=redefined-variable-type
             self.data.insert(index, child)
             child.parent = self
         else:
@@ -1251,7 +1244,7 @@ class AbstractElement(object):
                 layerclass = ANNOTATIONTYPE2LAYERCLASS[child.ANNOTATIONTYPE]
                 addspanfromspanned = True
 
-        if not addspanfromspanned:
+        if not addspanfromspanned: #pylint: disable=too-many-nested-blocks
             return self.append(child,*args,**kwargs)
         else:
             #collect ancestors of the current element,
@@ -1313,7 +1306,7 @@ class AbstractElement(object):
         else:
             try:
                 set = child.set
-            except:
+            except AttributeError:
                 set = None
 
         if inspect.isclass(child):
@@ -1386,7 +1379,7 @@ class AbstractElement(object):
             attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
 
         #Some attributes only need to be added if they are not the same as what's already set in the declaration
-        if not '{' + NSFOLIA + '}set' in attribs: #do not override if overloaded function already set it
+        if '{' + NSFOLIA + '}set' not in attribs: #do not override if overloaded function already set it
             try:
                 if self.set:
                     if not self.ANNOTATIONTYPE in self.doc.annotationdefaults or len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or list(self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys())[0] != self.set:
@@ -1395,14 +1388,14 @@ class AbstractElement(object):
             except AttributeError:
                 pass
 
-        if not '{' + NSFOLIA + '}class' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}class' not in attribs: #do not override if caller already set it
             try:
                 if self.cls:
                     attribs['{' + NSFOLIA + '}class'] = self.cls
             except AttributeError:
                 pass
 
-        if not '{' + NSFOLIA + '}annotator' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}annotator' not in attribs: #do not override if caller already set it
             try:
                 if self.annotator and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'annotator' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.annotator != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['annotator'])):
                     attribs['{' + NSFOLIA + '}annotator'] = self.annotator
@@ -1414,38 +1407,38 @@ class AbstractElement(object):
             except AttributeError:
                 pass
 
-        if not '{' + NSFOLIA + '}confidence' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}confidence' not in attribs: #do not override if caller already set it
             if self.confidence:
                 attribs['{' + NSFOLIA + '}confidence'] = str(self.confidence)
 
-        if not '{' + NSFOLIA + '}n' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}n' not in attribs: #do not override if caller already set it
             if self.n:
                 attribs['{' + NSFOLIA + '}n'] = str(self.n)
 
-        if not '{' + NSFOLIA + '}auth' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}auth' not in attribs: #do not override if caller already set it
             try:
                 if not self.AUTH or not self.auth: #(former is static, latter isn't)
                     attribs['{' + NSFOLIA + '}auth'] = 'no'
             except AttributeError:
                 pass
 
-        if not '{' + NSFOLIA + '}datetime' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}datetime' not in attribs: #do not override if caller already set it
             if self.datetime and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'datetime' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.datetime != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['datetime'])):
                 attribs['{' + NSFOLIA + '}datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
 
-        if not '{' + NSFOLIA + '}src' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}src' not in attribs: #do not override if caller already set it
             if self.src:
                 attribs['{' + NSFOLIA + '}src'] = self.src
 
-        if not '{' + NSFOLIA + '}speaker' in attribs: #do not override if caller already set it
+        if not '{' + NSFOLIA + '}speaker' not in attribs: #do not override if caller already set it
             if self.speaker:
                 attribs['{' + NSFOLIA + '}speaker'] = self.speaker
 
-        if not '{' + NSFOLIA + '}begintime' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}begintime' not in attribs: #do not override if caller already set it
             if self.begintime:
                 attribs['{' + NSFOLIA + '}begintime'] = "%02d:%02d:%02d.%03d" % self.begintime
 
-        if not '{' + NSFOLIA + '}endtime' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}endtime' not in attribs: #do not override if caller already set it
             if self.endtime:
                 attribs['{' + NSFOLIA + '}endtime'] = "%02d:%02d:%02d.%03d" % self.endtime
 
@@ -1536,7 +1529,7 @@ class AbstractElement(object):
         if self.datetime:
             jsonnode['datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
 
-        if recurse:
+        if recurse: #pylint: disable=too-many-nested-blocks
             jsonnode['children'] = []
             if self.TEXTCONTAINER:
                 jsonnode['text'] = self.text()
@@ -1613,7 +1606,7 @@ class AbstractElement(object):
 
         if not node:
             node = self
-        for e in self.data:
+        for e in self.data: #pylint: disable=too-many-nested-blocks
             if (not self.TEXTCONTAINER and not self.PHONCONTAINER) or isinstance(e, AbstractElement):
                 if ignore is True:
                     try:
@@ -1644,7 +1637,7 @@ class AbstractElement(object):
                         try:
                             if e.set != set:
                                 continue
-                        except:
+                        except AttributeError:
                             continue
                     yield e
                 if recursive:
@@ -1653,7 +1646,7 @@ class AbstractElement(object):
                             try:
                                 if e2.set != set:
                                     continue
-                            except:
+                            except AttributeError:
                                 continue
                         yield e2
 
@@ -1661,11 +1654,11 @@ class AbstractElement(object):
         """Like select, but instead of returning the elements, it merely counts them"""
         return sum(1 for i in self.select(Class,set,recursive,ignore,node) )
 
-    def items(self, founditems=[]):
+    def items(self, founditems=[]): #pylint: disable=dangerous-default-value
         """Returns a depth-first flat list of *all* items below this element (not limited to AbstractElement)"""
         l = []
         for e in self.data:
-            if not e in founditems: #prevent going in recursive loops
+            if  e not in founditems: #prevent going in recursive loops
                 l.append(e)
                 if isinstance(e, AbstractElement):
                     l += e.items(l)
@@ -1678,7 +1671,7 @@ class AbstractElement(object):
         for i, c in enumerate(self.data):
             if c is child:
                 return i
-        if recursive:
+        if recursive:  #pylint: disable=too-many-nested-blocks
             for i, c in enumerate(self.data):
                 if ignore is True:
                     try:
@@ -1727,12 +1720,12 @@ class AbstractElement(object):
             order = reversed
             descendindex = -1
         else:
-            order = lambda x: x
+            order = lambda x: x #pylint: disable=redefined-variable-type
             descendindex = 0
 
         child = self
         parent = self.parent
-        while parent:
+        while parent: #pylint: disable=too-many-nested-blocks
             if len(parent) > 1:
                 returnnext = False
                 for e in order(parent):
@@ -1898,7 +1891,7 @@ class AbstractElement(object):
         if cls.TEXTCONTAINER or cls.PHONCONTAINER:
             elements.append( E.text() )
         done = {}
-        if includechildren:
+        if includechildren: #pylint: disable=too-many-nested-blocks
             for c in cls.ACCEPTED_DATA:
                 if c.__name__[:8] == 'Abstract' and inspect.isclass(c):
                     for c2 in globals().values():
@@ -1979,8 +1972,9 @@ class AbstractElement(object):
             args.append(node.text)
 
 
-        for subnode in node:
-            if not isinstance(subnode, ElementTree._Comment): #don't trip over comments
+        for subnode in node: #pylint: disable=too-many-nested-blocks
+            #don't trip over comments
+            if not isinstance(subnode, ElementTree._Comment): #pylint: disable=protected-access
                 if subnode.tag.startswith('{' + NSFOLIA + '}'):
                     if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:],file=stderr)
                     e = doc.parsexml(subnode, Class)
@@ -2201,12 +2195,12 @@ class AllowCorrections(object):
 
                 if 'current' in kwargs:
                     raise Exception("Can't set both new= and current= !")
-                if not 'original' in kwargs:
+                if 'original' not in kwargs:
                     kwargs['original'] = c.current()
 
                 c.remove(c.current())
         else:
-            if not 'id' in kwargs and not 'generate_id_in' in kwargs:
+            if 'id' not in kwargs and 'generate_id_in' not in kwargs:
                 kwargs['generate_id_in'] = self
             kwargs2 = copy(kwargs)
             for x in ['new','original','suggestion', 'suggestions','current', 'insertindex','nooriginal']:
@@ -2232,13 +2226,13 @@ class AllowCorrections(object):
             if not isinstance(kwargs['current'], list) and not isinstance(kwargs['current'], tuple): kwargs['current'] = [kwargs['current']] #support both lists (for multiple elements at once), as well as single element
             c.replace(Current(self.doc, *kwargs['current']))
             for o in kwargs['current']: #delete current from current element
-                if o in self and isinstance(o, AbstractElement):
+                if o in self and isinstance(o, AbstractElement): #pylint: disable=unsupported-membership-test
                     if insertindex == -1: insertindex = self.data.index(o)
                     self.remove(o)
             del kwargs['current']
         if 'new' in kwargs:
             if not isinstance(kwargs['new'], list) and not isinstance(kwargs['new'], tuple): kwargs['new'] = [kwargs['new']] #support both lists (for multiple elements at once), as well as single element
-            addnew = New(self.doc, *kwargs['new'])
+            addnew = New(self.doc, *kwargs['new']) #pylint: disable=redefined-variable-type
             c.replace(addnew)
             for current in c.select(Current): #delete current if present
                 c.remove(current)
@@ -2247,7 +2241,7 @@ class AllowCorrections(object):
             if not isinstance(kwargs['original'], list) and not isinstance(kwargs['original'], tuple): kwargs['original'] = [kwargs['original']] #support both lists (for multiple elements at once), as well as single element
             c.replace(Original(self.doc, *kwargs['original']))
             for o in kwargs['original']: #delete original from current element
-                if o in self and isinstance(o, AbstractElement):
+                if o in self and isinstance(o, AbstractElement): #pylint: disable=unsupported-membership-test
                     if insertindex == -1: insertindex = self.data.index(o)
                     self.remove(o)
             for o in kwargs['original']: #make sure IDs are still properly set after removal
@@ -2264,7 +2258,7 @@ class AllowCorrections(object):
                     kwargs2['cls'] = new.cls
                 try:
                     set = new.set
-                except:
+                except AttributeError:
                     set = None
                 #print("DEBUG: Finding replaceables within " + str(repr(self)) + " for ", str(repr(new)), " set " ,set , " args " ,repr(kwargs2),file=sys.stderr)
                 replaceables = new.__class__.findreplaceables(self, set, **kwargs2)
@@ -2280,7 +2274,7 @@ class AllowCorrections(object):
 
         if addnew and not nooriginal:
             for original in c.original():
-                if original in self:
+                if original in self: #pylint: disable=unsupported-membership-test
                     self.remove(original)
 
         if 'suggestion' in kwargs:
@@ -2374,7 +2368,7 @@ class AllowTokenAnnotation(AllowCorrections):
             Generator of Alternative elements
         """
 
-        for e in self.select(Alternative,None, True, []):
+        for e in self.select(Alternative,None, True, []): #pylint: disable=too-many-nested-blocks
             if Class is None:
                 yield e
             elif len(e) >= 1: #child elements?
@@ -2400,7 +2394,7 @@ class AllowGenerateID(object):
                 return self.maxid[xmltag]
             else:
                 return 0
-        except:
+        except AttributeError:
             return 0
 
 
@@ -2635,7 +2629,6 @@ class TextMarkupGap(AbstractTextMarkup):
     pass
 
 class TextMarkupCorrection(AbstractTextMarkup):
-    pass
 
     def __init__(self, doc, *args, **kwargs):
         if 'original' in kwargs:
@@ -2740,7 +2733,7 @@ class TextContent(AbstractElement):
             self.href = None
 
         #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
-        if not ('cls' in kwargs) and not ('class' in kwargs):
+        if 'cls' not in kwargs and 'class' not in kwargs:
             kwargs['cls'] = 'current'
 
         super(TextContent,self).__init__(doc, *args, **kwargs)
@@ -2816,7 +2809,7 @@ class TextContent(AbstractElement):
         e = self
         while True:
             if e.parent:
-                e = e.parent
+                e = e.parent #pylint: disable=redefined-variable-type
             else:
                 #no parent, breaking
                 return False
@@ -2839,7 +2832,7 @@ class TextContent(AbstractElement):
     def findreplaceables(Class, parent, set, **kwargs):
         """(Method for internal usage, see AbstractElement)"""
         #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
-        if not 'cls' in kwargs:
+        if 'cls' not in kwargs:
             kwargs['cls'] = 'current'
         replace = super(TextContent, Class).findreplaceables(parent, set, **kwargs)
         replace = [ x for x in replace if x.cls == kwargs['cls']]
@@ -2860,8 +2853,6 @@ class TextContent(AbstractElement):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-
         attribs = {}
         if not self.offset is None:
             attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
@@ -2912,7 +2903,6 @@ class PhonContent(AbstractElement):
     """
 
     def __init__(self, doc, *args, **kwargs):
-        global ILLEGAL_UNICODE_CONTROL_CHARACTERS
         """Example::
 
                 phon = folia.PhonContent(doc, 'hɛˈləʊ̯')
@@ -2946,7 +2936,7 @@ class PhonContent(AbstractElement):
             self.href = None
 
         #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
-        if not ('cls' in kwargs) and not ('class' in kwargs):
+        if 'cls' not in kwargs and 'class' not in kwargs:
             kwargs['cls'] = 'current'
 
         super(PhonContent,self).__init__(doc, *args, **kwargs)
@@ -3027,7 +3017,7 @@ class PhonContent(AbstractElement):
         e = self
         while True:
             if e.parent:
-                e = e.parent
+                e = e.parent #pylint: disable=redefined-variable-type
             else:
                 #no parent, breaking
                 return False
@@ -3050,7 +3040,7 @@ class PhonContent(AbstractElement):
     def findreplaceables(Class, parent, set, **kwargs):#pylint: disable=bad-classmethod-argument
         """(Method for internal usage, see AbstractElement)"""
         #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
-        if not 'cls' in kwargs:
+        if 'cls' not in kwargs:
             kwargs['cls'] = 'current'
         replace = super(PhonContent, Class).findreplaceables(parent, set, **kwargs)
         replace = [ x for x in replace if x.cls == kwargs['cls']]
@@ -3505,13 +3495,15 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
                 except KeyError:
                     targets.append(c) #add unresolved
             elif isinstance(c, AbstractSpanAnnotation):
-                c._helper_wrefs(targets) #recursion
+                #recursion
+                c._helper_wrefs(targets) #pylint: disable=protected-access
             elif isinstance(c, Correction) and c.auth: #recurse into corrections
                 for e in c:
                     if isinstance(e, AbstractCorrectionChild) and e.auth:
                         for e2 in e:
                             if isinstance(e2, AbstractSpanAnnotation):
-                                e2._helper_wrefs(targets) #recursion
+                                #recursion
+                                e2._helper_wrefs(targets) #pylint: disable=protected-access
 
     def wrefs(self, index = None):
         """Returns a list of word references, these can be Words but also Morphemes or Phonemes.
@@ -3636,7 +3628,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
             Generator over Alternative elements
         """
 
-        for e in self.select(AlternativeLayers,None, True, ['Original','Suggestion']):
+        for e in self.select(AlternativeLayers,None, True, ['Original','Suggestion']): #pylint: disable=too-many-nested-blocks
             if Class is None:
                 yield e
             elif len(e) >= 1: #child elements?
@@ -3759,9 +3751,9 @@ class AlignReference(AbstractElement):
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
-        if not 'id' in kwargs:
+        if 'id' not in kwargs:
             raise Exception("ID required for AlignReference")
-        if not 'type' in kwargs:
+        if 'type' not in kwargs:
             raise Exception("Type required for AlignReference")
         elif not inspect.isclass(kwargs['type']):
             raise Exception("Type must be a FoLiA element (python class)")
@@ -4118,7 +4110,7 @@ class Correction(AbstractElement, AllowGenerateID):
 
     def correct(self, **kwargs):
         if 'new' in kwargs:
-            if not 'nooriginal' in kwargs: #if not an insertion
+            if 'nooriginal' not in kwargs: #if not an insertion
                 kwargs['original'] = self
         elif 'current' in kwargs:
             kwargs['current'] = self
@@ -4170,7 +4162,7 @@ class External(AbstractElement):
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
-        if not 'source' in kwargs:
+        if 'source' not in kwargs:
             raise Exception("Source required for External")
         assert(isinstance(doc,Document))
         self.doc = doc
@@ -4265,7 +4257,7 @@ class WordReference(AbstractElement):
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
-        if not 'idref' in kwargs and not 'id' in kwargs:
+        if 'idref' not in kwargs and 'id' not in kwargs:
             raise Exception("ID required for WordReference")
         assert isinstance(doc,Document)
         self.doc = doc
@@ -4355,7 +4347,7 @@ class CoreferenceChain(AbstractSpanAnnotation):
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
 
-class ComplexAlignment(AbstractAnnotation):
+class ComplexAlignment(AbstractElement):
     """Complex Alignment"""
     REQUIRED_ATTRIBS = ()
     OPTIONAL_ATTRIBS = (Attrib.ALL,)
@@ -4370,12 +4362,12 @@ class ComplexAlignment(AbstractAnnotation):
     #same as for AbstractSpanAnnotation, which this technically is not (hence copy)
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        return self.count(Class,set,True,defaultignorelist_annotations)
+        return self.count(Class,set,True,default_ignore_annotations)
 
     #same as for AbstractSpanAnnotation, which this technically is not (hence copy)
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.count(type,set,True,defaultignorelist_annotations)
+        l = self.count(type,set,True,default_ignore_annotations)
         if len(l) >= 1:
             return l[0]
         else:
@@ -5184,7 +5176,7 @@ class Document(object):
                 del contents
                 self.parsexml(self.tree.getroot())
             elif self.filename[-3:].lower() == '.gz':
-                f = gzip.GzipFile(self.filename)
+                f = gzip.GzipFile(self.filename) #pylint: disable=redefined-variable-type
                 contents = f.read()
                 f.close()
                 self.tree = xmltreefromstring(contents)
@@ -5261,7 +5253,7 @@ class Document(object):
             f.write(self.xmlstring().encode('utf-8'))
             f.close()
         elif filename[-3:].lower() == '.gz':
-            f = gzip.GzipFile(filename,'wb')
+            f = gzip.GzipFile(filename,'wb') #pylint: disable=redefined-variable-type
             f.write(self.xmlstring().encode('utf-8'))
             f.close()
         else:
@@ -5343,7 +5335,7 @@ class Document(object):
         if text is Text:
             text = Text(self, id=self.id + '.text.' + str(len(self.data)+1) )
         elif text is Speech:
-            text = Speech(self, id=self.id + '.speech.' + str(len(self.data)+1) )
+            text = Speech(self, id=self.id + '.speech.' + str(len(self.data)+1) ) #pylint: disable=redefined-variable-type
         else:
             assert isinstance(text, Text) or isinstance(text, Speech)
         self.data.append(text)
@@ -5458,7 +5450,7 @@ class Document(object):
                 *self.xmlmetadata(),
                 **metadataattribs
             )
-        , **attribs)
+            , **attribs)
         for text in self.data:
             e.append(text.xml())
         return e
@@ -5500,7 +5492,7 @@ class Document(object):
         if self.debug >= 1:
             print("[PyNLPl FoLiA DEBUG] Processing Annotation Declarations",file=stderr)
         self.declareprocessed = True
-        for subnode in node:
+        for subnode in node: #pylint: disable=too-many-nested-blocks
             if subnode.tag[:25] == '{' + NSFOLIA + '}' and subnode.tag[-11:] == '-annotation':
                 prefix = subnode.tag[25:][:-11]
                 type = None
@@ -5527,7 +5519,7 @@ class Document(object):
                     self.annotations.append( (type, set) )
 
                 #Load set definition
-                if set and self.loadsetdefinitions and not set in self.setdefinitions:
+                if set and self.loadsetdefinitions and set not in self.setdefinitions:
                     if set[:7] == "http://" or set[:8] == "https://" or set[:6] == "ftp://":
                         try:
                             self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
@@ -5775,7 +5767,6 @@ class Document(object):
             return self._language
 
     def parsemetadata(self, node):
-        if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Metadata"
         if 'type' in node.attrib and node.attrib['type'] == 'imdi':
             self.metadatatype = MetaDataType.IMDI
         elif 'type' in node.attrib and  node.attrib['type'] == 'cmdi':
@@ -5805,7 +5796,7 @@ class Document(object):
 
     def parsexml(self, node, ParentClass = None):
         """Main XML parser, will invoke class-specific XML parsers. For internal use."""
-        if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)):
+        if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)): #pylint: disable=protected-access
             node = node.getroot()
         elif isstring(node):
             node = xmltreefromstring(node).getroot()
@@ -5830,10 +5821,7 @@ class Document(object):
                     self.version = None
 
                 if 'external' in node.attrib:
-                    if node.attrib['external'] == 'yes':
-                        self.external = True
-                    else:
-                        self.external = False
+                    self.external = (node.attrib['external'] == 'yes')
 
                     if self.external and not self.parentdoc:
                         raise DeepValidationError("Document is marked as external and should not be loaded independently. However, no parentdoc= has been specified!")
@@ -6040,7 +6028,7 @@ class Corpus:
                 if self.conditionf(f):
                     try:
                         yield Document(file=f, **self.kwargs )
-                    except Exception as e:
+                    except Exception as e: #pylint: disable=broad-except
                         print("Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                         if not self.ignoreerrors:
                             raise
@@ -6050,7 +6038,7 @@ class Corpus:
                     if self.conditionf(f):
                         try:
                             yield Document(file=f, **self.kwargs)
-                        except Exception as e:
+                        except Exception as e: #pylint: disable=broad-except
                             print("Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                             if not self.ignoreerrors:
                                 raise
@@ -6065,7 +6053,7 @@ class CorpusFiles(Corpus):
                 if self.conditionf(f):
                     try:
                         yield f
-                    except Exception as e:
+                    except Exception as e: #pylint: disable=broad-except
                         print("Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                         if not self.ignoreerrors:
                             raise
@@ -6075,7 +6063,7 @@ class CorpusFiles(Corpus):
                     if self.conditionf(f):
                         try:
                             yield f
-                        except Exception as e:
+                        except Exception as e: #pylint: disable=broad-except
                             print("Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                             if not self.ignoreerrors:
                                 raise
@@ -6111,7 +6099,7 @@ class CorpusProcessor(object):
             return ValueError("Can only retrieve length if instantiated with preindex=True")
 
     def execute(self):
-        for output in self.run():
+        for _ in self.run():
             pass
 
     def run(self, *args, **kwargs):
@@ -6364,7 +6352,7 @@ def loadsetdefinition(filename):
 
 def relaxng_declarations():
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-    for key, value in vars(AnnotationType).items():
+    for key in vars(AnnotationType).keys():
         if key[0] != '_':
             yield E.element( E.optional( E.attribute(name='set')) , E.optional(E.attribute(name='annotator')) , E.optional( E.attribute(name='annotatortype') ) , E.optional( E.attribute(name='datetime') )  , name=key.lower() + '-annotation')
 
@@ -6443,7 +6431,6 @@ def findwords(doc, worditerator, *args, **kwargs):
         raise Exception("Unknown keyword parameter: " + key)
 
     matchcursor = 0
-    matched = []
 
     #shortcut for when no Pattern is passed, make one on the fly
     if len(args) == 1 and not isinstance(args[0], Pattern):
@@ -6456,7 +6443,6 @@ def findwords(doc, worditerator, *args, **kwargs):
     unsetwildcards = False
     variablewildcards = None
     prevsize = -1
-    minsize = 99999
     #sanity check
     for i, pattern in enumerate(args):
         if not isinstance(pattern, Pattern):
@@ -6480,9 +6466,8 @@ def findwords(doc, worditerator, *args, **kwargs):
         for pattern in args:
             if pattern.variablesize():
                 pattern.sequence = [ True if x == '*' else x for x in pattern.sequence ]
-        variablesize = False
 
-    if variablewildcards:
+    if variablewildcards: #pylint: disable=too-many-nested-blocks
         #one or more items have a * wildcard, which may span multiple tokens. Resolve this to a wider range of simpler patterns
 
         #we're not commited to a particular size, expand to various ones
@@ -6498,7 +6483,7 @@ def findwords(doc, worditerator, *args, **kwargs):
                     yield match
 
     else:
-        patterns = args
+        patterns = args #pylint: disable=redefined-variable-type
         buffers = []
 
         for word in worditerator():
