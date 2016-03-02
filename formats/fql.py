@@ -36,7 +36,7 @@ MASK_EXPRESSION = 2
 MAXEXPANSION = 99
 
 FOLIAVERSION = '0.12.1'
-FQLVERSION = '0.2.4'
+FQLVERSION = '0.2.5'
 
 class SyntaxError(Exception):
     pass
@@ -1183,6 +1183,9 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
         kwargs['nooriginal'] = True #this is an insertion, there is no original
         kwargs = self.assemblesuggestions(query,content,debug,kwargs)
 
+        if debug: print("[FQL EVALUATION DEBUG] Correction.insert - Applying and returning correction",file=sys.stderr)
+        return content['parent'].correct(**kwargs)
+
     def substitute(self, query, substitution, contextselector, debug):
         kwargs = {}
         if self.set:
@@ -1225,7 +1228,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
         kwargs = self.assemblesuggestions(query,substitution,debug,kwargs)
 
-        if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Returning correction",file=sys.stderr)
+        if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Applying and returning correction",file=sys.stderr)
         return substitution['parent'].correct(**kwargs)
 
 
@@ -1242,11 +1245,11 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                         actionassignments['set'] = query.doc.defaultset(Class)
             actionassignments['id'] = "corrected.%08x" % random.getrandbits(32) #generate a random ID
             e = Class(query.doc, **actionassignments)
-            if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Adding to new",file=sys.stderr)
+            if debug: print("[FQL EVALUATION DEBUG] Correction.assemblesuggestions - Adding to new",file=sys.stderr)
             kwargs['new'].append(e)
             for subaction in subactions:
                 subaction.focus.autodeclare(query.doc)
-                if debug: print("[FQL EVALUATION DEBUG] Correction.substitute - Invoking subaction", subaction.action,file=sys.stderr)
+                if debug: print("[FQL EVALUATION DEBUG] Correction.assemblesuggestions - Invoking subaction", subaction.action,file=sys.stderr)
                 subaction(query, [e], debug ) #note: results of subactions will be silently discarded
 
         for subassignments, suggestionassignments in self.suggestions:
@@ -1277,6 +1280,8 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                     subassignments['id'] = getrandomid(query, "suggestion.")
                 suggestionchildren.append( focus.Class(query.doc, **subassignments))
                 action = action.nextaction
+
+            if debug: print("[FQL EVALUATION DEBUG] Correction.assemblesuggestions - Suggestionchildren: ", len(suggestionchildren),file=sys.stderr)
 
             if 'split' in suggestionassignments and suggestionassignments['split']:
                 suggestionassignments['split'] = focus.ancestor(folia.StructureElement).id

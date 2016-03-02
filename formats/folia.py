@@ -158,6 +158,8 @@ class SetDefinitionError(DeepValidationError):
 class ModeError(Exception):
     pass
 
+class DocumentNotLoaded(Exception): #for alignments to external documents
+    pass
 
 class CorrectionHandling:
     EITHER,CURRENT, ORIGINAL = range(3)
@@ -3805,12 +3807,16 @@ class AlignReference(AbstractElement):
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), E.attribute(E.text(), name='type'), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
-    def resolve(self, alignmentcontext):
-        if not alignmentcontext.href:
+    def resolve(self, alignmentcontext=None, documents={}):
+        if not alignmentcontext or not hasattr(alignmentcontext, 'href') or not alignmentcontext.href:
             #no target document, same document
             return self.doc[self.id]
         else:
-            raise NotImplementedError
+            #other document
+            if alignmentcontext.href in documents:
+                return documents[alignmentcontext.href][self.id]
+            else:
+                raise DocumentNotLoaded()
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
@@ -3832,9 +3838,10 @@ class Alignment(AbstractElement):
     def json(self, attribs =None, recurse=True, ignorelist=False):
         return {} #alignment not supported yet, TODO
 
-    def resolve(self):
+    def resolve(self, documents={}):
+        #documents is a dictionary of urls to document instances, to aid in resolving cross-document alignments
         for x in self.select(AlignReference,None,True,False):
-            yield x.resolve(self)
+            yield x.resolve(self, documents)
 
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
@@ -4107,9 +4114,7 @@ class Correction(AbstractElement, AllowGenerateID):
         return str(self)
 
     def __str__(self):
-        for e in self:
-            if isinstance(e, New) or isinstance(e, Current):
-                return str(e)
+        return self.text(self, 'current', False, "",False, CorrectionHandling.EITHER)
 
     def correct(self, **kwargs):
         if 'new' in kwargs:
@@ -4350,6 +4355,32 @@ class CoreferenceChain(AbstractSpanAnnotation):
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
 
+class ComplexAlignment(AbstractAnnotation):
+    """Complex Alignment"""
+    REQUIRED_ATTRIBS = ()
+    OPTIONAL_ATTRIBS = (Attrib.ALL,)
+    ACCEPTED_DATA = (Alignment,Metric, Feature, Description,)
+    XMLTAG = 'complexalignment'
+    OCCURRENCESPERSET = 0 #Allow duplicates within the same set
+    PRINTABLE = False
+    SPEAKABLE = False
+    REQUIRED_DATA = () #Required roles, these must be present (optional roles are simply in ACCEPTED_DATA)
+
+
+    #same as for AbstractSpanAnnotation, which this technically is not (hence copy)
+    def hasannotation(self,Class,set=None):
+        """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
+        return self.count(Class,set,True,defaultignorelist_annotations)
+
+    #same as for AbstractSpanAnnotation, which this technically is not (hence copy)
+    def annotation(self, type, set=None):
+        """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
+        l = self.count(type,set,True,defaultignorelist_annotations)
+        if len(l) >= 1:
+            return l[0]
+        else:
+            raise NoSuchAnnotation()
+
 class FunctionFeature(Feature):
     """Function feature, to be used with morphemes"""
 
@@ -4424,6 +4455,12 @@ class CoreferenceLayer(AbstractAnnotationLayer):
 
 class SemanticRolesLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SemanticRole span annotation elements"""
+
+class ComplexAlignmentLayer(AbstractAnnotationLayer):
+    """Complex alignment layer"""
+    ACCEPTED_DATA = (ComplexAlignment,Description,Correction)
+    XMLTAG = 'complexalignments'
+    ANNOTATIONTYPE = AnnotationType.COMPLEXALIGNMENT
 
 class HeadFeature(Feature):
     """Head feature, to be used within PosAnnotation"""
