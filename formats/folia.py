@@ -16,41 +16,17 @@
 #----------------------------------------------------------------
 
 #pylint: disable=redefined-builtin,trailing-whitespace,superfluous-parens,bad-classmethod-argument
+#wrong-import-order,wrong-import-position,ungrouped-imports
 
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
-from pynlpl.common import u, isstring
+
 import sys
-if sys.version < '3':
-    from codecs import getwriter
-    stderr = getwriter('utf-8')(sys.stderr)
-    stdout = getwriter('utf-8')(sys.stdout)
-else:
-    stderr = sys.stderr
-    stdout = sys.stdout
-
-from lxml import etree as ElementTree
-LXE=True
-#import xml.etree.cElementTree as ElementTree
-#LXE = False
-
-from lxml.builder import ElementMaker
-if sys.version < '3':
-    from StringIO import StringIO #pylint: disable=import-error
-    from urllib import urlopen #pylint: disable=no-name-in-module
-else:
-    from io import StringIO,  BytesIO
-    from urllib.request import urlopen #pylint: disable=E0611
-
 
 from copy import copy, deepcopy
-from pynlpl.formats.imdi import RELAXNG_IMDI
-import pynlpl.formats.foliaspec as foliaspec
 from datetime import datetime
-#from dateutil.parser import parse as parse_datetime
-import pynlpl.algorithms
 import inspect
 import itertools
 import glob
@@ -66,6 +42,31 @@ import bz2
 import gzip
 import random
 
+
+
+from lxml import etree as ElementTree
+
+from lxml.builder import ElementMaker
+if sys.version < '3':
+    from StringIO import StringIO #pylint: disable=import-error,wrong-import-order
+    from urllib import urlopen #pylint: disable=no-name-in-module,wrong-import-order
+else:
+    from io import StringIO,  BytesIO #pylint: disable=wrong-import-order,ungrouped-imports
+    from urllib.request import urlopen #pylint: disable=E0611,wrong-import-order,ungrouped-imports
+
+if sys.version < '3':
+    from codecs import getwriter #pylint: disable=wrong-import-order,ungrouped-imports
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
+
+from pynlpl.common import u, isstring
+import pynlpl.algorithms
+
+
+LXE=True #use lxml instead of built-in ElementTree (default)
 
 #foliaspec:version:FOLIAVERSION
 #The FoLiA version
@@ -1565,7 +1566,6 @@ class AbstractElement(object):
 
     def xmlstring(self, pretty_print=False):
         """Serialises this FoLiA element to XML, returns a (unicode) string with XML representation for this element and all its children."""
-        global LXE
         s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')
         if sys.version < '3':
             if isinstance(s, str):
@@ -6530,10 +6530,7 @@ def findwords(doc, worditerator, *args, **kwargs):
                     if match[i] is False:
                         continue
                     matchcursor = len(buffer)
-                    if (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
-                        match[i] = True
-                    else:
-                        match[i] = False
+                    match[i] = (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor]))
 
 
             for buffer, matches in list(zip(buffers, match)):
