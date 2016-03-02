@@ -4349,15 +4349,6 @@ class SemanticRole(AbstractSpanAnnotation):
 
 class ComplexAlignment(AbstractElement):
     """Complex Alignment"""
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ALL,)
-    ACCEPTED_DATA = (Alignment,Metric, Feature, Description,)
-    XMLTAG = 'complexalignment'
-    OCCURRENCESPERSET = 0 #Allow duplicates within the same set
-    PRINTABLE = False
-    SPEAKABLE = False
-    REQUIRED_DATA = () #Required roles, these must be present (optional roles are simply in ACCEPTED_DATA)
-
 
     #same as for AbstractSpanAnnotation, which this technically is not (hence copy)
     def hasannotation(self,Class,set=None):
