@@ -3552,8 +3552,6 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
-    SETONLY = True #a property not in the generic scheme, layers may take a set attribute, but not a class attribute
-
 
     def __init__(self, doc, *args, **kwargs):
         if 'set' in kwargs:
@@ -6652,7 +6650,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-03 15:13:38, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-03 17:06:13, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -6837,6 +6835,7 @@ AbstractElement.PRIMARYELEMENT = True
 AbstractElement.PRINTABLE = False
 AbstractElement.REQUIRED_ATTRIBS = None
 AbstractElement.REQUIRED_DATA = None
+AbstractElement.SETONLY = False
 AbstractElement.SPEAKABLE = False
 AbstractElement.SUBSET = None
 AbstractElement.TEXTCONTAINER = False
@@ -6850,6 +6849,7 @@ AbstractElement.XMLTAG = None
 AbstractAnnotationLayer.ACCEPTED_DATA = (Correction, Description,)
 AbstractAnnotationLayer.OPTIONAL_ATTRIBS = (Attrib.ID,)
 AbstractAnnotationLayer.PRINTABLE = False
+AbstractAnnotationLayer.SETONLY = True
 AbstractAnnotationLayer.SPEAKABLE = False
 #------ AbstractCorrectionChild -------
 AbstractCorrectionChild.ACCEPTED_DATA = (AbstractSpanAnnotation, AbstractStructureElement, AbstractTokenAnnotation, Correction, Description, Metric, PhonContent, String, TextContent,)
