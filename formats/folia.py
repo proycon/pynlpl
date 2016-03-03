@@ -1921,7 +1921,7 @@ class AbstractElement(object):
                 else:
                     try:
                         if c.XMLTAG and not c.XMLTAG in done:
-                            if c in cls.REQUIRED_DATA:
+                            if cls.REQUIRED_DATA and c in cls.REQUIRED_DATA:
                                 if c.OCCURRENCES == 1:
                                     elements.append( E.ref(name=c.XMLTAG) )
                                 else:
