@@ -1838,6 +1838,7 @@ class AbstractElement(object):
             pass
 
         if cls.REQUIRED_ATTRIBS is None: cls.REQUIRED_ATTRIBS = () #bit hacky
+        if cls.OPTIONAL_ATTRIBS is None: cls.OPTIONAL_ATTRIBS = () #bit hacky
 
 
         attribs = []
@@ -1899,14 +1900,14 @@ class AbstractElement(object):
         if cls.TEXTCONTAINER or cls.PHONCONTAINER:
             elements.append( E.text() )
         done = {}
-        if includechildren: #pylint: disable=too-many-nested-blocks
+        if includechildren and cls.ACCEPTED_DATA: #pylint: disable=too-many-nested-blocks
             for c in cls.ACCEPTED_DATA:
                 if c.__name__[:8] == 'Abstract' and inspect.isclass(c):
                     for c2 in globals().values():
                         try:
                             if inspect.isclass(c2) and issubclass(c2, c):
                                 try:
-                                    if c2.XMLTAG and not c2.XMLTAG in done:
+                                    if c2.XMLTAG and c2.XMLTAG not in done:
                                         if c2.OCCURRENCES == 1:
                                             elements.append( E.optional( E.ref(name=c2.XMLTAG) ) )
                                         else:
@@ -1920,7 +1921,7 @@ class AbstractElement(object):
                     attribs.append( E.optional( E.attribute(name=c.SUBSET)))  #features as attributes
                 else:
                     try:
-                        if c.XMLTAG and not c.XMLTAG in done:
+                        if c.XMLTAG and c.XMLTAG not in done:
                             if cls.REQUIRED_DATA and c in cls.REQUIRED_DATA:
                                 if c.OCCURRENCES == 1:
                                     elements.append( E.ref(name=c.XMLTAG) )
