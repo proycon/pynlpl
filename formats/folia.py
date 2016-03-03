@@ -207,7 +207,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
 
     if 'id' in kwargs:
-        if not Attrib.ID in supported:
+        if Attrib.ID not in supported:
             raise ValueError("ID is not supported on " + object.__class__.__name__)
         isncname(kwargs['id'])
         object.id = kwargs['id']
@@ -218,7 +218,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.id = None
 
     if 'set' in kwargs:
-        if not Attrib.CLASS in supported and not Attrib.SETONLY in supported:
+        if Attrib.CLASS not in supported and not (hasattr(object,'SETONLY') and object.SETONLY):
             raise ValueError("Set is not supported on " + object.__class__.__name__)
         if not kwargs['set']:
             object.set ="undefined"
@@ -237,7 +237,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.set = list(doc.annotationdefaults[annotationtype].keys())[0]
     elif object.ANNOTATIONTYPE == AnnotationType.TEXT:
         object.set = "undefined" #text content needs never be declared (for backward compatibility) and is in set 'undefined'
-    elif Attrib.CLASS in required or Attrib.SETONLY in required:
+    elif Attrib.CLASS in required or (hasattr(object,'SETONLY') and object.SETONLY):
         raise ValueError("Set is required for " + object.__class__.__name__)
 
 
@@ -3551,7 +3551,7 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
-    #OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.SETONLY,) #TODO: handle SETONLY in new scheme
+    SETONLY = True #a property not in the generic scheme, layers may take a set attribute, but not a class attribute
 
 
     def __init__(self, doc, *args, **kwargs):
@@ -6651,7 +6651,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-03 12:17:59, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-03 12:35:50, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -6825,6 +6825,7 @@ default_ignore_structure = ( Original, Suggestion, Alternative, AlternativeLayer
 #foliaspec:defaultproperties
 #Default properties which all elements inherit
 AbstractElement.ACCEPTED_DATA = (Description,)
+AbstractElement.ANNOTATIONTYPE = None
 AbstractElement.AUTH = True
 AbstractElement.OCCURRENCES = 0
 AbstractElement.OCCURRENCES_PER_SET = 1
