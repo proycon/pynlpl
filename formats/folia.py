@@ -237,7 +237,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.set = list(doc.annotationdefaults[annotationtype].keys())[0]
     elif object.ANNOTATIONTYPE == AnnotationType.TEXT:
         object.set = "undefined" #text content needs never be declared (for backward compatibility) and is in set 'undefined'
-    elif Attrib.CLASS in required or (hasattr(object,'SETONLY') and object.SETONLY):
+    elif Attrib.CLASS in required: #or (hasattr(object,'SETONLY') and object.SETONLY):
         raise ValueError("Set is required for " + object.__class__.__name__)
 
 
@@ -6651,7 +6651,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-03 12:35:50, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-03 12:51:31, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -6828,7 +6828,7 @@ AbstractElement.ACCEPTED_DATA = (Description,)
 AbstractElement.ANNOTATIONTYPE = None
 AbstractElement.AUTH = True
 AbstractElement.OCCURRENCES = 0
-AbstractElement.OCCURRENCES_PER_SET = 1
+AbstractElement.OCCURRENCES_PER_SET = 0
 AbstractElement.OPTIONAL_ATTRIBS = None
 AbstractElement.PHONCONTAINER = False
 AbstractElement.PRIMARYELEMENT = True
@@ -6881,6 +6881,7 @@ AbstractTextMarkup.TEXTDELIMITER = ""
 AbstractTextMarkup.XLINK = True
 #------ AbstractTokenAnnotation -------
 AbstractTokenAnnotation.ACCEPTED_DATA = (Description, Feature, Metric,)
+AbstractTokenAnnotation.OCCURRENCES_PER_SET = 1
 AbstractTokenAnnotation.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
 AbstractTokenAnnotation.REQUIRED_ATTRIBS = (Attrib.CLASS,)
 #------ ActorFeature -------
