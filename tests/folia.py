@@ -1489,6 +1489,7 @@ class Test4Edit(unittest.TestCase):
         w = s.append(folia.Word,'zin')
         w2 = s.append(folia.Word,'.',cls='PUNCTUATION')
 
+        self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.9')
         self.assertEqual( len(list(s.words())), 6 ) #number of words in sentence
         self.assertEqual( w.text(), 'zin' ) #text check
         self.assertEqual( self.doc[w.id], w ) #index check

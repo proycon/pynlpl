@@ -1134,7 +1134,7 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             if Class.addable(self, set):
-                if 'id' not in kwargs and 'generate_id_in' not in kwargs and Class.REQUIRED_ATTRIBS and (Attrib.ID in Class.REQUIRED_ATTRIBS):
+                if 'id' not in kwargs and 'generate_id_in' not in kwargs and ((Class.REQUIRED_ATTRIBS and (Attrib.ID in Class.REQUIRED_ATTRIBS)) or Class.AUTO_GENERATE_ID):
                     kwargs['generate_id_in'] = self
                 child = Class(self.doc, *args, **kwargs)
         elif args:
@@ -5314,7 +5314,7 @@ class Document(object):
                         except KeyError:
                             pass
                 else:
-                    raise
+                    raise KeyError("No such key: " + key)
 
 
     def append(self,text):
@@ -6652,7 +6652,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-03 12:51:31, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-03 15:13:38, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -6828,6 +6828,7 @@ default_ignore_structure = ( Original, Suggestion, Alternative, AlternativeLayer
 AbstractElement.ACCEPTED_DATA = (Description,)
 AbstractElement.ANNOTATIONTYPE = None
 AbstractElement.AUTH = True
+AbstractElement.AUTO_GENERATE_ID = False
 AbstractElement.OCCURRENCES = 0
 AbstractElement.OCCURRENCES_PER_SET = 0
 AbstractElement.OPTIONAL_ATTRIBS = None
@@ -6867,6 +6868,7 @@ AbstractSpanRole.ACCEPTED_DATA = (Alignment, Description, Feature, Metric, WordR
 AbstractSpanRole.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME,)
 #------ AbstractStructureElement -------
 AbstractStructureElement.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part,)
+AbstractStructureElement.AUTO_GENERATE_ID = True
 AbstractStructureElement.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
 AbstractStructureElement.PRINTABLE = True
 AbstractStructureElement.REQUIRED_ATTRIBS = None
