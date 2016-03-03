@@ -218,7 +218,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.id = None
 
     if 'set' in kwargs:
-        if Attrib.CLASS not in supported and not (hasattr(object,'SETONLY') and object.SETONLY):
+        if Attrib.CLASS not in supported and not object.SETONLY:
             raise ValueError("Set is not supported on " + object.__class__.__name__)
         if not kwargs['set']:
             object.set ="undefined"
