@@ -1043,7 +1043,7 @@ class AbstractElement(object):
                 else:
                     return False
 
-        if Class.OCCURRENCES_PER_SET > 0 and set and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
+        if Class.OCCURRENCES_PER_SET > 0 and set and Class.REQUIRED_ATTRIBS and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
             count = parent.count(Class,set,True, [True, AbstractStructureElement])
             if count >= Class.OCCURRENCES_PER_SET:
                 if raiseexceptions:
@@ -1134,7 +1134,7 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             if Class.addable(self, set):
-                if 'id' not in kwargs and 'generate_id_in' not in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS):
+                if 'id' not in kwargs and 'generate_id_in' not in kwargs and Class.REQUIRED_ATTRIBS and (Attrib.ID in Class.REQUIRED_ATTRIBS):
                     kwargs['generate_id_in'] = self
                 child = Class(self.doc, *args, **kwargs)
         elif args:
@@ -1215,7 +1215,7 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             if Class.addable(self, set):
-                if 'id' not in kwargs and 'generate_id_in' not in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
+                if 'id' not in kwargs and 'generate_id_in' not in kwargs and ((Class.REQUIRED_ATTRIBS and Attrib.ID in Class.REQUIRED_ATTRIBS) or (Class.OPTIONAL_ATTIBS and Attrib.ID in Class.OPTIONAL_ATTRIBS)):
                     kwargs['generate_id_in'] = self
                 child = Class(self.doc, *args, **kwargs)
         elif args:
@@ -1837,9 +1837,11 @@ class AbstractElement(object):
         except AttributeError:
             pass
 
+        if cls.REQUIRED_ATTRIBS is None: cls.REQUIRED_ATTRIBS = () #bit hacky
+
 
         attribs = []
-        if Attrib.ID in cls.REQUIRED_ATTRIBS:
+        if cls.REQUIRED_ATTRIBS and Attrib.ID in cls.REQUIRED_ATTRIBS:
             attribs.append( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") )
         elif Attrib.ID in cls.OPTIONAL_ATTRIBS:
             attribs.append( E.optional( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") ) )
