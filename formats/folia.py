@@ -1436,7 +1436,7 @@ class AbstractElement(object):
             if self.src:
                 attribs['{' + NSFOLIA + '}src'] = self.src
 
-        if not '{' + NSFOLIA + '}speaker' not in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}speaker' not in attribs: #do not override if caller already set it
             if self.speaker:
                 attribs['{' + NSFOLIA + '}speaker'] = self.speaker
 
