@@ -1043,9 +1043,9 @@ class AbstractElement(object):
                 else:
                     return False
 
-        if Class.OCCURRENCESPERSET > 0 and set and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
+        if Class.OCCURRENCES_PER_SET > 0 and set and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
             count = parent.count(Class,set,True, [True, AbstractStructureElement])
-            if count >= Class.OCCURRENCESPERSET:
+            if count >= Class.OCCURRENCES_PER_SET:
                 if raiseexceptions:
                     if parent.id:
                         extra = ' (id=' + parent.id + ')'
