@@ -6650,7 +6650,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-04 10:07:40, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-04 11:52:07, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7288,6 +7288,7 @@ Whitespace.XMLTAG = "whitespace"
 #------ Word -------
 Word.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part, PhonContent, Reference, String, TextContent,)
 Word.ANNOTATIONTYPE = AnnotationType.TOKEN
+Word.TEXTDELIMITER = " "
 Word.XMLTAG = "w"
 #------ WordReference -------
 WordReference.XMLTAG = "wref"
