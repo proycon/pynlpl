@@ -6650,7 +6650,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-04 15:58:30, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-04 17:47:32, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7103,7 +7103,7 @@ Metric.XMLTAG = "metric"
 ModalityFeature.SUBSET = "modality"
 ModalityFeature.XMLTAG = None
 #------ Morpheme -------
-Morpheme.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, FunctionFeature, Metric, Part, PhonContent, String, TextContent,)
+Morpheme.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, FunctionFeature, Metric, Morpheme, Part, PhonContent, String, TextContent,)
 Morpheme.ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
 Morpheme.TEXTDELIMITER = ""
 Morpheme.XMLTAG = "morpheme"
@@ -7145,7 +7145,7 @@ PhonContent.PRINTABLE = False
 PhonContent.SPEAKABLE = True
 PhonContent.XMLTAG = "ph"
 #------ Phoneme -------
-Phoneme.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, FunctionFeature, Metric, Part, PhonContent, String, TextContent,)
+Phoneme.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, FunctionFeature, Metric, Part, PhonContent, Phoneme, String, TextContent,)
 Phoneme.ANNOTATIONTYPE = AnnotationType.PHONOLOGICAL
 Phoneme.TEXTDELIMITER = ""
 Phoneme.XMLTAG = "phoneme"
@@ -7189,7 +7189,7 @@ Sentence.ANNOTATIONTYPE = AnnotationType.SENTENCE
 Sentence.TEXTDELIMITER = " "
 Sentence.XMLTAG = "s"
 #------ Speech -------
-Speech.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Division, Entry, Event, Example, Feature, Gap, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, String, TextContent, Utterance, Word,)
+Speech.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Division, Entry, Event, Example, External, Feature, Gap, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, String, TextContent, Utterance, Word,)
 Speech.TEXTDELIMITER = "\n\n\n"
 Speech.XMLTAG = "speech"
 #------ String -------
@@ -7233,7 +7233,7 @@ Term.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, 
 Term.ANNOTATIONTYPE = AnnotationType.TERM
 Term.XMLTAG = "term"
 #------ Text -------
-Text.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Division, Entry, Event, Example, Feature, Figure, Gap, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, String, Table, TextContent, Word,)
+Text.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Division, Entry, Event, Example, External, Feature, Figure, Gap, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, String, Table, TextContent, Word,)
 Text.TEXTDELIMITER = "\n\n\n"
 Text.XMLTAG = "text"
 #------ TextContent -------
