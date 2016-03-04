@@ -110,7 +110,7 @@ class Attrib:
 #foliaspec:annotationtype
 #Defines all annotation types (as part of the AnnotationType enumeration)
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, ENTRY, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(44)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ERRORDETECTION, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, ENTRY, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(42)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -6650,7 +6650,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-03 17:06:13, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 0.12.2 on 2016-03-04 10:07:40, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -6678,6 +6678,7 @@ ANNOTATIONTYPE2XML = {
     AnnotationType.GAP:  "gap" ,
     AnnotationType.LANG:  "lang" ,
     AnnotationType.LEMMA:  "lemma" ,
+    AnnotationType.LINEBREAK:  "br" ,
     AnnotationType.LIST:  "list" ,
     AnnotationType.METRIC:  "metric" ,
     AnnotationType.MORPHOLOGICAL:  "morpheme" ,
@@ -7081,6 +7082,7 @@ LemmaAnnotation.XMLTAG = "lemma"
 LevelFeature.SUBSET = "level"
 LevelFeature.XMLTAG = None
 #------ Linebreak -------
+Linebreak.ANNOTATIONTYPE = AnnotationType.LINEBREAK
 Linebreak.TEXTDELIMITER = ""
 Linebreak.XMLTAG = "br"
 #------ List -------
