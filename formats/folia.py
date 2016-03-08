@@ -6374,8 +6374,11 @@ def relaxng(filename=None):
                     name='metadata',
                     #ns=NSFOLIA,
                 ),
-                E.oneOrMore(
+                E.zeroOrMore(
                     E.ref(name='text'),
+                ),
+                E.zeroOrMore(
+                    E.ref(name='speech'),
                 ),
                 name='FoLiA',
                 ns = NSFOLIA
