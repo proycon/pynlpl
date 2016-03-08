@@ -1913,7 +1913,7 @@ class AbstractElement(object):
                                         else:
                                             elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
                                             if c2.XMLTAG == 'item': #nasty hack for backward compatibility with deprecated listitem element
-                                                elements.append( E.zeroOrMore( E.ref(name='listitem') ) )
+                                                elements.append( E.zeroOrMore( E.ref(name='listitem') ) ) 
                                         done[c2.XMLTAG] = True
                                 except AttributeError:
                                     continue
@@ -1933,8 +1933,9 @@ class AbstractElement(object):
                                 elements.append( E.optional( E.ref(name=c.XMLTAG) ) )
                             else:
                                 elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )
-                                if c.XMLTAG == 'item': #nasty hack for backward compatibility with deprecated listitem element
-                                    elements.append( E.zeroOrMore( E.ref(name='listitem') ) )
+                                if c.XMLTAG == 'item':
+                                    #nasty hack for backward compatibility with deprecated listitem element
+                                    elements.append( E.zeroOrMore( E.ref(name='listitem') )  )
                             done[c.XMLTAG] = True
                     except AttributeError:
                         continue
@@ -6378,11 +6379,13 @@ def relaxng(filename=None):
                     name='metadata',
                     #ns=NSFOLIA,
                 ),
-                E.zeroOrMore(
-                    E.ref(name='text'),
-                ),
-                E.zeroOrMore(
-                    E.ref(name='speech'),
+                E.interleave(
+                    E.zeroOrMore(
+                        E.ref(name='text'),
+                    ),
+                    E.zeroOrMore(
+                        E.ref(name='speech'),
+                    ),
                 ),
                 name='FoLiA',
                 ns = NSFOLIA
@@ -6399,6 +6402,7 @@ def relaxng(filename=None):
                 if c.XMLTAG == 'item': #nasty backward-compatibility hack to allow deprecated listitem element (actually called item)
                     definition_alias = c.relaxng()
                     definition_alias.set('name','listitem')
+                    definition_alias[0].set('name','listitem')
                     grammar.append( definition_alias )
 
     #for e in relaxng_imdi():
