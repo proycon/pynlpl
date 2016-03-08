@@ -1912,6 +1912,8 @@ class AbstractElement(object):
                                             elements.append( E.optional( E.ref(name=c2.XMLTAG) ) )
                                         else:
                                             elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
+                                            if c2.XMLTAG == 'item': #nasty hack for backward compatibility with deprecated listitem element
+                                                elements.append( E.zeroOrMore( E.ref(name='listitem') ) )
                                         done[c2.XMLTAG] = True
                                 except AttributeError:
                                     continue
@@ -1931,6 +1933,8 @@ class AbstractElement(object):
                                 elements.append( E.optional( E.ref(name=c.XMLTAG) ) )
                             else:
                                 elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )
+                                if c.XMLTAG == 'item': #nasty hack for backward compatibility with deprecated listitem element
+                                    elements.append( E.zeroOrMore( E.ref(name='listitem') ) )
                             done[c.XMLTAG] = True
                     except AttributeError:
                         continue
@@ -6390,7 +6394,12 @@ def relaxng(filename=None):
         if 'relaxng' in dir(c):
             if c.relaxng and c.XMLTAG and not c.XMLTAG in done:
                 done[c.XMLTAG] = True
-                grammar.append( c.relaxng() )
+                definition = c.relaxng()
+                grammar.append( definition )
+                if c.XMLTAG == 'item': #nasty backward-compatibility hack to allow deprecated listitem element (actually called item)
+                    definition_alias = c.relaxng()
+                    definition_alias.set('name','listitem')
+                    grammar.append( definition_alias )
 
     #for e in relaxng_imdi():
     #    grammar.append(e)
