@@ -1215,7 +1215,7 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             if Class.addable(self, set):
-                if 'id' not in kwargs and 'generate_id_in' not in kwargs and ((Class.REQUIRED_ATTRIBS and Attrib.ID in Class.REQUIRED_ATTRIBS) or (Class.OPTIONAL_ATTIBS and Attrib.ID in Class.OPTIONAL_ATTRIBS)):
+                if 'id' not in kwargs and 'generate_id_in' not in kwargs and ((Class.REQUIRED_ATTRIBS and Attrib.ID in Class.REQUIRED_ATTRIBS) or (Class.OPTIONAL_ATTRIBS and Attrib.ID in Class.OPTIONAL_ATTRIBS)):
                     kwargs['generate_id_in'] = self
                 child = Class(self.doc, *args, **kwargs)
         elif args:
