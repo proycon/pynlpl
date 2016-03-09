@@ -5496,6 +5496,7 @@ class Document(object):
             print("[PyNLPl FoLiA DEBUG] Processing Annotation Declarations",file=stderr)
         self.declareprocessed = True
         for subnode in node: #pylint: disable=too-many-nested-blocks
+            if not isinstance(subnode.tag, str): continue
             if subnode.tag[:25] == '{' + NSFOLIA + '}' and subnode.tag[-11:] == '-annotation':
                 prefix = subnode.tag[25:][:-11]
                 type = None
