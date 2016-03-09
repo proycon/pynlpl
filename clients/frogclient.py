@@ -55,7 +55,7 @@ class FrogClient:
         done = False
         while not done:
             data = b""
-            while not data or data[-1] != b'\n':
+            while not data.endswith(b'\n'):
                 moredata = self.socket.recv(self.BUFSIZE)
                 if not moredata: break
                 data += moredata
