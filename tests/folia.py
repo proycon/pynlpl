@@ -855,6 +855,18 @@ class Test2Sanity(unittest.TestCase):
         l = self.doc['sandbox.list.1'] #this is a bit of a malformed paragraph due to the explicit whitespace and linebreaks in it, but makes for a nice test:
         self.assertEqual( l.text(), "Eerste testitem\nTweede testitem")
 
+    def test047_alignment(self):
+        """Sanity check - Alignment"""
+        word = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.10']
+        a = word.annotation(folia.Alignment)
+        self.assertEqual( a.cls, "reference")
+        print(a.xmlstring(),file=sys.stderr)
+        aref = next(a.select(folia.AlignReference,ignore=False))
+        self.assertEqual( aref.id,"WR-P-E-J-0000000001.p.1.s.3.w.5" )
+        self.assertEqual( aref.type, folia.Word )
+        self.assertEqual( aref.t,"handschriften" )
+
+
     def test099_write(self):
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
