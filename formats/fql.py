@@ -35,7 +35,7 @@ MASK_LITERAL = 1
 MASK_EXPRESSION = 2
 MAXEXPANSION = 99
 
-FOLIAVERSION = '0.12.1'
+FOLIAVERSION = '1.0.0'
 FQLVERSION = '0.2.5'
 
 class SyntaxError(Exception):
@@ -1033,7 +1033,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                     actionassignments['set'] = query.defaultsets[action.focus.Class.XMLTAG]
                 except KeyError:
                     actionassignments['set'] = query.doc.defaultset(action.focus.Class)
-            if folia.Attrib.ID in action.focus.Class.REQUIRED_ATTRIBS:
+            if action.focus.Class.REQUIRED_ATTRIBS and folia.Attrib.ID in action.focus.Class.REQUIRED_ATTRIBS:
                 actionassignments['id'] = getrandomid(query, "corrected." + action.focus.Class.XMLTAG + ".")
 
         kwargs = {}
@@ -1108,7 +1108,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                         subassignments['set'] = query.doc.defaultset(action.focus.Class)
                 if focus and not self.bare: #copy all data within (we have to do this again for each suggestion as it will generate different ID suffixes)
                     inheritchildren = list(focus.copychildren(query.doc, True))
-                if folia.Attrib.ID in action.focus.Class.REQUIRED_ATTRIBS:
+                if action.focus.Class.REQUIRED_ATTRIBS and folia.Attrib.ID in action.focus.Class.REQUIRED_ATTRIBS:
                     subassignments['id'] = getrandomid(query, "suggestion.")
                 kwargs['suggestions'].append( folia.Suggestion(query.doc, action.focus.Class(query.doc, *inheritchildren,**subassignments), **suggestionassignments )   )
 
@@ -1276,7 +1276,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                         subassignments['set'] = query.doc.defaultset(action.focus.Class)
                 focus = action.focus
                 focus.autodeclare(query.doc)
-                if folia.Attrib.ID in focus.Class.REQUIRED_ATTRIBS:
+                if focus.Class.REQUIRED_ATTRIBS and folia.Attrib.ID in focus.Class.REQUIRED_ATTRIBS:
                     subassignments['id'] = getrandomid(query, "suggestion.")
                 suggestionchildren.append( focus.Class(query.doc, **subassignments))
                 action = action.nextaction

@@ -4,8 +4,9 @@
 #   by Maarten van Gompel
 #   Centre for Language Studies
 #   Radboud University Nijmegen
-#   http://proycon.github.com/folia
-#   http://www.github.com/proycon/pynlpl
+#
+#   https://proycon.github.io/folia
+#   httsp://github.com/proycon/pynlpl
 #   proycon AT anaproy DOT nl
 #
 #   Module for reading, editing and writing FoLiA XML
@@ -15,40 +16,17 @@
 #----------------------------------------------------------------
 
 #pylint: disable=redefined-builtin,trailing-whitespace,superfluous-parens,bad-classmethod-argument
+#wrong-import-order,wrong-import-position,ungrouped-imports
 
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
-from pynlpl.common import u, isstring
+
 import sys
-if sys.version < '3':
-    from codecs import getwriter
-    stderr = getwriter('utf-8')(sys.stderr)
-    stdout = getwriter('utf-8')(sys.stdout)
-else:
-    stderr = sys.stderr
-    stdout = sys.stdout
-
-from lxml import etree as ElementTree
-LXE=True
-#import xml.etree.cElementTree as ElementTree
-#LXE = False
-
-from lxml.builder import ElementMaker
-if sys.version < '3':
-    from StringIO import StringIO #pylint: disable=import-error
-    from urllib import urlopen #pylint: disable=no-name-in-module
-else:
-    from io import StringIO,  BytesIO
-    from urllib.request import urlopen #pylint: disable=E0611
-
 
 from copy import copy, deepcopy
-from pynlpl.formats.imdi import RELAXNG_IMDI
 from datetime import datetime
-#from dateutil.parser import parse as parse_datetime
-import pynlpl.algorithms
 import inspect
 import itertools
 import glob
@@ -65,24 +43,49 @@ import gzip
 import random
 
 
-FOLIAVERSION = '0.12.2'
-LIBVERSION = '0.12.2.74' #== FoLiA version + library revision
 
+from lxml import etree as ElementTree
+
+from lxml.builder import ElementMaker
+if sys.version < '3':
+    from StringIO import StringIO #pylint: disable=import-error,wrong-import-order
+    from urllib import urlopen #pylint: disable=no-name-in-module,wrong-import-order
+else:
+    from io import StringIO,  BytesIO #pylint: disable=wrong-import-order,ungrouped-imports
+    from urllib.request import urlopen #pylint: disable=E0611,wrong-import-order,ungrouped-imports
+
+if sys.version < '3':
+    from codecs import getwriter #pylint: disable=wrong-import-order,ungrouped-imports
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
+
+from pynlpl.common import u, isstring
+import pynlpl.algorithms
+
+
+LXE=True #use lxml instead of built-in ElementTree (default)
+
+#foliaspec:version:FOLIAVERSION
+#The FoLiA version
+FOLIAVERSION = "1.0.0"
+
+LIBVERSION = FOLIAVERSION + '.73' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
+#foliaspec:namespace:NSFOLIA
+#The FoLiA XML namespace
 NSFOLIA = "http://ilk.uvt.nl/folia"
+
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 nslen = len(NSFOLIA) + 2
 nslendcoi = len(NSDCOI) + 2
-STRUCTURESCOPE = [] #redefined later
 
 TMPDIR = "/tmp/" #will be used for downloading temporary data (external subdocuments)
 
-defaultignorelist = [] #Will be set at end of file! Only here so pylint won't complain
-#default ignore list for token annotation
-defaultignorelist_annotations = [] #Will be set at end of file! Only here so pylint won't complain
-defaultignorelist_structure = [] #Will be set at end of file! Only here so pylint won't complain
 
 ILLEGAL_UNICODE_CONTROL_CHARACTERS = {} #XML does not like unicode control characters
 for ordinal in range(0x20):
@@ -99,13 +102,15 @@ class AnnotatorType:
     MANUAL = 2
 
 
+#foliaspec:attributes
+#Defines all common FoLiA attributes (as part of the Attrib enumeration)
 class Attrib:
-    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, SETONLY, BEGINTIME, ENDTIME, SRC, SPEAKER = range(11) #for later
+    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, BEGINTIME, ENDTIME, SRC, SPEAKER = range(10)
 
-Attrib.ALL = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER)
-
+#foliaspec:annotationtype
+#Defines all annotation types (as part of the AnnotationType enumeration)
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, SUGGESTION, ERRORDETECTION, ALTERNATIVE, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(43)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ERRORDETECTION, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, ENTRY, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(42)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -182,10 +187,16 @@ def parsetime(s):
         raise ValueError("Invalid timestamp, must be in HH:MM:SS.mmm format: " + s)
 
 
-def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs): 
+def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
     """Internal function, parses common FoLiA attributes and sets up the instance accordingly"""
 
     object.doc = doc #The FoLiA root document
+
+    if required is None:
+        required = tuple()
+    if allowed is None:
+        allowed = tuple()
+
     supported = required + allowed
 
 
@@ -196,7 +207,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
 
     if 'id' in kwargs:
-        if not Attrib.ID in supported:
+        if Attrib.ID not in supported:
             raise ValueError("ID is not supported on " + object.__class__.__name__)
         isncname(kwargs['id'])
         object.id = kwargs['id']
@@ -207,7 +218,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.id = None
 
     if 'set' in kwargs:
-        if not Attrib.CLASS in supported and not Attrib.SETONLY in supported:
+        if Attrib.CLASS not in supported and not object.SETONLY:
             raise ValueError("Set is not supported on " + object.__class__.__name__)
         if not kwargs['set']:
             object.set ="undefined"
@@ -226,7 +237,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         object.set = list(doc.annotationdefaults[annotationtype].keys())[0]
     elif object.ANNOTATIONTYPE == AnnotationType.TEXT:
         object.set = "undefined" #text content needs never be declared (for backward compatibility) and is in set 'undefined'
-    elif Attrib.CLASS in required or Attrib.SETONLY in required:
+    elif Attrib.CLASS in required: #or (hasattr(object,'SETONLY') and object.SETONLY):
         raise ValueError("Set is required for " + object.__class__.__name__)
 
 
@@ -416,7 +427,7 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
 def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-to-parse-xsddatetime-format
     """Returns (datetime, tz offset in minutes) or (None, None)."""
-    m = re.match(""" ^
+    m = re.match(r""" ^
         (?P<year>-?[0-9]{4}) - (?P<month>[0-9]{2}) - (?P<day>[0-9]{2})
         T (?P<hour>[0-9]{2}) : (?P<minute>[0-9]{2}) : (?P<second>[0-9]{2})
         (?P<microsecond>\.[0-9]{1,6})?
@@ -426,10 +437,10 @@ def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-t
         $ """, s, re.X)
     if m is not None:
         values = m.groupdict()
-        if values["tz"] in ("Z", None):
-            tz = 0
-        else:
-            tz = int(values["tz_hr"]) * 60 + int(values["tz_min"])
+        #if values["tz"] in ("Z", None):
+        #    tz = 0
+        #else:
+        #    tz = int(values["tz_hr"]) * 60 + int(values["tz_min"])
         if values["microsecond"] is None:
             values["microsecond"] = 0
         else:
@@ -475,11 +486,11 @@ def makeelement(E, tagname, **kwargs):
             for k,v in kwargs.items():
                 kwargs2[k.encode('utf-8')] = v.encode('utf-8')
                 #return E._makeelement(tagname.encode('utf-8'), **{ k.encode('utf-8'): v.encode('utf-8') for k,v in kwargs.items() } )   #In one go fails on some older Python 2.6s
-            return E._makeelement(tagname.encode('utf-8'), **kwargs2 )
+            return E._makeelement(tagname.encode('utf-8'), **kwargs2 ) #pylint: disable=protected-access
         except ValueError as e:
             try:
                 #older versions of lxml may misbehave, compensate:
-                e =  E._makeelement(tagname.encode('utf-8'))
+                e =  E._makeelement(tagname.encode('utf-8')) #pylint: disable=protected-access
                 for k,v in kwargs.items():
                     e.attrib[k.encode('utf-8')] = v
                 return e
@@ -489,19 +500,19 @@ def makeelement(E, tagname, **kwargs):
                 print("kwargs=",kwargs,file=stderr)
                 raise e
     else:
-        return E._makeelement(tagname,**kwargs)
+        return E._makeelement(tagname,**kwargs) #pylint: disable=protected-access
 
 
 def commonancestors(Class, *args):
     """Generator over common ancestors, of the Class specified, of the current element and the other specified elements"""
-    commonancestors = None
+    commonancestors = None #pylint: disable=redefined-outer-name
     for sibling in args:
         ancestors = list( sibling.ancestors(Class) )
         if commonancestors is None:
             commonancestors = copy(ancestors)
         else:
             removeancestors = []
-            for a in commonancestors:
+            for a in commonancestors: #pylint: disable=not-an-iterable
                 if not a in ancestors:
                     removeancestors.append(a)
             for a in removeancestors:
@@ -512,28 +523,6 @@ def commonancestors(Class, *args):
 
 class AbstractElement(object):
     """This is the abstract base class from which all FoLiA elements are derived. This class should not be instantiated directly, but can useful if you want to check if a variable is an instance of any FoLiA element: isinstance(x, AbstractElement). It contains methods and variables also commonly inherited."""
-
-
-    REQUIRED_ATTRIBS = () #List of required attributes (Members from the Attrib class)
-    OPTIONAL_ATTRIBS = () #List of optional attributes (Members from the Attrib class)
-    ACCEPTED_DATA = () #List of accepted data, classes inherited from AbstractElement
-    REQUIRED_DATA = () #List of required data, classes inherited from AbstractElement
-    ANNOTATIONTYPE = None #Annotation type (Member of AnnotationType class)
-    XMLTAG = None #XML-tag associated with this element
-    OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited, default=0)
-    OCCURRENCESPERSET = 1 #Number of times this element may occur per set (0=unlimited, default=1)
-
-    TEXTDELIMITER = None #Delimiter to use when dynamically gathering text from child elements
-
-    PRINTABLE = False #Is this element printable (aka, can its text() method be called?)
-    SPEAKABLE = False #Is this element readable phonetically (aka, can its phon() method be called?)
-
-    AUTH = True #Authoritative by default. Elements the parser should skip on normal queries are non-authoritative (such as original, alternative)
-    TEXTCONTAINER = False #Text containers directly take textual content. (t is a TEXTCONTAINER)
-    PHONCONTAINER = False #Phonetic containers directly take phonetic content. (ph is a PHONCONTAINER)
-
-    ROOTELEMENT = True #Is this the main/root element representaive of the annotation type? Not including annotation layers
-    XLINK = False #Can this element carry simple xlink references?
 
     def __init__(self, doc, *args, **kwargs):
         if not isinstance(doc, Document) and not doc is None:
@@ -778,7 +767,6 @@ class AbstractElement(object):
     def gettextdelimiter(self, retaintokenisation=False):
         """May return a customised text delimiter instead of the default for this class."""
         if self.TEXTDELIMITER is None:
-            delimiter = ""
             #no text delimiter of itself, recurse into children to inherit delimiter
             for child in reversed(self):
                 if isinstance(child, AbstractElement):
@@ -813,11 +801,11 @@ class AbstractElement(object):
     def __ne__(self, other):
         return not (self == other)
 
-    def __eq__(self, other):
+    def __eq__(self, other): #pylint: disable=too-many-return-statements
         if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - " + repr(self) + " vs " + repr(other),file=stderr)
 
         #Check if we are of the same time
-        if type(self) != type(other):
+        if type(self) != type(other): #pylint: disable=unidiomatic-typecheck
             if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - Type mismatch: " + str(type(self)) + " vs " + str(type(other)),file=stderr)
             return False
 
@@ -916,7 +904,7 @@ class AbstractElement(object):
             for e in self:
                 try:
                     e.addidsuffix(idsuffix, recursive)
-                except:
+                except Exception:
                     pass
 
     def setparents(self):
@@ -935,7 +923,7 @@ class AbstractElement(object):
             if isinstance(c, AbstractElement):
                 c.setdoc(newdoc)
 
-    def hastext(self,cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT):
+    def hastext(self,cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT): #pylint: disable=too-many-return-statements
         """Does this element have text (of the specified class)
 
         By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
@@ -948,24 +936,21 @@ class AbstractElement(object):
         else:
             try:
                 if strict:
-                    r = self.textcontent(cls, correctionhandling)
+                    self.textcontent(cls, correctionhandling) #will raise NoSuchTextException when not found
                     return True
                 else:
-                    if self.TEXTCONTAINER:
-                        return True
-                    else:
-                        #Check children
-                        for e in self:
-                            if e.PRINTABLE and not isinstance(e, TextContent):
-                                if e.hastext(cls, strict, correctionhandling):
-                                    return True
+                    #Check children
+                    for e in self:
+                        if e.PRINTABLE and not isinstance(e, TextContent):
+                            if e.hastext(cls, strict, correctionhandling):
+                                return True
 
-                        r = self.textcontent(cls, correctionhandling)  #will raise NoSuchTextException when not found
-                        return True
+                    self.textcontent(cls, correctionhandling)  #will raise NoSuchTextException when not found
+                    return True
             except NoSuchText:
                 return False
 
-    def hasphon(self,cls='current',strict=True,correctionhandling=CorrectionHandling.CURRENT):
+    def hasphon(self,cls='current',strict=True,correctionhandling=CorrectionHandling.CURRENT): #pylint: disable=too-many-return-statements
         """Does this element have phonetic content (of the specified class)
 
         By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
@@ -978,20 +963,17 @@ class AbstractElement(object):
         else:
             try:
                 if strict:
-                    r = self.phoncontent(cls, correctionhandling)
+                    self.phoncontent(cls, correctionhandling)
                     return True
                 else:
-                    if self.PHONCONTAINER:
-                        return True
-                    else:
-                        #Check children
-                        for e in self:
-                            if e.SPEAKABLE and not isinstance(e, PhonContent):
-                                if e.hasphon(cls, strict, correctionhandling):
-                                    return True
+                    #Check children
+                    for e in self:
+                        if e.SPEAKABLE and not isinstance(e, PhonContent):
+                            if e.hasphon(cls, strict, correctionhandling):
+                                return True
 
-                        r = self.phoncontent(cls)  #will raise NoSuchTextException when not found
-                        return True
+                    self.phoncontent(cls)  #will raise NoSuchTextException when not found
+                    return True
             except NoSuchPhon:
                 return False
 
@@ -1034,7 +1016,7 @@ class AbstractElement(object):
                         found = True
                         break
                     c = c.__base__
-            except:
+            except Exception:
                 pass
             if not found:
                 if raiseexceptions:
@@ -1061,9 +1043,9 @@ class AbstractElement(object):
                 else:
                     return False
 
-        if Class.OCCURRENCESPERSET > 0 and set and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
+        if Class.OCCURRENCES_PER_SET > 0 and set and Class.REQUIRED_ATTRIBS and Attrib.CLASS in Class.REQUIRED_ATTRIBS:
             count = parent.count(Class,set,True, [True, AbstractStructureElement])
-            if count >= Class.OCCURRENCESPERSET:
+            if count >= Class.OCCURRENCES_PER_SET:
                 if raiseexceptions:
                     if parent.id:
                         extra = ' (id=' + parent.id + ')'
@@ -1144,7 +1126,7 @@ class AbstractElement(object):
         else:
             try:
                 set = child.set
-            except:
+            except AttributeError:
                 set = None
 
         #Check if a Class rather than an instance was passed
@@ -1152,7 +1134,7 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             if Class.addable(self, set):
-                if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS):
+                if 'id' not in kwargs and 'generate_id_in' not in kwargs and ((Class.REQUIRED_ATTRIBS and (Attrib.ID in Class.REQUIRED_ATTRIBS)) or Class.AUTO_GENERATE_ID):
                     kwargs['generate_id_in'] = self
                 child = Class(self.doc, *args, **kwargs)
         elif args:
@@ -1174,7 +1156,7 @@ class AbstractElement(object):
                 child.parent = self
             elif PhonContent in self.ACCEPTED_DATA:
                 #you can pass strings directly (just for convenience), will be made into phoncontent automatically (note that textcontent always takes precedence, so you most likely will have to do it explicitly)
-                child = PhonContent(self.doc, child )
+                child = PhonContent(self.doc, child ) #pylint: disable=redefined-variable-type 
                 self.data.append(child)
                 child.parent = self
             else:
@@ -1225,7 +1207,7 @@ class AbstractElement(object):
         else:
             try:
                 set = child.set
-            except:
+            except AttributeError:
                 set = None
 
         #Check if a Class rather than an instance was passed
@@ -1233,7 +1215,7 @@ class AbstractElement(object):
         if inspect.isclass(child):
             Class = child
             if Class.addable(self, set):
-                if not 'id' in kwargs and not 'generate_id_in' in kwargs and (Attrib.ID in Class.REQUIRED_ATTRIBS or Attrib.ID in Class.OPTIONAL_ATTRIBS):
+                if 'id' not in kwargs and 'generate_id_in' not in kwargs and ((Class.REQUIRED_ATTRIBS and Attrib.ID in Class.REQUIRED_ATTRIBS) or (Class.OPTIONAL_ATTRIBS and Attrib.ID in Class.OPTIONAL_ATTRIBS)):
                     kwargs['generate_id_in'] = self
                 child = Class(self.doc, *args, **kwargs)
         elif args:
@@ -1247,7 +1229,7 @@ class AbstractElement(object):
             child.parent = self
         elif Class or (isinstance(child, AbstractElement) and child.__class__.addable(self, set)): #(prevents calling addable again if already done above)
             if 'alternative' in kwargs and kwargs['alternative']:
-                child = Alternative(self.doc, child, generate_id_in=self)
+                child = Alternative(self.doc, child, generate_id_in=self) #pylint: disable=redefined-variable-type
             self.data.insert(index, child)
             child.parent = self
         else:
@@ -1268,7 +1250,7 @@ class AbstractElement(object):
                 layerclass = ANNOTATIONTYPE2LAYERCLASS[child.ANNOTATIONTYPE]
                 addspanfromspanned = True
 
-        if not addspanfromspanned:
+        if not addspanfromspanned: #pylint: disable=too-many-nested-blocks
             return self.append(child,*args,**kwargs)
         else:
             #collect ancestors of the current element,
@@ -1330,7 +1312,7 @@ class AbstractElement(object):
         else:
             try:
                 set = child.set
-            except:
+            except AttributeError:
                 set = None
 
         if inspect.isclass(child):
@@ -1403,7 +1385,7 @@ class AbstractElement(object):
             attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
 
         #Some attributes only need to be added if they are not the same as what's already set in the declaration
-        if not '{' + NSFOLIA + '}set' in attribs: #do not override if overloaded function already set it
+        if '{' + NSFOLIA + '}set' not in attribs: #do not override if overloaded function already set it
             try:
                 if self.set:
                     if not self.ANNOTATIONTYPE in self.doc.annotationdefaults or len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or list(self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys())[0] != self.set:
@@ -1412,14 +1394,14 @@ class AbstractElement(object):
             except AttributeError:
                 pass
 
-        if not '{' + NSFOLIA + '}class' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}class' not in attribs: #do not override if caller already set it
             try:
                 if self.cls:
                     attribs['{' + NSFOLIA + '}class'] = self.cls
             except AttributeError:
                 pass
 
-        if not '{' + NSFOLIA + '}annotator' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}annotator' not in attribs: #do not override if caller already set it
             try:
                 if self.annotator and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'annotator' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.annotator != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['annotator'])):
                     attribs['{' + NSFOLIA + '}annotator'] = self.annotator
@@ -1431,38 +1413,38 @@ class AbstractElement(object):
             except AttributeError:
                 pass
 
-        if not '{' + NSFOLIA + '}confidence' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}confidence' not in attribs: #do not override if caller already set it
             if self.confidence:
                 attribs['{' + NSFOLIA + '}confidence'] = str(self.confidence)
 
-        if not '{' + NSFOLIA + '}n' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}n' not in attribs: #do not override if caller already set it
             if self.n:
                 attribs['{' + NSFOLIA + '}n'] = str(self.n)
 
-        if not '{' + NSFOLIA + '}auth' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}auth' not in attribs: #do not override if caller already set it
             try:
                 if not self.AUTH or not self.auth: #(former is static, latter isn't)
                     attribs['{' + NSFOLIA + '}auth'] = 'no'
             except AttributeError:
                 pass
 
-        if not '{' + NSFOLIA + '}datetime' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}datetime' not in attribs: #do not override if caller already set it
             if self.datetime and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'datetime' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.datetime != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['datetime'])):
                 attribs['{' + NSFOLIA + '}datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
 
-        if not '{' + NSFOLIA + '}src' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}src' not in attribs: #do not override if caller already set it
             if self.src:
                 attribs['{' + NSFOLIA + '}src'] = self.src
 
-        if not '{' + NSFOLIA + '}speaker' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}speaker' not in attribs: #do not override if caller already set it
             if self.speaker:
                 attribs['{' + NSFOLIA + '}speaker'] = self.speaker
 
-        if not '{' + NSFOLIA + '}begintime' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}begintime' not in attribs: #do not override if caller already set it
             if self.begintime:
                 attribs['{' + NSFOLIA + '}begintime'] = "%02d:%02d:%02d.%03d" % self.begintime
 
-        if not '{' + NSFOLIA + '}endtime' in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}endtime' not in attribs: #do not override if caller already set it
             if self.endtime:
                 attribs['{' + NSFOLIA + '}endtime'] = "%02d:%02d:%02d.%03d" % self.endtime
 
@@ -1553,7 +1535,7 @@ class AbstractElement(object):
         if self.datetime:
             jsonnode['datetime'] = self.datetime.strftime("%Y-%m-%dT%H:%M:%S")
 
-        if recurse:
+        if recurse: #pylint: disable=too-many-nested-blocks
             jsonnode['children'] = []
             if self.TEXTCONTAINER:
                 jsonnode['text'] = self.text()
@@ -1583,7 +1565,6 @@ class AbstractElement(object):
 
     def xmlstring(self, pretty_print=False):
         """Serialises this FoLiA element to XML, returns a (unicode) string with XML representation for this element and all its children."""
-        global LXE
         s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')
         if sys.version < '3':
             if isinstance(s, str):
@@ -1627,11 +1608,11 @@ class AbstractElement(object):
         """
 
         #if ignorelist is True:
-        #    ignorelist = defaultignorelist
+        #    ignorelist = default_ignore
 
         if not node:
             node = self
-        for e in self.data:
+        for e in self.data: #pylint: disable=too-many-nested-blocks
             if (not self.TEXTCONTAINER and not self.PHONCONTAINER) or isinstance(e, AbstractElement):
                 if ignore is True:
                     try:
@@ -1662,7 +1643,7 @@ class AbstractElement(object):
                         try:
                             if e.set != set:
                                 continue
-                        except:
+                        except AttributeError:
                             continue
                     yield e
                 if recursive:
@@ -1671,7 +1652,7 @@ class AbstractElement(object):
                             try:
                                 if e2.set != set:
                                     continue
-                            except:
+                            except AttributeError:
                                 continue
                         yield e2
 
@@ -1679,11 +1660,11 @@ class AbstractElement(object):
         """Like select, but instead of returning the elements, it merely counts them"""
         return sum(1 for i in self.select(Class,set,recursive,ignore,node) )
 
-    def items(self, founditems=[]):
+    def items(self, founditems=[]): #pylint: disable=dangerous-default-value
         """Returns a depth-first flat list of *all* items below this element (not limited to AbstractElement)"""
         l = []
         for e in self.data:
-            if not e in founditems: #prevent going in recursive loops
+            if  e not in founditems: #prevent going in recursive loops
                 l.append(e)
                 if isinstance(e, AbstractElement):
                     l += e.items(l)
@@ -1696,7 +1677,7 @@ class AbstractElement(object):
         for i, c in enumerate(self.data):
             if c is child:
                 return i
-        if recursive:
+        if recursive:  #pylint: disable=too-many-nested-blocks
             for i, c in enumerate(self.data):
                 if ignore is True:
                     try:
@@ -1745,18 +1726,18 @@ class AbstractElement(object):
             order = reversed
             descendindex = -1
         else:
-            order = lambda x: x
+            order = lambda x: x #pylint: disable=redefined-variable-type
             descendindex = 0
 
         child = self
         parent = self.parent
-        while parent:
+        while parent: #pylint: disable=too-many-nested-blocks
             if len(parent) > 1:
                 returnnext = False
                 for e in order(parent):
                     if e is child:
                         returnnext = True
-                    elif returnnext and e.auth and not isinstance(e,AbstractAnnotationLayer) and (not structural or (structural and (not isinstance(e,(AbstractAnnotation,TextContent)) ) )):
+                    elif returnnext and e.auth and not isinstance(e,AbstractAnnotationLayer) and (not structural or (structural and (not isinstance(e,(AbstractTokenAnnotation,TextContent)) ) )):
                         if structural and isinstance(e,Correction):
                             if not list(e.select(AbstractStructureElement)): #skip-over non-structural correction
                                 continue
@@ -1856,9 +1837,12 @@ class AbstractElement(object):
         except AttributeError:
             pass
 
+        if cls.REQUIRED_ATTRIBS is None: cls.REQUIRED_ATTRIBS = () #bit hacky
+        if cls.OPTIONAL_ATTRIBS is None: cls.OPTIONAL_ATTRIBS = () #bit hacky
+
 
         attribs = []
-        if Attrib.ID in cls.REQUIRED_ATTRIBS:
+        if cls.REQUIRED_ATTRIBS and Attrib.ID in cls.REQUIRED_ATTRIBS:
             attribs.append( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") )
         elif Attrib.ID in cls.OPTIONAL_ATTRIBS:
             attribs.append( E.optional( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") ) )
@@ -1916,18 +1900,20 @@ class AbstractElement(object):
         if cls.TEXTCONTAINER or cls.PHONCONTAINER:
             elements.append( E.text() )
         done = {}
-        if includechildren:
+        if includechildren and cls.ACCEPTED_DATA: #pylint: disable=too-many-nested-blocks
             for c in cls.ACCEPTED_DATA:
                 if c.__name__[:8] == 'Abstract' and inspect.isclass(c):
                     for c2 in globals().values():
                         try:
                             if inspect.isclass(c2) and issubclass(c2, c):
                                 try:
-                                    if c2.XMLTAG and not c2.XMLTAG in done:
+                                    if c2.XMLTAG and c2.XMLTAG not in done:
                                         if c2.OCCURRENCES == 1:
                                             elements.append( E.optional( E.ref(name=c2.XMLTAG) ) )
                                         else:
                                             elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
+                                            if c2.XMLTAG == 'item': #nasty hack for backward compatibility with deprecated listitem element
+                                                elements.append( E.zeroOrMore( E.ref(name='listitem') ) ) 
                                         done[c2.XMLTAG] = True
                                 except AttributeError:
                                     continue
@@ -1937,8 +1923,8 @@ class AbstractElement(object):
                     attribs.append( E.optional( E.attribute(name=c.SUBSET)))  #features as attributes
                 else:
                     try:
-                        if c.XMLTAG and not c.XMLTAG in done:
-                            if c in cls.REQUIRED_DATA:
+                        if c.XMLTAG and c.XMLTAG not in done:
+                            if cls.REQUIRED_DATA and c in cls.REQUIRED_DATA:
                                 if c.OCCURRENCES == 1:
                                     elements.append( E.ref(name=c.XMLTAG) )
                                 else:
@@ -1947,6 +1933,9 @@ class AbstractElement(object):
                                 elements.append( E.optional( E.ref(name=c.XMLTAG) ) )
                             else:
                                 elements.append( E.zeroOrMore( E.ref(name=c.XMLTAG) ) )
+                                if c.XMLTAG == 'item':
+                                    #nasty hack for backward compatibility with deprecated listitem element
+                                    elements.append( E.zeroOrMore( E.ref(name='listitem') )  )
                             done[c.XMLTAG] = True
                     except AttributeError:
                         continue
@@ -1997,8 +1986,9 @@ class AbstractElement(object):
             args.append(node.text)
 
 
-        for subnode in node:
-            if not isinstance(subnode, ElementTree._Comment): #don't trip over comments
+        for subnode in node: #pylint: disable=too-many-nested-blocks
+            #don't trip over comments
+            if not isinstance(subnode, ElementTree._Comment): #pylint: disable=protected-access
                 if subnode.tag.startswith('{' + NSFOLIA + '}'):
                     if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:],file=stderr)
                     e = doc.parsexml(subnode, Class)
@@ -2131,8 +2121,6 @@ class AbstractElement(object):
 
 class Description(AbstractElement):
     """Description is an element that can be used to associate a description with almost any other FoLiA element"""
-    XMLTAG = 'desc'
-    OCCURRENCES = 1
 
     def __init__(self,doc, *args, **kwargs):
         """Required keyword arguments:
@@ -2221,12 +2209,12 @@ class AllowCorrections(object):
 
                 if 'current' in kwargs:
                     raise Exception("Can't set both new= and current= !")
-                if not 'original' in kwargs:
+                if 'original' not in kwargs:
                     kwargs['original'] = c.current()
 
                 c.remove(c.current())
         else:
-            if not 'id' in kwargs and not 'generate_id_in' in kwargs:
+            if 'id' not in kwargs and 'generate_id_in' not in kwargs:
                 kwargs['generate_id_in'] = self
             kwargs2 = copy(kwargs)
             for x in ['new','original','suggestion', 'suggestions','current', 'insertindex','nooriginal']:
@@ -2252,13 +2240,13 @@ class AllowCorrections(object):
             if not isinstance(kwargs['current'], list) and not isinstance(kwargs['current'], tuple): kwargs['current'] = [kwargs['current']] #support both lists (for multiple elements at once), as well as single element
             c.replace(Current(self.doc, *kwargs['current']))
             for o in kwargs['current']: #delete current from current element
-                if o in self and isinstance(o, AbstractElement):
+                if o in self and isinstance(o, AbstractElement): #pylint: disable=unsupported-membership-test
                     if insertindex == -1: insertindex = self.data.index(o)
                     self.remove(o)
             del kwargs['current']
         if 'new' in kwargs:
             if not isinstance(kwargs['new'], list) and not isinstance(kwargs['new'], tuple): kwargs['new'] = [kwargs['new']] #support both lists (for multiple elements at once), as well as single element
-            addnew = New(self.doc, *kwargs['new'])
+            addnew = New(self.doc, *kwargs['new']) #pylint: disable=redefined-variable-type
             c.replace(addnew)
             for current in c.select(Current): #delete current if present
                 c.remove(current)
@@ -2267,7 +2255,7 @@ class AllowCorrections(object):
             if not isinstance(kwargs['original'], list) and not isinstance(kwargs['original'], tuple): kwargs['original'] = [kwargs['original']] #support both lists (for multiple elements at once), as well as single element
             c.replace(Original(self.doc, *kwargs['original']))
             for o in kwargs['original']: #delete original from current element
-                if o in self and isinstance(o, AbstractElement):
+                if o in self and isinstance(o, AbstractElement): #pylint: disable=unsupported-membership-test
                     if insertindex == -1: insertindex = self.data.index(o)
                     self.remove(o)
             for o in kwargs['original']: #make sure IDs are still properly set after removal
@@ -2284,7 +2272,7 @@ class AllowCorrections(object):
                     kwargs2['cls'] = new.cls
                 try:
                     set = new.set
-                except:
+                except AttributeError:
                     set = None
                 #print("DEBUG: Finding replaceables within " + str(repr(self)) + " for ", str(repr(new)), " set " ,set , " args " ,repr(kwargs2),file=sys.stderr)
                 replaceables = new.__class__.findreplaceables(self, set, **kwargs2)
@@ -2300,7 +2288,7 @@ class AllowCorrections(object):
 
         if addnew and not nooriginal:
             for original in c.original():
-                if original in self:
+                if original in self: #pylint: disable=unsupported-membership-test
                     self.remove(original)
 
         if 'suggestion' in kwargs:
@@ -2367,7 +2355,7 @@ class AllowTokenAnnotation(AllowCorrections):
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
         found = False
-        for e in self.select(Class,set,True,defaultignorelist_annotations):
+        for e in self.select(Class,set,True,default_ignore_annotations):
             found = True
             yield e
         if not found:
@@ -2375,11 +2363,11 @@ class AllowTokenAnnotation(AllowCorrections):
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        return sum( 1 for _ in self.select(Class,set,True,defaultignorelist_annotations))
+        return sum( 1 for _ in self.select(Class,set,True,default_ignore_annotations))
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        for e in self.select(type,set,True,defaultignorelist_annotations):
+        for e in self.select(type,set,True,default_ignore_annotations):
             return e
         raise NoSuchAnnotation()
 
@@ -2394,7 +2382,7 @@ class AllowTokenAnnotation(AllowCorrections):
             Generator of Alternative elements
         """
 
-        for e in self.select(Alternative,None, True, []):
+        for e in self.select(Alternative,None, True, []): #pylint: disable=too-many-nested-blocks
             if Class is None:
                 yield e
             elif len(e) >= 1: #child elements?
@@ -2420,7 +2408,7 @@ class AllowGenerateID(object):
                 return self.maxid[xmltag]
             else:
                 return 0
-        except:
+        except AttributeError:
             return 0
 
 
@@ -2490,13 +2478,6 @@ class AllowGenerateID(object):
 class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Abstract element, all structure elements inherit from this class. Never instantiated directly."""
 
-    PRINTABLE = True #text content
-    SPEAKABLE = True #
-    TEXTDELIMITER = "\n\n" #bigger gap between structure elements
-    OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited, default=1)
-
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = Attrib.ALL
 
 
     def __init__(self, doc, *args, **kwargs):
@@ -2523,11 +2504,11 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         if index is None:
-            return self.select(Word,None,True,defaultignorelist_structure)
+            return self.select(Word,None,True,default_ignore_structure)
         else:
             if index < 0:
-                index = self.count(Word,None,True,defaultignorelist_structure) + index
-            for i, e in enumerate(self.select(Word,None,True,defaultignorelist_structure)):
+                index = self.count(Word,None,True,default_ignore_structure) + index
+            for i, e in enumerate(self.select(Word,None,True,default_ignore_structure)):
                 if i == index:
                     return e
             raise IndexError
@@ -2540,11 +2521,11 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the generator of all
         """
         if index is None:
-            return self.select(Paragraph,None,True,defaultignorelist_structure)
+            return self.select(Paragraph,None,True,default_ignore_structure)
         else:
             if index < 0:
-                index = self.count(Paragraph,None,True,defaultignorelist_structure) + index
-            for i,e in enumerate(self.select(Paragraph,None,True,defaultignorelist_structure)):
+                index = self.count(Paragraph,None,True,default_ignore_structure) + index
+            for i,e in enumerate(self.select(Paragraph,None,True,default_ignore_structure)):
                 if i == index:
                     return e
             raise IndexError
@@ -2556,11 +2537,11 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
             * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning a generator of all
         """
         if index is None:
-            return self.select(Sentence,None,True,defaultignorelist_structure)
+            return self.select(Sentence,None,True,default_ignore_structure)
         else:
             if index < 0:
-                index = self.count(Sentence,None,True,defaultignorelist_structure) + index
-            for i,e in enumerate(self.select(Sentence,None,True,defaultignorelist_structure)):
+                index = self.count(Sentence,None,True,default_ignore_structure) + index
+            for i,e in enumerate(self.select(Sentence,None,True,default_ignore_structure)):
                 if i == index:
                     return e
             raise IndexError
@@ -2578,16 +2559,10 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
     def __eq__(self, other):
         return super(AbstractStructureElement, self).__eq__(other)
 
-class AbstractAnnotation(AbstractElement):
-    pass
 
-class AbstractTokenAnnotation(AbstractAnnotation, AllowGenerateID):
+class AbstractTokenAnnotation(AbstractElement, AllowGenerateID):
     """Abstract element, all token annotation elements are derived from this class"""
 
-    OCCURRENCESPERSET = 1 #Do not allow duplicates within the same set
-
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = Attrib.ALL
 
     def append(self, child, *args, **kwargs):
         """See ``AbstractElement.append()``"""
@@ -2599,16 +2574,7 @@ class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation):
     pass
 
 
-class AbstractTextMarkup(AbstractAnnotation):
-    PRINTABLE = True
-    TEXTDELIMITER = ""
-    #ACCEPTED_DATA is defined after this class
-
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = Attrib.ALL
-    TEXTCONTAINER = True #This element is a direct text container
-    ROOTELEMENT = False
-    XLINK = True
+class AbstractTextMarkup(AbstractElement):
 
     def __init__(self, doc, *args, **kwargs):
         if 'idref' in kwargs:
@@ -2669,19 +2635,14 @@ class AbstractTextMarkup(AbstractAnnotation):
         extraattribs.append( E.optional(E.attribute(name='id' ))) #id reference
         return super(AbstractTextMarkup, cls).relaxng(includechildren, extraattribs, extraelements)
 
-AbstractTextMarkup.ACCEPTED_DATA = (AbstractTextMarkup,)
 
 class TextMarkupString(AbstractTextMarkup):
-    ANNOTATIONTYPE = AnnotationType.STRING
-    XMLTAG = 't-str'
+    pass
 
 class TextMarkupGap(AbstractTextMarkup):
-    ANNOTATIONTYPE = AnnotationType.GAP
-    XMLTAG = 't-gap'
+    pass
 
 class TextMarkupCorrection(AbstractTextMarkup):
-    ANNOTATIONTYPE = AnnotationType.CORRECTION
-    XMLTAG = 't-correction'
 
     def __init__(self, doc, *args, **kwargs):
         if 'original' in kwargs:
@@ -2724,12 +2685,10 @@ class TextMarkupCorrection(AbstractTextMarkup):
 
 
 class TextMarkupError(AbstractTextMarkup):
-    ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
-    XMLTAG = 't-error'
+    pass
 
 class TextMarkupStyle(AbstractTextMarkup):
-    ANNOTATIONTYPE = AnnotationType.STYLE
-    XMLTAG = 't-style'
+    pass
 
 
 
@@ -2745,17 +2704,6 @@ class TextContent(AbstractElement):
         * ``ref=``: The instance to point to, this points to the element holding the text content element, not the text content element itself.
         * ``offset=``: The offset where this text is found, offsets start at 0
     """
-    XMLTAG = 't'
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
-    ANNOTATIONTYPE = AnnotationType.TEXT
-    OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
-    OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
-
-    TEXTCONTAINER = True #This element is a direct text container
-    PRINTABLE = True
-    ACCEPTED_DATA = (AbstractTextMarkup,)
-    ROOTELEMENT = True
-    XLINK = True
 
 
     def __init__(self, doc, *args, **kwargs):
@@ -2799,7 +2747,7 @@ class TextContent(AbstractElement):
             self.href = None
 
         #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
-        if not ('cls' in kwargs) and not ('class' in kwargs):
+        if 'cls' not in kwargs and 'class' not in kwargs:
             kwargs['cls'] = 'current'
 
         super(TextContent,self).__init__(doc, *args, **kwargs)
@@ -2875,7 +2823,7 @@ class TextContent(AbstractElement):
         e = self
         while True:
             if e.parent:
-                e = e.parent
+                e = e.parent #pylint: disable=redefined-variable-type
             else:
                 #no parent, breaking
                 return False
@@ -2898,7 +2846,7 @@ class TextContent(AbstractElement):
     def findreplaceables(Class, parent, set, **kwargs):
         """(Method for internal usage, see AbstractElement)"""
         #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
-        if not 'cls' in kwargs:
+        if 'cls' not in kwargs:
             kwargs['cls'] = 'current'
         replace = super(TextContent, Class).findreplaceables(parent, set, **kwargs)
         replace = [ x for x in replace if x.cls == kwargs['cls']]
@@ -2919,8 +2867,6 @@ class TextContent(AbstractElement):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-
         attribs = {}
         if not self.offset is None:
             attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
@@ -2969,23 +2915,8 @@ class PhonContent(AbstractElement):
         * ``ref=``: The instance to point to, this points to the element holding the text content element, not the text content element itself.
         * ``offset=``: The offset where this text is found, offsets start at 0
     """
-    XMLTAG = 'ph'
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
-    ANNOTATIONTYPE = AnnotationType.PHON
-    OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
-    OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
-
-    ACCEPTED_DATA = tuple()
-    ROOTELEMENT = True
-
-    PHONCONTAINER = True #container of phonetic content (analagous to TEXTCONTAINER)
-    TEXTCONTAINER = False
-    PRINTABLE = False
-    SPEAKABLE = True
-
 
     def __init__(self, doc, *args, **kwargs):
-        global ILLEGAL_UNICODE_CONTROL_CHARACTERS
         """Example::
 
                 phon = folia.PhonContent(doc, 'hɛˈləʊ̯')
@@ -3019,7 +2950,7 @@ class PhonContent(AbstractElement):
             self.href = None
 
         #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
-        if not ('cls' in kwargs) and not ('class' in kwargs):
+        if 'cls' not in kwargs and 'class' not in kwargs:
             kwargs['cls'] = 'current'
 
         super(PhonContent,self).__init__(doc, *args, **kwargs)
@@ -3100,7 +3031,7 @@ class PhonContent(AbstractElement):
         e = self
         while True:
             if e.parent:
-                e = e.parent
+                e = e.parent #pylint: disable=redefined-variable-type
             else:
                 #no parent, breaking
                 return False
@@ -3123,7 +3054,7 @@ class PhonContent(AbstractElement):
     def findreplaceables(Class, parent, set, **kwargs):#pylint: disable=bad-classmethod-argument
         """(Method for internal usage, see AbstractElement)"""
         #some extra behaviour for text content elements, replace also based on the 'corrected' attribute:
-        if not 'cls' in kwargs:
+        if 'cls' not in kwargs:
             kwargs['cls'] = 'current'
         replace = super(PhonContent, Class).findreplaceables(parent, set, **kwargs)
         replace = [ x for x in replace if x.cls == kwargs['cls']]
@@ -3182,8 +3113,6 @@ class PhonContent(AbstractElement):
         return super(PhonContent, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class Content(AbstractElement):     #used for raw content, subelement for Gap
-    OCCURRENCES = 1
-    XMLTAG = 'content'
 
     def __init__(self,doc, *args, **kwargs):
         if 'value' in kwargs:
@@ -3238,17 +3167,11 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
         return Content(doc, **kwargs)
 
 class Part(AbstractStructureElement):
-    #ACCEPTED_DATA defined later
-    XMLTAG = 'part'
-    ANNOTATIONTYPE = AnnotationType.PART
-    TEXTDELIMITER = None
+    pass
 
 
 class Gap(AbstractElement):
     """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
-    OPTIONAL_ATTRIBS = (Attrib.ID,Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.N,)
-    ANNOTATIONTYPE = AnnotationType.GAP
-    XMLTAG = 'gap'
 
     def __init__(self, doc, *args, **kwargs):
         if 'content' in kwargs:
@@ -3268,22 +3191,13 @@ class Gap(AbstractElement):
 
 class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has a double role!!
     """Line break element, signals a line break"""
-    REQUIRED_ATTRIBS = ()
-    XMLTAG = 'br'
-    ANNOTATIONTYPE = AnnotationType.LINEBREAK
-    TEXTDELIMITER = ""
 
     def text(self, cls='current', retaintokenisation=False, previousdelimiter="", strict=False, correctionhandling=None):
         return previousdelimiter.strip(' ') + "\n"
 
-TextContent.ACCEPTED_DATA = TextContent.ACCEPTED_DATA + (Linebreak,) #shouldn't be necessary because of the multiple inheritance, but something's wrong and this quickly patches it
 
 class Whitespace(AbstractStructureElement):
     """Whitespace element, signals a vertical whitespace"""
-    REQUIRED_ATTRIBS = ()
-    XMLTAG = 'whitespace'
-    ANNOTATIONTYPE = AnnotationType.WHITESPACE
-    TEXTDELIMITER = ""
 
     def text(self, cls='current', retaintokenisation=False, previousdelimiter="", strict=False,correctionhandling=None):
         return previousdelimiter.strip(' ') + "\n\n"
@@ -3291,9 +3205,6 @@ class Whitespace(AbstractStructureElement):
 
 class Word(AbstractStructureElement, AllowCorrections):
     """Word (aka token) element. Holds a word/token and all its related token annotations."""
-    XMLTAG = 'w'
-    ANNOTATIONTYPE = AnnotationType.TOKEN
-    #ACCEPTED_DATA DEFINED LATER
 
     #will actually be determined by gettextdelimiter()
 
@@ -3468,9 +3379,6 @@ class Feature(AbstractElement):
     """Feature elements can be used to associate subsets and subclasses with almost any
     annotation element"""
 
-    OCCURRENCESPERSET = 0 #unlimited
-    XMLTAG = 'feat'
-    SUBSET = None
 
     def __init__(self,doc, *args, **kwargs): #pylint: disable=super-init-not-called
         """Required keyword arguments:
@@ -3531,37 +3439,18 @@ class Feature(AbstractElement):
 
 class ValueFeature(Feature):
     """Value feature, to be used within Metric"""
-    #XMLTAG = 'synset'
-    XMLTAG = None
-    SUBSET = 'value' #associated subset
+    pass
 
 class Metric(AbstractElement):
     """Metric elements allow the annotatation of any kind of metric with any kind of annotation element. Allowing for example statistical measures to be added to elements as annotation,"""
-    XMLTAG = 'metric'
-    ANNOTATIONTYPE = AnnotationType.METRIC
-    REQUIRED_ATTRIB = (Attrib.CLASS,)
-    OPTIONAL_ATTRIBS = Attrib.ALL
-    ACCEPTED_DATA = (Feature, ValueFeature, Description)
+    pass
 
-class AbstractSubtokenAnnotation(AbstractAnnotation, AllowGenerateID):
+class AbstractSubtokenAnnotation(AbstractElement, AllowGenerateID):
     """Abstract element, all subtoken annotation elements are derived from this class"""
+    pass
 
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = Attrib.ALL
-    OCCURRENCESPERSET = 0 #Allow duplicates within the same set
-    PRINTABLE = True
-    SPEAKABLE = True
-
-class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrections):
+class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections):
     """Abstract element, all span annotation elements are derived from this class"""
-
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = Attrib.ALL
-    OCCURRENCESPERSET = 0 #Allow duplicates within the same set
-    PRINTABLE = True
-    SPEAKABLE = True
-    REQUIRED_DATA = () #Required roles, these must be present (optional roles are simply in ACCEPTED_DATA)
-
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
         if not attribs: attribs = {}
@@ -3599,11 +3488,11 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        return self.count(Class,set,True,defaultignorelist_annotations)
+        return self.count(Class,set,True,default_ignore_annotations)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.count(type,set,True,defaultignorelist_annotations)
+        l = self.count(type,set,True,default_ignore_annotations)
         if len(l) >= 1:
             return l[0]
         else:
@@ -3620,13 +3509,15 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
                 except KeyError:
                     targets.append(c) #add unresolved
             elif isinstance(c, AbstractSpanAnnotation):
-                c._helper_wrefs(targets) #recursion
+                #recursion
+                c._helper_wrefs(targets) #pylint: disable=protected-access
             elif isinstance(c, Correction) and c.auth: #recurse into corrections
                 for e in c:
                     if isinstance(e, AbstractCorrectionChild) and e.auth:
                         for e2 in e:
                             if isinstance(e2, AbstractSpanAnnotation):
-                                e2._helper_wrefs(targets) #recursion
+                                #recursion
+                                e2._helper_wrefs(targets) #pylint: disable=protected-access
 
     def wrefs(self, index = None):
         """Returns a list of word references, these can be Words but also Morphemes or Phonemes.
@@ -3666,10 +3557,6 @@ class AbstractSpanAnnotation(AbstractAnnotation, AllowGenerateID, AllowCorrectio
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
-    OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.SETONLY,)
-    PRINTABLE = False
-    SPEAKABLE = False
-    ROOTELEMENT = False #only annotation elements are considered root elements
 
     def __init__(self, doc, *args, **kwargs):
         if 'set' in kwargs:
@@ -3726,7 +3613,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
             ``NoSuchAnnotation`` if the specified annotation does not exist.
         """
         found = False
-        for e in self.select(Class,set,True,defaultignorelist_annotations):
+        for e in self.select(Class,set,True,default_ignore_annotations):
             found = True
             yield e
         if not found:
@@ -3734,11 +3621,11 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        return self.count(Class,set,True,defaultignorelist_annotations)
+        return self.count(Class,set,True,default_ignore_annotations)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        for e in self.select(type,set,True,defaultignorelist_annotations):
+        for e in self.select(type,set,True,default_ignore_annotations):
             return e
         raise NoSuchAnnotation()
 
@@ -3753,7 +3640,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
             Generator over Alternative elements
         """
 
-        for e in self.select(AlternativeLayers,None, True, ['Original','Suggestion']):
+        for e in self.select(AlternativeLayers,None, True, ['Original','Suggestion']): #pylint: disable=too-many-nested-blocks
             if Class is None:
                 yield e
             elif len(e) >= 1: #child elements?
@@ -3801,35 +3688,14 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
 class String(AbstractElement, AllowTokenAnnotation):
     """String"""
-    #ACCEPTED_DATA = DEFINED LATER!!
-    XMLTAG = 'str'
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS,Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
-    ANNOTATIONTYPE = AnnotationType.STRING
-    OCCURRENCES = 0 #Number of times this element may occur in its parent (0=unlimited)
-    OCCURRENCESPERSET = 0 #Number of times this element may occur per set (0=unlimited)
-    PRINTABLE = True
+    pass
 
 class AbstractCorrectionChild(AbstractElement):
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR,Attrib.CONFIDENCE,Attrib.DATETIME,Attrib.N)
-    TEXTDELIMITER = None
-    PRINTABLE = True
-    SPEAKABLE = True
-    ROOTELEMENT = False
-
     def generate_id(self, cls):
         #Delegate ID generation to parent
         return self.parent.generate_id(cls)
 
 class Reference(AbstractStructureElement):
-    ACCEPTED_DATA = (TextContent, PhonContent, String, Description, Metric)
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR,Attrib.CONFIDENCE, Attrib.DATETIME)
-    PRINTABLE = True
-    SPEAKABLE = True
-    TEXTDELIMITER = None
-    XMLTAG = 'ref'
-
 
     def __init__(self, doc, *args, **kwargs):
         if 'idref' in kwargs:
@@ -3894,14 +3760,12 @@ class Reference(AbstractStructureElement):
         return super(Reference, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class AlignReference(AbstractElement):
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    XMLTAG = 'aref'
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
-        if not 'id' in kwargs:
+        if 'id' not in kwargs:
             raise Exception("ID required for AlignReference")
-        if not 'type' in kwargs:
+        if 'type' not in kwargs:
             raise Exception("Type required for AlignReference")
         elif not inspect.isclass(kwargs['type']):
             raise Exception("Type must be a FoLiA element (python class)")
@@ -3974,16 +3838,6 @@ class AlignReference(AbstractElement):
 
 
 class Alignment(AbstractElement):
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = Attrib.ALL
-    OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
-    XMLTAG = 'alignment'
-    ANNOTATIONTYPE = AnnotationType.ALIGNMENT
-    ACCEPTED_DATA = (AlignReference, Description, Metric, Feature)
-    PRINTABLE = False
-    SPEAKABLE = False
-    XLINK = True
-
 
     def json(self, attribs =None, recurse=True, ignorelist=False):
         return {} #alignment not supported yet, TODO
@@ -3995,19 +3849,11 @@ class Alignment(AbstractElement):
 
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
-    ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
-    XMLTAG = 'errordetection'
-    OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
-    ROOTELEMENT = True
+    pass
 
 
 
 class Suggestion(AbstractCorrectionChild):
-    ANNOTATIONTYPE = AnnotationType.SUGGESTION
-    XMLTAG = 'suggestion'
-    OCCURRENCES = 0 #unlimited
-    OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
-    AUTH = False
 
     def __init__(self,  doc, *args, **kwargs):
         if 'split' in kwargs:
@@ -4057,11 +3903,6 @@ class Suggestion(AbstractCorrectionChild):
         return super(Suggestion, self).json(attribs, recurse, ignorelist)
 
 class New(AbstractCorrectionChild):
-    REQUIRED_ATTRIBS = (),
-    OPTIONAL_ATTRIBS = (),
-    OCCURRENCES = 1
-    XMLTAG = 'new'
-
 
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):#pylint: disable=bad-classmethod-argument
@@ -4077,11 +3918,6 @@ class New(AbstractCorrectionChild):
         return self.parent.correct(**kwargs)
 
 class Original(AbstractCorrectionChild):
-    REQUIRED_ATTRIBS = (),
-    OPTIONAL_ATTRIBS = (),
-    OCCURRENCES = 1
-    XMLTAG = 'original'
-    AUTH = False
 
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):#pylint: disable=bad-classmethod-argument
@@ -4095,10 +3931,6 @@ class Original(AbstractCorrectionChild):
 
 
 class Current(AbstractCorrectionChild):
-    REQUIRED_ATTRIBS = (),
-    OPTIONAL_ATTRIBS = (),
-    OCCURRENCES = 1
-    XMLTAG = 'current'
 
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
@@ -4113,16 +3945,7 @@ class Current(AbstractCorrectionChild):
     def correct(self, **kwargs):
         return self.parent.correct(**kwargs)
 
-class Correction(AbstractAnnotation, AllowGenerateID):
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = Attrib.ALL
-    ANNOTATIONTYPE = AnnotationType.CORRECTION
-    XMLTAG = 'correction'
-    OCCURRENCESPERSET = 0 #Allow duplicates within the same set (0= unlimited)
-    TEXTDELIMITER = None
-    PRINTABLE = True
-    SPEAKABLE = True
-    ROOTELEMENT = True
+class Correction(AbstractElement, AllowGenerateID):
 
     def append(self, child, *args, **kwargs):
         """See ``AbstractElement.append()``"""
@@ -4299,7 +4122,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
 
     def correct(self, **kwargs):
         if 'new' in kwargs:
-            if not 'nooriginal' in kwargs: #if not an insertion
+            if 'nooriginal' not in kwargs: #if not an insertion
                 kwargs['original'] = self
         elif 'current' in kwargs:
             kwargs['current'] = self
@@ -4324,7 +4147,7 @@ class Correction(AbstractAnnotation, AllowGenerateID):
     #        return super(Correction,self).select(cls,set,recursive, ignorelist, node)
     #    else:
     #        if ignorelist is True:
-    #            ignorelist = copy(defaultignorelist)
+    #            ignorelist = copy(default_ignore)
     #        else:
     #            ignorelist = copy(ignorelist) #we don't want to alter a passed ignorelist (by ref)
     #        ignorelist.append(Original)
@@ -4337,41 +4160,21 @@ class Correction(AbstractAnnotation, AllowGenerateID):
 
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = Attrib.ALL
-    ANNOTATIONTYPE = AnnotationType.ALTERNATIVE
-    XMLTAG = 'alt'
-    PRINTABLE = False
-    SPEAKABLE = False
-    AUTH = False
+    pass
 
 
 
 class AlternativeLayers(AbstractElement):
     """Element grouping alternative subtoken annotation(s). Multiple altlayers elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = Attrib.ALL
-    ACCEPTED_DATA = (AbstractAnnotationLayer,)
-    XMLTAG = 'altlayers'
-    PRINTABLE = False
-    SPEAKABLE = False
-    AUTH = False
+    pass
 
 
 
 class External(AbstractElement):
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = ()
-    ACCEPTED_DATA = []
-    XMLTAG = 'external'
-    PRINTABLE = True
-    SPEAKABLE = False
-    AUTH = True
-
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
-        if not 'source' in kwargs:
+        if 'source' not in kwargs:
             raise Exception("Source required for External")
         assert(isinstance(doc,Document))
         self.doc = doc
@@ -4462,13 +4265,11 @@ class External(AbstractElement):
 
 class WordReference(AbstractElement):
     """Word reference. Used to refer to words or morphemes from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word or Morpheme objects will be used"""
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    XMLTAG = 'wref'
-    #ANNOTATIONTYPE = AnnotationType.TOKEN
+    #REQUIRED_ATTRIBS = (Attrib.ID,)  #TODO: See if this is handled correctly in new scheme
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
-        if not 'idref' in kwargs and not 'id' in kwargs:
+        if 'idref' not in kwargs and 'id' not in kwargs:
             raise Exception("ID required for WordReference")
         assert isinstance(doc,Document)
         self.doc = doc
@@ -4507,51 +4308,30 @@ class WordReference(AbstractElement):
 
 class SyntacticUnit(AbstractSpanAnnotation):
     """Syntactic Unit, span annotation element to be used in SyntaxLayer"""
-    REQUIRED_ATTRIBS = ()
-    ANNOTATIONTYPE = AnnotationType.SYNTAX
-    XMLTAG = 'su'
+    pass
 
-SyntacticUnit.ACCEPTED_DATA = (SyntacticUnit,WordReference, Description, Feature, Metric)
 
 class Chunk(AbstractSpanAnnotation):
     """Chunk element, span annotation element to be used in ChunkingLayer"""
-    REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = (WordReference, Description, Feature, Metric)
-    ANNOTATIONTYPE = AnnotationType.CHUNKING
-    XMLTAG = 'chunk'
+    pass
 
 class Entity(AbstractSpanAnnotation):
     """Entity element, for named entities, span annotation element to be used in EntitiesLayer"""
-    REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = (WordReference, Description, Feature, Metric)
-    ANNOTATIONTYPE = AnnotationType.ENTITY
-    XMLTAG = 'entity'
+    pass
 
 class AbstractSpanRole(AbstractSpanAnnotation):
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
-    ROOTELEMENT = False
+    pass
 
 class Headspan(AbstractSpanRole): #generic head element
-    ACCEPTED_DATA = (WordReference,Description, Feature, Alignment, Metric)
-    #ANNOTATIONTYPE = AnnotationType.DEPENDENCY
-    XMLTAG = 'hd'
+    pass
 
 DependencyHead = Headspan #alias, backwards compatibility with FoLiA 0.8
 
 
 class DependencyDependent(AbstractSpanRole):
-    ACCEPTED_DATA = (WordReference,Description, Feature, Alignment, Metric)
-    ANNOTATIONTYPE = AnnotationType.DEPENDENCY
-    XMLTAG = 'dep'
+    pass
 
 class Dependency(AbstractSpanAnnotation):
-    REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = (Description, Feature,Headspan, DependencyDependent, Alignment, Metric)
-    ANNOTATIONTYPE = AnnotationType.DEPENDENCY
-    XMLTAG = 'dependency'
-    REQUIRED_DATA = (Headspan, DependencyDependent) #Required roles, these must be present (optional roles are simply in ACCEPTED_DATA)
-
     def head(self):
         """Returns the head of the dependency relation. Instance of DependencyHead"""
         return next(self.select(DependencyHead))
@@ -4563,64 +4343,34 @@ class Dependency(AbstractSpanAnnotation):
 
 class ModalityFeature(Feature):
     """Modality feature, to be used with coreferences"""
-    SUBSET = 'modality' #associated subset
-    XMLTAG = None
 
 class TimeFeature(Feature):
     """Time feature, to be used with coreferences"""
-    SUBSET = 'time' #associated subset
-    XMLTAG = None
 
 class LevelFeature(Feature):
     """Level feature, to be used with coreferences"""
-    SUBSET = 'level' #associated subset
-    XMLTAG = None
 
 class CoreferenceLink(AbstractSpanRole):
     """Coreference link. Used in coreferencechain."""
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME)
-    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, Feature, ModalityFeature, TimeFeature,LevelFeature, Metric)
-    ANNOTATIONTYPE = AnnotationType.COREFERENCE
-    XMLTAG = 'coreferencelink'
-    ROOTELEMENT = False
 
 class CoreferenceChain(AbstractSpanAnnotation):
     """Coreference chain. Consists of coreference links."""
-    REQUIRED_ATTRIBS = ()
-    ACCEPTED_DATA = (CoreferenceLink,Description, Metric)
-    ANNOTATIONTYPE = AnnotationType.COREFERENCE
-    XMLTAG = 'coreferencechain'
-    REQUIRED_DATA = (CoreferenceLink,) #Required roles, these must be present (optional roles are simply in ACCEPTED_DATA)
 
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
-    REQUIRED_ATTRIBS = (Attrib.CLASS,)
-    ACCEPTED_DATA = (WordReference, Description, Headspan, Alignment, Metric, Feature)
-    ANNOTATIONTYPE = AnnotationType.SEMROLE
-    XMLTAG = 'semrole'
 
-class ComplexAlignment(AbstractAnnotation):
+class ComplexAlignment(AbstractElement):
     """Complex Alignment"""
-    REQUIRED_ATTRIBS = ()
-    OPTIONAL_ATTRIBS = (Attrib.ALL,)
-    ACCEPTED_DATA = (Alignment,Metric, Feature, Description,)
-    XMLTAG = 'complexalignment'
-    OCCURRENCESPERSET = 0 #Allow duplicates within the same set
-    PRINTABLE = False
-    SPEAKABLE = False
-    REQUIRED_DATA = () #Required roles, these must be present (optional roles are simply in ACCEPTED_DATA)
-
 
     #same as for AbstractSpanAnnotation, which this technically is not (hence copy)
     def hasannotation(self,Class,set=None):
         """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
-        return self.count(Class,set,True,defaultignorelist_annotations)
+        return self.count(Class,set,True,default_ignore_annotations)
 
     #same as for AbstractSpanAnnotation, which this technically is not (hence copy)
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.count(type,set,True,defaultignorelist_annotations)
+        l = self.count(type,set,True,default_ignore_annotations)
         if len(l) >= 1:
             return l[0]
         else:
@@ -4628,16 +4378,9 @@ class ComplexAlignment(AbstractAnnotation):
 
 class FunctionFeature(Feature):
     """Function feature, to be used with morphemes"""
-    SUBSET = 'function' #associated subset
-    XMLTAG = None
 
 class Morpheme(AbstractStructureElement):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
-    REQUIRED_ATTRIBS = (),
-    OPTIONAL_ATTRIBS = Attrib.ALL
-    ACCEPTED_DATA = (FunctionFeature, Feature,TextContent, PhonContent, String,Metric, Alignment, AbstractTokenAnnotation, Correction, Description)
-    ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
-    XMLTAG = 'morpheme'
 
     def findspans(self, type,set=None):
         """Find span annotation of the specified type that include this word"""
@@ -4658,11 +4401,6 @@ class Morpheme(AbstractStructureElement):
 
 class Phoneme(AbstractStructureElement):
     """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
-    REQUIRED_ATTRIBS = (),
-    OPTIONAL_ATTRIBS = Attrib.ALL
-    ACCEPTED_DATA = (FunctionFeature, Feature,TextContent, PhonContent, String,Metric, Alignment, AbstractTokenAnnotation, Correction, Description)
-    ANNOTATIONTYPE = AnnotationType.PHONOLOGICAL
-    XMLTAG = 'phoneme'
 
     def findspans(self, type,set=None): #TODO: this is a copy of the methods in Morpheme in Word, abstract into separate class and inherit
         """Find span annotation of the specified type that include this phoneme"""
@@ -4691,56 +4429,27 @@ class Phoneme(AbstractStructureElement):
 
 class SyntaxLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
-    ACCEPTED_DATA = (SyntacticUnit,Description, Correction)
-    XMLTAG = 'syntax'
-    ANNOTATIONTYPE = AnnotationType.SYNTAX
 
 class ChunkingLayer(AbstractAnnotationLayer):
     """Chunking Layer: Annotation layer for Chunk span annotation elements"""
-    ACCEPTED_DATA = (Chunk,Description, Correction)
-    XMLTAG = 'chunking'
-    ANNOTATIONTYPE = AnnotationType.CHUNKING
 
 class EntitiesLayer(AbstractAnnotationLayer):
     """Entities Layer: Annotation layer for Entity span annotation elements. For named entities."""
-    ACCEPTED_DATA = (Entity,Description, Correction)
-    XMLTAG = 'entities'
-    ANNOTATIONTYPE = AnnotationType.ENTITY
 
 class DependenciesLayer(AbstractAnnotationLayer):
     """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
-    ACCEPTED_DATA = (Dependency,Description, Correction)
-    XMLTAG = 'dependencies'
-    ANNOTATIONTYPE = AnnotationType.DEPENDENCY
 
 class MorphologyLayer(AbstractAnnotationLayer):
     """Morphology Layer: Annotation layer for Morpheme subtoken annotation elements. For morphological analysis."""
-    ACCEPTED_DATA = (Morpheme, Correction)
-    XMLTAG = 'morphology'
-    ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
 
 class PhonologyLayer(AbstractAnnotationLayer):
     """Phonology Layer: Annotation layer for phonemes subtoken annotation elements. For phonetic analysis."""
-    ACCEPTED_DATA = (Phoneme, Correction)
-    XMLTAG = 'phonology'
-    ANNOTATIONTYPE = AnnotationType.PHONOLOGICAL
-
-#class SubentitiesLayer(AbstractSubtokenAnnotationLayer):
-#    """Subentities Layer: Annotation layer for Subentity subtoken annotation elements. For named entities within a single token."""
-#    ACCEPTED_DATA = (Subentity,)
-#    XMLTAG = 'subentities'
 
 class CoreferenceLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
-    ACCEPTED_DATA = (CoreferenceChain,Description, Correction)
-    XMLTAG = 'coreferences'
-    ANNOTATIONTYPE = AnnotationType.COREFERENCE
 
 class SemanticRolesLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for SemanticRole span annotation elements"""
-    ACCEPTED_DATA = (SemanticRole,Description, Correction)
-    XMLTAG = 'semroles'
-    ANNOTATIONTYPE = AnnotationType.SEMROLE
 
 class ComplexAlignmentLayer(AbstractAnnotationLayer):
     """Complex alignment layer"""
@@ -4750,26 +4459,15 @@ class ComplexAlignmentLayer(AbstractAnnotationLayer):
 
 class HeadFeature(Feature):
     """Head feature, to be used within PosAnnotation"""
-    SUBSET = 'head' #associated subset
-    XMLTAG = None
 
 class PosAnnotation(AbstractTokenAnnotation):
     """Part-of-Speech annotation:  a token annotation element"""
-    ANNOTATIONTYPE = AnnotationType.POS
-    ACCEPTED_DATA = (Feature,HeadFeature,Description, Metric)
-    XMLTAG = 'pos'
 
 class LemmaAnnotation(AbstractTokenAnnotation):
     """Lemma annotation:  a token annotation element"""
-    ANNOTATIONTYPE = AnnotationType.LEMMA
-    ACCEPTED_DATA = (Feature,Description, Metric)
-    XMLTAG = 'lemma'
 
 class LangAnnotation(AbstractExtendedTokenAnnotation):
     """Language annotation:  an extended token annotation element"""
-    ANNOTATIONTYPE = AnnotationType.LANG
-    ACCEPTED_DATA = (Feature,Description, Metric)
-    XMLTAG = 'lang'
 
 #class PhonAnnotation(AbstractTokenAnnotation): #DEPRECATED in v0.9
 #    """Phonetic annotation:  a token annotation element"""
@@ -4780,98 +4478,56 @@ class LangAnnotation(AbstractExtendedTokenAnnotation):
 
 class DomainAnnotation(AbstractExtendedTokenAnnotation):
     """Domain annotation:  an extended token annotation element"""
-    ANNOTATIONTYPE = AnnotationType.DOMAIN
-    ACCEPTED_DATA = (Feature,Description, Metric)
-    XMLTAG = 'domain'
 
 class SynsetFeature(Feature):
     """Synset feature, to be used within Sense"""
-    #XMLTAG = 'synset'
-    XMLTAG = None
-    SUBSET = 'synset' #associated subset
 
 class ActorFeature(Feature):
     """Actor feature, to be used within Event"""
-    #XMLTAG = 'actor'
-    XMLTAG = None
-    SUBSET = 'actor' #associated subset
 
 class BegindatetimeFeature(Feature):
     """Begindatetime feature, to be used within Event"""
-    #XMLTAG = 'begindatetime'
-    XMLTAG = None
-    SUBSET = 'begindatetime' #associated subset
 
 class EnddatetimeFeature(Feature):
     """Enddatetime feature, to be used within Event"""
-    #XMLTAG = 'enddatetime'
-    XMLTAG = None
-    SUBSET = 'enddatetime' #associated subset
 
 class StyleFeature(Feature):
-    XMLTAG = None
-    SUBSET = "style"
+    pass
 
 class Note(AbstractStructureElement):
-    #ACCEPTED_DATA set at bottom
-    ANNOTATIONTYPE = AnnotationType.NOTE
-    XMLTAG = 'note'
+    pass
 
 class Definition(AbstractStructureElement):
-    #ACCEPTED_DATA set at bottom
-    XMLTAG = 'def'
-    ANNOTATIONTYPE = AnnotationType.DEFINITION
+    pass
 
 class Term(AbstractStructureElement):
-    #ACCEPTED_DATA set at bottom
-    XMLTAG = 'term'
-    ANNOTATIONTYPE = AnnotationType.TERM
+    pass
 
 class Example(AbstractStructureElement):
-    #ACCEPTED_DATA set at bottom
-    XMLTAG = 'ex'
-    ANNOTATIONTYPE = AnnotationType.EXAMPLE
+    pass
 
 class Entry(AbstractStructureElement):
-    ACCEPTED_DATA = (Term, Definition, Example, Correction, Description, Metric, Alignment,  AlternativeLayers,AbstractAnnotationLayer)
-    XMLTAG = 'entry'
+    pass
 
 
 class TimeSegment(AbstractSpanAnnotation):
-    ACCEPTED_DATA = (WordReference, Description, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, Metric)
-    ANNOTATIONTYPE = AnnotationType.TIMESEGMENT
-    XMLTAG = 'timesegment'
-    OCCURRENCESPERSET = 0
+    pass
 
 TimedEvent = TimeSegment #alias for FoLiA 0.8 compatibility
 
 class TimingLayer(AbstractAnnotationLayer):
     """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
-    ANNOTATIONTYPE = AnnotationType.TIMESEGMENT
-    ACCEPTED_DATA = (TimedEvent,Description, Correction)
-    XMLTAG = 'timing'
 
 
 class SenseAnnotation(AbstractTokenAnnotation):
     """Sense annotation: a token annotation element"""
-    ANNOTATIONTYPE = AnnotationType.SENSE
-    ACCEPTED_DATA = (Feature,SynsetFeature, Description, Metric)
-    XMLTAG = 'sense'
 
 class SubjectivityAnnotation(AbstractTokenAnnotation):
     """Subjectivity annotation/Sentiment analysis: a token annotation element"""
-    ANNOTATIONTYPE = AnnotationType.SUBJECTIVITY
-    ACCEPTED_DATA = (Feature, Description, Metric)
-    XMLTAG = 'subjectivity'
 
 
 class Quote(AbstractStructureElement):
     """Quote: a structure element. For quotes/citations. May hold words, sentences or paragraphs."""
-    REQUIRED_ATTRIBS = ()
-    XMLTAG = 'quote'
-
-
-    #ACCEPTED DATA defined later below
 
     def __init__(self,  doc, *args, **kwargs):
         super(Quote,self).__init__(doc, *args, **kwargs)
@@ -4911,10 +4567,6 @@ class Quote(AbstractStructureElement):
 
 class Sentence(AbstractStructureElement):
     """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
-
-    XMLTAG = 's'
-    TEXTDELIMITER = ' '
-    ANNOTATIONTYPE = AnnotationType.SENTENCE
 
     def __init__(self,  doc, *args, **kwargs):
         """
@@ -5052,49 +4704,26 @@ class Sentence(AbstractStructureElement):
 class Utterance(AbstractStructureElement):
     """Utterance element. A structure element for speech annotation."""
 
-    XMLTAG = 'utt'
-    TEXTDELIMITER = ' '
-    ANNOTATIONTYPE = AnnotationType.UTTERANCE
-    PRINTABLE = SPEAKABLE = True
-
 class Event(AbstractStructureElement):
-    #ACCEPTED_DATA set at bottom
-    ANNOTATIONTYPE = AnnotationType.EVENT
-    XMLTAG = 'event'
+    pass
 
 class Caption(AbstractStructureElement):
     """Element used for captions for figures or tables, contains sentences"""
-    OCCURRENCES = 1
-    XMLTAG = 'caption'
 
 
 class Label(AbstractStructureElement):
     """Element used for labels. Mostly in within list item. Contains words."""
-    ACCEPTED_DATA = (Word, Reference, Description, TextContent,PhonContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part)
-    XMLTAG = 'label'
 
 
 class ListItem(AbstractStructureElement):
     """Single element in a List. Structure element. Contained within List element."""
-    #ACCEPTED_DATA = (List, Sentence) #Defined below
-    XMLTAG = 'item'   #(xmltag differs from tagname because I screwed up, this used to be 'listitem' but was inconsistent with the manual, in reading xml it will be translated on the fly to item)
-    ANNOTATIONTYPE = AnnotationType.LIST
-    TEXTDELIMITER = '\n'
 
 class List(AbstractStructureElement):
     """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
-    XMLTAG = 'list'
-    TEXTDELIMITER = '\n\n'
-    ANNOTATIONTYPE = AnnotationType.LIST
 
 
 class Figure(AbstractStructureElement):
     """Element for the representation of a graphical figure. Structure element."""
-    ACCEPTED_DATA = (Sentence, Description, Caption, TextContent,PhonContent,String, Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
-    XMLTAG = 'figure'
-    ANNOTATIONTYPE = AnnotationType.FIGURE
-    TEXTDELIMITER = '\n\n'
-
 
     def json(self, attribs = None, recurse=True,ignorelist=False):
         if self.src:
@@ -5116,42 +4745,45 @@ class Figure(AbstractStructureElement):
 class Head(AbstractStructureElement):
     """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
 
-    ACCEPTED_DATA = (Sentence, Word, Description, Event, Reference, TextContent,PhonContent,String,Alignment, Metric, Linebreak, Whitespace,Gap,  Alternative, AlternativeLayers, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Correction, Part)
-    OCCURRENCES = 1
-    TEXTDELIMITER = '\n\n'
-    XMLTAG = 'head'
-
 class Paragraph(AbstractStructureElement):
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
-    XMLTAG = 'p'
-    TEXTDELIMITER = "\n\n"
-    ANNOTATIONTYPE = AnnotationType.PARAGRAPH
 
 
 class Cell(AbstractStructureElement):
-    XMLTAG = 'cell'
-    TEXTDELIMITER = " | "
-    REQUIRED_ATTRIBS = (),
-    ANNOTATIONTYPE = AnnotationType.TABLE
+    pass
 
 class Row(AbstractStructureElement):
-    XMLTAG = 'row'
-    TEXTDELIMITER = "\n"
-    REQUIRED_ATTRIBS = (),
-    ANNOTATIONTYPE = AnnotationType.TABLE
+    pass
 
 
 class TableHead(AbstractStructureElement):
-    XMLTAG = 'tablehead'
-    REQUIRED_ATTRIBS = (),
-    ANNOTATIONTYPE = AnnotationType.TABLE
+    pass
 
 
 class Table(AbstractStructureElement):
-    ACCEPTED_DATA = (TableHead, Row, AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction, Part)
-    XMLTAG = 'table'
-    ANNOTATIONTYPE = AnnotationType.TABLE
+    pass
 
+
+class Division(AbstractStructureElement):
+    """Structure element representing some kind of division. Divisions may be nested at will, and may include almost all kinds of other structure elements."""
+
+    def head(self):
+        for e in self.data:
+            if isinstance(e, Head):
+                return e
+        raise NoSuchAnnotation()
+
+
+class Speech(AbstractStructureElement):
+    """A full speech. This is a high-level element. This element may contain divisions, paragraphs, sentences, etc.."""
+    # (both SPEAKABLE and PRINTABLE)
+
+class Text(AbstractStructureElement):
+    """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
+    # (both SPEAKABLE and PRINTABLE)
+
+
+#===================================================================================================================
 
 
 class Query(object):
@@ -5547,7 +5179,7 @@ class Document(object):
                 del contents
                 self.parsexml(self.tree.getroot())
             elif self.filename[-3:].lower() == '.gz':
-                f = gzip.GzipFile(self.filename)
+                f = gzip.GzipFile(self.filename) #pylint: disable=redefined-variable-type
                 contents = f.read()
                 f.close()
                 self.tree = xmltreefromstring(contents)
@@ -5624,7 +5256,7 @@ class Document(object):
             f.write(self.xmlstring().encode('utf-8'))
             f.close()
         elif filename[-3:].lower() == '.gz':
-            f = gzip.GzipFile(filename,'wb')
+            f = gzip.GzipFile(filename,'wb') #pylint: disable=redefined-variable-type
             f.write(self.xmlstring().encode('utf-8'))
             f.close()
         else:
@@ -5685,7 +5317,7 @@ class Document(object):
                         except KeyError:
                             pass
                 else:
-                    raise
+                    raise KeyError("No such key: " + key)
 
 
     def append(self,text):
@@ -5706,7 +5338,7 @@ class Document(object):
         if text is Text:
             text = Text(self, id=self.id + '.text.' + str(len(self.data)+1) )
         elif text is Speech:
-            text = Speech(self, id=self.id + '.speech.' + str(len(self.data)+1) )
+            text = Speech(self, id=self.id + '.speech.' + str(len(self.data)+1) ) #pylint: disable=redefined-variable-type
         else:
             assert isinstance(text, Text) or isinstance(text, Speech)
         self.data.append(text)
@@ -5821,7 +5453,7 @@ class Document(object):
                 *self.xmlmetadata(),
                 **metadataattribs
             )
-        , **attribs)
+            , **attribs)
         for text in self.data:
             e.append(text.xml())
         return e
@@ -5863,7 +5495,8 @@ class Document(object):
         if self.debug >= 1:
             print("[PyNLPl FoLiA DEBUG] Processing Annotation Declarations",file=stderr)
         self.declareprocessed = True
-        for subnode in node:
+        for subnode in node: #pylint: disable=too-many-nested-blocks
+            if not isinstance(subnode.tag, str): continue
             if subnode.tag[:25] == '{' + NSFOLIA + '}' and subnode.tag[-11:] == '-annotation':
                 prefix = subnode.tag[25:][:-11]
                 type = None
@@ -5890,7 +5523,7 @@ class Document(object):
                     self.annotations.append( (type, set) )
 
                 #Load set definition
-                if set and self.loadsetdefinitions and not set in self.setdefinitions:
+                if set and self.loadsetdefinitions and set not in self.setdefinitions:
                     if set[:7] == "http://" or set[:8] == "https://" or set[:6] == "ftp://":
                         try:
                             self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
@@ -6138,7 +5771,6 @@ class Document(object):
             return self._language
 
     def parsemetadata(self, node):
-        if self.debug >= 1: print >>stderr, "[PyNLPl FoLiA DEBUG] Found Metadata"
         if 'type' in node.attrib and node.attrib['type'] == 'imdi':
             self.metadatatype = MetaDataType.IMDI
         elif 'type' in node.attrib and  node.attrib['type'] == 'cmdi':
@@ -6168,7 +5800,7 @@ class Document(object):
 
     def parsexml(self, node, ParentClass = None):
         """Main XML parser, will invoke class-specific XML parsers. For internal use."""
-        if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)):
+        if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)): #pylint: disable=protected-access
             node = node.getroot()
         elif isstring(node):
             node = xmltreefromstring(node).getroot()
@@ -6193,10 +5825,7 @@ class Document(object):
                     self.version = None
 
                 if 'external' in node.attrib:
-                    if node.attrib['external'] == 'yes':
-                        self.external = True
-                    else:
-                        self.external = False
+                    self.external = (node.attrib['external'] == 'yes')
 
                     if self.external and not self.parentdoc:
                         raise DeepValidationError("Document is marked as external and should not be loaded independently. However, no parentdoc= has been specified!")
@@ -6310,12 +5939,12 @@ class Document(object):
 
         If an index is specified, return the n'th word only (starting at 0)"""
         if index is None:
-            return self.select(Word,None,True,defaultignorelist_structure)
+            return self.select(Word,None,True,default_ignore_structure)
         else:
             if index < 0:
-                index = sum(t.count(Word,None,True,defaultignorelist_structure) for t in self.data)  + index
+                index = sum(t.count(Word,None,True,default_ignore_structure) for t in self.data)  + index
             for t in self.data:
-                for i, e in enumerate(t.select(Word,None,True,defaultignorelist_structure)):
+                for i, e in enumerate(t.select(Word,None,True,default_ignore_structure)):
                     if i == index:
                         return e
             raise IndexError
@@ -6383,70 +6012,6 @@ class Document(object):
 
 
 
-class Division(AbstractStructureElement):
-    """Structure element representing some kind of division. Divisions may be nested at will, and may include almost all kinds of other structure elements."""
-    #Accepted_data set later
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.CLASS,Attrib.N, Attrib.SRC,Attrib.BEGINTIME,Attrib.ENDTIME,Attrib.SPEAKER)
-    XMLTAG = 'div'
-    ANNOTATIONTYPE = AnnotationType.DIVISION
-    TEXTDELIMITER = "\n\n\n"
-
-    def head(self):
-        for e in self.data:
-            if isinstance(e, Head):
-                return e
-        raise NoSuchAnnotation()
-
-
-class Speech(AbstractStructureElement):
-    """A full speech. This is a high-level element. This element may contain divisions, paragraphs, sentences, etc.."""
-
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.N,Attrib.SRC,Attrib.BEGINTIME,Attrib.ENDTIME,Attrib.SPEAKER)
-    ACCEPTED_DATA = (Utterance, Gap, Event, Entry, Example, Division, Paragraph, Quote, Sentence, Word,  List,  Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description, TextContent,PhonContent,String, Metric, Correction)
-    XMLTAG = 'speech'
-    TEXTDELIMITER = "\n\n\n"
-    # (both SPEAKABLE and PRINTABLE)
-
-class Text(AbstractStructureElement):
-    """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
-
-    REQUIRED_ATTRIBS = (Attrib.ID,)
-    OPTIONAL_ATTRIBS = (Attrib.N,)
-    ACCEPTED_DATA = (Gap, Event, Entry, Example, Division, Paragraph, Quote, Sentence, Word,  List, Figure, Table, Note, Reference, AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Description,TextContent,PhonContent,String, Metric, Correction)
-    XMLTAG = 'text'
-    TEXTDELIMITER = "\n\n\n"
-    # (both SPEAKABLE and PRINTABLE)
-
-#==============================================================================
-#Setting Accepted data that has been postponed earlier (to allow circular references)
-
-Alternative.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, MorphologyLayer, PhonologyLayer)
-Word.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, TextContent,PhonContent, String, Alternative, AlternativeLayers, Description, AbstractAnnotationLayer, Alignment, Metric, Reference, Feature)
-String.ACCEPTED_DATA = (TextContent,PhonContent, Alignment,Description, Metric, Correction, AbstractExtendedTokenAnnotation, Feature)
-Paragraph.ACCEPTED_DATA = (Word, Sentence, Quote, Example, Entry, AbstractExtendedTokenAnnotation, Correction, TextContent,PhonContent,String, Description, Linebreak, Whitespace, Gap, List, Figure, Event, Head, Note, Reference,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
-Sentence.ACCEPTED_DATA = (Word, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description,  Linebreak, Whitespace, Event, Example, Entry, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part)
-Utterance.ACCEPTED_DATA = (Word,Sentence, Quote, AbstractExtendedTokenAnnotation, Correction, TextContent, PhonContent,String,Gap, Description, Note, Reference, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Part, Feature)
-Cell.ACCEPTED_DATA = (Paragraph,Head,Sentence,Word, Correction, Event, Example, Entry, Note, Reference, Linebreak, Whitespace, Gap, AbstractAnnotationLayer, AlternativeLayers, AbstractExtendedTokenAnnotation, Correction, Part, Feature)
-Row.ACCEPTED_DATA = (Cell,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction, Part)
-TableHead.ACCEPTED_DATA = (Row,AbstractAnnotationLayer, AlternativeLayers,AbstractExtendedTokenAnnotation, Correction, Part)
-Part.ACCEPTED_DATA = (AbstractStructureElement, AbstractExtendedTokenAnnotation, AlternativeLayers, AbstractAnnotationLayer, Correction)
-ListItem.ACCEPTED_DATA = (List, Sentence, Description, Label, Event, Note, Reference, TextContent,PhonContent,String,Gap,Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part, Feature)
-List.ACCEPTED_DATA = (ListItem,Description, Caption, Event, Note, Reference, TextContent, PhonContent,String,Alignment, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer,AbstractExtendedTokenAnnotation, Correction, Part, Feature)
-Caption.ACCEPTED_DATA = (Sentence, Reference, Description, TextContent,PhonContent,String,Alignment,Gap, Metric, Alternative, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part, Feature)
-AbstractCorrectionChild.ACCEPTED_DATA = (AbstractTokenAnnotation, AbstractSpanAnnotation, AbstractStructureElement, TextContent,PhonContent, Correction, String, Description, Metric)
-Correction.ACCEPTED_DATA = (New,Original,Current, Suggestion, ErrorDetection, Description, Metric, Feature)
-Term.ACCEPTED_DATA = (Paragraph, Event, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Definition.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Example.ACCEPTED_DATA = (Paragraph, Sentence, Word, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Division.ACCEPTED_DATA = (Division, Quote, Gap, Event, Example, Entry, Head, Utterance, Paragraph, Sentence, List, Figure, Table, Note, Reference,AbstractExtendedTokenAnnotation, Description, Linebreak, Whitespace, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part, TextContent, PhonContent, Feature)
-Event.ACCEPTED_DATA = (Event, Example, Paragraph, Sentence, Division, Word, Head,Utterance,List, Figure, Table, Reference, Feature, ActorFeature, BegindatetimeFeature, EnddatetimeFeature, TextContent,PhonContent, String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Note.ACCEPTED_DATA = (Paragraph, Sentence, Word, Example, Head, Utterance, List, Figure, Table, Reference, Feature, TextContent,PhonContent,String, Metric,AbstractExtendedTokenAnnotation, Correction, Part)
-Quote.ACCEPTED_DATA = (Word, Sentence, Paragraph, Utterance, Division, Quote, TextContent, String,Gap, Feature, Description, Alignment, Metric, Alternative, AlternativeLayers, AbstractAnnotationLayer, Correction, Part)
-Gap.ACCEPTED_DATA = (Content, Feature, Metric, Description, Part)
-Linebreak.ACCEPTED_DATA = (Feature,Metric, Description)
-Whitespace.ACCEPTED_DATA = (Feature,Metric, Description)
 
 #==============================================================================
 
@@ -6467,7 +6032,7 @@ class Corpus:
                 if self.conditionf(f):
                     try:
                         yield Document(file=f, **self.kwargs )
-                    except Exception as e:
+                    except Exception as e: #pylint: disable=broad-except
                         print("Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                         if not self.ignoreerrors:
                             raise
@@ -6477,7 +6042,7 @@ class Corpus:
                     if self.conditionf(f):
                         try:
                             yield Document(file=f, **self.kwargs)
-                        except Exception as e:
+                        except Exception as e: #pylint: disable=broad-except
                             print("Error, unable to parse " + f + ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                             if not self.ignoreerrors:
                                 raise
@@ -6492,7 +6057,7 @@ class CorpusFiles(Corpus):
                 if self.conditionf(f):
                     try:
                         yield f
-                    except Exception as e:
+                    except Exception as e: #pylint: disable=broad-except
                         print("Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                         if not self.ignoreerrors:
                             raise
@@ -6502,7 +6067,7 @@ class CorpusFiles(Corpus):
                     if self.conditionf(f):
                         try:
                             yield f
-                        except Exception as e:
+                        except Exception as e: #pylint: disable=broad-except
                             print("Error, unable to parse " + f+ ": " + e.__class__.__name__  + " - " + str(e),file=stderr)
                             if not self.ignoreerrors:
                                 raise
@@ -6538,7 +6103,7 @@ class CorpusProcessor(object):
             return ValueError("Can only retrieve length if instantiated with preindex=True")
 
     def execute(self):
-        for output in self.run():
+        for _ in self.run():
             pass
 
     def run(self, *args, **kwargs):
@@ -6791,7 +6356,7 @@ def loadsetdefinition(filename):
 
 def relaxng_declarations():
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-    for key, value in vars(AnnotationType).items():
+    for key in vars(AnnotationType).keys():
         if key[0] != '_':
             yield E.element( E.optional( E.attribute(name='set')) , E.optional(E.attribute(name='annotator')) , E.optional( E.attribute(name='annotatortype') ) , E.optional( E.attribute(name='datetime') )  , name=key.lower() + '-annotation')
 
@@ -6815,8 +6380,13 @@ def relaxng(filename=None):
                     name='metadata',
                     #ns=NSFOLIA,
                 ),
-                E.oneOrMore(
-                    E.ref(name='text'),
+                E.interleave(
+                    E.zeroOrMore(
+                        E.ref(name='text'),
+                    ),
+                    E.zeroOrMore(
+                        E.ref(name='speech'),
+                    ),
                 ),
                 name='FoLiA',
                 ns = NSFOLIA
@@ -6828,7 +6398,13 @@ def relaxng(filename=None):
         if 'relaxng' in dir(c):
             if c.relaxng and c.XMLTAG and not c.XMLTAG in done:
                 done[c.XMLTAG] = True
-                grammar.append( c.relaxng() )
+                definition = c.relaxng()
+                grammar.append( definition )
+                if c.XMLTAG == 'item': #nasty backward-compatibility hack to allow deprecated listitem element (actually called item)
+                    definition_alias = c.relaxng()
+                    definition_alias.set('name','listitem')
+                    definition_alias[0].set('name','listitem')
+                    grammar.append( definition_alias )
 
     #for e in relaxng_imdi():
     #    grammar.append(e)
@@ -6870,7 +6446,6 @@ def findwords(doc, worditerator, *args, **kwargs):
         raise Exception("Unknown keyword parameter: " + key)
 
     matchcursor = 0
-    matched = []
 
     #shortcut for when no Pattern is passed, make one on the fly
     if len(args) == 1 and not isinstance(args[0], Pattern):
@@ -6883,7 +6458,6 @@ def findwords(doc, worditerator, *args, **kwargs):
     unsetwildcards = False
     variablewildcards = None
     prevsize = -1
-    minsize = 99999
     #sanity check
     for i, pattern in enumerate(args):
         if not isinstance(pattern, Pattern):
@@ -6907,9 +6481,8 @@ def findwords(doc, worditerator, *args, **kwargs):
         for pattern in args:
             if pattern.variablesize():
                 pattern.sequence = [ True if x == '*' else x for x in pattern.sequence ]
-        variablesize = False
 
-    if variablewildcards:
+    if variablewildcards: #pylint: disable=too-many-nested-blocks
         #one or more items have a * wildcard, which may span multiple tokens. Resolve this to a wider range of simpler patterns
 
         #we're not commited to a particular size, expand to various ones
@@ -6925,7 +6498,7 @@ def findwords(doc, worditerator, *args, **kwargs):
                     yield match
 
     else:
-        patterns = args
+        patterns = args #pylint: disable=redefined-variable-type
         buffers = []
 
         for word in worditerator():
@@ -6957,10 +6530,7 @@ def findwords(doc, worditerator, *args, **kwargs):
                     if match[i] is False:
                         continue
                     matchcursor = len(buffer)
-                    if (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor])):
-                        match[i] = True
-                    else:
-                        match[i] = False
+                    match[i] = (value == pattern.sequence[matchcursor] or pattern.sequence[matchcursor] is True or (isinstance(pattern.sequence[matchcursor], tuple) and value in pattern.sequence[matchcursor]))
 
 
             for buffer, matches in list(zip(buffers, match)):
@@ -7094,25 +6664,650 @@ def validate(filename,schema=None,deep=False):
     if deep:
         doc = Document(tree=doc, deepvalidation=True)
 
-#structure scope above the sentence level, used by next() and previous() methods
-STRUCTURESCOPE = (Sentence, Paragraph, Division, ListItem, Text, Event, Caption, Head)
+#================================= FOLIA SPECIFICATION ==========================================================
 
-XML2CLASS = {}
-ANNOTATIONTYPE2CLASS = {}
-ANNOTATIONTYPE2XML = {}
-ANNOTATIONTYPE2LAYERCLASS = {}
-for _c in list(vars().values()):
-    if hasattr(_c,'XMLTAG') and hasattr(_c,'ANNOTATIONTYPE'):
-        XML2CLASS[_c.XMLTAG] = _c
-        if issubclass(_c,AbstractAnnotationLayer):
-            ANNOTATIONTYPE2LAYERCLASS[_c.ANNOTATIONTYPE] = _c
-        if _c.ROOTELEMENT:
-            ANNOTATIONTYPE2CLASS[_c.ANNOTATIONTYPE] = _c
-            ANNOTATIONTYPE2XML[_c.ANNOTATIONTYPE] = _c.XMLTAG
+#foliaspec:header
+#This file was last updated according to the FoLiA specification for version 1.0.0 on 2016-03-08 11:16:23, using foliaspec.py
+#Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
-XML2CLASS['listitem'] = ListItem #backward compatibility (XML tag is 'item' now, consistent with manual)
+#foliaspec:structurescope:STRUCTURESCOPE
+#Structure scope above the sentence level, used by next() and previous() methods
+STRUCTURESCOPE = (Sentence, Paragraph, Division, ListItem, Text, Event, Caption, Head,)
 
-defaultignorelist = [Original,Suggestion,Alternative, AlternativeLayers]
-#default ignore list for token annotation
-defaultignorelist_annotations = [Original,Suggestion,Alternative, AlternativeLayers,MorphologyLayer, PhonologyLayer]
-defaultignorelist_structure = [Original,Suggestion,Alternative, AlternativeLayers,AbstractAnnotationLayer]
+#foliaspec:annotationtype_xml_map
+#A mapping from annotation types to xml tags (strings)
+ANNOTATIONTYPE2XML = {
+    AnnotationType.ALIGNMENT:  "alignment" ,
+    AnnotationType.CHUNKING:  "chunk" ,
+    AnnotationType.COMPLEXALIGNMENT:  "complexalignment" ,
+    AnnotationType.COREFERENCE:  "coreferencechain" ,
+    AnnotationType.CORRECTION:  "correction" ,
+    AnnotationType.DEFINITION:  "def" ,
+    AnnotationType.DEPENDENCY:  "dependency" ,
+    AnnotationType.DIVISION:  "div" ,
+    AnnotationType.DOMAIN:  "domain" ,
+    AnnotationType.ENTITY:  "entity" ,
+    AnnotationType.ENTRY:  "entry" ,
+    AnnotationType.ERRORDETECTION:  "errordetection" ,
+    AnnotationType.EVENT:  "event" ,
+    AnnotationType.EXAMPLE:  "ex" ,
+    AnnotationType.FIGURE:  "figure" ,
+    AnnotationType.GAP:  "gap" ,
+    AnnotationType.LANG:  "lang" ,
+    AnnotationType.LEMMA:  "lemma" ,
+    AnnotationType.LINEBREAK:  "br" ,
+    AnnotationType.LIST:  "list" ,
+    AnnotationType.METRIC:  "metric" ,
+    AnnotationType.MORPHOLOGICAL:  "morpheme" ,
+    AnnotationType.NOTE:  "note" ,
+    AnnotationType.PARAGRAPH:  "p" ,
+    AnnotationType.PART:  "part" ,
+    AnnotationType.PHON:  "ph" ,
+    AnnotationType.PHONOLOGICAL:  "phoneme" ,
+    AnnotationType.POS:  "pos" ,
+    AnnotationType.SEMROLE:  "semrole" ,
+    AnnotationType.SENSE:  "sense" ,
+    AnnotationType.SENTENCE:  "s" ,
+    AnnotationType.STRING:  "str" ,
+    AnnotationType.SUBJECTIVITY:  "subjectivity" ,
+    AnnotationType.SYNTAX:  "su" ,
+    AnnotationType.TABLE:  "table" ,
+    AnnotationType.TERM:  "term" ,
+    AnnotationType.TEXT:  "t" ,
+    AnnotationType.CORRECTION:  "t-correction" ,
+    AnnotationType.ERRORDETECTION:  "t-error" ,
+    AnnotationType.GAP:  "t-gap" ,
+    AnnotationType.STRING:  "t-str" ,
+    AnnotationType.STYLE:  "t-style" ,
+    AnnotationType.TIMESEGMENT:  "timesegment" ,
+    AnnotationType.UTTERANCE:  "utt" ,
+    AnnotationType.WHITESPACE:  "whitespace" ,
+    AnnotationType.TOKEN:  "w" ,
+}
+
+#foliaspec:string_class_map
+XML2CLASS = {
+    "aref": AlignReference,
+    "alignment": Alignment,
+    "alt": Alternative,
+    "altlayers": AlternativeLayers,
+    "caption": Caption,
+    "cell": Cell,
+    "chunk": Chunk,
+    "chunking": ChunkingLayer,
+    "complexalignment": ComplexAlignment,
+    "complexalignments": ComplexAlignmentLayer,
+    "content": Content,
+    "coreferencechain": CoreferenceChain,
+    "coreferences": CoreferenceLayer,
+    "coreferencelink": CoreferenceLink,
+    "correction": Correction,
+    "current": Current,
+    "def": Definition,
+    "dependencies": DependenciesLayer,
+    "dependency": Dependency,
+    "dep": DependencyDependent,
+    "desc": Description,
+    "div": Division,
+    "domain": DomainAnnotation,
+    "entities": EntitiesLayer,
+    "entity": Entity,
+    "entry": Entry,
+    "errordetection": ErrorDetection,
+    "event": Event,
+    "ex": Example,
+    "external": External,
+    "feat": Feature,
+    "figure": Figure,
+    "gap": Gap,
+    "head": Head,
+    "hd": Headspan,
+    "label": Label,
+    "lang": LangAnnotation,
+    "lemma": LemmaAnnotation,
+    "br": Linebreak,
+    "list": List,
+    "item": ListItem,
+    "metric": Metric,
+    "morpheme": Morpheme,
+    "morphology": MorphologyLayer,
+    "new": New,
+    "note": Note,
+    "original": Original,
+    "p": Paragraph,
+    "part": Part,
+    "ph": PhonContent,
+    "phoneme": Phoneme,
+    "phonology": PhonologyLayer,
+    "pos": PosAnnotation,
+    "quote": Quote,
+    "ref": Reference,
+    "row": Row,
+    "semrole": SemanticRole,
+    "semroles": SemanticRolesLayer,
+    "sense": SenseAnnotation,
+    "s": Sentence,
+    "speech": Speech,
+    "str": String,
+    "subjectivity": SubjectivityAnnotation,
+    "suggestion": Suggestion,
+    "su": SyntacticUnit,
+    "syntax": SyntaxLayer,
+    "table": Table,
+    "tablehead": TableHead,
+    "term": Term,
+    "text": Text,
+    "t": TextContent,
+    "t-correction": TextMarkupCorrection,
+    "t-error": TextMarkupError,
+    "t-gap": TextMarkupGap,
+    "t-str": TextMarkupString,
+    "t-style": TextMarkupStyle,
+    "timesegment": TimeSegment,
+    "timing": TimingLayer,
+    "utt": Utterance,
+    "whitespace": Whitespace,
+    "w": Word,
+    "wref": WordReference,
+}
+
+XML2CLASS['listitem'] = ListItem #backward compatibility for erroneous old FoLiA versions (XML tag is 'item' now, consistent with manual)
+
+#foliaspec:annotationtype_layerclass_map
+ANNOTATIONTYPE2LAYERCLASS = {
+    AnnotationType.CHUNKING:  ChunkingLayer ,
+    AnnotationType.COMPLEXALIGNMENT:  ComplexAlignmentLayer ,
+    AnnotationType.COREFERENCE:  CoreferenceLayer ,
+    AnnotationType.DEPENDENCY:  DependenciesLayer ,
+    AnnotationType.ENTITY:  EntitiesLayer ,
+    AnnotationType.MORPHOLOGICAL:  MorphologyLayer ,
+    AnnotationType.PHONOLOGICAL:  PhonologyLayer ,
+    AnnotationType.SEMROLE:  SemanticRolesLayer ,
+    AnnotationType.SYNTAX:  SyntaxLayer ,
+    AnnotationType.TIMESEGMENT:  TimingLayer ,
+}
+
+#foliaspec:default_ignore
+#Default ignore list for the select() method, do not descend into these
+default_ignore = ( Original, Suggestion, Alternative, AlternativeLayers,)
+
+#foliaspec:default_ignore_annotations
+#Default ignore list for token annotation
+default_ignore_annotations = ( Original, Suggestion, Alternative, AlternativeLayers, MorphologyLayer, PhonologyLayer,)
+
+#foliaspec:default_ignore_structure
+#Default ignore list for structure annotation
+default_ignore_structure = ( Original, Suggestion, Alternative, AlternativeLayers, AbstractAnnotationLayer,)
+
+#foliaspec:defaultproperties
+#Default properties which all elements inherit
+AbstractElement.ACCEPTED_DATA = (Description,)
+AbstractElement.ANNOTATIONTYPE = None
+AbstractElement.AUTH = True
+AbstractElement.AUTO_GENERATE_ID = False
+AbstractElement.OCCURRENCES = 0
+AbstractElement.OCCURRENCES_PER_SET = 0
+AbstractElement.OPTIONAL_ATTRIBS = None
+AbstractElement.PHONCONTAINER = False
+AbstractElement.PRIMARYELEMENT = True
+AbstractElement.PRINTABLE = False
+AbstractElement.REQUIRED_ATTRIBS = None
+AbstractElement.REQUIRED_DATA = None
+AbstractElement.SETONLY = False
+AbstractElement.SPEAKABLE = False
+AbstractElement.SUBSET = None
+AbstractElement.TEXTCONTAINER = False
+AbstractElement.TEXTDELIMITER = None
+AbstractElement.XLINK = False
+AbstractElement.XMLTAG = None
+
+#foliaspec:setelementproperties
+#Sets all element properties for all elements
+#------ AbstractAnnotationLayer -------
+AbstractAnnotationLayer.ACCEPTED_DATA = (Correction, Description,)
+AbstractAnnotationLayer.OPTIONAL_ATTRIBS = (Attrib.ID,)
+AbstractAnnotationLayer.PRINTABLE = False
+AbstractAnnotationLayer.SETONLY = True
+AbstractAnnotationLayer.SPEAKABLE = False
+#------ AbstractCorrectionChild -------
+AbstractCorrectionChild.ACCEPTED_DATA = (AbstractSpanAnnotation, AbstractStructureElement, AbstractTokenAnnotation, Correction, Description, Metric, PhonContent, String, TextContent,)
+AbstractCorrectionChild.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N,)
+AbstractCorrectionChild.PRINTABLE = True
+AbstractCorrectionChild.SPEAKABLE = True
+AbstractCorrectionChild.TEXTDELIMITER = None
+#------ AbstractExtendedTokenAnnotation -------
+#------ AbstractSpanAnnotation -------
+AbstractSpanAnnotation.ACCEPTED_DATA = (Alignment, Description, Metric,)
+AbstractSpanAnnotation.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+AbstractSpanAnnotation.PRINTABLE = True
+AbstractSpanAnnotation.SPEAKABLE = True
+#------ AbstractSpanRole -------
+AbstractSpanRole.ACCEPTED_DATA = (Alignment, Description, Feature, Metric, WordReference,)
+AbstractSpanRole.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME,)
+#------ AbstractStructureElement -------
+AbstractStructureElement.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part,)
+AbstractStructureElement.AUTO_GENERATE_ID = True
+AbstractStructureElement.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+AbstractStructureElement.PRINTABLE = True
+AbstractStructureElement.REQUIRED_ATTRIBS = None
+AbstractStructureElement.SPEAKABLE = True
+AbstractStructureElement.TEXTDELIMITER = "\n\n"
+#------ AbstractTextMarkup -------
+AbstractTextMarkup.ACCEPTED_DATA = (AbstractTextMarkup, Description,)
+AbstractTextMarkup.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+AbstractTextMarkup.PRIMARYELEMENT = False
+AbstractTextMarkup.PRINTABLE = True
+AbstractTextMarkup.TEXTCONTAINER = True
+AbstractTextMarkup.TEXTDELIMITER = ""
+AbstractTextMarkup.XLINK = True
+#------ AbstractTokenAnnotation -------
+AbstractTokenAnnotation.ACCEPTED_DATA = (Description, Feature, Metric,)
+AbstractTokenAnnotation.OCCURRENCES_PER_SET = 1
+AbstractTokenAnnotation.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+AbstractTokenAnnotation.REQUIRED_ATTRIBS = (Attrib.CLASS,)
+#------ ActorFeature -------
+ActorFeature.SUBSET = "actor"
+ActorFeature.XMLTAG = None
+#------ AlignReference -------
+AlignReference.XMLTAG = "aref"
+#------ Alignment -------
+Alignment.ACCEPTED_DATA = (AlignReference, Description, Feature, Metric,)
+Alignment.ANNOTATIONTYPE = AnnotationType.ALIGNMENT
+Alignment.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+Alignment.PRINTABLE = False
+Alignment.REQUIRED_ATTRIBS = None
+Alignment.SPEAKABLE = False
+Alignment.XLINK = True
+Alignment.XMLTAG = "alignment"
+#------ Alternative -------
+Alternative.ACCEPTED_DATA = (AbstractTokenAnnotation, Correction, Description, MorphologyLayer, PhonologyLayer,)
+Alternative.AUTH = False
+Alternative.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+Alternative.PRINTABLE = False
+Alternative.REQUIRED_ATTRIBS = None
+Alternative.SPEAKABLE = False
+Alternative.XMLTAG = "alt"
+#------ AlternativeLayers -------
+AlternativeLayers.ACCEPTED_DATA = (AbstractAnnotationLayer, Description,)
+AlternativeLayers.AUTH = False
+AlternativeLayers.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+AlternativeLayers.PRINTABLE = False
+AlternativeLayers.REQUIRED_ATTRIBS = None
+AlternativeLayers.SPEAKABLE = False
+AlternativeLayers.XMLTAG = "altlayers"
+#------ BegindatetimeFeature -------
+BegindatetimeFeature.SUBSET = "begindatetime"
+BegindatetimeFeature.XMLTAG = None
+#------ Caption -------
+Caption.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Gap, Linebreak, Metric, Part, PhonContent, Reference, Sentence, String, TextContent, Whitespace,)
+Caption.OCCURRENCES = 1
+Caption.XMLTAG = "caption"
+#------ Cell -------
+Cell.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Entry, Event, Example, Feature, Gap, Head, Linebreak, Metric, Note, Paragraph, Part, Reference, Sentence, String, TextContent, Whitespace, Word,)
+Cell.TEXTDELIMITER = " | "
+Cell.XMLTAG = "cell"
+#------ Chunk -------
+Chunk.ACCEPTED_DATA = (Alignment, Description, Feature, Metric, WordReference,)
+Chunk.ANNOTATIONTYPE = AnnotationType.CHUNKING
+Chunk.XMLTAG = "chunk"
+#------ ChunkingLayer -------
+ChunkingLayer.ACCEPTED_DATA = (Chunk, Correction, Description,)
+ChunkingLayer.ANNOTATIONTYPE = AnnotationType.CHUNKING
+ChunkingLayer.PRIMARYELEMENT = False
+ChunkingLayer.XMLTAG = "chunking"
+#------ ComplexAlignment -------
+ComplexAlignment.ACCEPTED_DATA = (Alignment, Description, Feature, Metric,)
+ComplexAlignment.ANNOTATIONTYPE = AnnotationType.COMPLEXALIGNMENT
+ComplexAlignment.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+ComplexAlignment.PRINTABLE = False
+ComplexAlignment.REQUIRED_ATTRIBS = None
+ComplexAlignment.SPEAKABLE = False
+ComplexAlignment.XMLTAG = "complexalignment"
+#------ ComplexAlignmentLayer -------
+ComplexAlignmentLayer.ACCEPTED_DATA = (ComplexAlignment, Correction, Description,)
+ComplexAlignmentLayer.ANNOTATIONTYPE = AnnotationType.COMPLEXALIGNMENT
+ComplexAlignmentLayer.PRIMARYELEMENT = False
+ComplexAlignmentLayer.XMLTAG = "complexalignments"
+#------ Content -------
+Content.OCCURRENCES = 1
+Content.XMLTAG = "content"
+#------ CoreferenceChain -------
+CoreferenceChain.ACCEPTED_DATA = (Alignment, CoreferenceLink, Description, Metric,)
+CoreferenceChain.ANNOTATIONTYPE = AnnotationType.COREFERENCE
+CoreferenceChain.REQUIRED_DATA = (CoreferenceLink,)
+CoreferenceChain.XMLTAG = "coreferencechain"
+#------ CoreferenceLayer -------
+CoreferenceLayer.ACCEPTED_DATA = (CoreferenceChain, Correction, Description,)
+CoreferenceLayer.ANNOTATIONTYPE = AnnotationType.COREFERENCE
+CoreferenceLayer.PRIMARYELEMENT = False
+CoreferenceLayer.XMLTAG = "coreferences"
+#------ CoreferenceLink -------
+CoreferenceLink.ACCEPTED_DATA = (Alignment, Description, Feature, Headspan, LevelFeature, Metric, ModalityFeature, TimeFeature, WordReference,)
+CoreferenceLink.ANNOTATIONTYPE = AnnotationType.COREFERENCE
+CoreferenceLink.PRIMARYELEMENT = False
+CoreferenceLink.XMLTAG = "coreferencelink"
+#------ Correction -------
+Correction.ACCEPTED_DATA = (Current, Description, ErrorDetection, Feature, Metric, New, Original, Suggestion,)
+Correction.ANNOTATIONTYPE = AnnotationType.CORRECTION
+Correction.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+Correction.PRINTABLE = True
+Correction.SPEAKABLE = True
+Correction.TEXTDELIMITER = None
+Correction.XMLTAG = "correction"
+#------ Current -------
+Current.OCCURRENCES = 1
+Current.OPTIONAL_ATTRIBS = None
+Current.XMLTAG = "current"
+#------ Definition -------
+Definition.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Figure, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Word,)
+Definition.ANNOTATIONTYPE = AnnotationType.DEFINITION
+Definition.XMLTAG = "def"
+#------ DependenciesLayer -------
+DependenciesLayer.ACCEPTED_DATA = (Correction, Dependency, Description,)
+DependenciesLayer.ANNOTATIONTYPE = AnnotationType.DEPENDENCY
+DependenciesLayer.PRIMARYELEMENT = False
+DependenciesLayer.XMLTAG = "dependencies"
+#------ Dependency -------
+Dependency.ACCEPTED_DATA = (Alignment, DependencyDependent, Description, Feature, Headspan, Metric,)
+Dependency.ANNOTATIONTYPE = AnnotationType.DEPENDENCY
+Dependency.REQUIRED_DATA = (DependencyDependent, Headspan,)
+Dependency.XMLTAG = "dependency"
+#------ DependencyDependent -------
+DependencyDependent.XMLTAG = "dep"
+#------ Description -------
+Description.OCCURRENCES = 1
+Description.XMLTAG = "desc"
+#------ Division -------
+Division.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Division, Entry, Event, Example, Feature, Figure, Gap, Head, Linebreak, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, Table, TextContent, Utterance, Whitespace,)
+Division.ANNOTATIONTYPE = AnnotationType.DIVISION
+Division.TEXTDELIMITER = "\n\n\n"
+Division.XMLTAG = "div"
+#------ DomainAnnotation -------
+DomainAnnotation.ANNOTATIONTYPE = AnnotationType.DOMAIN
+DomainAnnotation.XMLTAG = "domain"
+#------ EnddatetimeFeature -------
+EnddatetimeFeature.SUBSET = "enddatetime"
+EnddatetimeFeature.XMLTAG = None
+#------ EntitiesLayer -------
+EntitiesLayer.ACCEPTED_DATA = (Correction, Description, Entity,)
+EntitiesLayer.ANNOTATIONTYPE = AnnotationType.ENTITY
+EntitiesLayer.PRIMARYELEMENT = False
+EntitiesLayer.XMLTAG = "entities"
+#------ Entity -------
+Entity.ACCEPTED_DATA = (Alignment, Description, Feature, Metric, WordReference,)
+Entity.ANNOTATIONTYPE = AnnotationType.ENTITY
+Entity.XMLTAG = "entity"
+#------ Entry -------
+Entry.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Correction, Definition, Description, Example, Feature, Metric, Part, Term,)
+Entry.ANNOTATIONTYPE = AnnotationType.ENTRY
+Entry.XMLTAG = "entry"
+#------ ErrorDetection -------
+ErrorDetection.ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
+ErrorDetection.XMLTAG = "errordetection"
+#------ Event -------
+Event.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, ActorFeature, Alignment, Alternative, AlternativeLayers, BegindatetimeFeature, Correction, Description, Division, EnddatetimeFeature, Event, Example, Feature, Figure, Head, Linebreak, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Whitespace, Word,)
+Event.ANNOTATIONTYPE = AnnotationType.EVENT
+Event.XMLTAG = "event"
+#------ Example -------
+Example.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Figure, Linebreak, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Whitespace, Word,)
+Example.ANNOTATIONTYPE = AnnotationType.EXAMPLE
+Example.XMLTAG = "ex"
+#------ External -------
+External.ACCEPTED_DATA = (Description,)
+External.AUTH = True
+External.OPTIONAL_ATTRIBS = None
+External.PRINTABLE = True
+External.REQUIRED_ATTRIBS = (Attrib.SRC,)
+External.SPEAKABLE = False
+External.XMLTAG = "external"
+#------ Feature -------
+Feature.XMLTAG = "feat"
+#------ Figure -------
+Figure.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Caption, Correction, Description, Feature, Metric, Part, Sentence, String, TextContent,)
+Figure.ANNOTATIONTYPE = AnnotationType.FIGURE
+Figure.SPEAKABLE = False
+Figure.TEXTDELIMITER = "\n\n"
+Figure.XMLTAG = "figure"
+#------ FunctionFeature -------
+FunctionFeature.SUBSET = "function"
+FunctionFeature.XMLTAG = None
+#------ Gap -------
+Gap.ACCEPTED_DATA = (Content, Description, Feature, Metric, Part,)
+Gap.ANNOTATIONTYPE = AnnotationType.GAP
+Gap.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME,)
+Gap.XMLTAG = "gap"
+#------ Head -------
+Head.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Event, Feature, Gap, Linebreak, Metric, Part, PhonContent, Reference, Sentence, String, TextContent, Whitespace, Word,)
+Head.OCCURRENCES = 1
+Head.TEXTDELIMITER = "\n\n"
+Head.XMLTAG = "head"
+#------ HeadFeature -------
+HeadFeature.SUBSET = "head"
+HeadFeature.XMLTAG = None
+#------ Headspan -------
+Headspan.XMLTAG = "hd"
+#------ Label -------
+Label.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part, PhonContent, Reference, String, TextContent, Word,)
+Label.XMLTAG = "label"
+#------ LangAnnotation -------
+LangAnnotation.ANNOTATIONTYPE = AnnotationType.LANG
+LangAnnotation.XMLTAG = "lang"
+#------ LemmaAnnotation -------
+LemmaAnnotation.ANNOTATIONTYPE = AnnotationType.LEMMA
+LemmaAnnotation.XMLTAG = "lemma"
+#------ LevelFeature -------
+LevelFeature.SUBSET = "level"
+LevelFeature.XMLTAG = None
+#------ Linebreak -------
+Linebreak.ANNOTATIONTYPE = AnnotationType.LINEBREAK
+Linebreak.TEXTDELIMITER = ""
+Linebreak.XMLTAG = "br"
+#------ List -------
+List.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Caption, Correction, Description, Event, Feature, ListItem, Metric, Note, Part, PhonContent, Reference, String, TextContent,)
+List.ANNOTATIONTYPE = AnnotationType.LIST
+List.TEXTDELIMITER = "\n\n"
+List.XMLTAG = "list"
+#------ ListItem -------
+ListItem.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Event, Feature, Gap, Label, Linebreak, List, Metric, Note, Part, PhonContent, Reference, Sentence, String, TextContent, Whitespace,)
+ListItem.TEXTDELIMITER = "\n"
+ListItem.XMLTAG = "item"
+#------ Metric -------
+Metric.ACCEPTED_DATA = (Description, Feature, ValueFeature,)
+Metric.ANNOTATIONTYPE = AnnotationType.METRIC
+Metric.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+Metric.XMLTAG = "metric"
+#------ ModalityFeature -------
+ModalityFeature.SUBSET = "modality"
+ModalityFeature.XMLTAG = None
+#------ Morpheme -------
+Morpheme.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, FunctionFeature, Metric, Morpheme, Part, PhonContent, String, TextContent,)
+Morpheme.ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
+Morpheme.TEXTDELIMITER = ""
+Morpheme.XMLTAG = "morpheme"
+#------ MorphologyLayer -------
+MorphologyLayer.ACCEPTED_DATA = (Correction, Description, Morpheme,)
+MorphologyLayer.ANNOTATIONTYPE = AnnotationType.MORPHOLOGICAL
+MorphologyLayer.PRIMARYELEMENT = False
+MorphologyLayer.XMLTAG = "morphology"
+#------ New -------
+New.OCCURRENCES = 1
+New.OPTIONAL_ATTRIBS = None
+New.XMLTAG = "new"
+#------ Note -------
+Note.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Example, Feature, Figure, Head, Linebreak, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Whitespace, Word,)
+Note.ANNOTATIONTYPE = AnnotationType.NOTE
+Note.XMLTAG = "note"
+#------ Original -------
+Original.AUTH = False
+Original.OCCURRENCES = 1
+Original.OPTIONAL_ATTRIBS = None
+Original.XMLTAG = "original"
+#------ Paragraph -------
+Paragraph.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Entry, Event, Example, Feature, Figure, Gap, Head, Linebreak, List, Metric, Note, Part, PhonContent, Quote, Reference, Sentence, String, TextContent, Whitespace, Word,)
+Paragraph.ANNOTATIONTYPE = AnnotationType.PARAGRAPH
+Paragraph.TEXTDELIMITER = "\n\n"
+Paragraph.XMLTAG = "p"
+#------ Part -------
+Part.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, AbstractStructureElement, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part,)
+Part.ANNOTATIONTYPE = AnnotationType.PART
+Part.TEXTDELIMITER = None
+Part.XMLTAG = "part"
+#------ PhonContent -------
+PhonContent.ACCEPTED_DATA = (Description,)
+PhonContent.ANNOTATIONTYPE = AnnotationType.PHON
+PhonContent.OCCURRENCES = 0
+PhonContent.OPTIONAL_ATTRIBS = (Attrib.CLASS, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME,)
+PhonContent.PHONCONTAINER = True
+PhonContent.PRINTABLE = False
+PhonContent.SPEAKABLE = True
+PhonContent.XMLTAG = "ph"
+#------ Phoneme -------
+Phoneme.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, FunctionFeature, Metric, Part, PhonContent, Phoneme, String, TextContent,)
+Phoneme.ANNOTATIONTYPE = AnnotationType.PHONOLOGICAL
+Phoneme.TEXTDELIMITER = ""
+Phoneme.XMLTAG = "phoneme"
+#------ PhonologyLayer -------
+PhonologyLayer.ACCEPTED_DATA = (Correction, Description, Phoneme,)
+PhonologyLayer.ANNOTATIONTYPE = AnnotationType.PHONOLOGICAL
+PhonologyLayer.PRIMARYELEMENT = False
+PhonologyLayer.XMLTAG = "phonology"
+#------ PosAnnotation -------
+PosAnnotation.ACCEPTED_DATA = (Description, Feature, HeadFeature, Metric,)
+PosAnnotation.ANNOTATIONTYPE = AnnotationType.POS
+PosAnnotation.XMLTAG = "pos"
+#------ Quote -------
+Quote.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Correction, Description, Division, Feature, Gap, Metric, Paragraph, Part, Quote, Sentence, String, TextContent, Utterance, Word,)
+Quote.XMLTAG = "quote"
+#------ Reference -------
+Reference.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part, PhonContent, String, TextContent,)
+Reference.TEXTDELIMITER = None
+Reference.XMLTAG = "ref"
+#------ Row -------
+Row.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Cell, Correction, Description, Feature, Metric, Part,)
+Row.TEXTDELIMITER = "\n"
+Row.XMLTAG = "row"
+#------ SemanticRole -------
+SemanticRole.ACCEPTED_DATA = (Alignment, Description, Feature, Headspan, Metric, WordReference,)
+SemanticRole.ANNOTATIONTYPE = AnnotationType.SEMROLE
+SemanticRole.REQUIRED_ATTRIBS = (Attrib.CLASS,)
+SemanticRole.XMLTAG = "semrole"
+#------ SemanticRolesLayer -------
+SemanticRolesLayer.ACCEPTED_DATA = (Correction, Description, SemanticRole,)
+SemanticRolesLayer.ANNOTATIONTYPE = AnnotationType.SEMROLE
+SemanticRolesLayer.PRIMARYELEMENT = False
+SemanticRolesLayer.XMLTAG = "semroles"
+#------ SenseAnnotation -------
+SenseAnnotation.ACCEPTED_DATA = (Description, Feature, Metric, SynsetFeature,)
+SenseAnnotation.ANNOTATIONTYPE = AnnotationType.SENSE
+SenseAnnotation.XMLTAG = "sense"
+#------ Sentence -------
+Sentence.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Entry, Event, Example, Feature, Gap, Linebreak, Metric, Note, Part, PhonContent, Quote, Reference, String, TextContent, Whitespace, Word,)
+Sentence.ANNOTATIONTYPE = AnnotationType.SENTENCE
+Sentence.TEXTDELIMITER = " "
+Sentence.XMLTAG = "s"
+#------ Speech -------
+Speech.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Division, Entry, Event, Example, External, Feature, Gap, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, String, TextContent, Utterance, Word,)
+Speech.TEXTDELIMITER = "\n\n\n"
+Speech.XMLTAG = "speech"
+#------ String -------
+String.ACCEPTED_DATA = (AbstractExtendedTokenAnnotation, Alignment, Correction, Description, Feature, Metric, PhonContent, TextContent,)
+String.ANNOTATIONTYPE = AnnotationType.STRING
+String.OCCURRENCES = 0
+String.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME,)
+String.PRINTABLE = True
+String.XMLTAG = "str"
+#------ StyleFeature -------
+StyleFeature.SUBSET = "style"
+StyleFeature.XMLTAG = None
+#------ SubjectivityAnnotation -------
+SubjectivityAnnotation.ANNOTATIONTYPE = AnnotationType.SUBJECTIVITY
+SubjectivityAnnotation.XMLTAG = "subjectivity"
+#------ Suggestion -------
+Suggestion.AUTH = False
+Suggestion.OCCURRENCES = 0
+Suggestion.XMLTAG = "suggestion"
+#------ SynsetFeature -------
+SynsetFeature.SUBSET = "synset"
+SynsetFeature.XMLTAG = None
+#------ SyntacticUnit -------
+SyntacticUnit.ACCEPTED_DATA = (Alignment, Description, Feature, Metric, SyntacticUnit, WordReference,)
+SyntacticUnit.ANNOTATIONTYPE = AnnotationType.SYNTAX
+SyntacticUnit.XMLTAG = "su"
+#------ SyntaxLayer -------
+SyntaxLayer.ACCEPTED_DATA = (Correction, Description, SyntacticUnit,)
+SyntaxLayer.ANNOTATIONTYPE = AnnotationType.SYNTAX
+SyntaxLayer.PRIMARYELEMENT = False
+SyntaxLayer.XMLTAG = "syntax"
+#------ Table -------
+Table.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part, Row, TableHead,)
+Table.ANNOTATIONTYPE = AnnotationType.TABLE
+Table.XMLTAG = "table"
+#------ TableHead -------
+TableHead.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part, Row,)
+TableHead.XMLTAG = "tablehead"
+#------ Term -------
+Term.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Event, Feature, Figure, Gap, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Word,)
+Term.ANNOTATIONTYPE = AnnotationType.TERM
+Term.XMLTAG = "term"
+#------ Text -------
+Text.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Division, Entry, Event, Example, External, Feature, Figure, Gap, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, String, Table, TextContent, Word,)
+Text.TEXTDELIMITER = "\n\n\n"
+Text.XMLTAG = "text"
+#------ TextContent -------
+TextContent.ACCEPTED_DATA = (AbstractTextMarkup, Description, Linebreak,)
+TextContent.ANNOTATIONTYPE = AnnotationType.TEXT
+TextContent.OCCURRENCES = 0
+TextContent.OPTIONAL_ATTRIBS = (Attrib.CLASS, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME,)
+TextContent.PRINTABLE = True
+TextContent.SPEAKABLE = False
+TextContent.TEXTCONTAINER = True
+TextContent.XLINK = True
+TextContent.XMLTAG = "t"
+#------ TextMarkupCorrection -------
+TextMarkupCorrection.ANNOTATIONTYPE = AnnotationType.CORRECTION
+TextMarkupCorrection.XMLTAG = "t-correction"
+#------ TextMarkupError -------
+TextMarkupError.ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
+TextMarkupError.XMLTAG = "t-error"
+#------ TextMarkupGap -------
+TextMarkupGap.ANNOTATIONTYPE = AnnotationType.GAP
+TextMarkupGap.XMLTAG = "t-gap"
+#------ TextMarkupString -------
+TextMarkupString.ANNOTATIONTYPE = AnnotationType.STRING
+TextMarkupString.XMLTAG = "t-str"
+#------ TextMarkupStyle -------
+TextMarkupStyle.ANNOTATIONTYPE = AnnotationType.STYLE
+TextMarkupStyle.XMLTAG = "t-style"
+#------ TimeFeature -------
+TimeFeature.SUBSET = "time"
+TimeFeature.XMLTAG = None
+#------ TimeSegment -------
+TimeSegment.ACCEPTED_DATA = (ActorFeature, Alignment, BegindatetimeFeature, Description, EnddatetimeFeature, Feature, Metric, WordReference,)
+TimeSegment.ANNOTATIONTYPE = AnnotationType.TIMESEGMENT
+TimeSegment.XMLTAG = "timesegment"
+#------ TimingLayer -------
+TimingLayer.ACCEPTED_DATA = (Correction, Description, TimeSegment,)
+TimingLayer.ANNOTATIONTYPE = AnnotationType.TIMESEGMENT
+TimingLayer.PRIMARYELEMENT = False
+TimingLayer.XMLTAG = "timing"
+#------ Utterance -------
+Utterance.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Gap, Metric, Note, Part, PhonContent, Quote, Reference, Sentence, String, TextContent, Word,)
+Utterance.ANNOTATIONTYPE = AnnotationType.UTTERANCE
+Utterance.TEXTDELIMITER = " "
+Utterance.XMLTAG = "utt"
+#------ ValueFeature -------
+ValueFeature.SUBSET = "value"
+ValueFeature.XMLTAG = None
+#------ Whitespace -------
+Whitespace.ANNOTATIONTYPE = AnnotationType.WHITESPACE
+Whitespace.TEXTDELIMITER = ""
+Whitespace.XMLTAG = "whitespace"
+#------ Word -------
+Word.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractTokenAnnotation, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part, PhonContent, Reference, String, TextContent,)
+Word.ANNOTATIONTYPE = AnnotationType.TOKEN
+Word.TEXTDELIMITER = " "
+Word.XMLTAG = "w"
+#------ WordReference -------
+WordReference.XMLTAG = "wref"
+
+#EOF
