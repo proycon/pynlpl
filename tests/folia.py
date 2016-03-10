@@ -860,7 +860,6 @@ class Test2Sanity(unittest.TestCase):
         word = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.10']
         a = word.annotation(folia.Alignment)
         self.assertEqual( a.cls, "reference")
-        print(a.xmlstring(),file=sys.stderr)
         aref = next(a.select(folia.AlignReference,ignore=False))
         self.assertEqual( aref.id,"WR-P-E-J-0000000001.p.1.s.3.w.5" )
         self.assertEqual( aref.type, folia.Word )
