@@ -72,7 +72,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 #The FoLiA version
 FOLIAVERSION = "1.0.0"
 
-LIBVERSION = FOLIAVERSION + '.73' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.74' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -3797,14 +3797,16 @@ class AlignReference(AbstractElement):
         assert Class is AlignReference or issubclass(Class, AlignReference)
 
         #special handling for word references
-        id = node.attrib['id']
+        kwargs = {'id':node.attrib['id']}
         if not 'type' in node.attrib:
             raise ValueError("No type in alignment reference")
+        if 't' in node.attrib:
+            kwargs['t'] = node.attrib['t']
         try:
-            type = XML2CLASS[node.attrib['type']]
+            kwargs['type'] = XML2CLASS[node.attrib['type']]
         except KeyError:
             raise ValueError("No such type: " + node.attrib['type'])
-        return AlignReference(doc, id=id, type=type)
+        return AlignReference(doc,**kwargs)
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
