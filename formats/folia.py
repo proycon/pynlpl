@@ -15,8 +15,7 @@
 #
 #----------------------------------------------------------------
 
-#pylint: disable=redefined-builtin,trailing-whitespace,superfluous-parens,bad-classmethod-argument
-#wrong-import-order,wrong-import-position,ungrouped-imports
+#pylint: disable=redefined-builtin,trailing-whitespace,superfluous-parens,bad-classmethod-argument,wrong-import-order,wrong-import-position,ungrouped-imports
 
 from __future__ import print_function
 from __future__ import unicode_literals
