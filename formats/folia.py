@@ -69,7 +69,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 
 #foliaspec:version:FOLIAVERSION
 #The FoLiA version
-FOLIAVERSION = "1.0.0"
+FOLIAVERSION = "1.0.1"
 
 LIBVERSION = FOLIAVERSION + '.74' #== FoLiA version + library revision
 
@@ -6668,7 +6668,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.0.0 on 2016-03-08 11:16:23, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.0.1 on 2016-03-16 15:16:52, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -6866,7 +6866,7 @@ AbstractElement.XMLTAG = None
 #Sets all element properties for all elements
 #------ AbstractAnnotationLayer -------
 AbstractAnnotationLayer.ACCEPTED_DATA = (Correction, Description,)
-AbstractAnnotationLayer.OPTIONAL_ATTRIBS = (Attrib.ID,)
+AbstractAnnotationLayer.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N,)
 AbstractAnnotationLayer.PRINTABLE = False
 AbstractAnnotationLayer.SETONLY = True
 AbstractAnnotationLayer.SPEAKABLE = False
