@@ -2458,6 +2458,9 @@ class AllowGenerateID(object):
                     break
                 e = e.parent
 
+            if id is None:
+                raise Exception("No parent ID could be found")
+
         origid = id
 
         while True:
