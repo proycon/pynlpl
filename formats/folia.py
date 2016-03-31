@@ -161,6 +161,9 @@ class ModeError(Exception):
 class DocumentNotLoaded(Exception): #for alignments to external documents
     pass
 
+class GenerateIDException(Exception):
+    pass
+
 class CorrectionHandling:
     EITHER,CURRENT, ORIGINAL = range(3)
 
@@ -200,7 +203,10 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
 
     if 'generate_id_in' in kwargs:
-        kwargs['id'] = kwargs['generate_id_in'].generate_id(object.__class__)
+        try:
+            kwargs['id'] = kwargs['generate_id_in'].generate_id(object.__class__)
+        except GenerateIDException:
+            pass #ID could not be generated, just skip
         del kwargs['generate_id_in']
 
 
@@ -2441,7 +2447,7 @@ class AllowGenerateID(object):
             try:
                 xmltag = cls.XMLTAG
             except:
-                raise Exception("Expected a class such as Alternative, Correction, etc...")
+                raise GenerateIDException("Unable to generate ID, expected a class such as Alternative, Correction, etc...")
 
 
         maxid = self._getmaxid(xmltag)
@@ -2459,7 +2465,7 @@ class AllowGenerateID(object):
                 e = e.parent
 
             if id is None:
-                raise Exception("No parent ID could be found")
+                raise GenerateIDException("Unable to generate ID, no parent ID could be found")
 
         origid = id
 
