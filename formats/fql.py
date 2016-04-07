@@ -992,9 +992,13 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 elif q.kw(i,'MERGE'):
                     suggestion[0]['merge'] = True
                     i+= 1
+                    if q.kw(i,'DELETION'): #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
+                        i+=1
                 elif q.kw(i,'SPLIT'):
                     suggestion[0]['split'] = True
                     i+= 1
+                    if q.kw(i,'DELETION'): #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
+                        i+=1
                 elif q.kw(i,'DELETION'):
                     #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
                     i+= 1
