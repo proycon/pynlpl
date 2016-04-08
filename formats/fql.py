@@ -1288,9 +1288,9 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             if debug: print("[FQL EVALUATION DEBUG] Correction.assemblesuggestions - Suggestionchildren: ", len(suggestionchildren),file=sys.stderr)
 
             if 'split' in suggestionassignments and suggestionassignments['split']:
-                suggestionassignments['split'] = focus.ancestor(folia.StructureElement).id
+                suggestionassignments['split'] = substitution['parent'].next(folia.StructureElement, None).id
             if 'merge' in suggestionassignments and suggestionassignments['merge']:
-                suggestionassignments['merge'] = focus.ancestor(folia.StructureElement).id
+                suggestionassignments['merge'] = substitution['parent'].next(folia.StructureElement, None).id
             kwargs['suggestions'].append( folia.Suggestion(query.doc,*suggestionchildren, **suggestionassignments )   )
 
         return kwargs
