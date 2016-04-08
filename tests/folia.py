@@ -2125,6 +2125,37 @@ class Test5Correction(unittest.TestCase):
 
             self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" auth="no" annotatortype="auto"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
 
+        def test006_deletionsuggestion(self):
+            """Correction - Suggestion for deletion with parent merge suggestion"""
+            self.text.append(
+                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="on"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text="line"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
+                ]),
+            )
+            self.text.append(
+                folia.Sentence(self.doc,id=self.doc.id + '.s.2', contents=[
+                    folia.Word(self.doc,id=self.doc.id + '.s.2.w.1', text="sinds"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.2.w.2', text="vorige"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.2.w.3', text="week"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.2.w.4', text="zondag"),
+                    folia.Word(self.doc,id=self.doc.id + '.s.2.w.6', text=".")
+                ])
+            )
+
+            s = self.doc.index[self.doc.id + '.s.1']
+            s2 = self.doc.index[self.doc.id + '.s.2']
+            w = self.doc.index[self.doc.id + '.s.1.w.6']
+            s.remove(w)
+            s.append( folia.Correction(self.doc, folia.Current(self.doc, w), folia.Suggestion(self.doc, merge=s2.id)) )
+
+            self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w><correction><current><w xml:id="example.s.1.w.6"><t>.</t></w></current><suggestion merge="example.s.2" auth="no"/></correction></s>'))
+
+
 
 class Test6Query(unittest.TestCase):
     def setUp(self):
