@@ -983,19 +983,19 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
         while i < l:
             if q.kw(i,'SUGGESTION'):
                 i+= 1
-                suggestion = ( {}, {} )
+                suggestion = ( {}, {} ) #subassignments, suggestionassignments
                 if isinstance(q[i], UnparsedQuery):
                     if not q[i].kw(0,'SUBSTITUTE') and not q[i].kw(0,'ADD'):
                         raise SyntaxError("Subexpression after SUGGESTION, expected ADD or SUBSTITUTE, got " + str(q[i]))
                     Correction.parsesubstitute(q[i],suggestion)
                     i += 1
                 elif q.kw(i,'MERGE'):
-                    suggestion[0]['merge'] = True
+                    suggestion[1]['merge'] = True
                     i+= 1
                     if q.kw(i,'DELETION'): #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
                         i+=1
                 elif q.kw(i,'SPLIT'):
-                    suggestion[0]['split'] = True
+                    suggestion[1]['split'] = True
                     i+= 1
                     if q.kw(i,'DELETION'): #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
                         i+=1
