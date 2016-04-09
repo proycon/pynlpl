@@ -135,6 +135,7 @@ Qinsertion2 = "SUBSTITUTE w WITH text \".\" (AS CORRECTION OF \"http://raw.githu
 
 
 Qsuggest_insertion = "PREPEND (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"insertion\" SUGGESTION (ADD w WITH text \"heel\")) FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
+Qsuggest_insertion2 = "APPEND (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"insertion\" SUGGESTION (ADD w WITH text \"heel\")) FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.3\""
 
 
 
@@ -661,7 +662,17 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].cls, "insertion")
         self.assertEqual(results[0].suggestions(0).text(), "heel")
-       #self.assertEqual(results[0].next(folia.Word).text(), "ander")
+        print(results[0].xmlstring(),file=sys.stderr)
+        self.assertEqual(results[0].next(folia.Word,None).text(), "ander")
+
+    def test34_suggest_insertion2(self):
+        """Insertion as suggestion (append)"""
+        q = fql.Query(Qsuggest_insertion2)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Correction)
+        self.assertEqual(results[0].cls, "insertion")
+        self.assertEqual(results[0].suggestions(0).text(), "heel")
+        self.assertEqual(results[0].next(folia.Word,None).text(), "ander")
 
 class Test4CQL(unittest.TestCase):
     def setUp(self):
