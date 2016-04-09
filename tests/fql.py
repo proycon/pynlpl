@@ -662,7 +662,6 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].cls, "insertion")
         self.assertEqual(results[0].suggestions(0).text(), "heel")
-        print(results[0].xmlstring(),file=sys.stderr)
         self.assertEqual(results[0].next(folia.Word,None).text(), "ander")
 
     def test34_suggest_insertion2(self):

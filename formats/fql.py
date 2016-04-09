@@ -1172,8 +1172,10 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 
             insertindex = 0
             #find insertion index:
+            if debug: print("[FQL EVALUATION DEBUG] Correction.insert - Finding insertion index for target ", repr(target), "  in ", repr(target.parent),file=sys.stderr)
             for i, e in enumerate(target.parent):
-                if e is target[0]:
+                if e is target:
+                    if debug: print("[FQL EVALUATION DEBUG] Correction.insert - Target ", repr(target), " found in ", repr(target.parent), " at index ", i,file=sys.stderr)
                     insertindex = i
                     break
 
@@ -1187,7 +1189,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
         kwargs['nooriginal'] = True #this is an insertion, there is no original
         kwargs = self.assemblesuggestions(query,content,debug,kwargs)
 
-        if debug: print("[FQL EVALUATION DEBUG] Correction.insert - Applying and returning correction",file=sys.stderr)
+        if debug: print("[FQL EVALUATION DEBUG] Correction.insert - Applying and returning correction ", repr(kwargs),file=sys.stderr)
         return content['parent'].correct(**kwargs)
 
     def substitute(self, query, substitution, contextselector, debug):
