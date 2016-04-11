@@ -4315,6 +4315,23 @@ class WordReference(AbstractElement):
         return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
 
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        """Serialises the FoLiA element to XML, by returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead."""
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
+        if not attribs: attribs = {}
+        if not elements: elements = []
+
+        if self.id:
+            attribs['id'] = self.id
+            try:
+                w = self.doc[self.id]
+                attribs['t'] = w.text()
+            except KeyError:
+                pass
+
+        e  = makeelement(E, '{' + NSFOLIA + '}' + self.XMLTAG, **attribs)
+        return e
 
 class SyntacticUnit(AbstractSpanAnnotation):
     """Syntactic Unit, span annotation element to be used in SyntaxLayer"""
