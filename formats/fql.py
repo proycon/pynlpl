@@ -994,11 +994,15 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                     i+= 1
                     if q.kw(i,'DELETION'): #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
                         i+=1
+                    else:
+                        i = getassignments(q, i, suggestion[0], focus) #subassignments (the actual element in the suggestion)
                 elif q.kw(i,'SPLIT'):
                     suggestion[1]['split'] = True
                     i+= 1
                     if q.kw(i,'DELETION'): #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
                         i+=1
+                    else:
+                        i = getassignments(q, i, suggestion[0], focus) #subassignments (the actual element in the suggestion)
                 elif q.kw(i,'DELETION'):
                     #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
                     i+= 1
