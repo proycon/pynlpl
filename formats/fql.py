@@ -989,23 +989,21 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                         raise SyntaxError("Subexpression after SUGGESTION, expected ADD or SUBSTITUTE, got " + str(q[i]))
                     Correction.parsesubstitute(q[i],suggestion)
                     i += 1
-                elif q.kw(i,'MERGE'):
-                    suggestion[1]['merge'] = True
+                elif q.kw(i,'MERGE') or q.kw(i,'SPLIT'):
+                    if q.kw(i,'MERGE'):
+                        suggestion[1]['merge'] = True
+                    else:
+                        suggestion[1]['split'] = True
                     i+= 1
                     if q.kw(i,'DELETION'): #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
                         i+=1
-                    else:
+                    elif isinstance(q[i], UnparsedQuery):
+                        if not q[i].kw(0,'SUBSTITUTE') and not q[i].kw(0,'ADD'):
+                            raise SyntaxError("Subexpression after SUGGESTION, expected ADD or SUBSTITUTE, got " + str(q[i]))
+                        Correction.parsesubstitute(q[i],suggestion)
+                        i += 1
+                    elif not q.kw(i,'WITH'):
                         i = getassignments(q, i, suggestion[0], focus) #subassignments (the actual element in the suggestion)
-                elif q.kw(i,'SPLIT'):
-                    suggestion[1]['split'] = True
-                    i+= 1
-                    if q.kw(i,'DELETION'): #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
-                        i+=1
-                    else:
-                        i = getassignments(q, i, suggestion[0], focus) #subassignments (the actual element in the suggestion)
-                elif q.kw(i,'DELETION'):
-                    #No need to do anything, DELETION is just to make things more explicit in the syntax, it will result in an empty suggestion
-                    i+= 1
                 elif not q.kw(i,'WITH'):
                     i = getassignments(q, i, suggestion[0], focus) #subassignments (the actual element in the suggestion)
                 if q.kw(i,'WITH'):
