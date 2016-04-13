@@ -1295,10 +1295,14 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
                 nextitem = substitution['parent'].next(substitution['parent'].__class__, None)
                 if nextitem:
                     suggestionassignments['split'] = nextitem.id
+                else:
+                    del suggestionassignments['split']
             if 'merge' in suggestionassignments and suggestionassignments['merge']:
                 nextitem = substitution['parent'].next(substitution['parent'].__class__, None)
                 if nextitem:
                     suggestionassignments['merge'] = nextitem.id
+                else:
+                    del suggestionassignments['merge']
             kwargs['suggestions'].append( folia.Suggestion(query.doc,*suggestionchildren, **suggestionassignments )   )
 
         return kwargs
