@@ -69,7 +69,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 
 #foliaspec:version:FOLIAVERSION
 #The FoLiA version
-FOLIAVERSION = "1.0.1"
+FOLIAVERSION = "1.1.0"
 
 LIBVERSION = FOLIAVERSION + '.75' #== FoLiA version + library revision
 
@@ -117,8 +117,10 @@ class AnnotationType:
 class TextCorrectionLevel: #THIS IS NOW COMPLETELY OBSOLETE AND ONLY HERE FOR BACKWARD COMPATIBILITY!
     CORRECTED, UNCORRECTED, ORIGINAL, INLINE = range(4)
 
-class MetaDataType:
-    NATIVE, CMDI, IMDI = range(3)
+class MetaDataType: #THIS IS NOW COMPLETELY OBSOLETE AND ONLY HERE FOR BACKWARD COMPATIBILITY! Metadata type is a free-fill field with only native predefined
+    NATIVE = "native"
+    CMDI = "cmdi"
+    IMDI = "imdi"
 
 class NoSuchAnnotation(Exception):
     """Exception raised when the requested type of annotation does not exist for the selected element"""
@@ -156,6 +158,9 @@ class SetDefinitionError(DeepValidationError):
     pass
 
 class ModeError(Exception):
+    pass
+
+class MetaDataError(Exception):
     pass
 
 class DocumentNotLoaded(Exception): #for alignments to external documents
@@ -5111,7 +5116,7 @@ class Document(object):
         self.index = {} #all IDs go here
         self.declareprocessed = False # Will be set to True when declarations have been processed
 
-        self.metadata = NativeMetaData() #will point to XML Element holding IMDI or CMDI metadata
+        self.metadata = NativeMetaData() #will point to XML Element holding native metadata
         self.metadatatype = MetaDataType.NATIVE
         self.metadatafile = None #reference to external metadata file
 
@@ -5291,11 +5296,6 @@ class Document(object):
             f.write(self.xmlstring())
             f.close()
 
-    def setcmdi(self,filename):
-        self.metadatatype = MetaDataType.CMDI
-        self.metadatafile = filename
-        self.metadata = {}
-        #TODO: Parse CMDI
 
 
     def __len__(self):
@@ -5462,15 +5462,8 @@ class Document(object):
         attribs['generator'] = 'pynlpl.formats.folia-v' + LIBVERSION
 
         metadataattribs = {}
-        if self.metadatatype == MetaDataType.NATIVE:
-            metadataattribs['{' + NSFOLIA + '}type'] = 'native'
-        elif self.metadatatype == MetaDataType.IMDI:
-            metadataattribs['{' + NSFOLIA + '}type'] = 'imdi'
-            if self.metadatafile:
-                metadataattribs['{' + NSFOLIA + '}src'] = self.metadatafile
-        elif self.metadatatype == MetaDataType.CMDI:
-            metadataattribs['{' + NSFOLIA + '}type'] = 'cmdi'
-            metadataattribs['{' + NSFOLIA + '}src'] = self.metadatafile
+        metadataattribs['{' + NSFOLIA + '}type'] = self.metadatatype
+        if self.metadatafile: metadataattribs['{' + NSFOLIA + '}src'] = self.metadatafile
 
         e = E.FoLiA(
             E.metadata(
@@ -5505,15 +5498,13 @@ class Document(object):
                 for key, value in self.metadata.items():
                     e.append(E.meta(value,id=key) )
             return e
-        elif self.metadatatype == MetaDataType.IMDI:
+        else:
             if self.metadatafile:
                 return [] #external
             elif self.metadata:
-                return [xmltreefromstring(self.metadata).getroot()] #inline
+                return [self.metadata] #in-document
             else:
                 return []
-        elif self.metadatatype == MetaDataType.CMDI: #CMDI, by definition external
-            return []
 
 
 
@@ -5637,8 +5628,7 @@ class Document(object):
 
 
 
-    def setimdi(self, node):
-        #TODO: node or filename
+    def setimdi(self, node): #OBSOLETE
         ns = {'imdi': 'http://www.mpi.nl/IMDI/Schema/IMDI'}
         self.metadatatype = MetaDataType.IMDI
         if LXE:
@@ -5798,32 +5788,45 @@ class Document(object):
             return self._language
 
     def parsemetadata(self, node):
-        if 'type' in node.attrib and node.attrib['type'] == 'imdi':
-            self.metadatatype = MetaDataType.IMDI
-        elif 'type' in node.attrib and  node.attrib['type'] == 'cmdi':
-            self.metadatatype = MetaDataType.CMDI
-        elif 'type' in node.attrib and node.attrib['type'] == 'native':
-            self.metadatatype = MetaDataType.NATIVE
+        if 'type' in node.attrib:
+            self.metadatatype = node.attrib['type']
         else:
             #no type specified, default to native
-            self.metadatatype = MetaDataType.NATIVE
-
-
-        self.metadata = NativeMetaData()
-        self.metadatafile = None
+            self.metadatatype = "native"
 
         if 'src' in node.attrib:
             self.metadatafile =  node.attrib['src']
+        else:
+            self.metadatafile = None
+
+        if self.metadatatype == "native":
+            self.metadata = NativeMetaData()
+        else:
+            self.metadata = None #will be set below
 
         for subnode in node:
-            if subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT':
-                self.metadatatype = MetaDataType.IMDI
-                self.setimdi(subnode)
             if subnode.tag == '{' + NSFOLIA + '}annotations':
                 self.parsexmldeclarations(subnode)
-            if subnode.tag == '{' + NSFOLIA + '}meta':
-                if subnode.text:
-                    self.metadata[subnode.attrib['id']] = subnode.text
+            elif subnode.tag == '{' + NSFOLIA + '}meta':
+                if self.metadatatype == "native":
+                    if subnode.text:
+                        self.metadata[subnode.attrib['id']] = subnode.text
+                else:
+                    raise MetaDataError("Encountered a meta element but metadata type is not native!")
+            elif subnode.tag == '{' + NSFOLIA + '}foreign-data':
+                if self.metadatatype == "native":
+                    raise MetaDataError("Encountered a foreign-data element but metadata type is native!")
+                elif self.metadata is not None:
+                    raise MetaDataError("Multiple foreign-data elements are not allowed")
+                else:
+                    self.metadata = subnode
+            elif subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT': #backward-compatibility for old IMDI without foreign-key
+                E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+                self.metadatatype = "imdi"
+                self.metadata = makeelement(E, '{'+NSFOLIA+'}foreign-data')
+                self.metadata.append(subnode)
+
+
 
     def parsexml(self, node, ParentClass = None):
         """Main XML parser, will invoke class-specific XML parsers. For internal use."""
@@ -6694,7 +6697,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.0.1 on 2016-03-16 15:16:52, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.1.0 on 2016-04-21 11:43:04, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
