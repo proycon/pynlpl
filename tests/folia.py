@@ -657,7 +657,7 @@ class Test2Sanity(unittest.TestCase):
     def test037a_feat(self):
         """Sanity Check - Feature test (including shortcut)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
-<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
 <metadata src="test.cmdi.xml" type="cmdi">
 <annotations>
     <pos-annotation set="test"/>
@@ -685,7 +685,7 @@ class Test2Sanity(unittest.TestCase):
     </p>
     </div>
 </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( doc['head.1.s.1.w.1'].pos() , 'NN(blah)')
         self.assertEqual( doc['head.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('head') , 'NN')
@@ -695,7 +695,7 @@ class Test2Sanity(unittest.TestCase):
     def test037b_multiclassfeat(self):
         """Sanity Check - Multiclass feature"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
-<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
 <metadata src="test.cmdi.xml" type="cmdi">
 <annotations>
     <pos-annotation set="test"/>
@@ -717,7 +717,7 @@ class Test2Sanity(unittest.TestCase):
     </p>
     </div>
 </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( doc['p.1.s.1.w.1'].pos() , 'NN(a,b,c)')
         self.assertEqual( doc['p.1.s.1.w.1'].annotation(folia.PosAnnotation).feat('x') , ['a','b','c'] )
@@ -905,14 +905,14 @@ class Test2Sanity(unittest.TestCase):
     def test101a_metadataextref(self):
         """Sanity Check - Metadata external reference (CMDI)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
-<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
 <metadata src="test.cmdi.xml" type="cmdi">
 <annotations>
     <event-annotation set="test"/>
 </annotations>
 </metadata>
 <text xml:id="test.text" />
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( doc.metadatatype, folia.MetaDataType.CMDI )
         self.assertEqual( doc.metadatafile, 'test.cmdi.xml' )
@@ -920,25 +920,47 @@ class Test2Sanity(unittest.TestCase):
     def test101b_metadataextref2(self):
         """Sanity Check - Metadata external reference (IMDI)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
-<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
 <metadata src="test.imdi.xml" type="imdi">
 <annotations>
     <event-annotation set="test"/>
 </annotations>
 </metadata>
 <text xml:id="test.text" />
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( doc.metadatatype, folia.MetaDataType.IMDI )
         self.assertEqual( doc.metadatafile, 'test.imdi.xml' )
 
+    def test101c_metadatainternal(self):
+        """Sanity Check - Metadata internal (foreign data) (Dublin Core)"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+<metadata type="dc">
+  <annotations>
+  </annotations>
+  <foreign-data xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier>mydoc</dc:identifier>
+    <dc:format>text/xml</dc:format>
+    <dc:type>Example</dc:type>
+    <dc:contributor>proycon</dc:contributor>
+    <dc:creator>proycon</dc:creator>
+    <dc:language>en</dc:language>
+    <dc:publisher>Radboud University</dc:publisher>
+    <dc:rights>public Domain</dc:rights>
+  </foreign-data>
+</metadata>
+<text xml:id="test.text" />
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc.metadatatype, "dc" )
+        self.assertEqual( doc.metadata.xpath('//dc:creator', namespaces={'dc':'http://purl.org/dc/elements/1.1/'})[0].text , 'proycon' )
+        xmlcheck(doc.xmlstring(), xml)
 
     def test102a_declarations(self):
         """Sanity Check - Declarations - Default set"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
       <gap-annotation annotator="sloot" set="gap-set"/>
@@ -947,7 +969,7 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( next(doc['example.text.1'].select(folia.Gap)).set, 'gap-set' )
 
@@ -955,9 +977,7 @@ folia-v0.8" version="0.8">
     def test102a2_declarations(self):
         """Sanity Check - Declarations - Default set, no further defaults"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
       <gap-annotation set="gap-set"/>
@@ -966,7 +986,7 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" annotator="proycon" annotatortype="manual" />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( next(doc['example.text.1'].select(folia.Gap)).set, 'gap-set' )
         self.assertEqual( next(doc['example.text.1'].select(folia.Gap)).annotator, 'proycon' )
@@ -975,9 +995,7 @@ folia-v0.8" version="0.8">
     def test102b_declarations(self):
         """Sanity Check - Declarations - Set mismatching """
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
       <gap-annotation annotator="sloot" set="gap-set"/>
@@ -986,16 +1004,14 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" set="extended-gap-set" />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         self.assertRaises( ValueError,  folia.Document, string=xml)
 
 
     def test102c_declarations(self):
         """Sanity Check - Declarations - Multiple sets for the same annotation type"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
       <gap-annotation annotator="sloot" set="extended-gap-set"/>
@@ -1006,7 +1022,7 @@ folia-v0.8" version="0.8">
     <gap class="X" set="gap-set"/>
     <gap class="Y" set="extended-gap-set"/>
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( next(doc['example.text.1'].select(folia.Gap)).set, 'gap-set' )
         self.assertEqual( list(doc['example.text.1'].select(folia.Gap))[1].set, 'extended-gap-set' )
@@ -1014,9 +1030,7 @@ folia-v0.8" version="0.8">
     def test102d1_declarations(self):
         """Sanity Check - Declarations - Multiple sets for the same annotation type (testing failure)"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
       <gap-annotation annotator="sloot" set="extended-gap-set"/>
@@ -1027,7 +1041,7 @@ folia-v0.8" version="0.8">
     <gap class="X" set="gap-set"/>
     <gap class="Y" />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         self.assertRaises(ValueError,  folia.Document, string=xml )
 
 
@@ -1037,9 +1051,7 @@ folia-v0.8" version="0.8">
     def test102d2_declarations(self):
         """Sanity Check - Declarations - Multiple sets for the same annotation type (testing failure)"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
       <gap-annotation annotator="sloot" set="extended-gap-set"/>
@@ -1050,15 +1062,13 @@ folia-v0.8" version="0.8">
     <gap class="X" set="gap-set"/>
     <gap class="Y" set="gip-set"/>
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         self.assertRaises(ValueError,  folia.Document, string=xml )
 
     def test102d3_declarations(self):
         """Sanity Check - Declarations - Ignore Duplicates"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
       <gap-annotation annotator="sloot" set="gap-set"/>
@@ -1068,7 +1078,7 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" set="gap-set"/>
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
 
         doc = folia.Document(string=xml)
         self.assertEqual( doc.defaultset(folia.AnnotationType.GAP), 'gap-set' )
@@ -1078,9 +1088,7 @@ folia-v0.8" version="0.8">
     def test102e_declarations(self):
         """Sanity Check - Declarations - Missing declaration"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
     </annotations>
@@ -1088,15 +1096,13 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" set="extended-gap-set" />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         self.assertRaises( ValueError,  folia.Document, string=xml)
 
     def test102f_declarations(self):
         """Sanity Check - Declarations - Declaration not needed"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
     </annotations>
@@ -1104,16 +1110,14 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
 
 
     def test102g_declarations(self):
         """Sanity Check - Declarations - 'Undefined' set in declaration"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
         <gap-annotation annotator="sloot" />
@@ -1122,16 +1126,14 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X"  />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( next(doc['example.text.1'].select(folia.Gap)).set, 'undefined' )
 
     def test102h_declarations(self):
         """Sanity Check - Declarations - Double ambiguous declarations unset default"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
          <gap-annotation annotator="sloot" set="gap-set"/>
@@ -1141,7 +1143,7 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertRaises(folia.NoDefaultError, doc.defaultannotator, folia.AnnotationType.GAP)
 
@@ -1149,9 +1151,7 @@ folia-v0.8" version="0.8">
     def test102i_declarations(self):
         """Sanity Check - Declarations - miscellanious trouble"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
          <gap-annotation annotator="sloot" set="gap1-set"/>
@@ -1161,7 +1161,7 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" set="gap1-set"/>
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( doc.defaultannotator(folia.AnnotationType.GAP,"gap1-set"), "sloot" )
         doc.declare(folia.AnnotationType.GAP, "gap1-set", annotator='proycon' ) #slightly different behaviour from libfolia: here this overrides the earlier default
@@ -1184,9 +1184,7 @@ folia-v0.8" version="0.8">
     def test102j_declarations(self):
         """Sanity Check - Declarations - Adding a declaration in other set."""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
          <gap-annotation annotator="sloot" set="gap-set"/>
@@ -1195,7 +1193,7 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         text = doc["example.text.1"]
         doc.declare(folia.AnnotationType.GAP, "other-set", annotator='proycon' )
@@ -1211,9 +1209,7 @@ folia-v0.8" version="0.8">
     def test102k_declarations(self):
         """Sanity Check - Declarations - Several annotator types."""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink"
-xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="lib
-folia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
          <gap-annotation annotatortype="auto" set="gap-set"/>
@@ -1222,7 +1218,7 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( doc.defaultannotatortype(folia.AnnotationType.GAP, 'gap-set'),  folia.AnnotatorType.AUTO)
         text = doc["example.text.1"]
@@ -1246,7 +1242,7 @@ folia-v0.8" version="0.8">
     def test102l_declarations(self):
         """Sanity Check - Declarations - Datetime default."""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="libfolia-v0.8" version="0.8">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
          <gap-annotation set="gap-set" datetime="2011-12-15T19:00" />
@@ -1255,7 +1251,7 @@ folia-v0.8" version="0.8">
   <text xml:id="example.text.1">
     <gap class="X" />
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( doc.defaultdatetime(folia.AnnotationType.GAP, 'gap-set'),  folia.parse_datetime('2011-12-15T19:00') )
 
@@ -1268,7 +1264,7 @@ folia-v0.8" version="0.8">
     def test103_namespaces(self):
         """Sanity Check - Alien namespaces - Checking whether properly ignored"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="libfolia-v0.8" version="0.8">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xmlns:alien="http://somewhere.else" xml:id="example" generator="{generator}" version="{version}">
   <metadata type="native">
     <annotations>
     </annotations>
@@ -1286,7 +1282,7 @@ folia-v0.8" version="0.8">
         </w>
     </s>
   </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertTrue( len(list(doc['example.text.1.s.1'].words())) == 1 ) #second word is in alien namespace, not read
         self.assertRaises( KeyError,  doc.__getitem__, 'example.text.1.s.1.alienword') #doesn't exist
@@ -1295,7 +1291,7 @@ folia-v0.8" version="0.8">
     def test104_speech(self):
         """Sanity Check - Speech data (without attributes)"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="manual" version="0.12">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
         <utterance-annotation set="utterances" />
@@ -1314,7 +1310,7 @@ folia-v0.8" version="0.8">
         </w>
     </utt>
   </speech>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertTrue( isinstance(doc.data[0], folia.Speech) )
         self.assertTrue( isinstance(doc['example.speech.utt.1'], folia.Utterance) )
@@ -1326,7 +1322,7 @@ folia-v0.8" version="0.8">
     def test104b_speech(self):
         """Sanity Check - Speech data with speech attributes"""
         xml = """<?xml version="1.0"?>\n
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="example" generator="manual" version="0.12">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
         <utterance-annotation set="utterances" />
@@ -1345,7 +1341,7 @@ folia-v0.8" version="0.8">
         </w>
     </utt>
   </speech>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertTrue( isinstance(doc.data[0], folia.Speech) )
         self.assertTrue( isinstance(doc['example.speech.utt.1'], folia.Utterance) )
@@ -1393,7 +1389,7 @@ folia-v0.8" version="0.8">
     def test105_complexalignment(self):
         """Sanity Check - Complex alignment"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
-<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="0.8" generator="libfolia-v0.4">
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
 <metadata type="native">
  <annotations>
     <complexalignment-annotation />
@@ -1417,7 +1413,7 @@ folia-v0.8" version="0.8">
 	</complexalignments>
     </p>
 </text>
-</FoLiA>"""
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertTrue(doc.xml() is not None) #serialisation check
 

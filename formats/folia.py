@@ -5450,7 +5450,7 @@ class Document(object):
         return l
 
     def xml(self):
-        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
+        E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
 
