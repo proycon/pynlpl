@@ -69,7 +69,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 
 #foliaspec:version:FOLIAVERSION
 #The FoLiA version
-FOLIAVERSION = "1.1.0"
+FOLIAVERSION = "1.2.0"
 
 LIBVERSION = FOLIAVERSION + '.76' #== FoLiA version + library revision
 
@@ -6697,7 +6697,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.1.0 on 2016-04-21 11:43:04, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.2.0 on 2016-05-03 21:54:21, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7054,6 +7054,7 @@ Division.TEXTDELIMITER = "\n\n\n"
 Division.XMLTAG = "div"
 #------ DomainAnnotation -------
 DomainAnnotation.ANNOTATIONTYPE = AnnotationType.DOMAIN
+DomainAnnotation.OCCURRENCES_PER_SET = 0
 DomainAnnotation.XMLTAG = "domain"
 #------ EnddatetimeFeature -------
 EnddatetimeFeature.SUBSET = "enddatetime"
@@ -7073,6 +7074,7 @@ Entry.ANNOTATIONTYPE = AnnotationType.ENTRY
 Entry.XMLTAG = "entry"
 #------ ErrorDetection -------
 ErrorDetection.ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
+ErrorDetection.OCCURRENCES_PER_SET = 0
 ErrorDetection.XMLTAG = "errordetection"
 #------ Event -------
 Event.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, ActorFeature, Alignment, Alternative, AlternativeLayers, BegindatetimeFeature, Correction, Description, Division, EnddatetimeFeature, Event, Example, Feature, Figure, Head, Linebreak, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Whitespace, Word,)
@@ -7209,7 +7211,7 @@ PosAnnotation.XMLTAG = "pos"
 Quote.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Correction, Description, Division, Feature, Gap, Metric, Paragraph, Part, Quote, Sentence, String, TextContent, Utterance, Word,)
 Quote.XMLTAG = "quote"
 #------ Reference -------
-Reference.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Part, PhonContent, String, TextContent,)
+Reference.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Correction, Description, Feature, Metric, Paragraph, Part, PhonContent, Quote, Sentence, String, TextContent, Utterance, Word,)
 Reference.TEXTDELIMITER = None
 Reference.XMLTAG = "ref"
 #------ Row -------
