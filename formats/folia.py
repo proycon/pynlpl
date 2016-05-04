@@ -3769,6 +3769,11 @@ class Reference(AbstractStructureElement):
             del kwargs['type']
         else:
             self.type = None
+        if 'format' in kwargs:
+            self.format = kwargs['format']
+            del kwargs['format']
+        else:
+            self.format = "text/folia+xml"
         super(Reference,self).__init__(doc, *args, **kwargs)
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
@@ -3777,6 +3782,8 @@ class Reference(AbstractStructureElement):
             attribs['id'] = self.idref
         if self.type:
             attribs['type'] = self.type
+        if self.format and self.format != "text/folia+xml":
+            attribs['format'] = self.format
         return super(Reference,self).xml(attribs,elements, skipchildren)
 
     def json(self, attribs=None, recurse=True, ignorelist=False):
@@ -3826,11 +3833,10 @@ class AlignReference(AbstractElement):
         #Special constructor, not calling super constructor
         if 'id' not in kwargs:
             raise Exception("ID required for AlignReference")
-        if 'type' not in kwargs:
-            raise Exception("Type required for AlignReference")
-        elif not inspect.isclass(kwargs['type']):
-            raise Exception("Type must be a FoLiA element (python class)")
-        self.type = kwargs['type']
+        if 'type' in kwargs:
+            self.type = kwargs['type']
+        else:
+            self.type = None
         if 't' in kwargs:
             self.t = kwargs['t']
         else:
@@ -3864,7 +3870,7 @@ class AlignReference(AbstractElement):
         if 't' in node.attrib:
             kwargs['t'] = node.attrib['t']
         try:
-            kwargs['type'] = XML2CLASS[node.attrib['type']]
+            kwargs['type'] = node.attrib['type']
         except KeyError:
             raise ValueError("No such type: " + node.attrib['type'])
         return AlignReference(doc,**kwargs)
@@ -3891,7 +3897,8 @@ class AlignReference(AbstractElement):
         if not attribs:
             attribs = {}
         attribs['id'] = self.id
-        attribs['type'] = self.type.XMLTAG
+        if self.type:
+            attribs['type'] = self.type
         if self.t: attribs['t'] = self.t
 
         return E.aref( **attribs)
@@ -3902,10 +3909,36 @@ class AlignReference(AbstractElement):
 
 class Alignment(AbstractElement):
 
+    def __init__(self, doc, *args, **kwargs):
+        if 'format' in kwargs:
+            self.format = kwargs['format']
+            del kwargs['format']
+        else:
+            self.format = "text/folia+xml"
+        super(Alignment,self).__init__(doc, *args, **kwargs)
+
+    @classmethod
+    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
+        if 'format' in node.attrib:
+            format = node.attrib['format']
+            del node.attrib['format']
+        instance = super(Alignment,Class).parsexml(node, doc)
+        if instance:
+            if format:
+                instance.format = format
+        return instance
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        if not attribs: attribs = {}
+        if self.format and self.format != "text/folia+xml":
+            attribs['format'] = self.format
+        return super(Alignment,self).xml(attribs,elements, skipchildren)
+
     def json(self, attribs =None, recurse=True, ignorelist=False):
         return {} #alignment not supported yet, TODO
 
-    def resolve(self, documents={}):
+    def resolve(self, documents=None):
+        if documents is None: documents = {}
         #documents is a dictionary of urls to document instances, to aid in resolving cross-document alignments
         for x in self.select(AlignReference,None,True,False):
             yield x.resolve(self, documents)
