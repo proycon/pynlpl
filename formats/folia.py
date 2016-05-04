@@ -3878,7 +3878,7 @@ class AlignReference(AbstractElement):
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), E.attribute(E.text(), name='type'), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+        return E.define( E.element(E.attribute(E.text(), name='id'), E.optional(E.attribute(E.text(), name='t')), E.optional(E.attribute(E.text(), name='type')), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
     def resolve(self, alignmentcontext=None, documents={}):
         if not alignmentcontext or not hasattr(alignmentcontext, 'href') or not alignmentcontext.href:
