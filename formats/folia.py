@@ -3790,6 +3790,10 @@ class Reference(AbstractStructureElement):
         if attribs is None: attribs = {}
         if self.idref:
             attribs['idref'] = self.idref
+        if self.type:
+            attribs['type'] = self.type
+        if self.format:
+            attribs['format'] = self.format
         return super(Reference,self).json(attribs,recurse,ignorelist)
 
     def resolve(self):
@@ -3810,12 +3814,19 @@ class Reference(AbstractStructureElement):
             del node.attrib['type']
         else:
             idref = None
+        if 'format' in node.attrib:
+            f = node.attrib['format']
+            del node.attrib['format']
+        else:
+            f = None
         instance = super(Reference,Class).parsexml(node, doc)
         if instance:
             if idref:
                 instance.idref = idref
             if t:
                 instance.type =  t
+            if f:
+                instance.format = f
         return instance
 
 
@@ -3823,8 +3834,9 @@ class Reference(AbstractStructureElement):
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace",'a':"http://relaxng.org/ns/annotation/0.9" })
         if not extraattribs: extraattribs = []
-        extraattribs.append( E.attribute(name='id'))
-        extraattribs.append( E.optional(E.attribute(name='type' ))) #id reference
+        extraattribs.append( E.attribute(name='id')) #id reference
+        extraattribs.append( E.optional(E.attribute(name='type' )))
+        extraattribs.append( E.optional(E.attribute(name='format' )))
         return super(Reference, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class AlignReference(AbstractElement):
