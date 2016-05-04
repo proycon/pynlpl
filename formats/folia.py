@@ -3205,9 +3205,56 @@ class Gap(AbstractElement):
 class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has a double role!!
     """Line break element, signals a line break"""
 
+    def __init__(self, doc, *args, **kwargs):
+        if 'linenr' in kwargs:
+            self.linenr = kwargs['linenr']
+            del kwargs['linenr']
+        else:
+            self.linenr = None
+        if 'pagenr' in kwargs:
+            self.pagenr = kwargs['pagenr']
+            del kwargs['pagenr']
+        else:
+            self.pagenr = None
+        if 'newpage' in kwargs and kwargs['newpage']:
+            self.newpage = True
+            del kwargs['newpage']
+        else:
+            self.newpage = False
+        super(Linebreak, self).__init__(doc, *args, **kwargs)
+
+
     def text(self, cls='current', retaintokenisation=False, previousdelimiter="", strict=False, correctionhandling=None):
         return previousdelimiter.strip(' ') + "\n"
 
+    @classmethod
+    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
+        kwargs = {}
+        if 'linenr' in node.attrib:
+            kwargs['linenr'] = node.attrib['linenr']
+        if 'pagenr' in node.attrib:
+            kwargs['pagenr'] = node.attrib['pagenr']
+        if 'newpage' in node.attrib and node.attrib['newpage'] == 'yes':
+            kwargs['newpage'] = True
+        return Content(doc, **kwargs)
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        if attribs is None: attribs = {}
+        if self.linenr is not None:
+            attribs['{' + NSFOLIA + '}linenr'] = str(self.linenr)
+        if self.pagenr is not None:
+            attribs['{' + NSFOLIA + '}pagenr'] = str(self.pagenr)
+        if self.newpage:
+            attribs['{' + NSFOLIA + '}newpage'] = "yes"
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        attribs = []
+        attribs.append(E.optional(E.attribute(name='pagenr')))
+        attribs.append(E.optional(E.attribute(name='linenr')))
+        attribs.append(E.optional(E.attribute(name='newpage')))
+        return AbstractStructureElement.relaxng(cls,includechildren,attribs,None)
 
 class Whitespace(AbstractStructureElement):
     """Whitespace element, signals a vertical whitespace"""
