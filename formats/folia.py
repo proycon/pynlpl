@@ -3246,6 +3246,7 @@ class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has
             attribs['{' + NSFOLIA + '}pagenr'] = str(self.pagenr)
         if self.newpage:
             attribs['{' + NSFOLIA + '}newpage'] = "yes"
+        return super(Linebreak, self).xml(attribs,elements,skipchildren)
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
