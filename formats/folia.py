@@ -3943,6 +3943,13 @@ class Alignment(AbstractElement):
         for x in self.select(AlignReference,None,True,False):
             yield x.resolve(self, documents)
 
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        if extraattribs is None: extraattribs = []
+        extraattribs.append(E.optional(E.attribute(name="format")))
+        return super(Alignment,cls).relaxng(includechildren, extraattribs, extraelements)
+
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
     pass
