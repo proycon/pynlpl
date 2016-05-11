@@ -862,7 +862,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( a.cls, "reference")
         aref = next(a.select(folia.AlignReference,ignore=False))
         self.assertEqual( aref.id,"WR-P-E-J-0000000001.p.1.s.3.w.5" )
-        self.assertEqual( aref.type, folia.Word )
+        self.assertEqual( aref.type, 'w' )
         self.assertEqual( aref.t,"handschriften" )
 
 
