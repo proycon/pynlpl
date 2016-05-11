@@ -1923,7 +1923,14 @@ class AbstractElement(object):
         elif Attrib.SPEAKER in cls.OPTIONAL_ATTRIBS:
             attribs.append( E.optional( E.attribute(name='speaker') ) )
         if cls.XLINK:
-            attribs += [ E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ) ]
+            attribs += [ #loose interpretation of specs, not checking whether xlink combinations are valid
+                    E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ),
+                    E.optional(E.attribute(name='role',ns="http://www.w3.org/1999/xlink")),
+                    E.optional(E.attribute(name='title',ns="http://www.w3.org/1999/xlink")),
+                    E.optional(E.attribute(name='label',ns="http://www.w3.org/1999/xlink")),
+                    E.optional(E.attribute(name='show',ns="http://www.w3.org/1999/xlink")),
+            ]
+
         attribs.append( E.optional( E.attribute( name='auth' ) ) )
 
 
