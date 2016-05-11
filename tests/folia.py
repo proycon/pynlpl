@@ -630,8 +630,8 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( l[0].n, '1' ) #testing common n attribute
         self.assertEqual( l[0].text(), 'Eerste testitem')
         self.assertTrue( isinstance( l[-1], folia.ListItem) )
-        self.assertEqual( l[-1].text(), 'Tweede testitem')
-        self.assertEqual( l[-1].n, '2' )
+        self.assertEqual( l[1].text(), 'Tweede testitem')
+        self.assertEqual( l[1].n, '2' )
 
     def test034_figure(self):
         """Sanity Check - Figure"""
