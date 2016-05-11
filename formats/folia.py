@@ -401,6 +401,21 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         if 'href' in kwargs:
             object.href =kwargs['href']
             del kwargs['href']
+        if 'xlinktype' in kwargs:
+            object.xlinktype = kwargs['xlinktype']
+            del kwargs['xlinktype']
+        if 'xlinkrole' in kwargs:
+            object.xlinkrole = kwargs['xlinkrole']
+            del kwargs['xlinkrole']
+        if 'xlinklabel' in kwargs:
+            object.xlinklabel = kwargs['xlinklabel']
+            del kwargs['xlinklabel']
+        if 'xlinkshow' in kwargs:
+            object.xlinkshow = kwargs['xlinkshow']
+            del kwargs['xlinklabel']
+        if 'xlinktitle' in kwargs:
+            object.xlinktitle = kwargs['xlinktitle']
+            del kwargs['xlinktitle']
 
     if doc and doc.debug >= 2:
         print("   @id           = ", repr(object.id),file=stderr)
@@ -558,8 +573,8 @@ class AbstractElement(object):
 
 
     def __getattr__(self, attr):
-        #overriding getattr so we can get defaults here rather than needing a copy on each element
-        if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','speaker','begintime','endtime'):
+        #overriding getattr so we can get defaults here rather than needing a copy on each element, saves memory
+        if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','speaker','begintime','endtime','xlinktype','xlinktitle','xlinklabel','xlinkrole','xlinkshow'):
             return None
         else:
             return super(AbstractElement, self).__getattribute__(attr)
@@ -1459,9 +1474,21 @@ class AbstractElement(object):
                 attribs['{' + NSFOLIA + '}endtime'] = "%02d:%02d:%02d.%03d" % self.endtime
 
 
-        if self.XLINK and self.href:
-            attribs['{http://www.w3.org/1999/xlink}href'] = self.href
-            attribs['{http://www.w3.org/1999/xlink}type'] = 'simple'
+        if self.XLINK:
+            if self.href:
+                attribs['{http://www.w3.org/1999/xlink}href'] = self.href
+                if not self.xlinktype:
+                    attribs['{http://www.w3.org/1999/xlink}type'] = "simple"
+            if self.xlinktype:
+                attribs['{http://www.w3.org/1999/xlink}type'] = self.xlinktype
+            if self.xlinklabel:
+                attribs['{http://www.w3.org/1999/xlink}label'] = self.xlinklabel
+            if self.xlinkrole:
+                attribs['{http://www.w3.org/1999/xlink}role'] = self.xlinkrole
+            if self.xlinkshow:
+                attribs['{http://www.w3.org/1999/xlink}show'] = self.xlinkshow
+            if self.xlinktitle:
+                attribs['{http://www.w3.org/1999/xlink}title'] = self.xlinktitle
 
         omitchildren =  []
 
@@ -2037,10 +2064,8 @@ class AbstractElement(object):
                         key = 'idref'
                 elif Class.XLINK and key.startswith('{http://www.w3.org/1999/xlink}'):
                     key = key[30:]
-                    if key == "type":
-                        if value != "simple":
-                            raise Exception('Only xlink:type="simple" is supported by FoLiA')
-                        continue #ignore this one, it's implied
+                    if key != 'href':
+                        key = 'xlink' + key #xlinktype, xlinkrole, xlinklabel, xlinkshow, etc..
                 elif key.startswith('{' + NSDCOI + '}'):
                     key = key[nslendcoi:]
 
@@ -2752,12 +2777,6 @@ class TextContent(AbstractElement):
         else:
             self.ref = None #will be set upon parent.append()
 
-        #hyperlink support
-        if 'href' in kwargs:
-            self.href =kwargs['href']
-            del kwargs['href']
-        else:
-            self.href = None
 
         #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
         if 'cls' not in kwargs and 'class' not in kwargs:
@@ -2955,12 +2974,6 @@ class PhonContent(AbstractElement):
         else:
             self.ref = None #will be set upon parent.append()
 
-        #hyperlink support
-        if 'href' in kwargs:
-            self.href =kwargs['href']
-            del kwargs['href']
-        else:
-            self.href = None
 
         #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
         if 'cls' not in kwargs and 'class' not in kwargs:
@@ -3845,10 +3858,10 @@ class AlignReference(AbstractElement):
         #Special constructor, not calling super constructor
         if 'id' not in kwargs:
             raise Exception("ID required for AlignReference")
-        if 'type' in kwargs:
-            self.type = kwargs['type']
+        if 'xlinktype' in kwargs:
+            self.xlinktype = kwargs['xlinktype']
         else:
-            self.type = None
+            self.xlinktype = None
         if 't' in kwargs:
             self.t = kwargs['t']
         else:
@@ -3870,6 +3883,24 @@ class AlignReference(AbstractElement):
             self.href = kwargs['href']
         else:
             self.href = None
+        if 'xlinktype' in kwargs:
+            self.xlinktype =kwargs['xlinktype']
+            del kwargs['xlinktype']
+        else:
+            self.xlinktype = "simple"
+        if 'xlinkrole' in kwargs:
+            self.xlinkrole =kwargs['xlinkrole']
+            del kwargs['xlinkrole']
+        if 'xlinklabel' in kwargs:
+            self.xlinklabel =kwargs['xlinklabel']
+            del kwargs['xlinklabel']
+        if 'xlinkshow' in kwargs:
+            self.xlinkshow =kwargs['xlinkshow']
+            del kwargs['xlinkshow']
+        if 'xlinktitle' in kwargs:
+            self.xlinktitle =kwargs['xlinktitle']
+            del kwargs['xlinktitle']
+
 
     @classmethod
     def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
@@ -3882,7 +3913,7 @@ class AlignReference(AbstractElement):
         if 't' in node.attrib:
             kwargs['t'] = node.attrib['t']
         try:
-            kwargs['type'] = node.attrib['type']
+            kwargs['xlinktype'] = node.attrib['type']
         except KeyError:
             raise ValueError("No such type: " + node.attrib['type'])
         return AlignReference(doc,**kwargs)
