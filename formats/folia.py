@@ -3275,7 +3275,7 @@ class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has
         attribs.append(E.optional(E.attribute(name='pagenr')))
         attribs.append(E.optional(E.attribute(name='linenr')))
         attribs.append(E.optional(E.attribute(name='newpage')))
-        return AbstractStructureElement.relaxng(cls,includechildren,attribs,None)
+        return super(Linebreak,cls).relaxng(includechildren,attribs,extraelements)
 
 class Whitespace(AbstractStructureElement):
     """Whitespace element, signals a vertical whitespace"""
@@ -5620,7 +5620,7 @@ class Document(object):
         else:
             if self.metadatafile:
                 return [] #external
-            elif self.metadata:
+            elif self.metadata is not None:
                 return [self.metadata] #in-document
             else:
                 return []
