@@ -33,6 +33,7 @@ import unittest
 import io
 import gzip
 import bz2
+import re
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
@@ -897,10 +898,7 @@ class Test2Sanity(unittest.TestCase):
         self.doc.save('/tmp/foliatest100.xml')
         retcode = os.system('xmldiff -c /tmp/foliatest.xml /tmp/foliatest100.xml')
         #retcode = 1 #disabled (memory hog)
-        if retcode != 0:
-            print("Please carefully inspect whether XML differences are acceptable!!! Not failing over this currently",file=sys.stderr)
-        else:
-            self.assertEqual( retcode, 0)
+        self.assertEqual( retcode, 0)
 
     def test101a_metadataextref(self):
         """Sanity Check - Metadata external reference (CMDI)"""
@@ -2412,9 +2410,13 @@ class Test8Validation(unittest.TestCase):
             print("Deep validation not implemented yet! (not failing over this)",file=sys.stderr)
             return
 
+
 f = io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8')
 FOLIAEXAMPLE = f.read()
 f.close()
+
+#We cheat, by setting the generator and version attributes to match the library, so xmldiff doesn't complain when we compare against this reference
+FOLIAEXAMPLE = re.sub(r' version="[^"]*" generator="[^"]*"', ' version="' + folia.FOLIAVERSION + '" generator="pynlpl.formats.folia-v' + folia.LIBVERSION + '"', FOLIAEXAMPLE, re.MULTILINE)
 
 
 DCOIEXAMPLE="""<?xml version="1.0" encoding="iso-8859-15"?>
@@ -2427,7 +2429,7 @@ DCOIEXAMPLE="""<?xml version="1.0" encoding="iso-8859-15"?>
       <imdi:Description/>
       <imdi:MDGroup>
         <imdi:Location>
-          <imdi:Continent>Europe</imdi:Continent>
+          A<imdi:Continent>Europe</imdi:Continent>
           <imdi:Country>NL/B</imdi:Country>
         </imdi:Location>
         <imdi:Keys/>
