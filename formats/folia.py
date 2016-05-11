@@ -3865,10 +3865,10 @@ class AlignReference(AbstractElement):
         #Special constructor, not calling super constructor
         if 'id' not in kwargs:
             raise Exception("ID required for AlignReference")
-        if 'xlinktype' in kwargs:
-            self.xlinktype = kwargs['xlinktype']
+        if 'type' in kwargs:
+            self.type = kwargs['type']
         else:
-            self.xlinktype = None
+            self.type = None
         if 't' in kwargs:
             self.t = kwargs['t']
         else:
@@ -3886,27 +3886,6 @@ class AlignReference(AbstractElement):
         self.cls = None
         self.data = []
 
-        if 'href' in kwargs:
-            self.href = kwargs['href']
-        else:
-            self.href = None
-        if 'xlinktype' in kwargs:
-            self.xlinktype =kwargs['xlinktype']
-            del kwargs['xlinktype']
-        else:
-            self.xlinktype = "simple"
-        if 'xlinkrole' in kwargs:
-            self.xlinkrole =kwargs['xlinkrole']
-            del kwargs['xlinkrole']
-        if 'xlinklabel' in kwargs:
-            self.xlinklabel =kwargs['xlinklabel']
-            del kwargs['xlinklabel']
-        if 'xlinkshow' in kwargs:
-            self.xlinkshow =kwargs['xlinkshow']
-            del kwargs['xlinkshow']
-        if 'xlinktitle' in kwargs:
-            self.xlinktitle =kwargs['xlinktitle']
-            del kwargs['xlinktitle']
 
 
     @classmethod
@@ -3920,7 +3899,7 @@ class AlignReference(AbstractElement):
         if 't' in node.attrib:
             kwargs['t'] = node.attrib['t']
         try:
-            kwargs['xlinktype'] = node.attrib['type']
+            kwargs['type'] = node.attrib['type']
         except KeyError:
             raise ValueError("No such type: " + node.attrib['type'])
         return AlignReference(doc,**kwargs)
