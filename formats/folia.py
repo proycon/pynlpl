@@ -3157,7 +3157,7 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
                 raise Exception("value= parameter must be unicode or str instance")
             del kwargs['value']
         else:
-            raise Exception("Description expects value= parameter")
+            raise Exception("Content expects value= parameter")
         super(Content,self).__init__(doc, *args, **kwargs)
 
     def __nonzero__(self):
@@ -3256,7 +3256,7 @@ class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has
             kwargs['pagenr'] = node.attrib['pagenr']
         if 'newpage' in node.attrib and node.attrib['newpage'] == 'yes':
             kwargs['newpage'] = True
-        return Content(doc, **kwargs)
+        return Linebreak(doc, **kwargs)
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
         if attribs is None: attribs = {}
@@ -3972,6 +3972,8 @@ class Alignment(AbstractElement):
         if 'format' in node.attrib:
             format = node.attrib['format']
             del node.attrib['format']
+        else:
+            format = None
         instance = super(Alignment,Class).parsexml(node, doc)
         if instance:
             if format:
