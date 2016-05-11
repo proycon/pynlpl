@@ -66,7 +66,7 @@ def xmlcheck(xml,expect):
     f.write(xml)
     f.close()
 
-    retcode = os.system('xmldiff /tmp/foliatest.fragment.expect.xml /tmp/foliatest.fragment.out.xml')
+    retcode = os.system('xmldiff -c /tmp/foliatest.fragment.expect.xml /tmp/foliatest.fragment.out.xml')
     passed = (retcode == 0)
 
     #obj2 = lxml.objectify.fromstring(xml)
@@ -895,7 +895,7 @@ class Test2Sanity(unittest.TestCase):
         f.close()
         #use xmldiff to compare the two:
         self.doc.save('/tmp/foliatest100.xml')
-        retcode = os.system('xmldiff /tmp/foliatest.xml /tmp/foliatest100.xml')
+        retcode = os.system('xmldiff -c /tmp/foliatest.xml /tmp/foliatest100.xml')
         #retcode = 1 #disabled (memory hog)
         if retcode != 0:
             print("Please carefully inspect whether XML differences are acceptable!!! Not failing over this currently",file=sys.stderr)
