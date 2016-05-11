@@ -1410,14 +1410,15 @@ class AbstractElement(object):
             attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
 
         #Some attributes only need to be added if they are not the same as what's already set in the declaration
-        if '{' + NSFOLIA + '}set' not in attribs: #do not override if overloaded function already set it
-            try:
-                if self.set:
-                    if not self.ANNOTATIONTYPE in self.doc.annotationdefaults or len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or list(self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys())[0] != self.set:
-                        if self.set != None:
-                            attribs['{' + NSFOLIA + '}set'] = self.set
-            except AttributeError:
-                pass
+        if not isinstance(self, AbstractAnnotationLayer):
+            if '{' + NSFOLIA + '}set' not in attribs: #do not override if overloaded function already set it
+                try:
+                    if self.set:
+                        if not self.ANNOTATIONTYPE in self.doc.annotationdefaults or len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or list(self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys())[0] != self.set:
+                            if self.set != None:
+                                attribs['{' + NSFOLIA + '}set'] = self.set
+                except AttributeError:
+                    pass
 
         if '{' + NSFOLIA + '}class' not in attribs: #do not override if caller already set it
             try:
