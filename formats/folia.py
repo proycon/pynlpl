@@ -3866,7 +3866,10 @@ class AlignReference(AbstractElement):
         if 'id' not in kwargs:
             raise Exception("ID required for AlignReference")
         if 'type' in kwargs:
-            self.type = kwargs['type']
+            if isinstance(kwargs['type'], AbstractElement) or inspect.isclass(kwargs['type']):
+                self.type = kwargs['type'].XMLTAG
+            else:
+                self.type = kwargs['type']
         else:
             self.type = None
         if 't' in kwargs:
