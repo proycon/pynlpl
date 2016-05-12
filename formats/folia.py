@@ -4943,8 +4943,8 @@ class ForeignData(AbstractElement):
         self.data = []
         if 'node' not in kwargs:
             raise ValueError("Expected a node= keyword argument for foreign-data")
-        if not isinstance(kwargs['node'],ElementTree._ElementTree):
-            raise ValueError("foreign-data node should be ElementTree instance")
+        if not isinstance(kwargs['node'],ElementTree._Element):
+            raise ValueError("foreign-data node should be ElementTree.Element instance, got " + str(type(kwargs['node'])))
         self.node = kwargs['node']
         self.doc = doc
         self.id = None
