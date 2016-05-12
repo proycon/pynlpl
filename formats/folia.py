@@ -4949,9 +4949,18 @@ class ForeignData(AbstractElement):
         if not isinstance(kwargs['node'],ElementTree._Element):
             raise ValueError("foreign-data node should be ElementTree.Element instance, got " + str(type(kwargs['node'])))
         self.node = kwargs['node']
+        for subnode in self.node:
+            self._checknamespace(subnode)
         self.doc = doc
         self.id = None
         #do not call superconstructor
+
+    def _checknamespace(self, node):
+        #namespace must be foreign
+        for subnode in node:
+            if node.tag and node.tag.startswith('{'+NSFOLIA+'}'):
+                raise ValueError("foreign-data may not include elements in the FoLiA namespace, a foreign XML namespace is mandatory")
+            self._checknamespace(subnode)
 
     @classmethod
     def parsexml(Class, node, doc):
