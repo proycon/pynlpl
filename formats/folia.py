@@ -4938,6 +4938,38 @@ class Text(AbstractStructureElement):
     # (both SPEAKABLE and PRINTABLE)
 
 
+class ForeignData(AbstractElement):
+    def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
+        self.data = []
+        if 'node' not in kwargs:
+            raise ValueError("Expected a node= keyword argument for foreign-data")
+        if not isinstance(kwargs['node'],ElementTree._ElementTree):
+            raise ValueError("foreign-data node should be ElementTree instance")
+        self.node = kwargs['node']
+        self.doc = doc
+        self.id = None
+        #do not call superconstructor
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        return ForeignData(doc, node=node)
+
+    def select(self, Class, set=None, recursive=True,  ignore=True, node=None): #pylint: disable=bad-classmethod-argument,redefined-builtin
+        #select can never descend into ForeignData, empty generator:
+        return
+        yield
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        return self.node
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.element(E.ref(name="any_content"), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+
+
+
+
 #===================================================================================================================
 
 
@@ -5625,7 +5657,7 @@ class Document(object):
             if self.metadatafile:
                 return [] #external
             elif self.metadata is not None:
-                return [self.metadata] #in-document
+                return [self.metadata.xml()] #in-document
             else:
                 return []
 
@@ -5942,7 +5974,7 @@ class Document(object):
                 elif self.metadata is not None:
                     raise MetaDataError("Multiple foreign-data elements are not allowed")
                 else:
-                    self.metadata = subnode
+                    self.metadata = ForeignData(self, node=subnode)
             elif subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT': #backward-compatibility for old IMDI without foreign-key
                 E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
                 self.metadatatype = "imdi"
@@ -6516,7 +6548,7 @@ def relaxng_declarations():
 
 def relaxng(filename=None):
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-    grammar = E.grammar( E.start ( E.element( #FoLiA
+    grammar = E.grammar( E.start( E.element( #FoLiA
                 E.attribute(name='id',ns="http://www.w3.org/XML/1998/namespace"),
                 E.optional( E.attribute(name='version') ),
                 E.optional( E.attribute(name='generator') ),
@@ -6544,6 +6576,10 @@ def relaxng(filename=None):
                 name='FoLiA',
                 ns = NSFOLIA
             ) ),
+            #definitions needed for ForeignData (allow any content) - see http://www.microhowto.info/howto/match_arbitrary_content_using_relax_ng.html
+            E.define( E.interleave(E.zeroOrMore(E.ref(name="any_element")),E.text()), name="any_content"),
+            E.define( E.element(E.anyName(), E.zeroOrMore(E.ref(name="any_attribute")), E.zeroOrMore(E.ref(name="any_content"))), name="any_element"),
+            E.define( E.attribute(E.anyName()), name="any_attribute")
             )
 
     done = {}
