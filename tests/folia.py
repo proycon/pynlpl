@@ -2429,7 +2429,7 @@ DCOIEXAMPLE="""<?xml version="1.0" encoding="iso-8859-15"?>
       <imdi:Description/>
       <imdi:MDGroup>
         <imdi:Location>
-          A<imdi:Continent>Europe</imdi:Continent>
+          <imdi:Continent>Europe</imdi:Continent>
           <imdi:Country>NL/B</imdi:Country>
         </imdi:Location>
         <imdi:Keys/>
