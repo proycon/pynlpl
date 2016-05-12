@@ -2418,6 +2418,9 @@ f.close()
 #We cheat, by setting the generator and version attributes to match the library, so xmldiff doesn't complain when we compare against this reference
 FOLIAEXAMPLE = re.sub(r' version="[^"]*" generator="[^"]*"', ' version="' + folia.FOLIAVERSION + '" generator="pynlpl.formats.folia-v' + folia.LIBVERSION + '"', FOLIAEXAMPLE, re.MULTILINE)
 
+#Another cheat, alien namespace attributes are ignored by the folia library, strip them so xmldiff doesn't complain
+FOLIAEXAMPLE = re.sub(r' xmlns:alien="[^"]*" alien:attrib="[^"]*"', '', FOLIAEXAMPLE, re.MULTILINE)
+
 
 DCOIEXAMPLE="""<?xml version="1.0" encoding="iso-8859-15"?>
 <DCOI xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI" xmlns="http://lands.let.ru.nl/projects/d-coi/ns/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:d-coi="http://lands.let.ru.nl/projects/d-coi/ns/1.0" xsi:schemaLocation="http://lands.let.ru.nl/projects/d-coi/ns/1.0 dcoi.xsd" xml:id="WR-P-E-J-0000125009">

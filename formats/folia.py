@@ -569,7 +569,10 @@ class AbstractElement(object):
             del kwargs['contents']
 
         for key in kwargs:
-            raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)
+            if key[0] == '{': #this is a parameter in a different alien namespace, ignore it
+                continue
+            else:
+                raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)
 
 
     def __getattr__(self, attr):
@@ -5274,6 +5277,7 @@ class Document(object):
         self.metadata = NativeMetaData() #will point to XML Element holding native metadata
         self.metadatatype = MetaDataType.NATIVE
         self.metadatafile = None #reference to external metadata file
+
 
 
         self.textclasses = set() #will contain the text classes found
