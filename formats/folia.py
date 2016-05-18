@@ -6869,7 +6869,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.2.0 on 2016-05-12 13:41:47, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.2.0 on 2016-05-18 13:42:38, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7032,7 +7032,7 @@ ANNOTATIONTYPE2LAYERCLASS = {
 
 #foliaspec:default_ignore
 #Default ignore list for the select() method, do not descend into these
-default_ignore = ( Original, Suggestion, Alternative, AlternativeLayers,)
+default_ignore = ( Original, Suggestion, Alternative, AlternativeLayers, ForeignData,)
 
 #foliaspec:default_ignore_annotations
 #Default ignore list for token annotation
