@@ -1882,7 +1882,7 @@ class AbstractElement(object):
         if cls.OPTIONAL_ATTRIBS is None: cls.OPTIONAL_ATTRIBS = () #bit hacky
 
 
-        attribs = []
+        attribs = [ ]
         if cls.REQUIRED_ATTRIBS and Attrib.ID in cls.REQUIRED_ATTRIBS:
             attribs.append( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") )
         elif Attrib.ID in cls.OPTIONAL_ATTRIBS:
@@ -1942,6 +1942,8 @@ class AbstractElement(object):
         if extraattribs:
             for e in extraattribs:
                 attribs.append(e) #s
+
+        attribs.append( E.ref(name="allow_foreign_attributes") )
 
 
         elements = [] #(including attributes)
@@ -6592,7 +6594,9 @@ def relaxng(filename=None):
             #definitions needed for ForeignData (allow any content) - see http://www.microhowto.info/howto/match_arbitrary_content_using_relax_ng.html
             E.define( E.interleave(E.zeroOrMore(E.ref(name="any_element")),E.text()), name="any_content"),
             E.define( E.element(E.anyName(), E.zeroOrMore(E.ref(name="any_attribute")), E.zeroOrMore(E.ref(name="any_content"))), name="any_element"),
-            E.define( E.attribute(E.anyName()), name="any_attribute")
+            E.define( E.attribute(E.anyName()), name="any_attribute"),
+            #Definition for allowing alien-namespace attributes on any element
+            E.define( E.zeroOrMore(E.attribute(E.anyName(getattr(E,'except')(E.nsName(),E.nsName(ns=""),E.nsName(ns="http://www.w3.org/XML/1998/namespace"),E.nsName(ns="http://www.w3.org/1999/xlink"))))), name="allow_foreign_attributes")
             )
 
     done = {}
