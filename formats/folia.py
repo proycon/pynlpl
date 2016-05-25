@@ -71,7 +71,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 #The FoLiA version
 FOLIAVERSION = "1.2.0"
 
-LIBVERSION = FOLIAVERSION + '.78' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.79' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -6873,7 +6873,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.2.0 on 2016-05-25 13:45:39, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.2.0 on 2016-05-25 14:07:53, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -6920,6 +6920,7 @@ ANNOTATIONTYPE2XML = {
     AnnotationType.TABLE:  "table" ,
     AnnotationType.TERM:  "term" ,
     AnnotationType.TEXT:  "t" ,
+    AnnotationType.STYLE:  "t-style" ,
     AnnotationType.TIMESEGMENT:  "timesegment" ,
     AnnotationType.UTTERANCE:  "utt" ,
     AnnotationType.WHITESPACE:  "whitespace" ,
@@ -7487,7 +7488,7 @@ TextMarkupString.PRIMARYELEMENT = False
 TextMarkupString.XMLTAG = "t-str"
 #------ TextMarkupStyle -------
 TextMarkupStyle.ANNOTATIONTYPE = AnnotationType.STYLE
-TextMarkupStyle.PRIMARYELEMENT = False
+TextMarkupStyle.PRIMARYELEMENT = True
 TextMarkupStyle.XMLTAG = "t-style"
 #------ TimeFeature -------
 TimeFeature.SUBSET = "time"
