@@ -71,7 +71,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 #The FoLiA version
 FOLIAVERSION = "1.2.0"
 
-LIBVERSION = FOLIAVERSION + '.77' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.78' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -6873,7 +6873,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.2.0 on 2016-05-18 13:42:38, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.2.0 on 2016-05-25 13:45:39, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -6920,11 +6920,6 @@ ANNOTATIONTYPE2XML = {
     AnnotationType.TABLE:  "table" ,
     AnnotationType.TERM:  "term" ,
     AnnotationType.TEXT:  "t" ,
-    AnnotationType.CORRECTION:  "t-correction" ,
-    AnnotationType.ERRORDETECTION:  "t-error" ,
-    AnnotationType.GAP:  "t-gap" ,
-    AnnotationType.STRING:  "t-str" ,
-    AnnotationType.STYLE:  "t-style" ,
     AnnotationType.TIMESEGMENT:  "timesegment" ,
     AnnotationType.UTTERANCE:  "utt" ,
     AnnotationType.WHITESPACE:  "whitespace" ,
@@ -7476,18 +7471,23 @@ TextContent.XLINK = True
 TextContent.XMLTAG = "t"
 #------ TextMarkupCorrection -------
 TextMarkupCorrection.ANNOTATIONTYPE = AnnotationType.CORRECTION
+TextMarkupCorrection.PRIMARYELEMENT = False
 TextMarkupCorrection.XMLTAG = "t-correction"
 #------ TextMarkupError -------
 TextMarkupError.ANNOTATIONTYPE = AnnotationType.ERRORDETECTION
+TextMarkupError.PRIMARYELEMENT = False
 TextMarkupError.XMLTAG = "t-error"
 #------ TextMarkupGap -------
 TextMarkupGap.ANNOTATIONTYPE = AnnotationType.GAP
+TextMarkupGap.PRIMARYELEMENT = False
 TextMarkupGap.XMLTAG = "t-gap"
 #------ TextMarkupString -------
 TextMarkupString.ANNOTATIONTYPE = AnnotationType.STRING
+TextMarkupString.PRIMARYELEMENT = False
 TextMarkupString.XMLTAG = "t-str"
 #------ TextMarkupStyle -------
 TextMarkupStyle.ANNOTATIONTYPE = AnnotationType.STYLE
+TextMarkupStyle.PRIMARYELEMENT = False
 TextMarkupStyle.XMLTAG = "t-style"
 #------ TimeFeature -------
 TimeFeature.SUBSET = "time"
