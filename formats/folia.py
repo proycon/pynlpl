@@ -71,7 +71,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 #The FoLiA version
 FOLIAVERSION = "1.2.0"
 
-LIBVERSION = FOLIAVERSION + '.79' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.80' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -1082,6 +1082,7 @@ class AbstractElement(object):
                     raise DuplicateAnnotationError("Unable to add another object of set " + set + " and type " + Class.__name__ + " to " + parent.__class__.__name__ + " " + extra + ". There are already " + str(count) + " instances of this class, which is the maximum for the set.")
                 else:
                     return False
+
 
 
         return True
@@ -2840,7 +2841,6 @@ class TextContent(AbstractElement):
 
 
 
-
     def __unicode__(self):
         return self.text()
 
@@ -2949,6 +2949,16 @@ class TextContent(AbstractElement):
         extraattribs.append( E.optional(E.attribute(name='ref' )))
         return super(TextContent, cls).relaxng(includechildren, extraattribs, extraelements)
 
+
+    def postappend(self):
+        super(TextContent,self).postappend()
+        found = set()
+        for c in self.parent:
+            if isinstance(c,TextContent):
+                if c.cls in found:
+                    raise DuplicateAnnotationError("Can not add multiple text content elements with the same class (" + c.cls + ") to the same structural element!")
+                else:
+                    found.add(c.cls)
 
 
 class PhonContent(AbstractElement):
