@@ -661,18 +661,18 @@ def filesampler(files, testsetsize = 0.1, devsetsize = 0, trainsetsize = 0, outp
         devset = {}
         for i in range(1,total+1):
             trainset[i] = True
-        for i in random.sample(trainset.keys(), testsetsize):
+        for i in random.sample(trainset.keys(), int(testsetsize)):
             testset[i] = True
             del trainset[i]
 
         if devsetsize > 0:
-            for i in random.sample(trainset.keys(), devsetsize):
+            for i in random.sample(trainset.keys(), int(devsetsize)):
                 devset[i] = True
                 del trainset[i]
 
         if trainsetsize > 0:
             newtrainset = {}
-            for i in random.sample(trainset.keys(), trainsetsize):
+            for i in random.sample(trainset.keys(), int(trainsetsize)):
                 newtrainset[i] = True
             trainset = newtrainset
 
