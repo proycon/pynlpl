@@ -1568,7 +1568,7 @@ class AbstractElement(object):
                 jsonnode['annotatortype'] = "auto"
             elif self.annotatortype == AnnotatorType.MANUAL:
                 jsonnode['annotatortype'] = "manual"
-        if self.confidence:
+        if self.confidence is not None:
             jsonnode['confidence'] = self.confidence
         if self.n:
             jsonnode['n'] = self.n
