@@ -1312,10 +1312,13 @@ def getassignments(q, i, assignments,  focus=None):
     l = len(q)
     while i < l:
         if q.kw(i, ('id','set','annotator','class','n')):
-            assignments[q[i]] = q[i+1]
+            if q[i+1] == 'NONE':
+                assignments[q[i]] = None
+            else:
+                assignments[q[i]] = q[i+1]
             i+=2
         elif q.kw(i,'confidence'):
-            if q[i+1].lower() in ( "none","null","no","unset","undefined"):
+            if q[i+1] == 'NONE':
                 assignments[q[i]] = None
             else:
                 try:
@@ -1328,6 +1331,8 @@ def getassignments(q, i, assignments,  focus=None):
                 assignments[q[i]] = folia.AnnotatorType.AUTO
             elif q[i+1] == "manual":
                 assignments[q[i]] = folia.AnnotatorType.MANUAL
+            elif q[i+1] == "NONE":
+                assignments[q[i]] = None
             else:
                 raise SyntaxError("Invalid value for annotatortype: " + str(q[i+1]))
             i+=2
@@ -1341,6 +1346,8 @@ def getassignments(q, i, assignments,  focus=None):
         elif q.kw(i, 'datetime'):
             if q[i+1] == "now":
                 assignments[q[i]] = datetime.datetime.now()
+            elif q[i+1] == "NONE":
+                assignments[q[i]] = None
             elif q[i+1].isdigit():
                 try:
                     assignments[q[i]] = datetime.datetime.fromtimestamp(q[i+1])

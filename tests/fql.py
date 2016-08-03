@@ -55,7 +55,7 @@ Qin2ref = "SELECT ph FOR term"
 
 Qedit = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
 Qeditconfidence = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" CONFIDENCE 0.6 FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
-Qeditconfidence2 = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" CONFIDENCE none FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
+Qeditconfidence2 = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" CONFIDENCE NONE FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
 Qadd = "ADD lemma OF \"lemmas-nl\" WITH class \"hebben\" FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
 Qeditadd = "EDIT lemma OF \"lemmas-nl\" WITH class \"hebben\" FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
 Qdelete = "DELETE lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w"
