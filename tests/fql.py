@@ -54,6 +54,8 @@ Qin2 = "SELECT ph IN term"
 Qin2ref = "SELECT ph FOR term"
 
 Qedit = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
+Qeditconfidence = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" CONFIDENCE 0.6 FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
+Qeditconfidence2 = "EDIT lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" WITH class \"blah\" CONFIDENCE none FOR w FOR s ID \"WR-P-E-J-0000000001.p.1.s.2\""
 Qadd = "ADD lemma OF \"lemmas-nl\" WITH class \"hebben\" FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
 Qeditadd = "EDIT lemma OF \"lemmas-nl\" WITH class \"hebben\" FOR w ID \"WR-P-E-J-0000000001.sandbox.2.s.1.w.3\""
 Qdelete = "DELETE lemma OF \"lemmas-nl\" WHERE class = \"stamboom\" FOR w"
@@ -271,6 +273,20 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
         self.assertEqual(results[0].cls, "blah")
+
+    def test06a_evaluate_editconfidence(self):
+        q = fql.Query(Qeditconfidence)
+        results = q(self.doc)
+        self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
+        self.assertEqual(results[0].cls, "blah")
+        self.assertEqual(results[0].confidence, 0.5)
+
+    def test06b_evaluate_editconfidence2(self):
+        q = fql.Query(Qeditconfidence2)
+        results = q(self.doc)
+        self.assertTrue(isinstance(results[0], folia.LemmaAnnotation))
+        self.assertEqual(results[0].cls, "blah")
+        self.assertEqual(results[0].confidence, None)
 
     def test07_evaluate_add(self):
         q = fql.Query(Qadd)

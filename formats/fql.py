@@ -1315,10 +1315,13 @@ def getassignments(q, i, assignments,  focus=None):
             assignments[q[i]] = q[i+1]
             i+=2
         elif q.kw(i,'confidence'):
-            try:
-                assignments[q[i]] = float(q[i+1])
-            except:
-                raise SyntaxError("Invalid value for confidence: " + str(q[i+1]))
+            if q[i+1].lower() in ( "none","null","no","unset","undefined"):
+                assignments[q[i]] = None
+            else:
+                try:
+                    assignments[q[i]] = float(q[i+1])
+                except:
+                    raise SyntaxError("Invalid value for confidence: " + str(q[i+1]))
             i+=2
         elif q.kw(i,'annotatortype'):
             if q[i+1] == "auto":
