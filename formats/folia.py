@@ -2230,6 +2230,67 @@ class Description(AbstractElement):
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
+class Comment(AbstractElement):
+    """Comment is an element that can be used to associate a comment with almost any other FoLiA element"""
+
+    def __init__(self,doc, *args, **kwargs):
+        """Required keyword arguments:
+                * ``value=``: The text content for the comment (``str`` or ``unicode``)
+        """
+        if 'value' in kwargs:
+            if kwargs['value'] is None:
+                self.value = ""
+            elif isstring(kwargs['value']):
+                self.value = u(kwargs['value'])
+            else:
+                if sys.version < '3':
+                    raise Exception("value= parameter must be unicode or str instance, got " + str(type(kwargs['value'])))
+                else:
+                    raise Exception("value= parameter must be str instance, got " + str(type(kwargs['value'])))
+            del kwargs['value']
+        else:
+            raise Exception("Comment expects value= parameter")
+        super(Comment,self).__init__(doc, *args, **kwargs)
+
+    def __nonzero__(self): #Python 2.x
+        return bool(self.value)
+
+    def __bool__(self):
+        return bool(self.value)
+
+    def __unicode__(self):
+        return self.value
+
+    def __str__(self):
+        return self.value
+
+
+    def xml(self, attribs = None,elements = None, skipchildren = False):
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+
+        if not attribs:
+            attribs = {}
+
+        return E.desc(self.value, **attribs)
+
+    def json(self,attribs =None, recurse=True, ignorelist=False):
+        jsonnode = {'type': self.XMLTAG, 'value': self.value}
+        if attribs:
+            for attrib in attribs:
+                jsonnode[attrib] = attrib
+        return jsonnode
+
+    @classmethod
+    def parsexml(Class, node, doc):
+        kwargs = {}
+        kwargs['value'] = node.text
+        return Description(doc, **kwargs)
+
+    @classmethod
+    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
+        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
+
 class AllowCorrections(object):
     def correct(self, **kwargs):
         """Apply a correction (TODO: documentation to be written still)"""
