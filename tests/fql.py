@@ -139,6 +139,7 @@ Qinsertion2 = "SUBSTITUTE w WITH text \".\" (AS CORRECTION OF \"http://raw.githu
 Qsuggest_insertion = "PREPEND (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"insertion\" SUGGESTION (ADD w WITH text \"heel\")) FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
 Qsuggest_insertion2 = "APPEND (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"insertion\" SUGGESTION (ADD w WITH text \"heel\")) FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.3\""
 
+Qcomment = "ADD comment WITH text \"This is our university!\" FOR entity ID \"example.radboud.university.nijmegen.org\""
 
 
 class Test1UnparsedQuery(unittest.TestCase):
@@ -688,6 +689,14 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].cls, "insertion")
         self.assertEqual(results[0].suggestions(0).text(), "heel")
         self.assertEqual(results[0].next(folia.Word,None).text(), "ander")
+
+    def test35_comment(self):
+        """Adding a comment"""
+        q = fql.Query(Qcomment)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Comment)
+        self.assertEqual(results[0].value, "This is our university!")
+        self.assertEqual(results[0].parent.id, "example.radboud.university.nijmegen.org")
 
 class Test4CQL(unittest.TestCase):
     def setUp(self):

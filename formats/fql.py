@@ -35,8 +35,8 @@ MASK_LITERAL = 1
 MASK_EXPRESSION = 2
 MAXEXPANSION = 99
 
-FOLIAVERSION = '1.2.0'
-FQLVERSION = '0.2.7'
+FOLIAVERSION = '1.3.0'
+FQLVERSION = '0.3.0'
 
 class SyntaxError(Exception):
     pass
@@ -1337,7 +1337,7 @@ def getassignments(q, i, assignments,  focus=None):
                 raise SyntaxError("Invalid value for annotatortype: " + str(q[i+1]))
             i+=2
         elif q.kw(i,'text'):
-            if not focus is None and focus.Class is folia.TextContent:
+            if not focus is None and focus.Class in (folia.TextContent, folia.Description, folia.Comment):
                 key = 'value'
             else:
                 key = 'text'
