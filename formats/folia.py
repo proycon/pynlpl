@@ -2004,7 +2004,10 @@ class AbstractElement(object):
         if not attribs:
             attribs.append( E.empty() )
 
-        return E.define( E.element(*(preamble + attribs), **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
+        if cls.XMLTAG in ('desc','comment'):
+            return E.define( E.element(E.text(), *(preamble + attribs), **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
+        else:
+            return E.define( E.element(*(preamble + attribs), **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
 
     @classmethod
     def parsexml(Class, node, doc): #pylint: disable=bad-classmethod-argument
@@ -2225,10 +2228,6 @@ class Description(AbstractElement):
         return Description(doc, **kwargs)
 
 
-    @classmethod
-    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
 class Comment(AbstractElement):
     """Comment is an element that can be used to associate a comment with almost any other FoLiA element"""
@@ -2286,10 +2285,6 @@ class Comment(AbstractElement):
         kwargs['value'] = node.text
         return Description(doc, **kwargs)
 
-    @classmethod
-    def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
-        E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
 class AllowCorrections(object):
     def correct(self, **kwargs):
@@ -6952,7 +6947,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-04 12:42:47, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-04 15:53:33, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7239,6 +7234,7 @@ ChunkingLayer.ANNOTATIONTYPE = AnnotationType.CHUNKING
 ChunkingLayer.PRIMARYELEMENT = False
 ChunkingLayer.XMLTAG = "chunking"
 #------ Comment -------
+Comment.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N,)
 Comment.XMLTAG = "comment"
 #------ ComplexAlignment -------
 ComplexAlignment.ACCEPTED_DATA = (Alignment, Comment, Description, Feature, ForeignData, Metric,)
@@ -7301,6 +7297,7 @@ Dependency.XMLTAG = "dependency"
 DependencyDependent.XMLTAG = "dep"
 #------ Description -------
 Description.OCCURRENCES = 1
+Description.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N,)
 Description.XMLTAG = "desc"
 #------ Division -------
 Division.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Division, Entry, Event, Example, Feature, Figure, ForeignData, Gap, Head, Linebreak, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, Table, TextContent, Utterance, Whitespace,)
