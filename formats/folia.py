@@ -6539,10 +6539,11 @@ class SubsetDefinition(AbstractDefinition):
         return jsonnode
 
 class SetDefinition(AbstractDefinition):
-    def __init__(self, id, type, classes = [], subsets = [], constraintindex = {}):
+    def __init__(self, id, type, classes = [], subsets = [], constraintindex = {}, label =None):
         isncname(id)
         self.id = id
         self.type = type
+        self.label = label
         self.classes = classes
         self.subsets = subsets
         self.constraintindex = constraintindex
@@ -6566,6 +6567,11 @@ class SetDefinition(AbstractDefinition):
         else:
             type = SetType.MIXED
 
+        if 'label' in node.attrib:
+            label = node.attrib['label']
+        else:
+            label = None
+
         for subnode in node:
             if subnode.tag == '{' + NSFOLIA + '}class':
                 classes.append( ClassDefinition.parsexml(subnode, constraintindex) )
@@ -6574,7 +6580,7 @@ class SetDefinition(AbstractDefinition):
             elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
                 raise SetDefinitionError("Invalid tag in Set definition: " + subnode.tag)
 
-        return SetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type,classes, subsets, constraintindex)
+        return SetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type,classes, subsets, constraintindex, label)
 
     def testclass(self,cls):
         raise NotImplementedError #TODO, IMPLEMENT!
@@ -6584,6 +6590,8 @@ class SetDefinition(AbstractDefinition):
 
     def json(self):
         jsonnode = {'id': self.id}
+        if self.label:
+            jsonnode['label'] = self.label
         if self.type == SetType.OPEN:
             jsonnode['type'] = 'open'
         elif self.type == SetType.CLOSED:
