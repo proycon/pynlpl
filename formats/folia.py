@@ -173,7 +173,17 @@ class CorrectionHandling:
     EITHER,CURRENT, ORIGINAL = range(3)
 
 
-
+def checkversion(version):
+    """Checks FoLiA version, returns 1 if the document is newer than the library, -1 if it is older, 0 if it is equal"""
+    try:
+        for refversion, docversion in zip([int(x) for x in FOLIAVERSION.split('.')], [int(x) for x in version.split('.')]):
+            if docversion > refversion:
+                return 1 #doc is newer than library
+            elif docversion < refversion:
+                return -1 #doc is older than library
+        return 0 #versions are equal
+    except ValueError:
+        raise ValueError("Unable to parse document FoLiA version, invalid syntax")
 
 def parsetime(s):
     #parses time in HH:MM:SS.mmm format, returns a four-tuple
@@ -6087,6 +6097,8 @@ class Document(object):
                             raise Exception("FoLiA Document has no ID!")
                 if 'version' in node.attrib:
                     self.version = node.attrib['version']
+                    if checkversion(self.version) > 0:
+                        print("WARNING!!! Document uses a newer version of FoLiA than this library! (" + self.version + " vs " + FOLIAVERSION + "). Any possible subsequent failures in parsing or processing may probably be attributed to this. Upgrade pynlpl to remedy this.",file=sys.stderr)
                 else:
                     self.version = None
 
