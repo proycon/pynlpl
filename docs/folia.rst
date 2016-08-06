@@ -142,7 +142,7 @@ default applied recursively for most element types::
     for word in words:
         print(word)
 
-The :meth:`AbstractElement.select` method has a sibling :meth:`AbstractElement.count``, invoked with the same
+The :meth:`AbstractElement.select` method has a sibling :meth:`AbstractElement.count`, invoked with the same
 arguments, which simply counts how many items it finds, without actually
 returning them::
 

@@ -744,7 +744,7 @@ class AbstractElement(object):
             strict (bool):  Set this iif you are strictly interested in the text explicitly associated with the element, without recursing into children. Defaults to ``False``.
             correctionhandling: Specifies what text to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current text. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the text prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
 
-        Example:
+        Example::
             word.text()
 
         Returns:
@@ -877,7 +877,7 @@ class AbstractElement(object):
             strict (bool):  Set this if you are strictly interested in the phonetic content explicitly associated with the element, without recursing into children. Defaults to ``False``.
             correctionhandling: Specifies what phonetic content to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current phonetic content. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the phonetic content prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
 
-        Example:
+        Example::
             word.phon()
 
         Returns:
@@ -1691,7 +1691,7 @@ class AbstractElement(object):
         Arguments:
             *Classes: The possible classes (:class:`AbstractElement` or subclasses) to select from. Not instances!
 
-        Example:
+        Example::
             paragraph = word.ancestor(folia.Paragraph)
         """
         for e in self.ancestors(tuple(Classes)):
@@ -1859,7 +1859,7 @@ class AbstractElement(object):
     def json(self, attribs=None, recurse=True, ignorelist=False):
         """Serialises the FoLiA element and all its contents to a Python dictionary suitable for serialisation to JSON.
 
-        Example:
+        Example::
             import json
             json.dumps(word.json())
 
@@ -1952,7 +1952,7 @@ class AbstractElement(object):
         Yields:
             Elements (instances derived from :class:`AbstractElement`)
 
-        Example:
+        Example::
             for sense in text.select(folia.Sense, 'cornetto', True, [folia.Original, folia.Suggestion, folia.Alternative] ):
                 ..
 
@@ -2715,7 +2715,7 @@ class AllowTokenAnnotation(AllowCorrections):
         Yields:
             Elements (instances derived from :class:`AbstractElement`)
 
-        Example:
+        Example::
             for sense in text.annotations(folia.Sense, 'http://some/path/cornetto'):
                 ..
 
@@ -2751,7 +2751,7 @@ class AllowTokenAnnotation(AllowCorrections):
         Returns:
             An element (instance derived from :class:`AbstractElement`)
 
-        Example:
+        Example::
             sense = word.annotation(folia.Sense, 'http://some/path/cornetto').cls
 
         See also:
@@ -5130,7 +5130,7 @@ class Sentence(AbstractStructureElement):
 
     def __init__(self,  doc, *args, **kwargs):
         """
-        Example:
+        Example::
 
             sentence = paragraph.append( folia.Sentence)
 
@@ -5140,7 +5140,7 @@ class Sentence(AbstractStructureElement):
             sentence.append( folia.Word, 'test', space=False)
             sentence.append( folia.Word, '.')
 
-        Example:
+        Example::
 
             sentence = folia.Sentence( doc, folia.Word(doc, 'This'),  folia.Word(doc, 'is'),  folia.Word(doc, 'a'),  folia.Word(doc, 'test', space=False),  folia.Word(doc, '.') )
             paragraph.append(sentence)
@@ -6277,7 +6277,7 @@ class Document(object):
             annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process.
             datetime (datetime.datetime): Sets the default datetime
 
-        Example:
+        Example::
             doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', annotator="mytagger", annotatortype=folia.AnnotatorType.AUTO)
         """
 
@@ -6299,7 +6299,7 @@ class Document(object):
             annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
             set (str): the set, should formally be a URL pointing to the set definition
 
-        Example:
+        Example::
             if doc.declared(folia.PosAnnotation, 'http://some/path/brown-tag-set'):
                 ..
 
