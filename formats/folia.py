@@ -176,7 +176,11 @@ class CorrectionHandling:
 
 
 def parsetime(s):
-    #parses time in HH:MM:SS.mmm format, returns a four-tuple
+    """Internal function to parse the time parses time in HH:MM:SS.mmm format.
+    
+    Returns:
+        a four-tuple ``(hours,minutes,seconds,milliseconds)``
+    """
     try:
         fields = s.split('.')
         subfields = fields[0].split(':')
@@ -195,7 +199,7 @@ def parsetime(s):
 
 
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
-    """Internal function, parses common FoLiA attributes and sets up the instance accordingly"""
+    """Internal function to parse common FoLiA attributes and sets up the instance accordingly. Do not invoke directly."""
 
     object.doc = doc #The FoLiA root document
 
@@ -480,7 +484,7 @@ def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-t
 
 
 def xmltreefromstring(s):
-    #Internal method, deals with different Python versions, unicode strings versus bytes, and with the leak bug in lxml
+    """Internal function, deals with different Python versions, unicode strings versus bytes, and with the leak bug in lxml"""
     if sys.version < '3':
         #Python 2
         if isinstance(s,unicode): #pylint: disable=undefined-variable
@@ -499,12 +503,14 @@ def xmltreefromstring(s):
             return ElementTree.parse(BytesIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
 
 def xmltreefromfile(filename):
+    """Internal function to read an XML file"""
     try:
         return ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
     except TypeError:
         return ElementTree.parse(filename, ElementTree.XMLParser()) #older lxml, may leak!!
 
 def makeelement(E, tagname, **kwargs):
+    """Internal function"""
     if sys.version < '3':
         try:
             kwargs2 = {}
@@ -529,7 +535,18 @@ def makeelement(E, tagname, **kwargs):
 
 
 def commonancestors(Class, *args):
-    """Generator over common ancestors, of the Class specified, of the current element and the other specified elements"""
+    """Generator function to find common ancestors of a particular type for any two or more FoLiA element instances.
+
+    The function produces all common ancestors of the type specified, starting from the closest one up to the most distant one.
+    
+    Parameters:
+        Class: The type of ancestor to find, should be the :class:`AbstractElement` class or any subclass thereof (not an instance!)
+        *args: The elements to find the common ancestors of, elements are instances derived from :class:`AbstractElement`
+
+    Yields:
+        instance derived from :class:`AbstractElement`: A common ancestor of the arguments, an instance of the specified ``Class``.
+    """
+
     commonancestors = None #pylint: disable=redefined-outer-name
     for sibling in args:
         ancestors = list( sibling.ancestors(Class) )
@@ -547,9 +564,47 @@ def commonancestors(Class, *args):
             yield commonancestor
 
 class AbstractElement(object):
-    """This is the abstract base class from which all FoLiA elements are derived. This class should not be instantiated directly, but can useful if you want to check if a variable is an instance of any FoLiA element: isinstance(x, AbstractElement). It contains methods and variables also commonly inherited."""
+    """Abstract base class from which all FoLiA elements are derived.
+    
+    This class implements many generic methods that are available on all FoLiA elements.
+
+    To see if an element is a FoLiA element, as opposed to any other python object, do::
+
+        isinstance(x, AbstractElement)
+
+    Note:
+        This class should never be instantiated directly, as it is abstract!
+    
+    """    
 
     def __init__(self, doc, *args, **kwargs):
+        """Constructor for most FoLiA elements.
+        
+        Parameters:
+            doc (:class:`Document`): The FoLiA document this element will pertain to. It will not be automatically added though.
+            *args: Child elements to add to this element, mostly instances derived from :class:`AbstractElement`
+
+        Keyword Arguments:
+            id (str): An ID for the element. IDs must be unique for the entire document. They may not contain colons or spaces, and must start with a letter. (they must adhere to XML's NCName type). This is a generic FoLiA attribute.
+            set (str): The FoLiA set for this element. This is a generic FoLiA attribute.
+            cls (str): The class for this element. This is a generic FoLiA attribute.
+            annotator (str): A name or ID for the annotator. This is a generic FoLiA attribute.
+            annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process. This is a generic FoLiA attribute.
+            confidence (float): A value between 0 and 1 indicating the degree of confidence the annotator has that this the annotation is correct.. This is a generic FoLiA attribute.
+            n (int): An index number to indicate the element is part of an sequence (does not affect the placement of the element).
+            src (str): Speech annotation attribute, refers to a media file (audio/video) that this element describes. This is a generic FoLiA attribute.
+            speaker (str): Speech annotation attribute: a name or ID of the speaker. This is a generic FoLiA attribute.
+            begintime (str): Speech annotation attribute: the time (in ``hh:mm:ss.mmm`` format, relative to the media file in ``src``) when the audio that this element describes starts. This is a generic FoLiA attribute.
+            endtime (str): Speech annotation attribute: the time (in ``hh:mm:ss.mmm`` format, relative to the media file in ``src``) when the audio that this element describes starts. This is a generic FoLiA attribute.
+            contents (list): Alternative for ``*args``, exists for purely syntactic reasons.
+
+
+        Not all of the generic FoLiA attributes are applicable to all elements. The class properties ``REQUIRED_ATTRIBS`` and ``OPTIONAL_ATTRIBS`` prescribe which are required or allowed.
+
+
+        """
+
+
         if not isinstance(doc, Document) and not doc is None:
             raise Exception("Expected first parameter to be instance of Document, got " + str(type(doc)))
         self.doc = doc
@@ -576,6 +631,7 @@ class AbstractElement(object):
 
 
     def __getattr__(self, attr):
+        """Internal method"""
         #overriding getattr so we can get defaults here rather than needing a copy on each element, saves memory
         if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','speaker','begintime','endtime','xlinktype','xlinktitle','xlinklabel','xlinkrole','xlinkshow'):
             return None
@@ -594,7 +650,10 @@ class AbstractElement(object):
 
 
     def description(self):
-        """Obtain the description associated with the element, will raise NoDescription if there is none"""
+        """Obtain the description associated with the element.
+        
+        Raises:
+            :class:`NoSuchAnnotation` if there is no associated description."""
         for e in self:
             if isinstance(e, Description):
                 return e.value
@@ -628,25 +687,35 @@ class AbstractElement(object):
 
 
     def stricttext(self, cls='current'):
-        """Alias for text() with strict=True"""
+        """Alias for :meth:`text` with ``strict=True``"""
         return self.text(cls,strict=True)
 
     def toktext(self,cls='current'):
-        """Alias for text() with retaintokenisation=True"""
+        """Alias for :meth:`text` with ``retaintokenisation=True``"""
         return self.text(cls,retaintokenisation=True)
 
     def text(self, cls='current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
-        """Get the text associated with this element (of the specified class)  (will always be a unicode instance in python 2)
-
+        """Get the text associated with this element (of the specified class) 
+        
         The text will be constructed from child-elements whereever possible, as they are more specific.
         If no text can be obtained from the children and the element has itself text associated with
-        it, then that will be used. If no text is found at all, a NoSuchText exception is raised.
+        it, then that will be used. 
 
-        If you are strictly interested in the text explicitly associated with the element, without recursing into children, use ``strict=True``
+        Parameters:
+            cls (str): The class of the text content to obtain, defaults to ``current``.
+            retaintokenisation (bool): If set, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible. Defaults to ``False``.
+            previousdelimiter (str): Can be set to a delimiter that was last outputed, useful when chaining calls to :meth:`text`. Defaults to an empty string.
+            strict (bool):  Set this iif you are strictly interested in the text explicitly associated with the element, without recursing into children. Defaults to ``False``.
+            correctionhandling: Specifies what text to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current text. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the text prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
 
-        If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.
+        Example:
+            word.text()
 
-        The correctionhandling argument specifies what text to retrieve when corrections are encountered. The default is CorrectionHandling.CURRENT, which will retrieve the corrected/current text. You can set this to ORIGINAL if you want the text prior to correction, and EITHER if you don't care.
+        Returns:
+            The text of the element (``unicode`` instance in Python 2, ``str`` in Python 3)
+
+        Raises:
+            :class:`NoSuchText`: if no text is found at all.
         """
 
         if strict:
@@ -691,10 +760,16 @@ class AbstractElement(object):
 
     def phoncontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
         """Get the phonetic content explicitly associated with this element (of the specified class).
-        Returns the PhonContent instance rather than the actual text. Raises NoSuchPhon exception if
-        not found.
 
-        Unlike phon(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
+        Returns the :class:`PhonContent` instance rather than the actual text.
+
+        Unlike :meth:`phon`, this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
+
+        Returns:
+            The phonetic content (:class:`PhonContent`) 
+
+        Raises:
+            :class:`NoSuchPhon` if there is no phonetic content for the element
         """
         if not self.SPEAKABLE: #only printable elements can hold text
             raise NoSuchPhon
@@ -6572,6 +6647,14 @@ def relaxng_declarations():
 
 
 def relaxng(filename=None):
+    """Generates a RelaxNG Schema for FoLiA. Optionally saves it to file.
+
+    Args:
+        filename (str): Save the schema to the following filename
+
+    Returns:
+        lxml.ElementTree: The schema
+    """
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     grammar = E.grammar( E.start( E.element( #FoLiA
                 E.attribute(name='id',ns="http://www.w3.org/XML/1998/namespace"),
@@ -6759,7 +6842,9 @@ def findwords(doc, worditerator, *args, **kwargs):
                     buffers.remove(buffer) #remove buffer
 
 class Reader(object):
-    """Streaming FoLiA reader. The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found. If you are querying a corpus of large FoLiA documents for a specific structure, then it is strongly recommend to use the Reader rather than the standard Document!"""
+    """Streaming FoLiA reader.
+
+    The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found. If you are querying a corpus of large FoLiA documents for a specific structure, then it is strongly recommend to use the Reader rather than the standard Document!"""
 
 
     def __init__(self, filename, target, *args, **kwargs):
