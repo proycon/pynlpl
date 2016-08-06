@@ -130,6 +130,7 @@ methods or overload some of the original ones:
     AbstractSpanAnnotation
     AbstractTokenAnnotation
     AbstractAnnotationLayer
+    AbstractTextMarkup
 
 Obtaining list of elements
 ------------------------------
@@ -508,6 +509,7 @@ FoLiA distinguishes the following span annotation elements:
     Entity
     SyntacticUnit
     SemanticRole
+    TimeSegment
 
 These are placed in the following annotation layers:
 
@@ -522,6 +524,7 @@ These are placed in the following annotation layers:
     EntitiesLayer
     SyntaxLayer
     SemanticRolesLayer
+    TimingLayer
 
 
 Some span annotation elements take *span roles*, depending on their type:
@@ -1074,8 +1077,40 @@ Here is a list of all relevant classes for corrections:
 
     Correction
     Current
+    ErrorDetection
     New
     Original
     Suggestion
 
- 
+Alignments
+------------------
+
+Alignments are used to make reference to external documents.  It concerns
+references as annotation rather than references which are explicitly part of
+the text, such as hyperlinks and :class:`Reference`. 
+
+The following elements are relevant for alignments:
+
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    Alignment
+    AlignmentReference
+
+Descriptions, Metrics
+-------------------------
+
+FoLiA allows arbitrary descriptions to be assigned with any element. It also
+allows assigning metrics to any annotation, which consist of a key/value pair
+that often express a quantivative or qualitative measure. This is accomplished,
+respectively, with the following element classes:
+
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    Description
+    Metric

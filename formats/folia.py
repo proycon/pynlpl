@@ -2927,7 +2927,7 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         """Returns a generator of Paragraph elements found (recursively) under this element.
 
         Arguments:
-            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the generator of all
+            index (int or None): If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the generator of all
         """
         if index is None:
             return self.select(Paragraph,None,True,default_ignore_structure)
@@ -2943,7 +2943,7 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         """Returns a generator of Sentence elements found (recursively) under this element
 
         Arguments:
-            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning a generator of all
+            index (int or None): If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning a generator of all
         """
         if index is None:
             return self.select(Sentence,None,True,default_ignore_structure)
@@ -2984,8 +2984,18 @@ class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation):
 
 
 class AbstractTextMarkup(AbstractElement):
+    """Abstract class for text markup elements, elements that appear with the :class:`TextContent` (``t``) element.
+    
+    Markup elements pertain primarily to styling, but also have other roles.
+
+    Iterating over the element of a
+    :class:`TextContent` element will first and foremost produce strings, but also
+    uncover these markup elements when present.
+    """
 
     def __init__(self, doc, *args, **kwargs):
+        """See :meth:`AbstractElement.__init__`, text is passed as a string in ``*args``."""
+
         if 'idref' in kwargs:
             self.idref = kwargs['idref']
             del kwargs['idref']
@@ -3003,6 +3013,11 @@ class AbstractTextMarkup(AbstractElement):
         #    raise ValueError("There are illegal unicode control characters present in Text Markup Content: " + repr(self.value))
 
     def settext(self, text):
+        """Sets the text content of the markup element.
+
+        Arguments:
+            text (str)
+        """
         self.data = [text]
         if not self.data:
             raise ValueError("Empty text content elements are not allowed")
@@ -3014,12 +3029,14 @@ class AbstractTextMarkup(AbstractElement):
             return self
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        """See :meth:`AbstractElement.xml`"""
         if not attribs: attribs = {}
         if self.idref:
             attribs['id'] = self.idref
         return super(AbstractTextMarkup,self).xml(attribs,elements, skipchildren)
 
     def json(self,attribs =None, recurse=True, ignorelist=False):
+        """See :meth:`AbstractElement.json`"""
         if not attribs: attribs = {}
         if self.idref:
             attribs['id'] = self.idref
@@ -3046,12 +3063,19 @@ class AbstractTextMarkup(AbstractElement):
 
 
 class TextMarkupString(AbstractTextMarkup):
-    pass
+    """Markup element to mark arbitrary substrings in text content (:class:`TextContent`)"""
 
 class TextMarkupGap(AbstractTextMarkup):
-    pass
+    """Markup element to mark gaps in text content (:class:`TextContent`)
+
+    Only consider this element for gaps in spans of untokenised text. The use of structural element :class:`Gap` is preferred.
+    """
 
 class TextMarkupCorrection(AbstractTextMarkup):
+    """Markup element to mark corrections in text content (:class:`TextContent`).
+
+    Only consider this element for corrections on untokenised text. The use of :class:`Correction` is preferred.
+    """
 
     def __init__(self, doc, *args, **kwargs):
         if 'original' in kwargs:
@@ -3094,13 +3118,13 @@ class TextMarkupCorrection(AbstractTextMarkup):
 
 
 class TextMarkupError(AbstractTextMarkup):
-    pass
+    """Markup element to mark gaps in text content (:class:`TextContent`)
+
+    Only consider this element for gaps in spans of untokenised text. The use of structural element :class:`ErrorDetection` is preferred.
+    """
 
 class TextMarkupStyle(AbstractTextMarkup):
-    pass
-
-
-
+    """Markup element to style text content (:class:`TextContent`), e.g. make text bold, italics, underlined, coloured, etc.."""
 
 
 class TextContent(AbstractElement):
@@ -3270,6 +3294,7 @@ class TextContent(AbstractElement):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        """See :meth:`AbstractElement.xml`"""
         attribs = {}
         if not self.offset is None:
             attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
@@ -3291,6 +3316,7 @@ class TextContent(AbstractElement):
         return e
 
     def json(self, attribs =None, recurse =True,ignorelist=False):
+        """See :meth:`AbstractElement.json`"""
         attribs = {}
         if not self.offset is None:
             attribs['offset'] = self.offset
@@ -3522,6 +3548,7 @@ class PhonContent(AbstractElement):
         return super(PhonContent, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class Content(AbstractElement):     #used for raw content, subelement for Gap
+    """A container element that takes raw content, used by :class:`Gap`"""
 
     def __init__(self,doc, *args, **kwargs):
         if 'value' in kwargs:
@@ -3580,7 +3607,7 @@ class Part(AbstractStructureElement):
 
 
 class Gap(AbstractElement):
-    """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
+    """Gap element. Represents skipped portions of the text. Usually contains :class:`Content` and possibly also a :class:`Description` element"""
 
     def __init__(self, doc, *args, **kwargs):
         if 'content' in kwargs:
@@ -3599,7 +3626,10 @@ class Gap(AbstractElement):
 
 
 class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has a double role!!
-    """Line break element, signals a line break"""
+    """Line break element, signals a line break.
+    
+    This element acts both as a structure element as well as a text markup element.
+    """
 
     def __init__(self, doc, *args, **kwargs):
         if 'linenr' in kwargs:
@@ -3862,10 +3892,11 @@ class Feature(AbstractElement):
 
 
     def __init__(self,doc, *args, **kwargs): #pylint: disable=super-init-not-called
-        """Required keyword arguments:
-
-           * ``subset=``: the subset
-           * ``cls=``: the class
+        """Constructor.
+        
+        Keyword Arguments:
+            subset (str): the subset
+            cls (str): the class
         """
 
         self.id = None
@@ -3919,11 +3950,13 @@ class Feature(AbstractElement):
 
 
 class ValueFeature(Feature):
-    """Value feature, to be used within Metric"""
+    """Value feature, to be used within :class:`Metric`"""
     pass
 
 class Metric(AbstractElement):
-    """Metric elements allow the annotatation of any kind of metric with any kind of annotation element. Allowing for example statistical measures to be added to elements as annotation,"""
+    """Metric elements provide a key/value pair to allow the annotation of any kind of metric with any kind of annotation element.
+    
+    It is used for example for statistical measures to be added to elements as annotation."""
     pass
 
 class AbstractSubtokenAnnotation(AbstractElement, AllowGenerateID):
@@ -3934,6 +3967,7 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
     """Abstract element, all span annotation elements are derived from this class"""
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        """See :meth:`AbstractElement.xml`"""
         if not attribs: attribs = {}
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         e = super(AbstractSpanAnnotation,self).xml(attribs, elements, True)
@@ -3949,8 +3983,8 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
         return e
 
 
-
     def append(self, child, *args, **kwargs):
+        """See :meth:`AbstractElement.append`"""
         if (isinstance(child, Word) or isinstance(child, Morpheme) or isinstance(child, Phoneme))  and WordReference in self.ACCEPTED_DATA:
             #Accept Word instances instead of WordReference, references will be automagically used upon serialisation
             self.data.append(child)
@@ -3959,7 +3993,11 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
             return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)
 
     def setspan(self, *args):
-        """Sets the span of the span element anew, erases all data inside"""
+        """Sets the span of the span element anew, erases all data inside.
+        
+        Arguments:
+            *args: Instances of :class:`Word`, :class:`Morpheme` or :class:`Phoneme`
+        """
         self.data = []
         for child in args:
             self.append(child)
@@ -4004,7 +4042,7 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
         """Returns a list of word references, these can be Words but also Morphemes or Phonemes.
 
         Arguments:
-            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
+            index (int or None): If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         targets =[]
         self._helper_wrefs(targets)
@@ -4051,6 +4089,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        """See :meth:`AbstractElement.xml`"""
         if self.set is False or self.set is None:
             if len(self.data) == 0: #just skip if there are no children
                 return None
@@ -4059,6 +4098,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
         return super(AbstractAnnotationLayer, self).xml(attribs, elements, skipchildren)
 
     def append(self, child, *args, **kwargs):
+        """See :meth:`AbstractElement.append`"""
         #if no set is associated with the layer yet, we learn it from span annotation elements that are added
         if self.set is False or self.set is None:
             if inspect.isclass(child):
@@ -4077,7 +4117,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
         return super(AbstractAnnotationLayer, self).append(child, *args, **kwargs)
 
-    def add(self, child, *args, **kwargs): #alias for append
+    def add(self, child, *args, **kwargsxml): #alias for append
         return self.append(child, *args, **kwargs)
 
     def annotations(self,Class,set=None):
@@ -4181,6 +4221,7 @@ class AbstractCorrectionChild(AbstractElement):
         return self.parent.generate_id(cls)
 
 class Reference(AbstractStructureElement):
+    """A structural element that denotes a reference, internal or external. Examples are references to footnotes, bibliographies, hyperlinks."""
 
     def __init__(self, doc, *args, **kwargs):
         if 'idref' in kwargs:
@@ -4264,6 +4305,9 @@ class Reference(AbstractStructureElement):
         return super(Reference, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class AlignReference(AbstractElement):
+    """The AlignReference element is used to point to specific elements inside the aligned source. 
+    
+    It is used with :class:`Alignment` which is responsible for pointing to the external resource."""
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
@@ -4344,6 +4388,14 @@ class AlignReference(AbstractElement):
 
 
 class Alignment(AbstractElement):
+    """
+    The Alignment element is a form of higher-order annotation taht is used to point to an external resource.
+    
+    It concerns references as annotation rather than references which are
+    explicitly part of the text, such as hyperlinks and :class:`Reference`. 
+
+    Inside the Alignment element, the :class:`AlignReference` element may be used to point to specific elements (multiple denotes a span).
+    """
 
     def __init__(self, doc, *args, **kwargs):
         if 'format' in kwargs:
@@ -4390,11 +4442,13 @@ class Alignment(AbstractElement):
 
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
+    """The ErrorDetection element is used to signal the presence of errors in a structural element."""
     pass
 
 
 
 class Suggestion(AbstractCorrectionChild):
+    """Suggestions are used in the context of :class:`Correction`, but rather than provide an authoritative correction, it instead offers a suggestion for correction."""
 
     def __init__(self,  doc, *args, **kwargs):
         if 'split' in kwargs:
@@ -4459,6 +4513,7 @@ class New(AbstractCorrectionChild):
         return self.parent.correct(**kwargs)
 
 class Original(AbstractCorrectionChild):
+    """Used in the context of :class:`Correction` to encapsulate the original annotations *prior* to correction."""
 
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):#pylint: disable=bad-classmethod-argument
@@ -4472,6 +4527,10 @@ class Original(AbstractCorrectionChild):
 
 
 class Current(AbstractCorrectionChild):
+    """Used in the context of :class:`Correction` to encapsulate the currently authoritative annotations. 
+
+    Needed only when suggestions for correction are proposed (:class:`Suggestion`) for structural elements.
+    """
 
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
@@ -4497,6 +4556,12 @@ class Correction(AbstractElement, AllowGenerateID):
     you query for a particular element, and it is part of a correction, you get the
     corrected version rather than the original. The original is always *non-authoritative*
     and normal selection methods will ignore it.
+
+    This class takes four classes as children, that in turn encapsulate the actual annotations:
+        * :class:`New` - Encapsulates the newly corrected annotation(s)
+        * :class:`Original` - Encapsulated the old original annotation(s)
+        * :class:`Current` - Encapsulates the current authoritative annotation(s)
+        * :class:`Suggestions` - Encapsulates the annotation(s) that are a non-authoritative suggestion for correction
     """
 
     def append(self, child, *args, **kwargs):
@@ -4506,24 +4571,28 @@ class Correction(AbstractElement, AllowGenerateID):
         return e
 
     def hasnew(self,allowempty=False):
+        """Does the correction define new corrected annotations?"""
         for e in  self.select(New,None,False, False):
             if not allowempty and len(e) == 0: continue
             return True
         return False
 
     def hasoriginal(self,allowempty=False):
+        """Does the correction record the old annotations prior to correction?"""
         for e in self.select(Original,None,False, False):
             if not allowempty and len(e) == 0: continue
             return True
         return False
 
     def hascurrent(self, allowempty=False):
+        """Does the correction record the current authoritative annotation (needed only in a structural context when suggestions are proposed)"""
         for e in self.select(Current,None,False, False):
             if not allowempty and len(e) == 0: continue
             return True
         return False
 
     def hassuggestions(self,allowempty=False):
+        """Does the correction propose suggestions for correction?""" 
         for e in self.select(Suggestion,None,False, False):
             if not allowempty and len(e) == 0: continue
             return True
@@ -4618,6 +4687,17 @@ class Correction(AbstractElement, AllowGenerateID):
 
 
     def new(self,index = None):
+        """Get the new corrected annotation.
+        
+        This returns only one annotation if multiple exist, use `index` to select another in the sequence.
+
+        Returns:
+            an annotation element (:class:`AbstractElement`)
+
+        Raises:
+            :class:`NoSuchAnnotation`
+        """
+
         if index is None:
             try:
                 return next(self.select(New,None,False))
@@ -4629,6 +4709,16 @@ class Correction(AbstractElement, AllowGenerateID):
             raise NoSuchAnnotation
 
     def original(self,index=None):
+        """Get the old annotation prior to correction.
+        
+        This returns only one annotation if multiple exist, use `index` to select another in the sequence.
+
+        Returns:
+            an annotation element (:class:`AbstractElement`)
+
+        Raises:
+            :class:`NoSuchAnnotation`
+        """
         if index is None:
             try:
                 return next(self.select(Original,None,False, False))
@@ -4640,6 +4730,16 @@ class Correction(AbstractElement, AllowGenerateID):
             raise NoSuchAnnotation
 
     def current(self,index=None):
+        """Get the current authoritative annotation (used with suggestions in a structural context)
+        
+        This returns only one annotation if multiple exist, use `index` to select another in the sequence.
+
+        Returns:
+            an annotation element (:class:`AbstractElement`)
+
+        Raises:
+            :class:`NoSuchAnnotation`
+        """
         if index is None:
             try:
                 return next(self.select(Current,None,False))
@@ -4651,6 +4751,17 @@ class Correction(AbstractElement, AllowGenerateID):
             raise NoSuchAnnotation
 
     def suggestions(self,index=None):
+        """Get suggestions for correction.
+
+        Yields:
+            :class:`Suggestion` element that encapsulate the suggested annotations (if index is ``None`, default)
+        
+        Returns:
+            a :class:`Suggestion` element that encapsulate the suggested annotations (if index is set)
+
+        Raises:
+            :class:`IndexError`
+        """
         if index is None:
             return self.select(Suggestion,None,False, False)
         else:
@@ -4902,18 +5013,28 @@ class AbstractSpanRole(AbstractSpanAnnotation):
     pass
 
 class Headspan(AbstractSpanRole): #generic head element
-    pass
+    """The headspan role is used to mark the head of a span annotation.
+    
+    It can be used in various contexts, for instance to mark the head of a :class:`Dependency`.
+    It is allowed by most span annotations.
+    """
+
 
 DependencyHead = Headspan #alias, backwards compatibility with FoLiA 0.8
 
 
 class DependencyDependent(AbstractSpanRole):
+    """Span role element that marks the dependent in a dependency relation. Used in :class:`Dependency`. 
+    
+    :class:`Headspan` in turn is used to mark the head of a dependency relation."""
     pass
 
 class Dependency(AbstractSpanAnnotation):
+    """Span annotation element to encode dependency relations"""
+
     def head(self):
-        """Returns the head of the dependency relation. Instance of :class:`DependencyHead`"""
-        return next(self.select(DependencyHead))
+        """Returns the head of the dependency relation. Instance of :class:`Headspan`"""
+        return next(self.select(Headspan))
 
     def dependent(self):
         """Returns the dependent of the dependency relation. Instance of :class:`DependencyDependent`"""
@@ -5077,23 +5198,23 @@ class StyleFeature(Feature):
     pass
 
 class Note(AbstractStructureElement):
-    pass
+    """Element used for notes, such as footnotes or warnings or notice blocks."""
 
 class Definition(AbstractStructureElement):
-    pass
+    """Element used in :class:`Entry` for the portion that provides a definition for the entry."""
 
 class Term(AbstractStructureElement):
-    pass
+    """A term, often used in contect of :class:`Entry`"""
 
 class Example(AbstractStructureElement):
-    pass
+    """Element that provides an example. Used for instance in the context of :class:`Entry`"""
 
 class Entry(AbstractStructureElement):
-    pass
+    """Represents an entry in a glossary/lexicon/dictionary."""
 
 
 class TimeSegment(AbstractSpanAnnotation):
-    pass
+    """A time segment"""
 
 TimedEvent = TimeSegment #alias for FoLiA 0.8 compatibility
 
@@ -5200,7 +5321,7 @@ class Sentence(AbstractStructureElement):
 
     def correctwords(self, originalwords, newwords, **kwargs):
         """Generic correction method for words. You most likely want to use the helper functions
-           splitword() , mergewords(), deleteword(), insertword() instead"""
+           :meth:`Sentence.splitword` , :meth:`Sentence.mergewords`, :meth:`deleteword`, :meth:`insertword` instead"""
         for w in originalwords:
             if not isinstance(w, Word):
                 raise Exception("Original word is not a Word instance: " + str(type(w)))
@@ -5237,6 +5358,21 @@ class Sentence(AbstractStructureElement):
 
 
     def insertword(self, newword, prevword, **kwargs):
+        """Inserts a word **as a correction** after an existing word.
+
+        This method automatically computes the index of insertion 
+        and calls :meth:`AbstractElement.insert`
+        
+        Arguments:
+            newword (:class:`Word`): The new word to insert
+            prevword (:class:`Word`): The word to insert after
+
+        Keyword Arguments:
+            suggest (bool): Do a suggestion for correction rather than the default authoritive correction
+
+        See also:
+            :meth:`AbstractElement.insert` and :meth:`AbstractElement.getindex` If you do not want to do corrections
+        """
         if prevword:
             if isstring(prevword):
                 prevword = self.doc[u(prevword)]
@@ -5259,6 +5395,10 @@ class Sentence(AbstractStructureElement):
 
 
     def insertwordleft(self, newword, nextword, **kwargs):
+        """Inserts a word **as a correction** before an existing word.
+
+        Reverse of :meth:`Sentence.insertword`.
+        """
         if nextword:
             if isstring(nextword):
                 nextword = self.doc[u(nextword)]
@@ -5338,17 +5478,21 @@ class Paragraph(AbstractStructureElement):
 
 
 class Cell(AbstractStructureElement):
+    """A cell in a :class:`Row` in a :class:`Table`"""
     pass
 
 class Row(AbstractStructureElement):
+    """A row in a :class:`Table`"""
     pass
 
 
 class TableHead(AbstractStructureElement):
+    """Encapsulated the header of a table, contains :class:`Cell` elements"""
     pass
 
 
 class Table(AbstractStructureElement):
+    """A table consisting of :class:`Row` elements that in turn consist of :class:`Cell` elements"""
     pass
 
 
