@@ -7,6 +7,10 @@ PyNLPl - Python Natural Language Processing Library
 .. image:: http://applejack.science.ru.nl/lamabadge.php/pynlpl
    :target: http://applejack.science.ru.nl/languagemachines/
 
+.. image:: http://readthedocs.org/projects/pynlpl/badge/?version=latest
+	:target: http://pynlpl.readthedocs.io/en/latest/?badge=latest
+	:alt: Documentation Status
+
 PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language
 Processing. It contains various modules useful for common, and less common, NLP
 tasks. PyNLPl can be used for basic tasks such as the extraction of n-grams and
@@ -48,6 +52,6 @@ The following modules are available:
 - ``pynlpl.textprocessors`` - Simple tokeniser, n-gram extraction 
 
 
-API Documentation can be found `here <http://pythonhosted.org/PyNLPl/>`__.
+API Documentation can be found `here <http://pynlpl.readthedocs.io/en/latest/>`__.
 
 
