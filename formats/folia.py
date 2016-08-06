@@ -1839,29 +1839,21 @@ class AbstractElement(object):
     def select(self, Class, set=None, recursive=True,  ignore=True, node=None): #pylint: disable=bad-classmethod-argument,redefined-builtin
         """Select child elements of the specified class.
 
-        A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into.
+        A further restriction can be made based on set.
 
         Arguments:
-            * ``Class``: The class to select; any python class subclassed off `'AbstractElement``
-            * ``set``: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
-            * ``recursive``: Select recursively? Descending into child
-              elements? Boolean defaulting to True.
-            * ``ignore``: A list of Classes to ignore, if set to True instead
-                of a list, all non-authoritative elements will be skipped (this is the default behaviour).
-                It is common not to
-               want to recurse into the following elements:
-               ``folia.Alternative``, ``folia.AlternativeLayer``,
-               ``folia.Suggestion``, and ``folia.Original``. These elements
-               contained in these are never *authorative*.
-               set to the boolean True rather than a list, this will be the default list. You may also include the boolean True as a member of a list, if you want to skip additional tags along non-authoritative ones.
+            Class (class): The class to select; any python class (not instance) subclassed off :class:`AbstractElement`
+            Set (str): The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
+            recursive (bool): Select recursively? Descending into child elements? Defaults to ``True``.
+            ignore: A list of Classes to ignore, if set to ``True`` instead of a list, all non-authoritative elements will be skipped (this is the default behaviour and corresponds to the following elements: :class:`Alternative`, :class:`AlternativeLayer`, :class:`Suggestion`, and :class:`folia.Original`. These elements and those contained within are never *authorative*. You may also include the boolean True as a member of a list, if you want to skip additional tags along the predefined non-authoritative ones.
             * ``node``: Reserved for internal usage, used in recursion.
 
-        Returns:
-            A generator of elements (instances)
+        Yields:
+            Elements (instances derived from :class:`AbstractElement`)
 
-        Example::
-
-            text.select(folia.Sense, 'cornetto', True, [folia.Original, folia.Suggestion, folia.Alternative] )
+        Example:
+            for sense in text.select(folia.Sense, 'cornetto', True, [folia.Original, folia.Suggestion, folia.Alternative] ):
+                ..
 
         """
 
@@ -2607,17 +2599,27 @@ class AllowTokenAnnotation(AllowCorrections):
 
 
     def annotations(self,Class,set=None):
-        """Obtain annotations. Very similar to ``select()`` but raises an error if the annotation was not found.
+        """Obtain child elements (annotations) of the specified class.
+
+        A further restriction can be made based on set.
 
         Arguments:
-            * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation)
-            * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
+            Class (class): The class to select; any python class (not instance) subclassed off :class:`AbstractElement`
+            Set (str): The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
 
-        Returns:
-            A generator of elements
+        Yields:
+            Elements (instances derived from :class:`AbstractElement`)
+
+        Example:
+            for sense in text.annotations(folia.Sense, 'http://some/path/cornetto'):
+                ..
+
+        See also:
+            :meth:`AbstractElement.select`
 
         Raises:
-            ``NoSuchAnnotation`` if the specified annotation does not exist.
+            :meth:`AllowTokenAnnotation.annotations`
+            :class:`NoSuchAnnotation` if no such annotation exists
         """
         found = False
         for e in self.select(Class,set,True,default_ignore_annotations):
@@ -2627,10 +2629,33 @@ class AllowTokenAnnotation(AllowCorrections):
             raise NoSuchAnnotation()
 
     def hasannotation(self,Class,set=None):
-        """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
+        """Returns an integer indicating whether such as annotation exists, and if so, how many.
+
+        See :meth:`AllowTokenAnnotation.annotations`` for a description of the parameters."""
         return sum( 1 for _ in self.select(Class,set,True,default_ignore_annotations))
 
     def annotation(self, type, set=None):
+        """Obtain a single annotation element.
+
+        A further restriction can be made based on set.
+
+        Arguments:
+            Class (class): The class to select; any python class (not instance) subclassed off :class:`AbstractElement`
+            Set (str): The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
+
+        Returns:
+            An element (instance derived from :class:`AbstractElement`)
+
+        Example:
+            sense = word.annotation(folia.Sense, 'http://some/path/cornetto').cls
+
+        See also:
+            :meth:`AllowTokenAnnotation.annotations`
+            :meth:`AbstractElement.select`
+
+        Raises:
+            :class:`NoSuchAnnotation` if no such annotation exists
+        """
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
         for e in self.select(type,set,True,default_ignore_annotations):
             return e
@@ -2640,11 +2665,11 @@ class AllowTokenAnnotation(AllowCorrections):
         """Generator over alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
 
         Arguments:
-            * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation). Or set to None to select all alternatives regardless of what type they are.
-            * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
+            Class (class): The python Class you want to retrieve (e.g. PosAnnotation). Or set to ``None`` to select all alternatives regardless of what type they are.
+            set (str): The set you want to retrieve (defaults to ``None``, which selects irregardless of set)
 
-        Returns:
-            Generator of Alternative elements
+        Yields:
+            :class:`Alternative` elements
         """
 
         for e in self.select(Alternative,None, True, []): #pylint: disable=too-many-nested-blocks
@@ -3672,7 +3697,23 @@ class Word(AbstractStructureElement, AllowCorrections):
 
 
     def findspans(self, type,set=None):
-        """Find span annotation of the specified type that includes this word"""
+        """Yields span annotation elements of the specified type that include this word.
+
+        Arguments:
+            type: The annotation type, can be passed as using any of the :class:`AnnotationType` member, or by passing the relevant :class:`AbstractSpanAnnotation` or :class:`AbstractAnnotationLayer` class.
+            set (str or None): Constrain by set
+
+        Example:
+            for chunk in word.findspans(folia.Chunk):
+                print(" Chunk class=", chunk.cls, " words=")
+                for word2 in chunk.wrefs(): #print all words in the chunk (of which the word is a part)
+                    print(word2, end="")
+                print()
+
+        Yields:
+            Matching span annotation instances (derived from :class:`AbstractSpanAnnotation`)
+        """
+
         if issubclass(type, AbstractAnnotationLayer):
             layerclass = type
         else:
@@ -3970,7 +4011,11 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
                         continue
 
     def findspan(self, *words):
-        """Returns the span element which spans over the specified words or morphemes"""
+        """Returns the span element which spans over the specified words or morphemes.
+
+        See also:
+            :meth:`Word.findspans`
+        """
 
         for span in self.select(AbstractSpanAnnotation,None,True):
             if tuple(span.wrefs()) == words:
@@ -4620,6 +4665,7 @@ class External(AbstractElement):
 
 
     def select(self, Class, set=None, recursive=True,  ignore=True, node=None):
+        """See :meth:`AbstractElement.select`"""
         if self.include:
             return self.subdoc.data[0].select(Class,set,recursive, ignore, node) #pass it on to the text node of the subdoc
         else:
@@ -5189,6 +5235,7 @@ class ForeignData(AbstractElement):
         return ForeignData(doc, node=node)
 
     def select(self, Class, set=None, recursive=True,  ignore=True, node=None): #pylint: disable=bad-classmethod-argument,redefined-builtin
+        """See :meth:`AbstractElement.select`"""
         #select can never descend into ForeignData, empty generator:
         return
         yield
@@ -6308,6 +6355,7 @@ class Document(object):
 
 
     def select(self, Class, set=None, recursive=True,  ignore=True):
+        """See :meth:`AbstractElement.select`"""
         if self.mode == Mode.MEMORY:
             for t in self.data:
                 if Class.__name__ == 'Text':
