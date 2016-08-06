@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Evaluation &amp; Experiments &mdash; PyNLPl 0.8.2 documentation</title>
+    <title>Evaluation &amp; Experiments &mdash; PyNLPl 0.9.4 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.8.2',
+        VERSION:     '0.9.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.8.2 documentation" href="index.html" />
+    <link rel="top" title="PyNLPl 0.9.4 documentation" href="index.html" />
     <link rel="next" title="FoLiA library" href="folia.html" />
     <link rel="prev" title="Data Types" href="datatypes.html" /> 
   </head>
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="datatypes.html" title="Data Types"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">PyNLPl 0.8.2 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">PyNLPl 0.9.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -242,17 +242,28 @@
 <dd><p>Compute Area Under the Curve (AUC) using the trapezoidal rule</p>
 <p>This is a general fuction, given points on a curve.  For computing the area
 under the ROC-curve, see <code class="xref py py-func docutils literal"><span class="pre">auc_score()</span></code>.</p>
-<dl class="docutils">
-<dt>x</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">array, shape = [n]</span><dd>x coordinates.</dd>
-<dt>y</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">array, shape = [n]</span><dd>y coordinates.</dd>
-<dt>reorder</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional (default=False)</span><dd>If True, assume that the curve is ascending in the case of ties, as for
-an ROC curve. If the curve is non-ascending, the result will be wrong.</dd>
-</dl>
-<p>auc : float</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>array, shape = [n]</em>) &#8211; x coordinates.</li>
+<li><strong>y</strong> (<em>array, shape = [n]</em>) &#8211; y coordinates.</li>
+<li><strong>reorder</strong> (<em>boolean, optional (default=False)</em>) &#8211; If True, assume that the curve is ascending in the case of ties, as for
+an ROC curve. If the curve is non-ascending, the result will be wrong.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>auc</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">metrics</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span>
@@ -261,7 +272,13 @@ an ROC curve. If the curve is non-ascending, the result will be wrong.</dd>
 <span class="go">0.75</span>
 </pre></div>
 </div>
-<p>auc_score : Computes the area under the ROC curve</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-func docutils literal"><span class="pre">auc_score()</span></code></dt>
+<dd>Computes the area under the ROC curve</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -294,8 +311,8 @@ an ROC curve. If the curve is non-ascending, the result will be wrong.</dd>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
@@ -320,12 +337,12 @@ an ROC curve. If the curve is non-ascending, the result will be wrong.</dd>
         <li class="right" >
           <a href="datatypes.html" title="Data Types"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">PyNLPl 0.8.2 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">PyNLPl 0.9.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2013, Maarten van Gompel.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
+        &copy; Copyright 2016, Maarten van Gompel.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>

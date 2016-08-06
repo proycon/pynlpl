@@ -85,6 +85,19 @@ nslendcoi = len(NSDCOI) + 2
 
 TMPDIR = "/tmp/" #will be used for downloading temporary data (external subdocuments)
 
+DOCSTRING_GENERIC_ATTRIBS = """    id (str): An ID for the element. IDs must be unique for the entire document. They may not contain colons or spaces, and must start with a letter. (they must adhere to XML's NCName type). This is a generic FoLiA attribute.
+    set (str): The FoLiA set for this element. This is a generic FoLiA attribute.
+    cls (str): The class for this element. This is a generic FoLiA attribute.
+    annotator (str): A name or ID for the annotator. This is a generic FoLiA attribute.
+    annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process. This is a generic FoLiA attribute.
+    confidence (float): A value between 0 and 1 indicating the degree of confidence the annotator has that this the annotation is correct.. This is a generic FoLiA attribute.
+    n (int): An index number to indicate the element is part of an sequence (does not affect the placement of the element).
+    src (str): Speech annotation attribute, refers to a media file (audio/video) that this element describes. This is a generic FoLiA attribute.
+    speaker (str): Speech annotation attribute: a name or ID of the speaker. This is a generic FoLiA attribute.
+    begintime (str): Speech annotation attribute: the time (in ``hh:mm:ss.mmm`` format, relative to the media file in ``src``) when the audio that this element describes starts. This is a generic FoLiA attribute.
+    endtime (str): Speech annotation attribute: the time (in ``hh:mm:ss.mmm`` format, relative to the media file in ``src``) when the audio that this element describes starts. This is a generic FoLiA attribute.
+    contents (list): Alternative for ``*args``, exists for purely syntactic reasons.
+"""
 
 ILLEGAL_UNICODE_CONTROL_CHARACTERS = {} #XML does not like unicode control characters
 for ordinal in range(0x20):
@@ -572,9 +585,32 @@ class AbstractElement(object):
 
         isinstance(x, AbstractElement)
 
+    Generic FoLiA attributes can be accessed on all instances derived from this class:
+    * ``element.id``        (str) - The unique identifier of the element
+    * ``element.set``       (str) - The set the element pertains to.
+    * ``element.cls``       (str) - The assigned class, i.e. the actual value of
+        the annotation, defined in the set.  Classes correspond with tagsets in this case of many annotation types.
+        Note that since *class* is already a reserved keyword in python, the library consistently uses ``cls`` everywhere.
+    * ``element.annotator`` (str) - The name or ID of the annotator who added/modified this element
+    * ``element.annotatortype`` - The type of annotator, can be either ``folia.AnnotatorType.MANUAL`` or ``folia.AnnotatorType.AUTO``
+    * ``element.confidence`` (float) - A confidence value expressing
+    * ``element.datetime``  (datetime.datetime) - The date and time when the element was added/modified.
+    * ``element.n``         (str) - An ordinal label, used for instance in enumerated list contexts, numbered sections, etc..
+
+    The following generic attributes are specific to a speech context:
+
+    * ``element.src``       (str) - A URL or filename referring the an audio or video file containing the speech. Access this attribute using the ``element.speaker_src()`` method, as it is inheritable from ancestors.
+    * ``element.speaker``   (str) -  The name of ID of the speaker. Access this attribute using the ``element.speech_speaker()`` method, as it is inheritable from ancestors.
+    * ``element.begintime`` (4-tuple) - The time in the above source fragment when the phonetic content of this element starts, this is a ``(hours, minutes,seconds,milliseconds)`` tuple.
+    * ``element.endtime``   (4-tuple) - The time in the above source fragment when the phonetic content of this element ends, this is a ``(hours, minutes,seconds,milliseconds)`` tuple.
+
+    Not all attributes are allowed, unset or unavailable attributes will always default to ``None``.
+
     Note:
         This class should never be instantiated directly, as it is abstract!
 
+    See also:
+        :meth:`AbstractElement.__init__`
     """
 
     def __init__(self, doc, *args, **kwargs):
@@ -585,24 +621,13 @@ class AbstractElement(object):
             *args: Child elements to add to this element, mostly instances derived from :class:`AbstractElement`
 
         Keyword Arguments:
-            id (str): An ID for the element. IDs must be unique for the entire document. They may not contain colons or spaces, and must start with a letter. (they must adhere to XML's NCName type). This is a generic FoLiA attribute.
-            set (str): The FoLiA set for this element. This is a generic FoLiA attribute.
-            cls (str): The class for this element. This is a generic FoLiA attribute.
-            annotator (str): A name or ID for the annotator. This is a generic FoLiA attribute.
-            annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process. This is a generic FoLiA attribute.
-            confidence (float): A value between 0 and 1 indicating the degree of confidence the annotator has that this the annotation is correct.. This is a generic FoLiA attribute.
-            n (int): An index number to indicate the element is part of an sequence (does not affect the placement of the element).
-            src (str): Speech annotation attribute, refers to a media file (audio/video) that this element describes. This is a generic FoLiA attribute.
-            speaker (str): Speech annotation attribute: a name or ID of the speaker. This is a generic FoLiA attribute.
-            begintime (str): Speech annotation attribute: the time (in ``hh:mm:ss.mmm`` format, relative to the media file in ``src``) when the audio that this element describes starts. This is a generic FoLiA attribute.
-            endtime (str): Speech annotation attribute: the time (in ``hh:mm:ss.mmm`` format, relative to the media file in ``src``) when the audio that this element describes starts. This is a generic FoLiA attribute.
-            contents (list): Alternative for ``*args``, exists for purely syntactic reasons.
+        {generic_attribs}
+            generate_id_in (:class:`AbstractElement`): Instead of providing an explicit ID, the library can attempt to automatically generate an ID based on a convention where suffixes are applied to the ID of the parent element. This keyword argument takes the intended parent element (an instance derived from :class:`AbstractElement`) as value.
 
 
         Not all of the generic FoLiA attributes are applicable to all elements. The class properties ``REQUIRED_ATTRIBS`` and ``OPTIONAL_ATTRIBS`` prescribe which are required or allowed.
 
-
-        """
+        """.format(generic_attribs=DOCSTRING_GENERIC_ATTRIBS)
 
 
         if not isinstance(doc, Document) and not doc is None:
@@ -1324,6 +1349,9 @@ class AbstractElement(object):
         Arguments:
             child (instance or class): 1) The instance to add (usually an instance derived from  :class:`AbstractElement`. or 2) a class subclassed from :class:`AbstractElement`.
 
+        Keyword Arguments:
+        {generic_attribs}
+
         If an *instance* is passed as first argument, it will be appended
         If a *class* derived from :class:`AbstractElement` is passed as first argument, an instance will first be created and then appended.
 
@@ -1350,9 +1378,10 @@ class AbstractElement(object):
             :class:`DuplicateAnnotationError`: There is already such an annotation
 
         See also:
+            :meth:`add`
             :meth:`insert`
             :meth:`replace`
-        """
+        """.format(generic_attribs=DOCSTRING_GENERIC_ATTRIBS)
 
 
 
@@ -1421,6 +1450,7 @@ class AbstractElement(object):
         Keyword arguments:
             alternative (bool):  If set to True, the element will be made into an alternative.
             corrected (bool): Used only when passing strings to be made into TextContent elements.
+        {generic_attribs}
 
         Generic example, passing a pre-generated instance::
 
@@ -1444,7 +1474,7 @@ class AbstractElement(object):
         See also:
             :meth:`append`
             :meth:`replace`
-        """
+        """.format(generic_attribs=DOCSTRING_GENERIC_ATTRIBS)
 
         #obtain the set (if available, necessary for checking addability)
         if 'set' in kwargs:
@@ -1484,7 +1514,43 @@ class AbstractElement(object):
         return child
 
     def add(self, child, *args, **kwargs):
-        """High level function that adds (appends) an annotation to an element, it will simply call append() for token annotation elements that fit within the scope. For span annotation, it will create and find or create the proper annotation layer and insert the element there"""
+        """Add a child element.
+
+        This is a higher level function that adds (appends) an annotation to an element, it will simply call :meth:`AbstractElement.append` for token annotation elements that fit within the scope. For span annotation, it will create and find or create the proper annotation layer and insert the element there.
+
+        Arguments:
+            child (instance or class): 1) The instance to add (usually an instance derived from  :class:`AbstractElement`. or 2) a class subclassed from :class:`AbstractElement`.
+
+        If an *instance* is passed as first argument, it will be appended
+        If a *class* derived from :class:`AbstractElement` is passed as first argument, an instance will first be created and then appended.
+
+        Keyword arguments:
+            alternative (bool): If set to True, the element will be made into an alternative. (default to False)
+        {generic_attribs}
+
+        Generic example, passing a pre-generated instance::
+            word.add( folia.LemmaAnnotation(doc,  cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL ) )
+
+        Generic example, passing a class to be generated::
+
+            word.add( folia.LemmaAnnotation, cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL )
+
+        Generic example, setting text with a class::
+
+            word.add( "house", cls='original' )
+
+        Returns:
+            the added element
+
+        Raises:
+            ValueError: The element is not valid in this context
+            :class:`DuplicateAnnotationError`: There is already such an annotation
+
+        See also:
+            :meth:`add`
+            :meth:`insert`
+            :meth:`replace`
+        """.format(generic_attribs=DOCSTRING_GENERIC_ATTRIBS)
         addspanfromspanned = False
         if isinstance(self,AbstractStructureElement):
             if inspect.isclass(child):
@@ -1524,13 +1590,13 @@ class AbstractElement(object):
 
     @classmethod
     def findreplaceables(Class, parent, set=None,**kwargs):
-        """Find replaceable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control. Mostly for internal use."""
+        """Internal method to find replaceable elements. Auxiliary function used by :meth:`AbstractElement.replace`. Can be overriden for more fine-grained control."""
         return list(parent.select(Class,set,False))
 
 
 
     def updatetext(self):
-        """Internal method, recompute textual value. Only for elements that are a TEXTCONTAINER"""
+        """Recompute textual value based on the text content of the children. Only supported on elements that are a ``TEXTCONTAINER``"""
         if self.TEXTCONTAINER:
             s = ""
             for child in self:
@@ -1545,10 +1611,10 @@ class AbstractElement(object):
         """Appends a child element like ``append()``, but replaces any existing child element of the same type and set. If no such child element exists, this will act the same as append()
 
         Keyword arguments:
-            * ``alternative`` - If set to True, the *replaced* element will be made into an alternative. Simply use ``append()`` if you want the added element
+            * ``alternative`` - If set to True, the *replaced* element will be made into an alternative. Simply use :meth:`AbstractElement.append` if you want the added element
             to be an alternative.
 
-        See ``append()`` for more information.
+        See :meth:`AbstractElement.append` for more information and all parameters.
         """
 
         if 'set' in kwargs:
@@ -1598,7 +1664,14 @@ class AbstractElement(object):
             return e
 
     def ancestors(self, Class=None):
-        """Generator yielding all ancestors of this element, effectively back-tracing its path to the root element. A tuple of multiple classes may be specified."""
+        """Generator yielding all ancestors of this element, effectively back-tracing its path to the root element. A tuple of multiple classes may be specified.
+
+        Arguments:
+            *Class: The class or classes (:class:`AbstractElement` or subclasses). Not instances!
+
+        Yields:
+            elements (instances derived from :class:`AbstractElement`)
+        """
         e = self
         while e:
             if e.parent:
@@ -1613,14 +1686,30 @@ class AbstractElement(object):
                 break
 
     def ancestor(self, *Classes):
-        """Find the most immediate ancestor of the specified type, multiple classes may be specified"""
+        """Find the most immediate ancestor of the specified type, multiple classes may be specified.
+
+        Arguments:
+            *Classes: The possible classes (:class:`AbstractElement` or subclasses) to select from. Not instances!
+
+        Example:
+            paragraph = word.ancestor(folia.Paragraph)
+        """
         for e in self.ancestors(tuple(Classes)):
             return e
         raise NoSuchAnnotation
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        """Serialises the FoLiA element to XML, by returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead."""
+        """Serialises the FoLiA element and all its contents to XML.
+
+        Arguments are mostly for internal use.
+
+        Returns:
+            an lxml.etree.Element
+
+        See also:
+            :meth:`AbstractElement.xmlstring` - for direct string output
+        """
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
 
         if not attribs: attribs = {}
@@ -1768,6 +1857,15 @@ class AbstractElement(object):
 
 
     def json(self, attribs=None, recurse=True, ignorelist=False):
+        """Serialises the FoLiA element and all its contents to a Python dictionary suitable for serialisation to JSON.
+
+        Example:
+            import json
+            json.dumps(word.json())
+
+        Returns:
+            dict
+        """
         jsonnode = {}
 
         jsonnode['type'] = self.XMLTAG
@@ -1822,7 +1920,10 @@ class AbstractElement(object):
 
 
     def xmlstring(self, pretty_print=False):
-        """Serialises this FoLiA element to XML, returns a (unicode) string with XML representation for this element and all its children."""
+        """Serialises this FoLiA element and all its contents to XML.
+
+        Returns:
+            str: a string with XML representation for this element and all its children"""
         s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')
         if sys.version < '3':
             if isinstance(s, str):
@@ -1921,7 +2022,11 @@ class AbstractElement(object):
         return l
 
     def getindex(self, child, recursive=True, ignore=True):
-        """returns the index at which an element occurs, recursive by default!"""
+        """Get the index at which an element occurs, recursive by default!
+
+        Returns:
+            int
+        """
 
         #breadth first search
         for i, c in enumerate(self.data):
@@ -4360,6 +4465,17 @@ class Current(AbstractCorrectionChild):
         return self.parent.correct(**kwargs)
 
 class Correction(AbstractElement, AllowGenerateID):
+    """
+    Corrections are one of the most complex annotation types in FoLiA. Corrections
+    can be applied not just over text, but over any type of structure annotation,
+    token annotation or span annotation. Corrections explicitly preserve the
+    original, and recursively so if corrections are done over other corrections.
+
+    Despite their complexity, the library treats correction transparently. Whenever
+    you query for a particular element, and it is part of a correction, you get the
+    corrected version rather than the original. The original is always *non-authoritative*
+    and normal selection methods will ignore it.
+    """
 
     def append(self, child, *args, **kwargs):
         """See ``AbstractElement.append()``"""
@@ -4567,7 +4683,23 @@ class Correction(AbstractElement, AllowGenerateID):
 
 
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
-    """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
+    """Element grouping alternative token annotation(s). 
+    
+    Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent.
+
+    A key feature of FoLiA is its ability to make explicit alternative
+    annotations, for token annotations, this class is used to this end.
+    Alternative annotations are embedded in this structure. This implies the
+    annotation is *not authoritative*, but is merely an alternative to the
+    actual annotation (if any). Alternatives may typically occur in larger
+    numbers, representing a distribution each with a confidence value (not
+    mandatory). Each alternative is wrapped in its an instance of this class,
+    as multiple elements inside a single alternative are considered dependent
+    and part of the same alternative. Combining multiple annotation in one
+    alternative makes sense for mixed annotation types, where for instance a
+    pos tag alternative is tied to a particular lemma.
+    """
+
     pass
 
 
@@ -4674,7 +4806,6 @@ class External(AbstractElement):
 
 class WordReference(AbstractElement):
     """Word reference. Used to refer to words or morphemes from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word or Morpheme objects will be used"""
-    #REQUIRED_ATTRIBS = (Attrib.ID,)  #TODO: See if this is handled correctly in new scheme
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
@@ -4733,16 +4864,16 @@ class WordReference(AbstractElement):
         return e
 
 class SyntacticUnit(AbstractSpanAnnotation):
-    """Syntactic Unit, span annotation element to be used in SyntaxLayer"""
+    """Syntactic Unit, span annotation element to be used in :class:`SyntaxLayer`"""
     pass
 
 
 class Chunk(AbstractSpanAnnotation):
-    """Chunk element, span annotation element to be used in ChunkingLayer"""
+    """Chunk element, span annotation element to be used in :class:`ChunkingLayer`"""
     pass
 
 class Entity(AbstractSpanAnnotation):
-    """Entity element, for named entities, span annotation element to be used in EntitiesLayer"""
+    """Entity element, for entities such as named entities, multi-word expressions, temporal entities. This is a span annotation element to be used in :class:`EntitiesLayer`"""
     pass
 
 class AbstractSpanRole(AbstractSpanAnnotation):
@@ -4759,11 +4890,11 @@ class DependencyDependent(AbstractSpanRole):
 
 class Dependency(AbstractSpanAnnotation):
     def head(self):
-        """Returns the head of the dependency relation. Instance of DependencyHead"""
+        """Returns the head of the dependency relation. Instance of :class:`DependencyHead`"""
         return next(self.select(DependencyHead))
 
     def dependent(self):
-        """Returns the dependent of the dependency relation. Instance of DependencyDependent"""
+        """Returns the dependent of the dependency relation. Instance of :class:`DependencyDependent`"""
         return next(self.select(DependencyDependent))
 
 
@@ -4777,10 +4908,10 @@ class LevelFeature(Feature):
     """Level feature, to be used with coreferences"""
 
 class CoreferenceLink(AbstractSpanRole):
-    """Coreference link. Used in coreferencechain."""
+    """Coreference link. Used in :class:`CoreferenceChain`"""
 
 class CoreferenceChain(AbstractSpanAnnotation):
-    """Coreference chain. Consists of coreference links."""
+    """Coreference chain. Holds :class:`CoreferenceLink` instances."""
 
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
@@ -4803,10 +4934,10 @@ class ComplexAlignment(AbstractElement):
             raise NoSuchAnnotation()
 
 class FunctionFeature(Feature):
-    """Function feature, to be used with morphemes"""
+    """Function feature, to be used with :class:`Morpheme`"""
 
 class Morpheme(AbstractStructureElement):
-    """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
+    """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in :class:`MorphologyLayer`"""
 
     def findspans(self, type,set=None):
         """Find span annotation of the specified type that include this word"""
@@ -4826,10 +4957,13 @@ class Morpheme(AbstractStructureElement):
 
 
 class Phoneme(AbstractStructureElement):
-    """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
+    """Phone element, represents one phone in phonetic analysis, subtoken annotation element to be used in :class:`PhonologyLayer`"""
 
     def findspans(self, type,set=None): #TODO: this is a copy of the methods in Morpheme in Word, abstract into separate class and inherit
-        """Find span annotation of the specified type that include this phoneme"""
+        """Find span annotation of the specified type that include this phoneme.
+        
+        See :meth:`Word.findspans` for usage.
+        """
         if issubclass(type, AbstractAnnotationLayer):
             layerclass = type
         else:
@@ -4854,28 +4988,28 @@ class Phoneme(AbstractStructureElement):
 
 
 class SyntaxLayer(AbstractAnnotationLayer):
-    """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
+    """Syntax Layer: Annotation layer for :class:`SyntacticUnit` span annotation elements"""
 
 class ChunkingLayer(AbstractAnnotationLayer):
-    """Chunking Layer: Annotation layer for Chunk span annotation elements"""
+    """Chunking Layer: Annotation layer for :class:`Chunk` span annotation elements"""
 
 class EntitiesLayer(AbstractAnnotationLayer):
-    """Entities Layer: Annotation layer for Entity span annotation elements. For named entities."""
+    """Entities Layer: Annotation layer for :class:`Entity` span annotation elements. For named entities."""
 
 class DependenciesLayer(AbstractAnnotationLayer):
-    """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
+    """Dependencies Layer: Annotation layer for :class:`Dependency` span annotation elements. For dependency entities."""
 
 class MorphologyLayer(AbstractAnnotationLayer):
-    """Morphology Layer: Annotation layer for Morpheme subtoken annotation elements. For morphological analysis."""
+    """Morphology Layer: Annotation layer for :class:`Morpheme` subtoken annotation elements. For morphological analysis."""
 
 class PhonologyLayer(AbstractAnnotationLayer):
-    """Phonology Layer: Annotation layer for phonemes subtoken annotation elements. For phonetic analysis."""
+    """Phonology Layer: Annotation layer for :class:`Phoneme` subtoken annotation elements. For phonetic analysis."""
 
 class CoreferenceLayer(AbstractAnnotationLayer):
-    """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
+    """Syntax Layer: Annotation layer for :class:`SyntacticUnit` span annotation elements"""
 
 class SemanticRolesLayer(AbstractAnnotationLayer):
-    """Syntax Layer: Annotation layer for SemanticRole span annotation elements"""
+    """Syntax Layer: Annotation layer for :class:`SemanticRole` span annotation elements"""
 
 class ComplexAlignmentLayer(AbstractAnnotationLayer):
     """Complex alignment layer"""
@@ -4884,7 +5018,7 @@ class ComplexAlignmentLayer(AbstractAnnotationLayer):
     ANNOTATIONTYPE = AnnotationType.COMPLEXALIGNMENT
 
 class HeadFeature(Feature):
-    """Head feature, to be used within PosAnnotation"""
+    """Head feature, to be used within :class:`PosAnnotation`"""
 
 class PosAnnotation(AbstractTokenAnnotation):
     """Part-of-Speech annotation:  a token annotation element"""
@@ -4906,16 +5040,16 @@ class DomainAnnotation(AbstractExtendedTokenAnnotation):
     """Domain annotation:  an extended token annotation element"""
 
 class SynsetFeature(Feature):
-    """Synset feature, to be used within Sense"""
+    """Synset feature, to be used within :class:`Sense`"""
 
 class ActorFeature(Feature):
-    """Actor feature, to be used within Event"""
+    """Actor feature, to be used within :class:`Event`"""
 
 class BegindatetimeFeature(Feature):
-    """Begindatetime feature, to be used within Event"""
+    """Begindatetime feature, to be used within :class:`Event`"""
 
 class EnddatetimeFeature(Feature):
-    """Enddatetime feature, to be used within Event"""
+    """Enddatetime feature, to be used within :class:`Event`"""
 
 class StyleFeature(Feature):
     pass
@@ -4942,7 +5076,7 @@ class TimeSegment(AbstractSpanAnnotation):
 TimedEvent = TimeSegment #alias for FoLiA 0.8 compatibility
 
 class TimingLayer(AbstractAnnotationLayer):
-    """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
+    """Timing layer: Annotation layer for :class:`TimeSegment` span annotation elements. """
 
 
 class SenseAnnotation(AbstractTokenAnnotation):
@@ -4953,7 +5087,7 @@ class SubjectivityAnnotation(AbstractTokenAnnotation):
 
 
 class Quote(AbstractStructureElement):
-    """Quote: a structure element. For quotes/citations. May hold words, sentences or paragraphs."""
+    """Quote: a structure element. For quotes/citations. May hold :class:`Word`, :class:`Sentence` or :class:`Paragraph` data."""
 
     def __init__(self,  doc, *args, **kwargs):
         super(Quote,self).__init__(doc, *args, **kwargs)
@@ -4992,26 +5126,28 @@ class Quote(AbstractStructureElement):
 
 
 class Sentence(AbstractStructureElement):
-    """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
+    """Sentence element. A structure element. Represents a sentence and holds all its words (:class:`Word`), and possibly other structure such as :class:`LineBreak`, :class:`Whitespace` and :class:`Quote`"""
 
     def __init__(self,  doc, *args, **kwargs):
         """
+        Example:
 
-            Example 1::
+            sentence = paragraph.append( folia.Sentence)
 
-                sentence = paragraph.append( folia.Sentence)
+            sentence.append( folia.Word, 'This')
+            sentence.append( folia.Word, 'is')
+            sentence.append( folia.Word, 'a')
+            sentence.append( folia.Word, 'test', space=False)
+            sentence.append( folia.Word, '.')
 
-                sentence.append( folia.Word, 'This')
-                sentence.append( folia.Word, 'is')
-                sentence.append( folia.Word, 'a')
-                sentence.append( folia.Word, 'test', space=False)
-                sentence.append( folia.Word, '.')
+        Example:
 
-            Example 2::
+            sentence = folia.Sentence( doc, folia.Word(doc, 'This'),  folia.Word(doc, 'is'),  folia.Word(doc, 'a'),  folia.Word(doc, 'test', space=False),  folia.Word(doc, '.') )
+            paragraph.append(sentence)
 
-                sentence = folia.Sentence( doc, folia.Word(doc, 'This'),  folia.Word(doc, 'is'),  folia.Word(doc, 'a'),  folia.Word(doc, 'test', space=False),  folia.Word(doc, '.') )
-                paragraph.append(sentence)
 
+        See also:
+            :meth:`AbstractElement.__init__`
         """
         super(Sentence,self).__init__(doc, *args, **kwargs)
 
@@ -5024,15 +5160,19 @@ class Sentence(AbstractStructureElement):
         return None
 
     def corrections(self):
-        """Are there corrections in this sentence?"""
+        """Are there corrections in this sentence?
+        
+        Returns:
+            bool
+        """
         return bool(self.select(Correction))
 
     def paragraph(self):
-        """Obtain the paragraph this sentence is a part of (None otherwise)"""
+        """Obtain the paragraph this sentence is a part of (None otherwise). Shortcut for :meth:`AbstractElement.ancestor`"""
         return self.ancestor(Paragraph)
 
     def division(self):
-        """Obtain the division this sentence is a part of (None otherwise)"""
+        """Obtain the division this sentence is a part of (None otherwise). Shortcut for :meth:`AbstractElement.ancestor`"""
         return self.ancestor(Division)
 
 
@@ -5134,7 +5274,7 @@ class Event(AbstractStructureElement):
     pass
 
 class Caption(AbstractStructureElement):
-    """Element used for captions for figures or tables, contains sentences"""
+    """Element used for captions for :class:`Figure` or :class:`Table`"""
 
 
 class Label(AbstractStructureElement):
@@ -5142,10 +5282,10 @@ class Label(AbstractStructureElement):
 
 
 class ListItem(AbstractStructureElement):
-    """Single element in a List. Structure element. Contained within List element."""
+    """Single element in a List. Structure element. Contained within :class:`List` element."""
 
 class List(AbstractStructureElement):
-    """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
+    """Element for enumeration/itemisation. Structure element. Contains :class:`ListItem` elements."""
 
 
 class Figure(AbstractStructureElement):
@@ -5169,7 +5309,7 @@ class Figure(AbstractStructureElement):
 
 
 class Head(AbstractStructureElement):
-    """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
+    """Head element. A structure element. Acts as the header/title of a :class:`Division`. There may be one per division. Contains sentences."""
 
 class Paragraph(AbstractStructureElement):
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
@@ -5201,15 +5341,20 @@ class Division(AbstractStructureElement):
 
 
 class Speech(AbstractStructureElement):
-    """A full speech. This is a high-level element. This element may contain divisions, paragraphs, sentences, etc.."""
+    """A full speech. This is a high-level element. This element may contain :class:`Division`,:class:`Paragraph`, class:`Sentence`, etc.."""
     # (both SPEAKABLE and PRINTABLE)
 
 class Text(AbstractStructureElement):
-    """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
+    """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain :class:`Division`,:class:`Paragraph`, class:`Sentence`, etc.."""
     # (both SPEAKABLE and PRINTABLE)
 
 
 class ForeignData(AbstractElement):
+    """The ForeignData element encapsulated data that is not in FoLiA but in a different format.
+
+    Such data must use a different XML namespace and will be preserved as-is, that is the ``lxml.etree.Element`` instance is retained unmodified. No further interpretation takes place.
+    """
+
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         self.data = []
         if 'node' not in kwargs:
@@ -5235,12 +5380,13 @@ class ForeignData(AbstractElement):
         return ForeignData(doc, node=node)
 
     def select(self, Class, set=None, recursive=True,  ignore=True, node=None): #pylint: disable=bad-classmethod-argument,redefined-builtin
-        """See :meth:`AbstractElement.select`"""
+        """This is a dummy method that returns an empty generator, select() does not work on ForeignData"""
         #select can never descend into ForeignData, empty generator:
         return
         yield
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        """Returns the XML node (an lxml.etree.Element) that holds the foreign data"""
         return self.node
 
     @classmethod
@@ -5281,7 +5427,7 @@ class RegExp(object):
 class Pattern(object):
     """
     This class describes a pattern over words to be searched for. The
-``Document.findwords()`` method can subsequently be called with this pattern,
+:meth:`Document.findwords` method can subsequently be called with this pattern,
 and it will return all the words that match. An example will best illustrate
 this, first a trivial example of searching for one word::
 
@@ -5493,7 +5639,10 @@ class NativeMetaData(object):
 
 
 class Document(object):
-    """This is the FoLiA Document, all elements have to be associated with a FoLiA document. Besides holding elements, the document hold metadata including declaration, and an index of all IDs."""
+    """This is the FoLiA Document and holds all its data in memory.
+    
+    All FoLiA elements have to be associated with a FoLiA document. 
+    Besides holding elements, the document may hold metadata including declarations, and an index of all IDs."""
 
     IDSEPARATOR = '.'
 
@@ -5523,15 +5672,14 @@ class Document(object):
              * folia.Mode.MEMORY - The entire FoLiA Document will be loaded into memory. This is the default mode and the only mode in which documents can be manipulated and saved again.
              * folia.Mode.XPATH - The full XML tree will still be loaded into memory, but conversion to FoLiA classes occurs only when queried. This mode can be used when the full power of XPath is required.
 
+        Keyword Arguments:
 
-        Optional keyword arguments:
-
-            ``setdefinition=``:  A dictionary of set definitions, the key corresponds to the set name, the value is a SetDefinition instance
-            ``loadsetdefinitions=``:  Boolean, download and load set definitions (default: False)
-            ``deepvalidation=``:  Boolean, do deep validation of the document (default: False), implies ``loadsetdefinitions``
-            ``preparsexmlcallback=``:  Callback for a function taking one argument (``node``, an lxml node). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort parsing this element (and all its children)
-            ``parsexmlcallback=``:  Callback for a function taking one argument (``element``, a FoLiA element). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort adding this element (and all its children)
-            ``debug=``:  Boolean to enable/disable debug
+            setdefinition (dict):  A dictionary of set definitions, the key corresponds to the set name, the value is a SetDefinition instance
+            loadsetdefinitions (bool):  download and load set definitions (default: False)
+            deepvalidation (bool): Do deep validation of the document (default: False), implies ``loadsetdefinitions``
+            preparsexmlcallback (function):  Callback for a function taking one argument (``node``, an lxml node). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort parsing this element (and all its children)
+            parsexmlcallback (function):  Callback for a function taking one argument (``element``, a FoLiA element). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort adding this element (and all its children)
+            debug (bool): Boolean to enable/disable debug
         """
 
 
@@ -5679,7 +5827,11 @@ class Document(object):
     #    del self.data
 
     def load(self, filename):
-        """Load a FoLiA or D-Coi XML file"""
+        """Load a FoLiA XML file.
+
+        Argument:
+            filename (str): The file to load
+        """
         #if LXE and self.mode != Mode.XPATH:
         #    #workaround for xml:id problem (disabled)
         #    #f = open(filename)
@@ -5711,10 +5863,10 @@ class Document(object):
             yield x
 
     def save(self, filename=None):
-        """Save the document to FoLiA XML.
+        """Save the document to file.
 
         Arguments:
-            * ``filename=``: The filename to save to. If not set (None), saves to the same file as loaded from.
+            * filename (str): The filename to save to. If not set (``None``, default), saves to the same file as loaded from.
         """
         if not filename:
             filename = self.filename
@@ -5750,7 +5902,7 @@ class Document(object):
 
 
     def __contains__(self, key):
-        """Tests if the specified ID is in the document index"""
+        """Tests if the specified element ID is in the document index"""
         if key in self.index:
             return True
         elif self.subdocs:
@@ -5808,11 +5960,16 @@ class Document(object):
         self.data.append(text)
         return text
 
+    def add(self,text):
+        """Alias for :meth:`Document.append`"""
+        return self.append(text)
+
     def create(self, Class, *args, **kwargs):
         """Create an element associated with this Document. This method may be obsolete and removed later."""
         return Class(self, *args, **kwargs)
 
     def xmldeclarations(self):
+        """Internal method to generate XML nodes for all declarations"""
         l = []
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
 
@@ -5851,6 +6008,11 @@ class Document(object):
         return l
 
     def jsondeclarations(self):
+        """Return all declarations in a form ready to be serialised to JSON.
+        
+        Returns:
+            list of dict 
+        """
         l = []
         for annotationtype, set in self.annotations:
             label = None
@@ -5887,6 +6049,14 @@ class Document(object):
         return l
 
     def xml(self):
+        """Serialise the document to XML.
+
+        Returns:
+            lxml.etree.Element
+
+        See also:
+            :meth:`Document.xmlstring`
+        """
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
@@ -5916,6 +6086,13 @@ class Document(object):
         return e
 
     def json(self):
+        """Serialise the document to a ``dict`` ready for serialisation to JSON.
+
+        Example::
+
+            import json
+            jsondoc = json.dumps(doc.json())
+        """
         jsondoc = {'id': self.id, 'children': [], 'declarations': self.jsondeclarations() }
         if self.version:
             jsondoc['version'] = self.version
@@ -5928,6 +6105,7 @@ class Document(object):
         return jsondoc
 
     def xmlmetadata(self):
+        """Internal method to serialize XML declarations"""
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         if self.metadatatype == MetaDataType.NATIVE:
             e = []
@@ -5947,6 +6125,7 @@ class Document(object):
 
 
     def parsexmldeclarations(self, node):
+        """Internal method to parse XML declarations"""
         if self.debug >= 1:
             print("[PyNLPl FoLiA DEBUG] Processing Annotation Declarations",file=stderr)
         self.declareprocessed = True
@@ -6066,6 +6245,7 @@ class Document(object):
 
 
     def setimdi(self, node): #OBSOLETE
+        """OBSOLETE"""
         ns = {'imdi': 'http://www.mpi.nl/IMDI/Schema/IMDI'}
         self.metadatatype = MetaDataType.IMDI
         if LXE:
@@ -6084,6 +6264,23 @@ class Document(object):
         if n and n[0].text: self._language = n[0].text
 
     def declare(self, annotationtype, set, **kwargs):
+        """Declare a new annotation type to be used in the document.
+
+        Keyword arguments can be used to set defaults for any annotation of this type and set.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            set (str): the set, should formally be a URL pointing to the set definition
+
+        Keyword Arguments:
+            annotator (str): Sets a default annotator
+            annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process.
+            datetime (datetime.datetime): Sets the default datetime
+
+        Example:
+            doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', annotator="mytagger", annotatortype=folia.AnnotatorType.AUTO)
+        """
+
         if inspect.isclass(annotationtype):
             annotationtype = annotationtype.ANNOTATIONTYPE
         if not (annotationtype, set) in self.annotations:
@@ -6096,11 +6293,36 @@ class Document(object):
         self.annotationdefaults[annotationtype][set] = kwargs
 
     def declared(self, annotationtype, set):
+        """Checks if the annotation type is present (i.e. declared) in the document.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            set (str): the set, should formally be a URL pointing to the set definition
+
+        Example:
+            if doc.declared(folia.PosAnnotation, 'http://some/path/brown-tag-set'):
+                ..
+
+        Returns:
+            bool
+        """
         if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
         return ( (annotationtype,set) in self.annotations)
 
 
     def defaultset(self, annotationtype):
+        """Obtain the default set for the specified annotation type.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+
+        Returns:
+            the set (str)
+
+        Raises:
+            :class:`NoDefaultError` if the annotation type does not exist or if there is ambiguity (multiple sets for the same type)
+        """
+
         if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         try:
             return list(self.annotationdefaults[annotationtype].keys())[0]
@@ -6111,6 +6333,19 @@ class Document(object):
 
 
     def defaultannotator(self, annotationtype, set=None):
+        """Obtain the default annotator for the specified annotation type and set.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            set (str): the set, should formally be a URL pointing to the set definition
+
+        Returns:
+            the set (str)
+
+        Raises:
+            :class:`NoDefaultError` if the annotation type does not exist or if there is ambiguity (multiple sets for the same type)
+        """
+
         if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         if not set: set = self.defaultset(annotationtype)
         try:
@@ -6119,6 +6354,18 @@ class Document(object):
             raise NoDefaultError
 
     def defaultannotatortype(self, annotationtype,set=None):
+        """Obtain the default annotator type for the specified annotation type and set.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            set (str): the set, should formally be a URL pointing to the set definition
+
+        Returns:
+            ``AnnotatorType.AUTO`` or ``AnnotatorType.MANUAL``
+
+        Raises:
+            :class:`NoDefaultError` if the annotation type does not exist or if there is ambiguity (multiple sets for the same type)
+        """
         if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         if not set: set = self.defaultset(annotationtype)
         try:
@@ -6128,6 +6375,18 @@ class Document(object):
 
 
     def defaultdatetime(self, annotationtype,set=None):
+        """Obtain the default datetime for the specified annotation type and set.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            set (str): the set, should formally be a URL pointing to the set definition
+
+        Returns:
+            the set (str)
+
+        Raises:
+            :class:`NoDefaultError` if the annotation type does not exist or if there is ambiguity (multiple sets for the same type)
+        """
         if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         if not set: set = self.defaultset(annotationtype)
         try:
@@ -6140,7 +6399,9 @@ class Document(object):
 
 
     def title(self, value=None):
-        """No arguments: Get the document's title from metadata
+        """Get or set the document's title from/in the metadata
+
+           No arguments: Get the document's title from metadata
            Argument: Set the document's title in metadata
         """
         if not (value is None):
@@ -6157,7 +6418,9 @@ class Document(object):
             return self._title
 
     def date(self, value=None):
-        """No arguments: Get the document's date from metadata
+        """Get or set the document's date from/in the metadata.
+
+           No arguments: Get the document's date from metadata
            Argument: Set the document's date in metadata
         """
         if not (value is None):
@@ -6225,6 +6488,8 @@ class Document(object):
             return self._language
 
     def parsemetadata(self, node):
+        """Internal method to parse metadata"""
+
         if 'type' in node.attrib:
             self.metadatatype = node.attrib['type']
         else:
@@ -6266,7 +6531,9 @@ class Document(object):
 
 
     def parsexml(self, node, ParentClass = None):
-        """Main XML parser, will invoke class-specific XML parsers. For internal use."""
+        """Internal method.
+
+        This is the main XML parser, will invoke class-specific XML parsers."""
         if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)): #pylint: disable=protected-access
             node = node.getroot()
         elif isstring(node):
@@ -6365,6 +6632,7 @@ class Document(object):
                         yield e
 
     def count(self, Class, set=None, recursive=True,ignore=True):
+        """See :meth:`AbstractElement.count`"""
         if self.mode == Mode.MEMORY:
             s = 0
             for t in self.data:
@@ -6421,6 +6689,9 @@ class Document(object):
 
     def text(self, cls='current', retaintokenisation=False):
         """Returns the text of the entire document (returns a unicode instance)
+
+        See also:
+            :meth:`AbstractElement.text`
         """
 
         #backward compatibility, old versions didn't have cls as first argument, so if a boolean is passed first we interpret it as the 2nd:
@@ -6438,6 +6709,7 @@ class Document(object):
         return s
 
     def xmlstring(self):
+        """Return the XML representation of the document as a string."""
         s = ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
         if sys.version < '3':
             if isinstance(s, str):

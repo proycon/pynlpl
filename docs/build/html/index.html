@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to PyNLPl’s documentation! &mdash; PyNLPl 0.8.2 documentation</title>
+    <title>Welcome to PyNLPl’s documentation! &mdash; PyNLPl 0.9.4 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.8.2',
+        VERSION:     '0.9.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="PyNLPl 0.8.2 documentation" href="#" />
+    <link rel="top" title="PyNLPl 0.9.4 documentation" href="#" />
     <link rel="next" title="Common Functions" href="common.html" /> 
   </head>
   <body role="document">
@@ -40,7 +40,7 @@
         <li class="right" >
           <a href="common.html" title="Common Functions"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">PyNLPl 0.8.2 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="#">PyNLPl 0.9.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -51,7 +51,43 @@
             
   <div class="section" id="welcome-to-pynlpl-s-documentation">
 <h1>Welcome to PyNLPl&#8217;s documentation!<a class="headerlink" href="#welcome-to-pynlpl-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>This is the documentation for the Python Natural Language Processing Library (PyNLPl, pronounced as &#8220;pineapple&#8221;). The library offers a wide variety of modules for various NLP tasks.</p>
+<p>PyNLPl, pronounced as &#8216;pineapple&#8217;, is a Python library for Natural Language
+Processing. It contains various modules useful for common, and less common, NLP
+tasks. PyNLPl can be used for basic tasks such as the extraction of n-grams and
+frequency lists, and to build simple language model. There are also more
+complex data types and algorithms. Moreover, there are parsers for file formats
+common in NLP (e.g. FoLiA/Giza/Moses/ARPA/Timbl/CQL). There are also clients to
+interface with various NLP specific servers. PyNLPl most notably features a
+very extensive library for working with FoLiA XML (Format for Linguistic
+Annotatation).</p>
+<p>The library is a divided into several packages and modules. It works on Python
+2.7, as well as Python 3.</p>
+<p>The following modules are available:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">pynlpl.datatypes</span></code> - Extra datatypes (priority queues, patterns, tries)</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.evaluation</span></code> - Evaluation &amp; experiment classes (parameter search, wrapped
+progressive sampling, class evaluation (precision/recall/f-score/auc), sampler, confusion matrix, multithreaded experiment pool)</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.formats.cgn</span></code> - Module for parsing CGN (Corpus Gesproken Nederlands) part-of-speech tags</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.formats.folia</span></code> - Extensive library for reading and manipulating the
+documents in <a class="reference external" href="http://proycon.github.io/folia">FoLiA</a> format (Format for Linguistic Annotation).</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.formats.fql</span></code> - Extensive library for the FoLiA Query Language (FQL),
+built on top of <code class="docutils literal"><span class="pre">pynlpl.formats.folia</span></code>. FQL is currently documented <a class="reference external" href="https://github.com/proycon/foliadocserve">here</a>.</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.formats.cql</span></code> - Parser for the Corpus Query Language (CQL), as also used by
+Corpus Workbench and Sketch Engine. Contains a convertor to FQL.</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.formats.giza</span></code> - Module for reading GIZA++ word alignment data</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.formats.moses</span></code> - Module for reading Moses phrase-translation tables.</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.formats.sonar</span></code> - Largely obsolete module for pre-releases of the
+SoNaR corpus, use <code class="docutils literal"><span class="pre">pynlpl.formats.folia</span></code> instead.</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.formats.timbl</span></code> - Module for reading Timbl output (consider using
+<a class="reference external" href="https://github.com/proycon/python-timbl">python-timbl</a> instead though)</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.lm.lm</span></code> - Module for simple language model and reader for ARPA
+language model data as well (used by SRILM).</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.search</span></code> - Various search algorithms (Breadth-first, depth-first,
+beam-search, hill climbing, A star, various variants of each)</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.statistics</span></code> - Frequency lists, Levenshtein, common statistics and
+information theory functions</li>
+<li><code class="docutils literal"><span class="pre">pynlpl.textprocessors</span></code> - Simple tokeniser, n-gram extraction</li>
+</ul>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
@@ -63,8 +99,10 @@
 <li class="toctree-l3"><a class="reference internal" href="folia.html#loading-a-document">Loading a document</a></li>
 <li class="toctree-l3"><a class="reference internal" href="folia.html#printing-text">Printing text</a></li>
 <li class="toctree-l3"><a class="reference internal" href="folia.html#index">Index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="folia.html#elements">Elements</a></li>
 <li class="toctree-l3"><a class="reference internal" href="folia.html#obtaining-list-of-elements">Obtaining list of elements</a></li>
 <li class="toctree-l3"><a class="reference internal" href="folia.html#select-method">Select method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="folia.html#selection-shortcuts">Selection Shortcuts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="folia.html#navigating-a-document">Navigating a document</a></li>
 <li class="toctree-l3"><a class="reference internal" href="folia.html#structure-annotation-types">Structure Annotation Types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="folia.html#common-attributes">Common attributes</a></li>
@@ -77,7 +115,7 @@
 <li class="toctree-l3"><a class="reference internal" href="folia.html#adding-structure">Adding structure</a></li>
 <li class="toctree-l3"><a class="reference internal" href="folia.html#adding-annotations">Adding annotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="folia.html#adding-span-annotation">Adding span annotation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="folia.html#deleting-annotation">Deleting annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="folia.html#deleting-annotations">Deleting annotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="folia.html#copying-annotations">Copying annotations</a></li>
 </ul>
 </li>
@@ -99,13 +137,12 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="formats.html">Formats</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="formats.html#module-pynlpl.formats.cgn">Corpus Gesproken Nederlands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="formats.html#folia">FoLiA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="formats.html#module-pynlpl.formats.giza">GIZA++</a></li>
 <li class="toctree-l2"><a class="reference internal" href="formats.html#module-pynlpl.formats.moses">Moses</a></li>
 <li class="toctree-l2"><a class="reference internal" href="formats.html#module-pynlpl.formats.sonar">SoNaR</a></li>
-<li class="toctree-l2"><a class="reference internal" href="formats.html#folia">FoLiA</a></li>
 <li class="toctree-l2"><a class="reference internal" href="formats.html#module-pynlpl.formats.taggerdata">Taggerdata</a></li>
 <li class="toctree-l2"><a class="reference internal" href="formats.html#module-pynlpl.formats.timbl">TiMBL</a></li>
-<li class="toctree-l2"><a class="reference internal" href="formats.html#id1">FoLiA</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="lm.html">Language Models</a></li>
@@ -158,8 +195,8 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
@@ -181,12 +218,12 @@
         <li class="right" >
           <a href="common.html" title="Common Functions"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">PyNLPl 0.8.2 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="#">PyNLPl 0.9.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2013, Maarten van Gompel.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.
+        &copy; Copyright 2016, Maarten van Gompel.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.5.
     </div>
   </body>
 </html>

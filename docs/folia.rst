@@ -346,7 +346,7 @@ exception if none is found::
 
     for word in doc.words():
         try:
-            pos = word.annotation(folia.PosAnnotation, 'http://some/path/to/CGN')
+            pos = word.annotation(folia.PosAnnotation, 'http://somewhere/CGN')
             lemma = word.annotation(folia.LemmaAnnotation)
             print("Word: ", word)
             print("ID: ", word.id)
@@ -495,29 +495,29 @@ is done by explicitly providing the ID for the new document in the
 Declarations
 ---------------------
 
-Whenever you add a new type of annotation, or a different set, to a FoLiA document, you have to
-first declare it. This is done using the ``declare()`` method. It takes as
+Whenever you add a new **type** of annotation, or a different set, to a FoLiA document, you have to
+first declare it. This is done using the :meth:`Document.declare`` method. It takes as
 arguments the annotation type, the set, and you can optionally pass keyword
 arguments to ``annotator=`` and ``annotatortype=`` to set defaults.
 
 An example for Part-of-Speech annotation::
 
-    doc.declare(folia.PosAnnotation, 'brown-tag-set')
+    doc.declare(folia.PosAnnotation, 'http://somewhere/brown-tag-set')
 
 An example with a default annotator::
     
-    doc.declare(folia.PosAnnotation, 'brown-tag-set', annotator='proycon', annotatortype=folia.AnnotatorType.MANUAL)
+    doc.declare(folia.PosAnnotation, 'http://somewhere/brown-tag-set', annotator='proycon', annotatortype=folia.AnnotatorType.MANUAL)
 
 Any additional sets for Part-of-Speech would have to be explicitly declared as
 well. To check if a particular annotation type and set is declared, use the
-``declared(Class, set)`` method.
+:meth:`Document.declared` method.
 
 Adding structure
 -------------------------
 
 Assuming we begin with an empty document, we should first add a Text element.
 Then we can add paragraphs, sentences, or other structural elements. The
-``add()`` adds new children to an element::
+:meth:`AbstractElement.add` method adds new children to an element::
     
     text = doc.add(folia.Text)
     paragraph = text.add(folia.Paragraph)
@@ -529,15 +529,16 @@ Then we can add paragraphs, sentences, or other structural elements. The
     sentence.add(folia.Word, '.')
 
 
-.. note:: The ``add()`` method is actually a wrapper around ``append()``, which takes the
+.. note:: The :meth:`AbstractElement.add` method is actually a wrapper around :meth:`AbstractElement.append`, which takes the
     exact same arguments. It performs extra checks and works for both span
-    annotation as well as token annotation. Using ``append()`` will be faster.
+    annotation as well as token annotation. Using ``append()`` will be faster
+    though.
 
 Adding annotations
 -------------------------
 
 Adding annotations, or any elements for that matter, is done using the
-``add()`` method on the intended parent element. We assume that the annotations
+:meth:`AbstractElement.add` method on the intended parent element. We assume that the annotations
 we add have already been properly declared, otherwise an exception will be
 raised as soon as ``add()`` is called. Let's build on the previous example::
 
@@ -555,7 +556,7 @@ Note that in the above examples, the ``add()`` method takes a class as first
 argument, and subsequently takes keyword arguments that will be passed to the
 classes' constructor.
 
-A second way of using ``add()`` is by simply passing a fully instantiated child
+A second way of using :meth:`AbstractElement.add` is by simply passing a fully instantiated child
 element, thus constructing it prior to adding. The following is equivalent to the
 above example, as the previous method is merely a shortcut for convenience::
 
@@ -568,20 +569,22 @@ above example, as the previous method is merely a shortcut for convenience::
     #Add lemma
     lemma.add( folia.LemmaAnnotation(doc , cls='test') )   
 
-The ``add()`` method always returns that which was added, allowing it to be chained.
+The :meth:`AbstractElement.add` method always returns that which was added, allowing it to be chained.
 
-In the above example we first explicitly instantiate a ``folia.PosAnnotation``
-and a ``folia.LemmaAnnotation``. Instantiation of any FoLiA element (always
-Python class subclassed off ``folia.AbstractElement``) follows the following
+In the above example we first explicitly instantiate a :class:`PosAnnotation`
+and a :class:`LemmaAnnotation`. Instantiation of any FoLiA element (always
+Python class subclassed off :class:`AbstractElement`) follows the following
 pattern::
 
     Class(document, *children, **kwargs)
+
+.. note:: See :meth:`AbstractElement.__init__` for all details on construction
 
 Note that the document has to be passed explicitly as first argument to the constructor.
 
 The common attributes are set using equally named keyword arguments:
 
- * ``id=`` 
+ * ``id=``
  * ``cls=``
  * ``set=`` 
  * ``annotator=`` 
@@ -617,7 +620,7 @@ Adding span annotation
 Adding span annotation is easy with the FoLiA library. As you know, span
 annotation uses a stand-off annotation embedded in annotation layers. These
 layers are in turn embedded in structural elements such as sentences. However,
-the ``add()`` method abstracts over this. Consider the following example of a named entity::
+the :meth:`AbstractElement.add` method abstracts over this. Consider the following example of a named entity::
 
     doc.declare(folia.Entity, "https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml")
     
@@ -673,19 +676,19 @@ and then add a syntax parse, consisting of nested elements::
     )
     
 
-.. note:: The lower-level ``append()`` method would have had the same effect in the above syntax tree sample.
+.. note:: The lower-level :meth:`AbstractElement.append`` method would have had the same effect in the above syntax tree sample.
 
-Deleting annotation
+Deleting annotations
 ----------------------
 
-Any element can be deleted by calling the ``remove()`` method of its parent. Suppose we want to delete ``word``::
+Any element can be deleted by calling the :meth:`AbstractElement.remove`` method on its parent. Suppose we want to delete ``word``::
 
     word.parent.remove(word)
 
 Copying annotations
 ----------------------
 
-A *deep copy* can be made of any element by calling its ``copy()`` method:: 
+A *deep copy* can be made of any element by calling its :meth:`AbstractElement.copy` method:: 
 
     word2 = word.copy()
 
@@ -702,14 +705,15 @@ Searching in a FoLiA document
 
 If you have loaded a FoLiA document into memory, you may want to search for a
 particular annotations. You can of course loop over all structural and
-annotation elements using ``select()``, ``annotation()`` and ``annotations()``.
-Additionally, ``Word.findspans()`` and ``AbstractAnnotationLayer.findspan()``
-are useful methods of finding span annotations covering particular words,
-whereas ``AbstractSpanAnnotation.wrefs()`` does the reverse and finds the words
-for a given span annotation element. In addition to these main methods of
-navigation and selection, there is higher-level function available for
-searching, this uses the **FoLiA Query Language** (FQL) or the **Corpus Query
-Language** (CQL).
+annotation elements using :meth:`AbstractElement.select`,
+:meth:`AllowTokenAnnotation.annotation` and
+:meth:`AllowTokenAnnotation.annotations`.  Additionally, :meth:`Word.findspans`
+and :meth:`AbstractAnnotationLayer.findspan` are useful methods of finding span
+annotations covering particular words, whereas
+:meth:`AbstractSpanAnnotation.wrefs` does the reverse and finds the words for a
+given span annotation element. In addition to these main methods of navigation
+and selection, there is higher-level function available for searching, this
+uses the **FoLiA Query Language** (FQL) or the **Corpus Query Language** (CQL).
 
 These two languages are part of separate libraries that need to be imported::
 
@@ -826,9 +830,9 @@ We have just covered the **SELECT** keyword, FQL has other keywords for manipula
 Streaming Reader
 -------------------
 
-Throughout this tutorial you have seen the ``folia.Document`` class as a means
+Throughout this tutorial you have seen the :class:`Document`` class as a means
 of reading FoLiA documents. This class always loads the entire document in
-memory, which can be a considerable resource demand. The ``folia.Reader`` class
+memory, which can be a considerable resource demand. The :class:`Reader` class
 provides an alternative to loading FoLiA documents. It does not load the entire
 document in memory but merely returns the elements you are interested in. This
 results in far less memory usage and also provides a speed-up.
@@ -849,15 +853,15 @@ Text Markup
 --------------
 
 FoLiA has a number of text markup elements, these appear within the
-``folia.TextContent`` (``t``) element, iterating over the element of a
-``folia.TextContent`` element will first and foremost produce strings, but also
+:class:`TextContent` (``t``) element, iterating over the element of a
+:class:`TextContent` element will first and foremost produce strings, but also
 uncover these markup elements when present. The following markup types exists:
 
-* ``folia.TextMarkupGap`` (``t-gap``) - For marking gaps in the text
-* ``folia.TextMarkupString`` (``t-str``) - For marking arbitrary substring
-* ``folia.TextMarkupStyle`` (``t-style``) - For marking style (such as bold, italics, as dictated by the set used)
-* ``folia.TextMarkupCorrection`` (``t-correction``) - Simple in-line corrections
-* ``folia.TextMarkupError`` (``t-error``) -  For marking errors
+* :class:`TextMarkupGap` (``t-gap``) - For marking gaps in the text
+* :class:`TextMarkupString` (``t-str``) - For marking arbitrary substring
+* :class:`TextMarkupStyle` (``t-style``) - For marking style (such as bold, italics, as dictated by the set used)
+* :class:`TextMarkupCorrection` (``t-correction``) - Simple in-line corrections
+* :class:`TextMarkupError` (``t-error``) -  For marking errors
 
 
 Features
@@ -866,7 +870,7 @@ Features
 Features allow a second-order annotation by adding the abilities to assign
 properties and values to any of the existing annotation elements. They follow
 the set/class paradigm by adding the notion of a subset and class relative to
-this subset. The ``feat()`` method provides a shortcut that can be used on any
+this subset. The :meth:`AbstractElement.feat` method provides a shortcut that can be used on any
 annotation element to obtain the class of the feature, given a subset. To
 illustrate the concept, take a look at part of speech annotation with some
 features::
@@ -878,11 +882,11 @@ features::
         elif pos.feat('number') == 'plural':
             print("We have a singular noun!")
 
-The ``feat()`` method will return an exception when the feature does not exist.
+The :meth:`AbstractElement.feat` method will return an exception when the feature does not exist.
 Note that the actual subset and class values are defined by the set and not
 FoLiA itself! They are therefore fictitious in the above example. 
 
-The Python class for features is ``folia.Feature``, in the following example we
+The Python class for features is :class:`Feature`, in the following example we
 add a feature::
 
     pos.add(folia.Feature, subset="gender", cls="f")
@@ -891,23 +895,23 @@ Although FoLiA does not define any sets nor subsets. Some annotation types do
 come with some associated subsets, their use is never mandatory. The advantage
 is that these associated subsets can be directly used as an XML attribute in
 the FoLiA document. The FoLiA library provides extra classes, iall subclassed
-off ``folia.Feature`` for these:
+off :class:`Feature` for these:
 
-* ``folia.SynsetFeature``, for use with ``folia.SenseAnnotation`` 
-* ``folia.ActorFeature``, for use with ``folia.Event`` 
-* ``folia.BegindatetimeFeature``, for use with ``folia.Event`` 
-* ``folia.EnddatetimeFeature``, for use with ``folia.Event`` 
+* :class:`SynsetFeature`, for use with :class:`SenseAnnotation` 
+* :class:`ActorFeature`, for use with :class:`Event` 
+* :class:`BegindatetimeFeature`, for use with :class:`Event` 
+* :class:`EnddatetimeFeature`, for use with :class:`Event` 
 
 Alternatives
 ------------------
 
 A key feature of FoLiA is its ability to make explicit alternative annotations,
-for token annotations, the ``folia.Alternative`` (``alt``) class is used to
+for token annotations, the :class:`Alternative` (``alt``) class is used to
 this end. Alternative annotations are embedded in this structure. This implies
 the annotation is not authoritative, but is merely an alternative to the actual
 annotation (if any). Alternatives may typically occur in larger numbers,
 representing a distribution each with a confidence value (not mandatory). Each
-alternative is wrapped in its own ``folia.Alternative`` element, as multiple
+alternative is wrapped in its own :class:`Alternative` element, as multiple
 elements inside a single alternative are considered dependent and part of the
 same alternative. Combining multiple annotation in one alternative makes sense
 for mixed annotation types, where for instance a pos tag alternative is tied to
@@ -921,7 +925,7 @@ a particular lemma::
     alt.add(folia.PosAnnotation, set='brown-tagset',cls='v',confidence=0.2)
 
 Span annotation elements have a different mechanism for alternatives, for those
-the entire annotation layer is embedded in a ``folia.AlternativeLayers``
+the entire annotation layer is embedded in a :class:`AlternativeLayers`
 element. This element should be repeated for every type, unless the layers it
 describeds are dependent on it eachother::
 
@@ -948,9 +952,9 @@ you query for a particular element, and it is part of a correction, you get the
 corrected version rather than the original. The original is always *non-authoritative*
 and normal selection methods will ignore it.
 
-If you want to deal with correction, you have to explicitly get a
-``folia.Correction`` element. If an element is part of a correction, its
-``incorrection()`` method will give the correction element, if not, it will
+If you want to deal with correction, you have to explicitly handle the
+:class:`Correction` element. If an element is part of a correction, its
+:meth:`AbstractElement.incorrection` method will give the correction element, if not, it will
 return ``None``::
 
     pos = word.annotation(folia.PosAnnotation)
@@ -963,7 +967,7 @@ return ``None``::
 
 Corrections themselves carry a class too, indicating the type of correction (defined by the set used and not by FoLiA).
 
-Besides ``original()``, corrections distinguish three other types, ``new()`` (the corrected version), ``current()`` (the current uncorrected version) and ``suggestions(i)`` (a suggestion for correction), the former two and latter two usually form pairs, ``current()`` and ``new()`` can never be used together. Of ``suggestions(i)`` there may be multiple, hence the index argument. These return, respectively, instances of ``folia.Original``, ``folia.New``, ``folia.Current`` and ``folia.Suggestion``.
+Besides :meth:`Correction.original``, corrections distinguish three other types, :meth:`Correction.new`` (the corrected version), :meth:`Correction.current`` (the current uncorrected version) and :meth:`Correction.suggestions` (a suggestion for correction), the former two and latter two usually form pairs, ``current()`` and ``new()`` can never be used together. Of ``suggestions(index)`` there may be multiple, hence the index argument. These return, respectively, instances of :class:`Original`, :class:`folia.New`, :class:`folia.Current` and :class:`folia.Suggestion`.
 
 Adding a correction can be done explicitly::
 
@@ -976,11 +980,11 @@ Let's settle for a suggestion rather than an actual correction::
     word.add(folia.Correction, folia.Suggestion(doc, folia.PosAnnotation(doc, cls="n")), cls="misclassified")   
 
 
-In some instances, when correcting text or structural elements, ``folia.New()`` may be
-empty, which would correspond to an *deletion*. Similarly, ``folia.Original()`` may be
+In some instances, when correcting text or structural elements, :class:`New` may be
+empty, which would correspond to an *deletion*. Similarly, :class:`Original` may be
 empty, corresponding to an *insertion*. 
 
-The use of ``folia.Current()`` is reserved for use with structure elements, such as words, in combination with suggestions. The structure elements then have to be embedded in ``folia.Current()``. This situation arises for instance when making suggestions for a merge or split.
+The use of :class:`Current` is reserved for use with structure elements, such as words, in combination with suggestions. The structure elements then have to be embedded in :class:`Current`. This situation arises for instance when making suggestions for a merge or split.
 
 
 

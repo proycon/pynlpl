@@ -1,7 +1,7 @@
 Search Algorithms
 ==================================
 
-.. automodule:: search
+.. automodule:: pynlpl.search
     :members:
     :undoc-members:
 
