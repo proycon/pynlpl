@@ -745,6 +745,7 @@ class AbstractElement(object):
             correctionhandling: Specifies what text to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current text. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the text prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
 
         Example::
+
             word.text()
 
         Returns:
@@ -878,6 +879,7 @@ class AbstractElement(object):
             correctionhandling: Specifies what phonetic content to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current phonetic content. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the phonetic content prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
 
         Example::
+
             word.phon()
 
         Returns:
@@ -1611,7 +1613,7 @@ class AbstractElement(object):
         """Appends a child element like ``append()``, but replaces any existing child element of the same type and set. If no such child element exists, this will act the same as append()
 
         Keyword arguments:
-            * ``alternative`` - If set to True, the *replaced* element will be made into an alternative. Simply use :meth:`AbstractElement.append` if you want the added element
+            alternative (bool): If set to True, the *replaced* element will be made into an alternative. Simply use :meth:`AbstractElement.append` if you want the added element
             to be an alternative.
 
         See :meth:`AbstractElement.append` for more information and all parameters.
@@ -1692,6 +1694,7 @@ class AbstractElement(object):
             *Classes: The possible classes (:class:`AbstractElement` or subclasses) to select from. Not instances!
 
         Example::
+
             paragraph = word.ancestor(folia.Paragraph)
         """
         for e in self.ancestors(tuple(Classes)):
@@ -1860,6 +1863,7 @@ class AbstractElement(object):
         """Serialises the FoLiA element and all its contents to a Python dictionary suitable for serialisation to JSON.
 
         Example::
+
             import json
             json.dumps(word.json())
 
@@ -1953,6 +1957,7 @@ class AbstractElement(object):
             Elements (instances derived from :class:`AbstractElement`)
 
         Example::
+
             for sense in text.select(folia.Sense, 'cornetto', True, [folia.Original, folia.Suggestion, folia.Alternative] ):
                 ..
 
@@ -2716,6 +2721,7 @@ class AllowTokenAnnotation(AllowCorrections):
             Elements (instances derived from :class:`AbstractElement`)
 
         Example::
+
             for sense in text.annotations(folia.Sense, 'http://some/path/cornetto'):
                 ..
 
@@ -2752,6 +2758,7 @@ class AllowTokenAnnotation(AllowCorrections):
             An element (instance derived from :class:`AbstractElement`)
 
         Example::
+
             sense = word.annotation(folia.Sense, 'http://some/path/cornetto').cls
 
         See also:
@@ -3105,10 +3112,11 @@ class TextContent(AbstractElement):
 
 
     def __init__(self, doc, *args, **kwargs):
-        """Example::
+        """
+        
+        Example::
 
                 text = folia.TextContent(doc, 'test')
-
                 text = folia.TextContent(doc, 'test',cls='original')
 
         """
@@ -3318,7 +3326,9 @@ class PhonContent(AbstractElement):
     """
 
     def __init__(self, doc, *args, **kwargs):
-        """Example::
+        """
+
+        Example::
 
                 phon = folia.PhonContent(doc, 'hɛˈləʊ̯')
                 phon = folia.PhonContent(doc, 'hɛˈləʊ̯', cls="original")
@@ -3652,17 +3662,24 @@ class Word(AbstractStructureElement, AllowCorrections):
     #will actually be determined by gettextdelimiter()
 
     def __init__(self, doc, *args, **kwargs):
-        """Keyword arguments:
+        """Constructor for words.
 
-            * ``space=``: Boolean indicating whether this token is followed by a space (defaults to True)
+        See :class:`AbstractElement.__init__` for all inherited keyword arguments and parameters.
 
-            Example::
+        Keyword arguments:
 
-                sentence.append( folia.Word, 'This')
-                sentence.append( folia.Word, 'is')
-                sentence.append( folia.Word, 'a')
-                sentence.append( folia.Word, 'test', space=False)
-                sentence.append( folia.Word, '.')
+        * space (bool): Indicates whether this token is followed by a space (defaults to True)
+
+        Example::
+
+            sentence.append( folia.Word, 'This')
+            sentence.append( folia.Word, 'is')
+            sentence.append( folia.Word, 'a')
+            sentence.append( folia.Word, 'test', space=False)
+            sentence.append( folia.Word, '.')
+
+        See also:
+            :class:`AbstractElement.__init__`
         """
         self.space = True
 
@@ -3808,7 +3825,8 @@ class Word(AbstractStructureElement, AllowCorrections):
             type: The annotation type, can be passed as using any of the :class:`AnnotationType` member, or by passing the relevant :class:`AbstractSpanAnnotation` or :class:`AbstractAnnotationLayer` class.
             set (str or None): Constrain by set
 
-        Example:
+        Example::
+
             for chunk in word.findspans(folia.Chunk):
                 print(" Chunk class=", chunk.cls, " words=")
                 for word2 in chunk.wrefs(): #print all words in the chunk (of which the word is a part)
@@ -6278,6 +6296,7 @@ class Document(object):
             datetime (datetime.datetime): Sets the default datetime
 
         Example::
+
             doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', annotator="mytagger", annotatortype=folia.AnnotatorType.AUTO)
         """
 
@@ -6300,6 +6319,7 @@ class Document(object):
             set (str): the set, should formally be a URL pointing to the set definition
 
         Example::
+
             if doc.declared(folia.PosAnnotation, 'http://some/path/brown-tag-set'):
                 ..
 

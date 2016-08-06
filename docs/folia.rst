@@ -1,3 +1,4 @@
+.. module:: pynlpl.formats.folia 
 
 FoLiA library 
 *************
@@ -356,7 +357,7 @@ exception if none is found::
         except folia.NoSuchAnnotation:
             print("No PoS or Lemma annotation")
 
-Note that the second argument of :meth:`AllowTokenAnnotation.annotation``, :meth:`AllowTokenAnnotation.annotations`` or
+Note that the second argument of :meth:`AllowTokenAnnotation.annotation`, :meth:`AllowTokenAnnotation.annotations` or
 :meth:`AbstractElement.select` can be used to restrict your selection to a certain set. In the
 above example we restrict ourselves to Part-of-Speech tags in the CGN set.
 
@@ -993,7 +994,9 @@ API Reference
 
 .. automodule:: pynlpl.formats.folia
      :members:
+     :show-inheritance:
      :undoc-members:
-     :special-members:
+     :inherited-members:
+     :special-members: __init__, __iter__, __len__, __str__, __getitem__, __contains__
 
  
