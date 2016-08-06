@@ -2013,7 +2013,11 @@ class AbstractElement(object):
                         yield e2
 
     def count(self, Class, set=None, recursive=True,  ignore=True, node=None):
-        """Like select, but instead of returning the elements, it merely counts them"""
+        """Like :meth:`AbstractElement.select`, but instead of returning the elements, it merely counts them.
+
+        Returns:
+            int
+        """
         return sum(1 for i in self.select(Class,set,recursive,ignore,node) )
 
     def items(self, founditems=[]): #pylint: disable=dangerous-default-value
@@ -3103,7 +3107,7 @@ class TextContent(AbstractElement):
     """Text content element (``t``), holds text to be associated with whatever element the text content element is a child of.
 
     Text content elements
-    on structure elements like ``Paragraph`` and ``Sentence`` are by definition untokenised. Only on ``Word`` level and deeper they are by definition tokenised.
+    on structure elements like :class:`Paragraph` and :class:`Sentence` are by definition untokenised. Only on :class:`Word`` level and deeper they are by definition tokenised.
 
     Text content elements can specify offset that refer to text at a higher parent level. Use the following keyword arguments:
         * ``ref=``: The instance to point to, this points to the element holding the text content element, not the text content element itself.

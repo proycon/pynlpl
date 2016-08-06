@@ -35,11 +35,20 @@ Any script that uses FoLiA starts with the import::
 
     from pynlpl.formats import folia
 
-Subsequently, a document can be read from file and follows::
+At the basis of any FoLiA processing lies the following class:
+
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: fullclass.rst
+
+    Document
+
+To read a document from file, instantiate a document as follows::
 
     doc = folia.Document(file="/path/to/document.xml")
 
-This returns a :class:`Document` instance that holds the entire document in
+This returned :class:`Document` instance holds the entire document in
 memory. Note that for large FoLiA documents this may consume quite some memory!
 If you happened to already have the document content in a string, you can load
 as follows::
@@ -57,6 +66,7 @@ Or we can specify a specific filename::
     doc.save("/tmp/document.xml")
 
 .. note:: Any content that is in a different XML namespace than the FoLiA namespaces or other supported namespaces (XML, Xlink), will be ignored upon loading and lost when saving.
+
 
 Printing text
 ----------------------------------
@@ -106,10 +116,20 @@ element you can therefore always do the following::
     isinstance(word, folia.AbstractElement)
 
 This abstract base element is never instantiated directly. The FoLiA paradigm
-derives several more abstract base categories from this such as
-:class:`AbstractStructureElement`, :class:`AbstractSpanAnnotation`, :class:`AbstractTokenAnnotation`,
-:class:`AbstractAnnotationLayer` and other. These may implement some additional
-methods or overload some of the original ones.
+derives several more abstract base  classes which  may implement some additional
+methods or overload some of the original ones:
+
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    AbstractElement
+    AbstractStructureElement
+    AllowTokenAnnotation
+    AbstractSpanAnnotation
+    AbstractTokenAnnotation
+    AbstractAnnotationLayer
 
 Obtaining list of elements
 ------------------------------
@@ -266,32 +286,36 @@ for structure anntoation along with the FoLiA XML tag. Sets and classes can
 be associated with most of these elements to make them more specific, these are
 never prescribed by FoLiA. The list of classes is as follows:
 
-* :class:`Cell` - ``cell`` - A cell in a :class:`Row` in a :class:`Table`
-* :class:`Definition` - ``def`` - A definition in an :class:`Entry`
-* :class:`Division` - ``div`` - Used for for example chapters, sections, subsections
-* :class:`Entry` - ``entry`` - An entry in a lexicon/glossary/dictionary
-* :class:`Event` - ``event`` -  Often in new-media data where a chat message, tweet or forum post is considered an event.
-* :class:`Example` - ``example`` - An example (for instance in an :class:`Entry`)
-* :class:`Figure` - ``figure`` - A graphic/image
-* :class:`Gap` - ``gap`` - A gap containing raw un-annotated textual content
-* :class:`Head` - ``head`` - The head/title of a :class:`Division`, used for chapter/section/subsection titles etc..
-* :class:`Linebreak` - ``br`` - An explicit linebreak/newline
-* :class:`List` - ``list`` - A list, bulleted or enumerated
-* :class:`ListItem` - ``listitem`` - An item in a :class:`List`
-* :class:`Note` - ``note`` - A note, such as a footnote or bibliography reference for instance 
-* :class:`Paragraph` - ``p`` - A paragraph
-* :class:`Part` - ``part`` - An abstract part of a larger structure (do *not* use for morphology!)
-* :class:`Quote` - ``quote`` - Cited/quoted text
-* :class:`Reference` - ``ref`` - A reference to another structural element,
-  used to refer to footnotes (:class:`Note`) for example.
-* :class:`Row` - ``row`` - A row in a ``table``
-* :class:`Sentence` - ``s`` - A sentence
-* :class:`Table` - ``table`` - A table
-* :class:`Term` - ``term`` - A term for in an :class:`Entry`
-* :class:`TableHead` - ``tablehead`` - The head of a :class:`Table`, containing cells (:class:`Cell`) with column labels
-* :class:`Text` - ``text`` - The root of the document's content
-* :class:`Whitespace` - ``whitespace`` - Explicit vertical whitespace
-* :class:`Word` - ``w``
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    Cell
+    Definition
+    Division
+    Entry
+    Event
+    Example
+    Figure
+    Gap
+    Head
+    Linebreak
+    List
+    ListItem
+    Note
+    Paragraph
+    Part
+    Quote
+    Reference
+    Row
+    Sentence
+    Table
+    Term
+    TableHead
+    Text
+    Whitespace
+    Word
 
 The `FoLiA documentation <https://github.com/proycon/folia/raw/master/docs/folia.pdf>`_ explains the exact semantics and use of 
 these in detail. Make sure to consult it to familiarize yourself with how the
@@ -307,7 +331,7 @@ The FoLiA paradigm features *sets* and *classes* as primary means to represent
 the actual value (class) of an annotation. A set often corresponds to a tagset,
 such as a set of part-of-speech tags, and a class is one selected value in such a set.
 
-The paradigm furthermore introduces other comomn attributes to set on
+The paradigm furthermore introduces other common attributes to set on
 annotation elements, such as an identifier,  information on the annotator, and
 more. A full list is provided below:
     
@@ -367,12 +391,18 @@ Token Annotation Types
 The following token annotation elements are available in FoLiA, they are
 embedded under a structural element (not necessarily a token, despite the name). 
 
-* :class:`DomainAnnotation` - ``domain`` - Domain/genre annotation
-* :class:`PosAnnotation` - ``pos`` - Part of Speech Annotation
-* :class:`LangAnnotation` - ``lang`` - Language identification
-* :class:`LemmaAnnotation` - ``lemma`` - Lemmas / canonical word forms
-* :class:`SenseAnnotation` - ``sense`` - Lexical semantic sense annotation
-* :class:`SubjectivityAnnotation` - ``subjectivity`` - Sentiment analysis / subjectivity annotation
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    DomainAnnotation
+    PosAnnotation
+    LangAnnotation
+    LemmaAnnotation
+    SenseAnnotation
+    SubjectivityAnnotation
+
 
 Text and phonetic annotation
 +++++++++++++++++++++++++++++++++
@@ -380,14 +410,18 @@ Text and phonetic annotation
 The actual text of an element, or a phonetic textual representation, are also
 considered annotations themselves. 
 
-* :class:`TextContent` - ``t`` - Text content, this carries the actual text
-  for the structural element in which is it embedded. The text is retrieved as
-  string using :meth:`AbstractElement.text`, or as element using
-  :meth:`AbstractElement.textcontent`.
-* :class:`PhonContent` - ``ph`` - Phonetic content, this carries a phonetic
-  representation. The phonetic content is retrieved as
-  string using :meth:`AbstractElement.text`, or as element using
-  :meth:`AbstractElement.textcontent`.
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    TextContent
+    PhonContent
+
+Text is retrieved as string using :meth:`AbstractElement.text`, or as element
+using Phonetic content is retrieved as string using
+:meth:`AbstractElement.text`, or as element using
+:meth:`AbstractElement.textcontent`.
 
 .. note:: 
     These are the only elements for which FoLiA prescribes a default set and a default class (``current``).
@@ -461,23 +495,45 @@ Some of the span annotation elements are complex and take span role elements as
 children, these are normal span annotation elements that occur on a within
 another span annotation (of a particular type) and can not be used standalone.
 
-* :class:`Chunk` in :class:`ChunkingLayer` - ``chunk`` in ``chunks`` - Shallow parsing.  Not nested .
-* :class:`CoreferenceChain` in :class:`CoreferenceLayer` - ``coreferencechain`` in ``coreferences`` - Co-references
+FoLiA distinguishes the following span annotation elements:
 
- * Requires the roles :class:`CoreferenceLink` (``coreferencelink``) pointing to each coreferenced structure in the chain
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
 
-* :class:`Dependency` in :class:`DependencyLayer` - ``dependency`` in ``dependencies`` - Dependency Relations
+    Chunk
+    CoreferenceChain
+    Dependency
+    Entity
+    SyntacticUnit
+    SemanticRole
 
- * Requires the roles :class:`HeadSpan` (``hd``) and :class:`DependencyDependent` (``dep``)
+These are placed in the following annotation layers:
 
-* :class:`Entity` in :class:`EntitiesLayer` - ``entity`` in ``entities`` - Named entities
-* :class:`SyntacticUnit`` in :class:`SyntaxLayer` - ``su`` in ``syntax`` - Syntax/constituent parses.  These elements are generally nested to form syntax trees.
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
 
-* :class:`SemanticRole` in :class:`SemanticRolesLayer` - ``semrole`` in ``semroles`` - Semantic Roles
+    ChunkingLayer
+    CoreferenceLayer
+    DependenciesLayer
+    EntitiesLayer
+    SyntaxLayer
+    SemanticRolesLayer
 
 
-The span role :class:`HeadSpan` (``hd``)  may actually be used by
-most span annotation elements to indicate the head of a span.
+Some span annotation elements take *span roles*, depending on their type:
+
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    CoreferenceLink
+    DependencyDependent
+    Headspan
 
 
 Editing FoLiA
@@ -858,11 +914,16 @@ FoLiA has a number of text markup elements, these appear within the
 :class:`TextContent` element will first and foremost produce strings, but also
 uncover these markup elements when present. The following markup types exists:
 
-* :class:`TextMarkupGap` (``t-gap``) - For marking gaps in the text
-* :class:`TextMarkupString` (``t-str``) - For marking arbitrary substring
-* :class:`TextMarkupStyle` (``t-style``) - For marking style (such as bold, italics, as dictated by the set used)
-* :class:`TextMarkupCorrection` (``t-correction``) - Simple in-line corrections
-* :class:`TextMarkupError` (``t-error``) -  For marking errors
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    TextMarkupGap
+    TextMarkupString
+    TextMarkupStyle
+    TextMarkupCorrection
+    TextMarkupError
 
 
 Features
@@ -895,13 +956,20 @@ add a feature::
 Although FoLiA does not define any sets nor subsets. Some annotation types do
 come with some associated subsets, their use is never mandatory. The advantage
 is that these associated subsets can be directly used as an XML attribute in
-the FoLiA document. The FoLiA library provides extra classes, iall subclassed
+the FoLiA document. The FoLiA library provides extra classes, all subclassed
 off :class:`Feature` for these:
 
-* :class:`SynsetFeature`, for use with :class:`SenseAnnotation` 
-* :class:`ActorFeature`, for use with :class:`Event` 
-* :class:`BegindatetimeFeature`, for use with :class:`Event` 
-* :class:`EnddatetimeFeature`, for use with :class:`Event` 
+
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    Feature
+    SynsetFeature
+    ActorFeature
+    BegindatetimeFeature
+    EnddatetimeFeature
 
 Alternatives
 ------------------
@@ -939,6 +1007,16 @@ Because the alternative annotations are **non-authoritative**, normal selection
 methods such as ``select()`` and ``annotations()`` will never yield them,
 unless explicitly told to do so. For this reason, there is an
 ``alternatives()`` method on structure elements, for the first category of alternatives.
+
+In summary, a list of the two relevant classes for alternatives:
+
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    Alternative
+    AlternativeLayers
 
 Corrections
 ------------------
@@ -987,16 +1065,26 @@ empty, corresponding to an *insertion*.
 
 The use of :class:`Current` is reserved for use with structure elements, such as words, in combination with suggestions. The structure elements then have to be embedded in :class:`Current`. This situation arises for instance when making suggestions for a merge or split.
 
+Here is a list of all relevant classes for corrections:
+
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: foliaelement.rst
+
+    Correction
+    Current
+    New
+    Original
+    Suggestion
 
 
-API Reference
-==============================
 
-.. automodule:: pynlpl.formats.folia
-     :members:
-     :show-inheritance:
-     :undoc-members:
-     :inherited-members:
-     :special-members: __init__, __iter__, __len__, __str__, __getitem__, __contains__
+# .. automodule:: pynlpl.formats.folia
+#    :members:
+#     :show-inheritance:
+#     :undoc-members:
+#     :inherited-members:
+#     :special-members: __init__, __iter__, __len__, __str__, __getitem__, __contains__
 
  
