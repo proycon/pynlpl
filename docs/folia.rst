@@ -927,4 +927,6 @@ API Reference
 .. automodule:: pynlpl.formats.folia
      :members:
      :undoc-members:
+     :special-members:
+
  
