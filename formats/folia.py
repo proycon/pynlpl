@@ -177,7 +177,7 @@ class CorrectionHandling:
 
 def parsetime(s):
     """Internal function to parse the time parses time in HH:MM:SS.mmm format.
-    
+
     Returns:
         a four-tuple ``(hours,minutes,seconds,milliseconds)``
     """
@@ -538,7 +538,7 @@ def commonancestors(Class, *args):
     """Generator function to find common ancestors of a particular type for any two or more FoLiA element instances.
 
     The function produces all common ancestors of the type specified, starting from the closest one up to the most distant one.
-    
+
     Parameters:
         Class: The type of ancestor to find, should be the :class:`AbstractElement` class or any subclass thereof (not an instance!)
         *args: The elements to find the common ancestors of, elements are instances derived from :class:`AbstractElement`
@@ -565,7 +565,7 @@ def commonancestors(Class, *args):
 
 class AbstractElement(object):
     """Abstract base class from which all FoLiA elements are derived.
-    
+
     This class implements many generic methods that are available on all FoLiA elements.
 
     To see if an element is a FoLiA element, as opposed to any other python object, do::
@@ -574,12 +574,12 @@ class AbstractElement(object):
 
     Note:
         This class should never be instantiated directly, as it is abstract!
-    
-    """    
+
+    """
 
     def __init__(self, doc, *args, **kwargs):
         """Constructor for most FoLiA elements.
-        
+
         Parameters:
             doc (:class:`Document`): The FoLiA document this element will pertain to. It will not be automatically added though.
             *args: Child elements to add to this element, mostly instances derived from :class:`AbstractElement`
@@ -651,7 +651,7 @@ class AbstractElement(object):
 
     def description(self):
         """Obtain the description associated with the element.
-        
+
         Raises:
             :class:`NoSuchAnnotation` if there is no associated description."""
         for e in self:
@@ -660,13 +660,24 @@ class AbstractElement(object):
         raise NoSuchAnnotation
 
     def textcontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
-        """Get the text explicitly associated with this element (of the specified class).
-        Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
-        not found.
+        """Get the text content explicitly associated with this element (of the specified class).
 
-        Unlike text(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the TextContent instance rather than the actual text!
+        Unlike :meth:`text`, this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the :class:`TextContent` instance rather than the actual text!
 
-        The correctionhandling argument specifies what text to retrieve when corrections are encountered. The default is CorrectionHandling.CURRENT, which will retrieve the corrected/current text. You can set this to ORIGINAL if you want the text prior to correction, and EITHER if you don't care.
+        Parameters:
+            cls (str): The class of the text content to obtain, defaults to ``current``.
+            correctionhandling: Specifies what content to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current content. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the content prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+
+        Returns:
+            The phonetic content (:class:`TextContent`)
+
+        Raises:
+            :class:`NoSuchText` if there is no text content for the element
+
+        See also:
+            :meth:`text`
+            :meth:`phoncontent`
+            :meth:`phon`
         """
         if not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
@@ -695,11 +706,11 @@ class AbstractElement(object):
         return self.text(cls,retaintokenisation=True)
 
     def text(self, cls='current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
-        """Get the text associated with this element (of the specified class) 
-        
+        """Get the text associated with this element (of the specified class)
+
         The text will be constructed from child-elements whereever possible, as they are more specific.
         If no text can be obtained from the children and the element has itself text associated with
-        it, then that will be used. 
+        it, then that will be used.
 
         Parameters:
             cls (str): The class of the text content to obtain, defaults to ``current``.
@@ -761,15 +772,22 @@ class AbstractElement(object):
     def phoncontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
         """Get the phonetic content explicitly associated with this element (of the specified class).
 
-        Returns the :class:`PhonContent` instance rather than the actual text.
-
         Unlike :meth:`phon`, this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
 
+        Parameters:
+            cls (str): The class of the phonetic content to obtain, defaults to ``current``.
+            correctionhandling: Specifies what content to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current content. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the content prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+
         Returns:
-            The phonetic content (:class:`PhonContent`) 
+            The phonetic content (:class:`PhonContent`)
 
         Raises:
             :class:`NoSuchPhon` if there is no phonetic content for the element
+
+        See also:
+            :meth:`phon`
+            :meth:`textcontent`
+            :meth:`text`
         """
         if not self.SPEAKABLE: #only printable elements can hold text
             raise NoSuchPhon
@@ -789,7 +807,13 @@ class AbstractElement(object):
 
 
     def speech_src(self):
-        """Retrieves the URL/filename of the audio or video file associated with the element. The source is inherited from ancestor elements if none is specified. For this reason, always use this method rather than access the ``src`` attribute directly. Returns None if not found."""
+        """Retrieves the URL/filename of the audio or video file associated with the element.
+
+        The source is inherited from ancestor elements if none is specified. For this reason, always use this method rather than access the ``src`` attribute directly.
+
+        Returns:
+            str or None if not found
+        """
         if self.src:
             return self.src
         elif self.parent:
@@ -798,7 +822,13 @@ class AbstractElement(object):
             return None
 
     def speech_speaker(self):
-        """Retrieves the speaker of the audio or video file associated with the element. The source is inherited from ancestor elements if none is specified. For this reason, always use this method rather than access the ``src`` attribute directly. Returns None if not found."""
+        """Retrieves the speaker of the audio or video file associated with the element.
+
+        The source is inherited from ancestor elements if none is specified. For this reason, always use this method rather than access the ``src`` attribute directly.
+
+        Returns:
+            str or None if not found
+        """
         if self.speaker:
             return self.speaker
         elif self.parent:
@@ -809,15 +839,33 @@ class AbstractElement(object):
 
 
     def phon(self, cls='current', previousdelimiter="", strict=False,correctionhandling=CorrectionHandling.CURRENT):
-        """Get the phonetic representation associated with this element (of the specified class), will always be a unicode instance.
-        If no text is directly associated with the element, it will be obtained from the children. If that doesn't result
-        in any text either, a NoSuchPhon exception will be raised.
+        """Get the phonetic representation associated with this element (of the specified class)
 
-        If you are strictly interested in the phonetic context explicitly associated with the element, without recursing into children, use ``strict=True``
+        The phonetic content will be constructed from child-elements whereever possible, as they are more specific.
+        If no phonetic content can be obtained from the children and the element has itself phonetic content associated with
+        it, then that will be used.
 
-        If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.
+        Parameters:
+            cls (str): The class of the phonetic content to obtain, defaults to ``current``.
+            retaintokenisation (bool): If set, the space attribute on words will be ignored, otherwise it will be adhered to and phonetic content will be detokenised as much as possible. Defaults to ``False``.
+            previousdelimiter (str): Can be set to a delimiter that was last outputed, useful when chaining calls to :meth:`phon`. Defaults to an empty string.
+            strict (bool):  Set this if you are strictly interested in the phonetic content explicitly associated with the element, without recursing into children. Defaults to ``False``.
+            correctionhandling: Specifies what phonetic content to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current phonetic content. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the phonetic content prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+
+        Example:
+            word.phon()
+
+        Returns:
+            The phonetic content of the element (``unicode`` instance in Python 2, ``str`` in Python 3)
+
+        Raises:
+            :class:`NoSuchPhon`: if no phonetic conent is found at all.
+
+        See also:
+            :meth:`phoncontent`: Retrieves the phonetic content as an element rather than a string
+            :meth:`text`
+            :meth:`textcontent`
         """
-
 
         if strict:
             return self.phoncontent(cls,correctionhandling).phon()
@@ -863,12 +911,16 @@ class AbstractElement(object):
                 raise NoSuchPhon
 
     def originaltext(self,cls='original'):
-        """Alias for retrieving the original uncorrect text"""
+        """Alias for retrieving the original uncorrect text.
+
+        A call to :meth:`text` with ``correctionhandling=CorrectionHandling.ORIGINAL``"""
         return self.text(cls,correctionhandling=CorrectionHandling.ORIGINAL)
 
 
     def gettextdelimiter(self, retaintokenisation=False):
-        """May return a customised text delimiter instead of the default for this class."""
+        """Return the text delimiter for this class.
+
+        Uses the ``TEXTDELIMITER`` attribute but may return a customised one instead."""
         if self.TEXTDELIMITER is None:
             #no text delimiter of itself, recurse into children to inherit delimiter
             for child in reversed(self):
@@ -879,12 +931,17 @@ class AbstractElement(object):
             return self.TEXTDELIMITER
 
     def feat(self,subset):
-        """Obtain the feature value of the specific subset. If a feature occurs multiple times, the values will be returned in a list.
+        """Obtain the feature class value of the specific subset.
+
+        If a feature occurs multiple times, the values will be returned in a list.
 
         Example::
 
             sense = word.annotation(folia.Sense)
             synset = sense.feat('synset')
+
+        Returns:
+            str or list
         """
         r = None
         for f in self:
@@ -905,6 +962,9 @@ class AbstractElement(object):
         return not (self == other)
 
     def __eq__(self, other): #pylint: disable=too-many-return-statements
+        """Equality method, tests whether two elements are equal.
+
+        Elements are equal if all their attributes and children are equal."""
         if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - " + repr(self) + " vs " + repr(other),file=stderr)
 
         #Check if we are of the same time
@@ -946,7 +1006,7 @@ class AbstractElement(object):
         return True
 
     def __len__(self):
-        """Returns the number of child elements under the current element"""
+        """Returns the number of child elements under the current element."""
         return len(self.data)
 
     def __nonzero__(self): #Python 2.x
@@ -962,7 +1022,13 @@ class AbstractElement(object):
             raise TypeError("FoLiA elements are only hashable if they have an ID")
 
     def __iter__(self):
-        """Iterate over all children of this element"""
+        """Iterate over all children of this element.
+
+        Example::
+
+            for annotation in word:
+                ...
+        """
         return iter(self.data)
 
 
@@ -977,14 +1043,23 @@ class AbstractElement(object):
             raise
 
     def __unicode__(self): #Python 2 only
-        """Alias for text()"""
+        """Alias for :meth:`text`. Python 2 only."""
         return self.text()
 
     def __str__(self):
+        """Alias for :meth:`text`"""
         return self.text()
 
     def copy(self, newdoc=None, idsuffix=""):
-        """Make a deep copy of this element and all its children. If idsuffix is a string, if set to True, a random idsuffix will be generated including a random 32-bit hash"""
+        """Make a deep copy of this element and all its children.
+
+        Parameters:
+            newdoc (:class:`Document`): The document the copy should be associated with.
+            idsuffix (str or bool): If set to a string, the ID of the copy will be append with this (prevents duplicate IDs when making copies for the same document). If set to ``True``, a random suffix will be generated.
+
+        Returns:
+            a copy of the element
+        """
         if idsuffix is True: idsuffix = ".copy." + "%08x" % random.getrandbits(32) #random 32-bit hash for each copy, same one will be reused for all children
         c = deepcopy(self)
         if idsuffix:
@@ -994,7 +1069,10 @@ class AbstractElement(object):
         return c
 
     def copychildren(self, newdoc=None, idsuffix=""):
-        """Generator creating a deep copy of the children of this element. If idsuffix is a string, if set to True, a random idsuffix will be generated including a random 32-bit hash"""
+        """Generator creating a deep copy of the children of this element.
+
+        Invokes :meth:`copy` on all children, parameters are the same.
+        """
         if idsuffix is True: idsuffix = ".copy." + "%08x" % random.getrandbits(32) #random 32-bit hash for each copy, same one will be reused for all children
         for c in self:
             if isinstance(c, AbstractElement):
@@ -1002,6 +1080,7 @@ class AbstractElement(object):
 
 
     def addidsuffix(self, idsuffix, recursive = True):
+        """Appends a suffix to this element's ID, and optionally to all child IDs as well. There is sually no need to call this directly, invoked implicitly by :meth:`copy`"""
         if self.id: self.id += idsuffix
         if recursive:
             for e in self:
@@ -1011,14 +1090,14 @@ class AbstractElement(object):
                     pass
 
     def setparents(self):
-        """Correct all parent relations for elements within the scope, usually no need to call this directly, invoked implicitly by copy()"""
+        """Correct all parent relations for elements within the scop. There is sually no need to call this directly, invoked implicitly by :meth:`copy`"""
         for c in self:
             if isinstance(c, AbstractElement):
                 c.parent = self
                 c.setparents()
 
     def setdoc(self,newdoc):
-        """Set a different document, usually no need to call this directly, invoked implicitly by copy()"""
+        """Set a different document. Usually no need to call this directly, invoked implicitly by :meth:`copy`"""
         self.doc = newdoc
         if self.doc and self.id:
             self.doc.index[self.id] = self
@@ -1029,8 +1108,15 @@ class AbstractElement(object):
     def hastext(self,cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT): #pylint: disable=too-many-return-statements
         """Does this element have text (of the specified class)
 
-        By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
-        Set strict=False to allow checking whether the children have the text.
+        By default, and unlike :meth:`text`, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
+
+        Parameters:
+            cls (str): The class of the text content to obtain, defaults to ``current``.
+            strict (bool):  Set this if you are strictly interested in the text explicitly associated with the element, without recursing into children. Defaults to ``True``.
+            correctionhandling: Specifies what text to check for when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current text. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the text prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+
+        Returns:
+            bool
         """
         if not self.PRINTABLE: #only printable elements can hold text
             return False
@@ -1056,8 +1142,15 @@ class AbstractElement(object):
     def hasphon(self,cls='current',strict=True,correctionhandling=CorrectionHandling.CURRENT): #pylint: disable=too-many-return-statements
         """Does this element have phonetic content (of the specified class)
 
-        By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
-        Set strict=False to allow checking whether the children have the text.
+        By default, and unlike :meth:`phon`, this checks strictly, i.e. the element itself must have the phonetic content and it is not inherited from its children.
+
+        Parameters:
+            cls (str): The class of the phonetic content to obtain, defaults to ``current``.
+            strict (bool):  Set this if you are strictly interested in the phonetic content explicitly associated with the element, without recursing into children. Defaults to ``True``.
+            correctionhandling: Specifies what phonetic content to check for when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current phonetic content. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the phonetic content prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+
+        Returns:
+            bool
         """
         if not self.SPEAKABLE: #only printable elements can hold text
             return False
@@ -1081,11 +1174,22 @@ class AbstractElement(object):
                 return False
 
     def settext(self, text, cls='current'):
-        """Set the text for this element (and class)"""
+        """Set the text for this element.
+
+        Arguments:
+            text (str): The text
+            cls (str): The class of the text, defaults to ``current`` (leave this unless you know what you are doing). There may be only one text content element of each class associated with the element.
+        """
         self.replace(TextContent, value=text, cls=cls)
 
     def setdocument(self, doc):
-        """Associate a document with this element"""
+        """Associate a document with this element.
+
+        Arguments:
+            doc (:class:`Document`): A document
+
+        Each element must be associated with a FoLiA document.
+        """
         assert isinstance(doc, Document)
 
         if not self.doc:
@@ -1101,11 +1205,21 @@ class AbstractElement(object):
 
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
-        """Tests whether a new element of this class can be added to the parent. Returns a boolean or raises ValueError exceptions (unless set to ignore)!
+        """Tests whether a new element of this class can be added to the parent.
 
-         This will use ``OCCURRENCES``, but may be overidden for more customised behaviour.
+        This method is mostly for internal use.
+        This will use the ``OCCURRENCES`` property, but may be overidden by subclasses for more customised behaviour.
 
-         This method is mostly for internal use.
+        Parameters:
+            parent (:class:`AbstractElement`): The element that is being added to
+            set (str or None): The set
+            raiseexceptions (bool): Raise an exception if the element can't be added?
+
+        Returns:
+            bool
+
+        Raises:
+            ValueError
          """
 
 
@@ -1164,7 +1278,9 @@ class AbstractElement(object):
 
 
     def postappend(self):
-        """This method will be called after an element is added to another. It can do extra checks and if necessary raise exceptions to prevent addition. By default makes sure the right document is associated.
+        """This method will be called after an element is added to another and does some checks.
+
+        It can do extra checks and if necessary raise exceptions to prevent addition. By default makes sure the right document is associated.
 
         This method is mostly for internal use.
         """
@@ -1177,7 +1293,9 @@ class AbstractElement(object):
             self.deepvalidation()
 
     def addtoindex(self,norecurse=[]):
-        """Makes sure this element (and all subelements), are properly added to the index"""
+        """Makes sure this element (and all subelements), are properly added to the index.
+
+        Mostly for internal use."""
         if self.id:
             self.doc.index[self.id] = self
         for e in self.data:
@@ -1188,6 +1306,11 @@ class AbstractElement(object):
                     pass
 
     def deepvalidation(self):
+        """Perform deep validation of this element.
+
+        Raises:
+            :class:`DeepValidationError`
+        """
         if self.doc and self.doc.deepvalidation and self.set and self.set[0] != '_':
             try:
                 self.doc.setdefinitions[self.set].testclass(self.cls)
@@ -1196,16 +1319,16 @@ class AbstractElement(object):
                     raise DeepValidationError("Set definition for " + self.set + " not loaded!")
 
     def append(self, child, *args, **kwargs):
-        """Append a child element. Returns the added element
+        """Append a child element.
 
         Arguments:
-            * ``child``            - Instance or class
+            child (instance or class): 1) The instance to add (usually an instance derived from  :class:`AbstractElement`. or 2) a class subclassed from :class:`AbstractElement`.
 
         If an *instance* is passed as first argument, it will be appended
-        If a *class* derived from AbstractElement is passed as first argument, an instance will first be created and then appended.
+        If a *class* derived from :class:`AbstractElement` is passed as first argument, an instance will first be created and then appended.
 
         Keyword arguments:
-            * ``alternative=``     - If set to True, the element will be made into an alternative.
+            alternative (bool): If set to True, the element will be made into an alternative. (default to False)
 
         Generic example, passing a pre-generated instance::
 
@@ -1219,7 +1342,16 @@ class AbstractElement(object):
 
             word.append( "house", cls='original' )
 
+        Returns:
+            the added element
 
+        Raises:
+            ValueError: The element is not valid in this context
+            :class:`DuplicateAnnotationError`: There is already such an annotation
+
+        See also:
+            :meth:`insert`
+            :meth:`replace`
         """
 
 
@@ -1260,7 +1392,7 @@ class AbstractElement(object):
                 child.parent = self
             elif PhonContent in self.ACCEPTED_DATA:
                 #you can pass strings directly (just for convenience), will be made into phoncontent automatically (note that textcontent always takes precedence, so you most likely will have to do it explicitly)
-                child = PhonContent(self.doc, child ) #pylint: disable=redefined-variable-type 
+                child = PhonContent(self.doc, child ) #pylint: disable=redefined-variable-type
                 self.data.append(child)
                 child.parent = self
             else:
@@ -1283,12 +1415,12 @@ class AbstractElement(object):
         If a *class* derived from AbstractElement is passed as first argument, an instance will first be created and then appended.
 
         Arguments:
-            * index
-            * ``child``            - Instance or class
+            index (int): The position where to insert the chldelement
+            child: Instance or class
 
         Keyword arguments:
-            * ``alternative=``     - If set to True, the element will be made into an alternative.
-            * ``corrected=``       - Used only when passing strings to be made into TextContent elements.
+            alternative (bool):  If set to True, the element will be made into an alternative.
+            corrected (bool): Used only when passing strings to be made into TextContent elements.
 
         Generic example, passing a pre-generated instance::
 
@@ -1302,7 +1434,16 @@ class AbstractElement(object):
 
             word.insert( 3, "house" )
 
+        Returns:
+            the added element
 
+        Raises:
+            ValueError: The element is not valid in this context
+            :class:`DuplicateAnnotationError`: There is already such an annotation
+
+        See also:
+            :meth:`append`
+            :meth:`replace`
         """
 
         #obtain the set (if available, necessary for checking addability)
@@ -2039,7 +2180,7 @@ class AbstractElement(object):
                                         else:
                                             elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
                                             if c2.XMLTAG == 'item': #nasty hack for backward compatibility with deprecated listitem element
-                                                elements.append( E.zeroOrMore( E.ref(name='listitem') ) ) 
+                                                elements.append( E.zeroOrMore( E.ref(name='listitem') ) )
                                         done[c2.XMLTAG] = True
                                 except AttributeError:
                                     continue
@@ -4206,12 +4347,7 @@ class Correction(AbstractElement, AllowGenerateID):
         return False
 
     def textcontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
-        """Get the text explicitly associated with this element (of the specified class).
-        Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
-        not found.
-
-        Unlike text(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the TextContent instance rather than the actual text!
-        """
+        """See :meth:`AbstractElement.textcontent`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4225,12 +4361,7 @@ class Correction(AbstractElement, AllowGenerateID):
 
 
     def phoncontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
-        """Get the phonetic content explicitly associated with this element (of the specified class).
-        Returns the PhonContent instance rather than the actual text. Raises NoSuchPhon exception if
-        not found.
-
-        Unlike phon(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
-        """
+        """See :meth:`AbstractElement.phoncontent`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4244,6 +4375,7 @@ class Correction(AbstractElement, AllowGenerateID):
 
 
     def hastext(self, cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT):
+        """See :meth:`AbstractElement.hastext`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4256,6 +4388,7 @@ class Correction(AbstractElement, AllowGenerateID):
         return False
 
     def text(self, cls = 'current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
+        """See :meth:`AbstractElement.text`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4268,6 +4401,7 @@ class Correction(AbstractElement, AllowGenerateID):
         raise NoSuchText
 
     def hasphon(self, cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT):
+        """See :meth:`AbstractElement.hasphon`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4280,6 +4414,7 @@ class Correction(AbstractElement, AllowGenerateID):
         return False
 
     def phon(self, cls = 'current', previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
+        """See :meth:`AbstractElement.phon`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4292,7 +4427,7 @@ class Correction(AbstractElement, AllowGenerateID):
         raise NoSuchPhon
 
     def gettextdelimiter(self, retaintokenisation=False):
-        """May return a customised text delimiter instead of the default for this class."""
+        """See :meth:`AbstractElement.gettextdelimiter`"""
         for e in self:
             if isinstance(e, New) or isinstance(e, Current):
                 return e.gettextdelimiter(retaintokenisation)
