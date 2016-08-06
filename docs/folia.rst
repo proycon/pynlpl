@@ -1078,13 +1078,4 @@ Here is a list of all relevant classes for corrections:
     Original
     Suggestion
 
-
-
-# .. automodule:: pynlpl.formats.folia
-#    :members:
-#     :show-inheritance:
-#     :undoc-members:
-#     :inherited-members:
-#     :special-members: __init__, __iter__, __len__, __str__, __getitem__, __contains__
-
  
