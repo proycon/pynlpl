@@ -1,6 +1,6 @@
 Common Functions
 ==================================
 
-.. automodule:: common
+.. automodule:: pynlpl.common
     :members:
     :undoc-members:

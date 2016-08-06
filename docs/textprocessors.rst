@@ -33,6 +33,6 @@ The input to the Windower should be a list of words and a value for n. In additi
 The Windower is implemented as a Python generator and at each iteration yields a tuple of length n.
 
 
-.. automodule:: textprocessors
+.. automodule:: pynlpl.textprocessors
     :members:
     :undoc-members:

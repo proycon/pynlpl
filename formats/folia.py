@@ -85,6 +85,19 @@ nslendcoi = len(NSDCOI) + 2
 
 TMPDIR = "/tmp/" #will be used for downloading temporary data (external subdocuments)
 
+DOCSTRING_GENERIC_ATTRIBS = """    id (str): An ID for the element. IDs must be unique for the entire document. They may not contain colons or spaces, and must start with a letter. (they must adhere to XML's NCName type). This is a generic FoLiA attribute.
+    set (str): The FoLiA set for this element. This is a generic FoLiA attribute.
+    cls (str): The class for this element. This is a generic FoLiA attribute.
+    annotator (str): A name or ID for the annotator. This is a generic FoLiA attribute.
+    annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process. This is a generic FoLiA attribute.
+    confidence (float): A value between 0 and 1 indicating the degree of confidence the annotator has that this the annotation is correct.. This is a generic FoLiA attribute.
+    n (int): An index number to indicate the element is part of an sequence (does not affect the placement of the element).
+    src (str): Speech annotation attribute, refers to a media file (audio/video) that this element describes. This is a generic FoLiA attribute.
+    speaker (str): Speech annotation attribute: a name or ID of the speaker. This is a generic FoLiA attribute.
+    begintime (str): Speech annotation attribute: the time (in ``hh:mm:ss.mmm`` format, relative to the media file in ``src``) when the audio that this element describes starts. This is a generic FoLiA attribute.
+    endtime (str): Speech annotation attribute: the time (in ``hh:mm:ss.mmm`` format, relative to the media file in ``src``) when the audio that this element describes starts. This is a generic FoLiA attribute.
+    contents (list): Alternative for ``*args``, exists for purely syntactic reasons.
+"""
 
 ILLEGAL_UNICODE_CONTROL_CHARACTERS = {} #XML does not like unicode control characters
 for ordinal in range(0x20):
@@ -186,7 +199,11 @@ def checkversion(version):
         raise ValueError("Unable to parse document FoLiA version, invalid syntax")
 
 def parsetime(s):
-    #parses time in HH:MM:SS.mmm format, returns a four-tuple
+    """Internal function to parse the time parses time in HH:MM:SS.mmm format.
+
+    Returns:
+        a four-tuple ``(hours,minutes,seconds,milliseconds)``
+    """
     try:
         fields = s.split('.')
         subfields = fields[0].split(':')
@@ -205,7 +222,7 @@ def parsetime(s):
 
 
 def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwargs):
-    """Internal function, parses common FoLiA attributes and sets up the instance accordingly"""
+    """Internal function to parse common FoLiA attributes and sets up the instance accordingly. Do not invoke directly."""
 
     object.doc = doc #The FoLiA root document
 
@@ -490,7 +507,7 @@ def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-t
 
 
 def xmltreefromstring(s):
-    #Internal method, deals with different Python versions, unicode strings versus bytes, and with the leak bug in lxml
+    """Internal function, deals with different Python versions, unicode strings versus bytes, and with the leak bug in lxml"""
     if sys.version < '3':
         #Python 2
         if isinstance(s,unicode): #pylint: disable=undefined-variable
@@ -509,12 +526,14 @@ def xmltreefromstring(s):
             return ElementTree.parse(BytesIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
 
 def xmltreefromfile(filename):
+    """Internal function to read an XML file"""
     try:
         return ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
     except TypeError:
         return ElementTree.parse(filename, ElementTree.XMLParser()) #older lxml, may leak!!
 
 def makeelement(E, tagname, **kwargs):
+    """Internal function"""
     if sys.version < '3':
         try:
             kwargs2 = {}
@@ -539,7 +558,18 @@ def makeelement(E, tagname, **kwargs):
 
 
 def commonancestors(Class, *args):
-    """Generator over common ancestors, of the Class specified, of the current element and the other specified elements"""
+    """Generator function to find common ancestors of a particular type for any two or more FoLiA element instances.
+
+    The function produces all common ancestors of the type specified, starting from the closest one up to the most distant one.
+
+    Parameters:
+        Class: The type of ancestor to find, should be the :class:`AbstractElement` class or any subclass thereof (not an instance!)
+        *args: The elements to find the common ancestors of, elements are instances derived from :class:`AbstractElement`
+
+    Yields:
+        instance derived from :class:`AbstractElement`: A common ancestor of the arguments, an instance of the specified ``Class``.
+    """
+
     commonancestors = None #pylint: disable=redefined-outer-name
     for sibling in args:
         ancestors = list( sibling.ancestors(Class) )
@@ -557,9 +587,59 @@ def commonancestors(Class, *args):
             yield commonancestor
 
 class AbstractElement(object):
-    """This is the abstract base class from which all FoLiA elements are derived. This class should not be instantiated directly, but can useful if you want to check if a variable is an instance of any FoLiA element: isinstance(x, AbstractElement). It contains methods and variables also commonly inherited."""
+    """Abstract base class from which all FoLiA elements are derived.
+
+    This class implements many generic methods that are available on all FoLiA elements.
+
+    To see if an element is a FoLiA element, as opposed to any other python object, do::
+
+        isinstance(x, AbstractElement)
+
+    Generic FoLiA attributes can be accessed on all instances derived from this class:
+    * ``element.id``        (str) - The unique identifier of the element
+    * ``element.set``       (str) - The set the element pertains to.
+    * ``element.cls``       (str) - The assigned class, i.e. the actual value of
+        the annotation, defined in the set.  Classes correspond with tagsets in this case of many annotation types.
+        Note that since *class* is already a reserved keyword in python, the library consistently uses ``cls`` everywhere.
+    * ``element.annotator`` (str) - The name or ID of the annotator who added/modified this element
+    * ``element.annotatortype`` - The type of annotator, can be either ``folia.AnnotatorType.MANUAL`` or ``folia.AnnotatorType.AUTO``
+    * ``element.confidence`` (float) - A confidence value expressing
+    * ``element.datetime``  (datetime.datetime) - The date and time when the element was added/modified.
+    * ``element.n``         (str) - An ordinal label, used for instance in enumerated list contexts, numbered sections, etc..
+
+    The following generic attributes are specific to a speech context:
+
+    * ``element.src``       (str) - A URL or filename referring the an audio or video file containing the speech. Access this attribute using the ``element.speaker_src()`` method, as it is inheritable from ancestors.
+    * ``element.speaker``   (str) -  The name of ID of the speaker. Access this attribute using the ``element.speech_speaker()`` method, as it is inheritable from ancestors.
+    * ``element.begintime`` (4-tuple) - The time in the above source fragment when the phonetic content of this element starts, this is a ``(hours, minutes,seconds,milliseconds)`` tuple.
+    * ``element.endtime``   (4-tuple) - The time in the above source fragment when the phonetic content of this element ends, this is a ``(hours, minutes,seconds,milliseconds)`` tuple.
+
+    Not all attributes are allowed, unset or unavailable attributes will always default to ``None``.
+
+    Note:
+        This class should never be instantiated directly, as it is abstract!
+
+    See also:
+        :meth:`AbstractElement.__init__`
+    """
 
     def __init__(self, doc, *args, **kwargs):
+        """Constructor for most FoLiA elements.
+
+        Parameters:
+            doc (:class:`Document`): The FoLiA document this element will pertain to. It will not be automatically added though.
+            *args: Child elements to add to this element, mostly instances derived from :class:`AbstractElement`
+
+        Keyword Arguments:
+        {generic_attribs}
+            generate_id_in (:class:`AbstractElement`): Instead of providing an explicit ID, the library can attempt to automatically generate an ID based on a convention where suffixes are applied to the ID of the parent element. This keyword argument takes the intended parent element (an instance derived from :class:`AbstractElement`) as value.
+
+
+        Not all of the generic FoLiA attributes are applicable to all elements. The class properties ``REQUIRED_ATTRIBS`` and ``OPTIONAL_ATTRIBS`` prescribe which are required or allowed.
+
+        """.format(generic_attribs=DOCSTRING_GENERIC_ATTRIBS)
+
+
         if not isinstance(doc, Document) and not doc is None:
             raise Exception("Expected first parameter to be instance of Document, got " + str(type(doc)))
         self.doc = doc
@@ -586,6 +666,7 @@ class AbstractElement(object):
 
 
     def __getattr__(self, attr):
+        """Internal method"""
         #overriding getattr so we can get defaults here rather than needing a copy on each element, saves memory
         if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','speaker','begintime','endtime','xlinktype','xlinktitle','xlinklabel','xlinkrole','xlinkshow'):
             return None
@@ -604,20 +685,34 @@ class AbstractElement(object):
 
 
     def description(self):
-        """Obtain the description associated with the element, will raise NoDescription if there is none"""
+        """Obtain the description associated with the element.
+
+        Raises:
+            :class:`NoSuchAnnotation` if there is no associated description."""
         for e in self:
             if isinstance(e, Description):
                 return e.value
         raise NoSuchAnnotation
 
     def textcontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
-        """Get the text explicitly associated with this element (of the specified class).
-        Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
-        not found.
+        """Get the text content explicitly associated with this element (of the specified class).
 
-        Unlike text(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the TextContent instance rather than the actual text!
+        Unlike :meth:`text`, this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the :class:`TextContent` instance rather than the actual text!
 
-        The correctionhandling argument specifies what text to retrieve when corrections are encountered. The default is CorrectionHandling.CURRENT, which will retrieve the corrected/current text. You can set this to ORIGINAL if you want the text prior to correction, and EITHER if you don't care.
+        Parameters:
+            cls (str): The class of the text content to obtain, defaults to ``current``.
+            correctionhandling: Specifies what content to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current content. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the content prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+
+        Returns:
+            The phonetic content (:class:`TextContent`)
+
+        Raises:
+            :class:`NoSuchText` if there is no text content for the element
+
+        See also:
+            :meth:`text`
+            :meth:`phoncontent`
+            :meth:`phon`
         """
         if not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
@@ -638,25 +733,36 @@ class AbstractElement(object):
 
 
     def stricttext(self, cls='current'):
-        """Alias for text() with strict=True"""
+        """Alias for :meth:`text` with ``strict=True``"""
         return self.text(cls,strict=True)
 
     def toktext(self,cls='current'):
-        """Alias for text() with retaintokenisation=True"""
+        """Alias for :meth:`text` with ``retaintokenisation=True``"""
         return self.text(cls,retaintokenisation=True)
 
     def text(self, cls='current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
-        """Get the text associated with this element (of the specified class)  (will always be a unicode instance in python 2)
+        """Get the text associated with this element (of the specified class)
 
         The text will be constructed from child-elements whereever possible, as they are more specific.
         If no text can be obtained from the children and the element has itself text associated with
-        it, then that will be used. If no text is found at all, a NoSuchText exception is raised.
+        it, then that will be used.
 
-        If you are strictly interested in the text explicitly associated with the element, without recursing into children, use ``strict=True``
+        Parameters:
+            cls (str): The class of the text content to obtain, defaults to ``current``.
+            retaintokenisation (bool): If set, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible. Defaults to ``False``.
+            previousdelimiter (str): Can be set to a delimiter that was last outputed, useful when chaining calls to :meth:`text`. Defaults to an empty string.
+            strict (bool):  Set this iif you are strictly interested in the text explicitly associated with the element, without recursing into children. Defaults to ``False``.
+            correctionhandling: Specifies what text to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current text. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the text prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
 
-        If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.
+        Example::
 
-        The correctionhandling argument specifies what text to retrieve when corrections are encountered. The default is CorrectionHandling.CURRENT, which will retrieve the corrected/current text. You can set this to ORIGINAL if you want the text prior to correction, and EITHER if you don't care.
+            word.text()
+
+        Returns:
+            The text of the element (``unicode`` instance in Python 2, ``str`` in Python 3)
+
+        Raises:
+            :class:`NoSuchText`: if no text is found at all.
         """
 
         if strict:
@@ -701,10 +807,23 @@ class AbstractElement(object):
 
     def phoncontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
         """Get the phonetic content explicitly associated with this element (of the specified class).
-        Returns the PhonContent instance rather than the actual text. Raises NoSuchPhon exception if
-        not found.
 
-        Unlike phon(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
+        Unlike :meth:`phon`, this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
+
+        Parameters:
+            cls (str): The class of the phonetic content to obtain, defaults to ``current``.
+            correctionhandling: Specifies what content to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current content. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the content prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+
+        Returns:
+            The phonetic content (:class:`PhonContent`)
+
+        Raises:
+            :class:`NoSuchPhon` if there is no phonetic content for the element
+
+        See also:
+            :meth:`phon`
+            :meth:`textcontent`
+            :meth:`text`
         """
         if not self.SPEAKABLE: #only printable elements can hold text
             raise NoSuchPhon
@@ -724,7 +843,13 @@ class AbstractElement(object):
 
 
     def speech_src(self):
-        """Retrieves the URL/filename of the audio or video file associated with the element. The source is inherited from ancestor elements if none is specified. For this reason, always use this method rather than access the ``src`` attribute directly. Returns None if not found."""
+        """Retrieves the URL/filename of the audio or video file associated with the element.
+
+        The source is inherited from ancestor elements if none is specified. For this reason, always use this method rather than access the ``src`` attribute directly.
+
+        Returns:
+            str or None if not found
+        """
         if self.src:
             return self.src
         elif self.parent:
@@ -733,7 +858,13 @@ class AbstractElement(object):
             return None
 
     def speech_speaker(self):
-        """Retrieves the speaker of the audio or video file associated with the element. The source is inherited from ancestor elements if none is specified. For this reason, always use this method rather than access the ``src`` attribute directly. Returns None if not found."""
+        """Retrieves the speaker of the audio or video file associated with the element.
+
+        The source is inherited from ancestor elements if none is specified. For this reason, always use this method rather than access the ``src`` attribute directly.
+
+        Returns:
+            str or None if not found
+        """
         if self.speaker:
             return self.speaker
         elif self.parent:
@@ -744,15 +875,34 @@ class AbstractElement(object):
 
 
     def phon(self, cls='current', previousdelimiter="", strict=False,correctionhandling=CorrectionHandling.CURRENT):
-        """Get the phonetic representation associated with this element (of the specified class), will always be a unicode instance.
-        If no text is directly associated with the element, it will be obtained from the children. If that doesn't result
-        in any text either, a NoSuchPhon exception will be raised.
+        """Get the phonetic representation associated with this element (of the specified class)
 
-        If you are strictly interested in the phonetic context explicitly associated with the element, without recursing into children, use ``strict=True``
+        The phonetic content will be constructed from child-elements whereever possible, as they are more specific.
+        If no phonetic content can be obtained from the children and the element has itself phonetic content associated with
+        it, then that will be used.
 
-        If retaintokenisation is True, the space attribute on words will be ignored, otherwise it will be adhered to and text will be detokenised as much as possible.
+        Parameters:
+            cls (str): The class of the phonetic content to obtain, defaults to ``current``.
+            retaintokenisation (bool): If set, the space attribute on words will be ignored, otherwise it will be adhered to and phonetic content will be detokenised as much as possible. Defaults to ``False``.
+            previousdelimiter (str): Can be set to a delimiter that was last outputed, useful when chaining calls to :meth:`phon`. Defaults to an empty string.
+            strict (bool):  Set this if you are strictly interested in the phonetic content explicitly associated with the element, without recursing into children. Defaults to ``False``.
+            correctionhandling: Specifies what phonetic content to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current phonetic content. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the phonetic content prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+
+        Example::
+
+            word.phon()
+
+        Returns:
+            The phonetic content of the element (``unicode`` instance in Python 2, ``str`` in Python 3)
+
+        Raises:
+            :class:`NoSuchPhon`: if no phonetic conent is found at all.
+
+        See also:
+            :meth:`phoncontent`: Retrieves the phonetic content as an element rather than a string
+            :meth:`text`
+            :meth:`textcontent`
         """
-
 
         if strict:
             return self.phoncontent(cls,correctionhandling).phon()
@@ -798,12 +948,16 @@ class AbstractElement(object):
                 raise NoSuchPhon
 
     def originaltext(self,cls='original'):
-        """Alias for retrieving the original uncorrect text"""
+        """Alias for retrieving the original uncorrect text.
+
+        A call to :meth:`text` with ``correctionhandling=CorrectionHandling.ORIGINAL``"""
         return self.text(cls,correctionhandling=CorrectionHandling.ORIGINAL)
 
 
     def gettextdelimiter(self, retaintokenisation=False):
-        """May return a customised text delimiter instead of the default for this class."""
+        """Return the text delimiter for this class.
+
+        Uses the ``TEXTDELIMITER`` attribute but may return a customised one instead."""
         if self.TEXTDELIMITER is None:
             #no text delimiter of itself, recurse into children to inherit delimiter
             for child in reversed(self):
@@ -814,12 +968,17 @@ class AbstractElement(object):
             return self.TEXTDELIMITER
 
     def feat(self,subset):
-        """Obtain the feature value of the specific subset. If a feature occurs multiple times, the values will be returned in a list.
+        """Obtain the feature class value of the specific subset.
+
+        If a feature occurs multiple times, the values will be returned in a list.
 
         Example::
 
             sense = word.annotation(folia.Sense)
             synset = sense.feat('synset')
+
+        Returns:
+            str or list
         """
         r = None
         for f in self:
@@ -840,6 +999,9 @@ class AbstractElement(object):
         return not (self == other)
 
     def __eq__(self, other): #pylint: disable=too-many-return-statements
+        """Equality method, tests whether two elements are equal.
+
+        Elements are equal if all their attributes and children are equal."""
         if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] AbstractElement Equality Check - " + repr(self) + " vs " + repr(other),file=stderr)
 
         #Check if we are of the same time
@@ -881,7 +1043,7 @@ class AbstractElement(object):
         return True
 
     def __len__(self):
-        """Returns the number of child elements under the current element"""
+        """Returns the number of child elements under the current element."""
         return len(self.data)
 
     def __nonzero__(self): #Python 2.x
@@ -897,7 +1059,13 @@ class AbstractElement(object):
             raise TypeError("FoLiA elements are only hashable if they have an ID")
 
     def __iter__(self):
-        """Iterate over all children of this element"""
+        """Iterate over all children of this element.
+
+        Example::
+
+            for annotation in word:
+                ...
+        """
         return iter(self.data)
 
 
@@ -912,14 +1080,23 @@ class AbstractElement(object):
             raise
 
     def __unicode__(self): #Python 2 only
-        """Alias for text()"""
+        """Alias for :meth:`text`. Python 2 only."""
         return self.text()
 
     def __str__(self):
+        """Alias for :meth:`text`"""
         return self.text()
 
     def copy(self, newdoc=None, idsuffix=""):
-        """Make a deep copy of this element and all its children. If idsuffix is a string, if set to True, a random idsuffix will be generated including a random 32-bit hash"""
+        """Make a deep copy of this element and all its children.
+
+        Parameters:
+            newdoc (:class:`Document`): The document the copy should be associated with.
+            idsuffix (str or bool): If set to a string, the ID of the copy will be append with this (prevents duplicate IDs when making copies for the same document). If set to ``True``, a random suffix will be generated.
+
+        Returns:
+            a copy of the element
+        """
         if idsuffix is True: idsuffix = ".copy." + "%08x" % random.getrandbits(32) #random 32-bit hash for each copy, same one will be reused for all children
         c = deepcopy(self)
         if idsuffix:
@@ -929,7 +1106,10 @@ class AbstractElement(object):
         return c
 
     def copychildren(self, newdoc=None, idsuffix=""):
-        """Generator creating a deep copy of the children of this element. If idsuffix is a string, if set to True, a random idsuffix will be generated including a random 32-bit hash"""
+        """Generator creating a deep copy of the children of this element.
+
+        Invokes :meth:`copy` on all children, parameters are the same.
+        """
         if idsuffix is True: idsuffix = ".copy." + "%08x" % random.getrandbits(32) #random 32-bit hash for each copy, same one will be reused for all children
         for c in self:
             if isinstance(c, AbstractElement):
@@ -937,6 +1117,7 @@ class AbstractElement(object):
 
 
     def addidsuffix(self, idsuffix, recursive = True):
+        """Appends a suffix to this element's ID, and optionally to all child IDs as well. There is sually no need to call this directly, invoked implicitly by :meth:`copy`"""
         if self.id: self.id += idsuffix
         if recursive:
             for e in self:
@@ -946,14 +1127,14 @@ class AbstractElement(object):
                     pass
 
     def setparents(self):
-        """Correct all parent relations for elements within the scope, usually no need to call this directly, invoked implicitly by copy()"""
+        """Correct all parent relations for elements within the scop. There is sually no need to call this directly, invoked implicitly by :meth:`copy`"""
         for c in self:
             if isinstance(c, AbstractElement):
                 c.parent = self
                 c.setparents()
 
     def setdoc(self,newdoc):
-        """Set a different document, usually no need to call this directly, invoked implicitly by copy()"""
+        """Set a different document. Usually no need to call this directly, invoked implicitly by :meth:`copy`"""
         self.doc = newdoc
         if self.doc and self.id:
             self.doc.index[self.id] = self
@@ -964,8 +1145,15 @@ class AbstractElement(object):
     def hastext(self,cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT): #pylint: disable=too-many-return-statements
         """Does this element have text (of the specified class)
 
-        By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
-        Set strict=False to allow checking whether the children have the text.
+        By default, and unlike :meth:`text`, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
+
+        Parameters:
+            cls (str): The class of the text content to obtain, defaults to ``current``.
+            strict (bool):  Set this if you are strictly interested in the text explicitly associated with the element, without recursing into children. Defaults to ``True``.
+            correctionhandling: Specifies what text to check for when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current text. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the text prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+
+        Returns:
+            bool
         """
         if not self.PRINTABLE: #only printable elements can hold text
             return False
@@ -991,8 +1179,15 @@ class AbstractElement(object):
     def hasphon(self,cls='current',strict=True,correctionhandling=CorrectionHandling.CURRENT): #pylint: disable=too-many-return-statements
         """Does this element have phonetic content (of the specified class)
 
-        By default, this checks strictly, i.e. the element itself must have the text and it is not inherited from its children.
-        Set strict=False to allow checking whether the children have the text.
+        By default, and unlike :meth:`phon`, this checks strictly, i.e. the element itself must have the phonetic content and it is not inherited from its children.
+
+        Parameters:
+            cls (str): The class of the phonetic content to obtain, defaults to ``current``.
+            strict (bool):  Set this if you are strictly interested in the phonetic content explicitly associated with the element, without recursing into children. Defaults to ``True``.
+            correctionhandling: Specifies what phonetic content to check for when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current phonetic content. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the phonetic content prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+
+        Returns:
+            bool
         """
         if not self.SPEAKABLE: #only printable elements can hold text
             return False
@@ -1016,11 +1211,22 @@ class AbstractElement(object):
                 return False
 
     def settext(self, text, cls='current'):
-        """Set the text for this element (and class)"""
+        """Set the text for this element.
+
+        Arguments:
+            text (str): The text
+            cls (str): The class of the text, defaults to ``current`` (leave this unless you know what you are doing). There may be only one text content element of each class associated with the element.
+        """
         self.replace(TextContent, value=text, cls=cls)
 
     def setdocument(self, doc):
-        """Associate a document with this element"""
+        """Associate a document with this element.
+
+        Arguments:
+            doc (:class:`Document`): A document
+
+        Each element must be associated with a FoLiA document.
+        """
         assert isinstance(doc, Document)
 
         if not self.doc:
@@ -1036,11 +1242,21 @@ class AbstractElement(object):
 
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
-        """Tests whether a new element of this class can be added to the parent. Returns a boolean or raises ValueError exceptions (unless set to ignore)!
+        """Tests whether a new element of this class can be added to the parent.
 
-         This will use ``OCCURRENCES``, but may be overidden for more customised behaviour.
+        This method is mostly for internal use.
+        This will use the ``OCCURRENCES`` property, but may be overidden by subclasses for more customised behaviour.
 
-         This method is mostly for internal use.
+        Parameters:
+            parent (:class:`AbstractElement`): The element that is being added to
+            set (str or None): The set
+            raiseexceptions (bool): Raise an exception if the element can't be added?
+
+        Returns:
+            bool
+
+        Raises:
+            ValueError
          """
 
 
@@ -1099,7 +1315,9 @@ class AbstractElement(object):
 
 
     def postappend(self):
-        """This method will be called after an element is added to another. It can do extra checks and if necessary raise exceptions to prevent addition. By default makes sure the right document is associated.
+        """This method will be called after an element is added to another and does some checks.
+
+        It can do extra checks and if necessary raise exceptions to prevent addition. By default makes sure the right document is associated.
 
         This method is mostly for internal use.
         """
@@ -1112,7 +1330,9 @@ class AbstractElement(object):
             self.deepvalidation()
 
     def addtoindex(self,norecurse=[]):
-        """Makes sure this element (and all subelements), are properly added to the index"""
+        """Makes sure this element (and all subelements), are properly added to the index.
+
+        Mostly for internal use."""
         if self.id:
             self.doc.index[self.id] = self
         for e in self.data:
@@ -1123,6 +1343,11 @@ class AbstractElement(object):
                     pass
 
     def deepvalidation(self):
+        """Perform deep validation of this element.
+
+        Raises:
+            :class:`DeepValidationError`
+        """
         if self.doc and self.doc.deepvalidation and self.set and self.set[0] != '_':
             try:
                 self.doc.setdefinitions[self.set].testclass(self.cls)
@@ -1131,16 +1356,19 @@ class AbstractElement(object):
                     raise DeepValidationError("Set definition for " + self.set + " not loaded!")
 
     def append(self, child, *args, **kwargs):
-        """Append a child element. Returns the added element
+        """Append a child element.
 
         Arguments:
-            * ``child``            - Instance or class
+            child (instance or class): 1) The instance to add (usually an instance derived from  :class:`AbstractElement`. or 2) a class subclassed from :class:`AbstractElement`.
+
+        Keyword Arguments:
+        {generic_attribs}
 
         If an *instance* is passed as first argument, it will be appended
-        If a *class* derived from AbstractElement is passed as first argument, an instance will first be created and then appended.
+        If a *class* derived from :class:`AbstractElement` is passed as first argument, an instance will first be created and then appended.
 
         Keyword arguments:
-            * ``alternative=``     - If set to True, the element will be made into an alternative.
+            alternative (bool): If set to True, the element will be made into an alternative. (default to False)
 
         Generic example, passing a pre-generated instance::
 
@@ -1154,8 +1382,18 @@ class AbstractElement(object):
 
             word.append( "house", cls='original' )
 
+        Returns:
+            the added element
 
-        """
+        Raises:
+            ValueError: The element is not valid in this context
+            :class:`DuplicateAnnotationError`: There is already such an annotation
+
+        See also:
+            :meth:`add`
+            :meth:`insert`
+            :meth:`replace`
+        """.format(generic_attribs=DOCSTRING_GENERIC_ATTRIBS)
 
 
 
@@ -1195,7 +1433,7 @@ class AbstractElement(object):
                 child.parent = self
             elif PhonContent in self.ACCEPTED_DATA:
                 #you can pass strings directly (just for convenience), will be made into phoncontent automatically (note that textcontent always takes precedence, so you most likely will have to do it explicitly)
-                child = PhonContent(self.doc, child ) #pylint: disable=redefined-variable-type 
+                child = PhonContent(self.doc, child ) #pylint: disable=redefined-variable-type
                 self.data.append(child)
                 child.parent = self
             else:
@@ -1218,12 +1456,13 @@ class AbstractElement(object):
         If a *class* derived from AbstractElement is passed as first argument, an instance will first be created and then appended.
 
         Arguments:
-            * index
-            * ``child``            - Instance or class
+            index (int): The position where to insert the chldelement
+            child: Instance or class
 
         Keyword arguments:
-            * ``alternative=``     - If set to True, the element will be made into an alternative.
-            * ``corrected=``       - Used only when passing strings to be made into TextContent elements.
+            alternative (bool):  If set to True, the element will be made into an alternative.
+            corrected (bool): Used only when passing strings to be made into TextContent elements.
+        {generic_attribs}
 
         Generic example, passing a pre-generated instance::
 
@@ -1237,8 +1476,17 @@ class AbstractElement(object):
 
             word.insert( 3, "house" )
 
+        Returns:
+            the added element
 
-        """
+        Raises:
+            ValueError: The element is not valid in this context
+            :class:`DuplicateAnnotationError`: There is already such an annotation
+
+        See also:
+            :meth:`append`
+            :meth:`replace`
+        """.format(generic_attribs=DOCSTRING_GENERIC_ATTRIBS)
 
         #obtain the set (if available, necessary for checking addability)
         if 'set' in kwargs:
@@ -1278,7 +1526,43 @@ class AbstractElement(object):
         return child
 
     def add(self, child, *args, **kwargs):
-        """High level function that adds (appends) an annotation to an element, it will simply call append() for token annotation elements that fit within the scope. For span annotation, it will create and find or create the proper annotation layer and insert the element there"""
+        """Add a child element.
+
+        This is a higher level function that adds (appends) an annotation to an element, it will simply call :meth:`AbstractElement.append` for token annotation elements that fit within the scope. For span annotation, it will create and find or create the proper annotation layer and insert the element there.
+
+        Arguments:
+            child (instance or class): 1) The instance to add (usually an instance derived from  :class:`AbstractElement`. or 2) a class subclassed from :class:`AbstractElement`.
+
+        If an *instance* is passed as first argument, it will be appended
+        If a *class* derived from :class:`AbstractElement` is passed as first argument, an instance will first be created and then appended.
+
+        Keyword arguments:
+            alternative (bool): If set to True, the element will be made into an alternative. (default to False)
+        {generic_attribs}
+
+        Generic example, passing a pre-generated instance::
+            word.add( folia.LemmaAnnotation(doc,  cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL ) )
+
+        Generic example, passing a class to be generated::
+
+            word.add( folia.LemmaAnnotation, cls="house", annotator="proycon", annotatortype=folia.AnnotatorType.MANUAL )
+
+        Generic example, setting text with a class::
+
+            word.add( "house", cls='original' )
+
+        Returns:
+            the added element
+
+        Raises:
+            ValueError: The element is not valid in this context
+            :class:`DuplicateAnnotationError`: There is already such an annotation
+
+        See also:
+            :meth:`add`
+            :meth:`insert`
+            :meth:`replace`
+        """.format(generic_attribs=DOCSTRING_GENERIC_ATTRIBS)
         addspanfromspanned = False
         if isinstance(self,AbstractStructureElement):
             if inspect.isclass(child):
@@ -1318,13 +1602,13 @@ class AbstractElement(object):
 
     @classmethod
     def findreplaceables(Class, parent, set=None,**kwargs):
-        """Find replaceable elements. Auxiliary function used by replace(). Can be overriden for more fine-grained control. Mostly for internal use."""
+        """Internal method to find replaceable elements. Auxiliary function used by :meth:`AbstractElement.replace`. Can be overriden for more fine-grained control."""
         return list(parent.select(Class,set,False))
 
 
 
     def updatetext(self):
-        """Internal method, recompute textual value. Only for elements that are a TEXTCONTAINER"""
+        """Recompute textual value based on the text content of the children. Only supported on elements that are a ``TEXTCONTAINER``"""
         if self.TEXTCONTAINER:
             s = ""
             for child in self:
@@ -1339,10 +1623,10 @@ class AbstractElement(object):
         """Appends a child element like ``append()``, but replaces any existing child element of the same type and set. If no such child element exists, this will act the same as append()
 
         Keyword arguments:
-            * ``alternative`` - If set to True, the *replaced* element will be made into an alternative. Simply use ``append()`` if you want the added element
+            alternative (bool): If set to True, the *replaced* element will be made into an alternative. Simply use :meth:`AbstractElement.append` if you want the added element
             to be an alternative.
 
-        See ``append()`` for more information.
+        See :meth:`AbstractElement.append` for more information and all parameters.
         """
 
         if 'set' in kwargs:
@@ -1392,7 +1676,14 @@ class AbstractElement(object):
             return e
 
     def ancestors(self, Class=None):
-        """Generator yielding all ancestors of this element, effectively back-tracing its path to the root element. A tuple of multiple classes may be specified."""
+        """Generator yielding all ancestors of this element, effectively back-tracing its path to the root element. A tuple of multiple classes may be specified.
+
+        Arguments:
+            *Class: The class or classes (:class:`AbstractElement` or subclasses). Not instances!
+
+        Yields:
+            elements (instances derived from :class:`AbstractElement`)
+        """
         e = self
         while e:
             if e.parent:
@@ -1407,14 +1698,31 @@ class AbstractElement(object):
                 break
 
     def ancestor(self, *Classes):
-        """Find the most immediate ancestor of the specified type, multiple classes may be specified"""
+        """Find the most immediate ancestor of the specified type, multiple classes may be specified.
+
+        Arguments:
+            *Classes: The possible classes (:class:`AbstractElement` or subclasses) to select from. Not instances!
+
+        Example::
+
+            paragraph = word.ancestor(folia.Paragraph)
+        """
         for e in self.ancestors(tuple(Classes)):
             return e
         raise NoSuchAnnotation
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        """Serialises the FoLiA element to XML, by returning an XML Element (in lxml.etree) for this element and all its children. For string output, consider the xmlstring() method instead."""
+        """Serialises the FoLiA element and all its contents to XML.
+
+        Arguments are mostly for internal use.
+
+        Returns:
+            an lxml.etree.Element
+
+        See also:
+            :meth:`AbstractElement.xmlstring` - for direct string output
+        """
         E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
 
         if not attribs: attribs = {}
@@ -1562,6 +1870,16 @@ class AbstractElement(object):
 
 
     def json(self, attribs=None, recurse=True, ignorelist=False):
+        """Serialises the FoLiA element and all its contents to a Python dictionary suitable for serialisation to JSON.
+
+        Example::
+
+            import json
+            json.dumps(word.json())
+
+        Returns:
+            dict
+        """
         jsonnode = {}
 
         jsonnode['type'] = self.XMLTAG
@@ -1616,7 +1934,10 @@ class AbstractElement(object):
 
 
     def xmlstring(self, pretty_print=False):
-        """Serialises this FoLiA element to XML, returns a (unicode) string with XML representation for this element and all its children."""
+        """Serialises this FoLiA element and all its contents to XML.
+
+        Returns:
+            str: a string with XML representation for this element and all its children"""
         s = ElementTree.tostring(self.xml(), xml_declaration=False, pretty_print=pretty_print, encoding='utf-8')
         if sys.version < '3':
             if isinstance(s, str):
@@ -1633,29 +1954,22 @@ class AbstractElement(object):
     def select(self, Class, set=None, recursive=True,  ignore=True, node=None): #pylint: disable=bad-classmethod-argument,redefined-builtin
         """Select child elements of the specified class.
 
-        A further restriction can be made based on set. Whether or not to apply recursively (by default enabled) can also be configured, optionally with a list of elements never to recurse into.
+        A further restriction can be made based on set.
 
         Arguments:
-            * ``Class``: The class to select; any python class subclassed off `'AbstractElement``
-            * ``set``: The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
-            * ``recursive``: Select recursively? Descending into child
-              elements? Boolean defaulting to True.
-            * ``ignore``: A list of Classes to ignore, if set to True instead
-                of a list, all non-authoritative elements will be skipped (this is the default behaviour).
-                It is common not to
-               want to recurse into the following elements:
-               ``folia.Alternative``, ``folia.AlternativeLayer``,
-               ``folia.Suggestion``, and ``folia.Original``. These elements
-               contained in these are never *authorative*.
-               set to the boolean True rather than a list, this will be the default list. You may also include the boolean True as a member of a list, if you want to skip additional tags along non-authoritative ones.
+            Class (class): The class to select; any python class (not instance) subclassed off :class:`AbstractElement`
+            Set (str): The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
+            recursive (bool): Select recursively? Descending into child elements? Defaults to ``True``.
+            ignore: A list of Classes to ignore, if set to ``True`` instead of a list, all non-authoritative elements will be skipped (this is the default behaviour and corresponds to the following elements: :class:`Alternative`, :class:`AlternativeLayer`, :class:`Suggestion`, and :class:`folia.Original`. These elements and those contained within are never *authorative*. You may also include the boolean True as a member of a list, if you want to skip additional tags along the predefined non-authoritative ones.
             * ``node``: Reserved for internal usage, used in recursion.
 
-        Returns:
-            A generator of elements (instances)
+        Yields:
+            Elements (instances derived from :class:`AbstractElement`)
 
         Example::
 
-            text.select(folia.Sense, 'cornetto', True, [folia.Original, folia.Suggestion, folia.Alternative] )
+            for sense in text.select(folia.Sense, 'cornetto', True, [folia.Original, folia.Suggestion, folia.Alternative] ):
+                ..
 
         """
 
@@ -1709,7 +2023,11 @@ class AbstractElement(object):
                         yield e2
 
     def count(self, Class, set=None, recursive=True,  ignore=True, node=None):
-        """Like select, but instead of returning the elements, it merely counts them"""
+        """Like :meth:`AbstractElement.select`, but instead of returning the elements, it merely counts them.
+
+        Returns:
+            int
+        """
         return sum(1 for i in self.select(Class,set,recursive,ignore,node) )
 
     def items(self, founditems=[]): #pylint: disable=dangerous-default-value
@@ -1723,7 +2041,11 @@ class AbstractElement(object):
         return l
 
     def getindex(self, child, recursive=True, ignore=True):
-        """returns the index at which an element occurs, recursive by default!"""
+        """Get the index at which an element occurs, recursive by default!
+
+        Returns:
+            int
+        """
 
         #breadth first search
         for i, c in enumerate(self.data):
@@ -1974,7 +2296,7 @@ class AbstractElement(object):
                                         else:
                                             elements.append( E.zeroOrMore( E.ref(name=c2.XMLTAG) ) )
                                             if c2.XMLTAG == 'item': #nasty hack for backward compatibility with deprecated listitem element
-                                                elements.append( E.zeroOrMore( E.ref(name='listitem') ) ) 
+                                                elements.append( E.zeroOrMore( E.ref(name='listitem') ) )
                                         done[c2.XMLTAG] = True
                                 except AttributeError:
                                     continue
@@ -2457,17 +2779,28 @@ class AllowTokenAnnotation(AllowCorrections):
 
 
     def annotations(self,Class,set=None):
-        """Obtain annotations. Very similar to ``select()`` but raises an error if the annotation was not found.
+        """Obtain child elements (annotations) of the specified class.
+
+        A further restriction can be made based on set.
 
         Arguments:
-            * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation)
-            * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
+            Class (class): The class to select; any python class (not instance) subclassed off :class:`AbstractElement`
+            Set (str): The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
 
-        Returns:
-            A generator of elements
+        Yields:
+            Elements (instances derived from :class:`AbstractElement`)
+
+        Example::
+
+            for sense in text.annotations(folia.Sense, 'http://some/path/cornetto'):
+                ..
+
+        See also:
+            :meth:`AbstractElement.select`
 
         Raises:
-            ``NoSuchAnnotation`` if the specified annotation does not exist.
+            :meth:`AllowTokenAnnotation.annotations`
+            :class:`NoSuchAnnotation` if no such annotation exists
         """
         found = False
         for e in self.select(Class,set,True,default_ignore_annotations):
@@ -2477,10 +2810,34 @@ class AllowTokenAnnotation(AllowCorrections):
             raise NoSuchAnnotation()
 
     def hasannotation(self,Class,set=None):
-        """Returns an integer indicating whether such as annotation exists, and if so, how many. See ``annotations()`` for a description of the parameters."""
+        """Returns an integer indicating whether such as annotation exists, and if so, how many.
+
+        See :meth:`AllowTokenAnnotation.annotations`` for a description of the parameters."""
         return sum( 1 for _ in self.select(Class,set,True,default_ignore_annotations))
 
     def annotation(self, type, set=None):
+        """Obtain a single annotation element.
+
+        A further restriction can be made based on set.
+
+        Arguments:
+            Class (class): The class to select; any python class (not instance) subclassed off :class:`AbstractElement`
+            Set (str): The set to match against, only elements pertaining to this set will be returned. If set to None (default), all elements regardless of set will be returned.
+
+        Returns:
+            An element (instance derived from :class:`AbstractElement`)
+
+        Example::
+
+            sense = word.annotation(folia.Sense, 'http://some/path/cornetto').cls
+
+        See also:
+            :meth:`AllowTokenAnnotation.annotations`
+            :meth:`AbstractElement.select`
+
+        Raises:
+            :class:`NoSuchAnnotation` if no such annotation exists
+        """
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
         for e in self.select(type,set,True,default_ignore_annotations):
             return e
@@ -2490,11 +2847,11 @@ class AllowTokenAnnotation(AllowCorrections):
         """Generator over alternatives, either all or only of a specific annotation type, and possibly restrained also by set.
 
         Arguments:
-            * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation). Or set to None to select all alternatives regardless of what type they are.
-            * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
+            Class (class): The python Class you want to retrieve (e.g. PosAnnotation). Or set to ``None`` to select all alternatives regardless of what type they are.
+            set (str): The set you want to retrieve (defaults to ``None``, which selects irregardless of set)
 
-        Returns:
-            Generator of Alternative elements
+        Yields:
+            :class:`Alternative` elements
         """
 
         for e in self.select(Alternative,None, True, []): #pylint: disable=too-many-nested-blocks
@@ -2636,7 +2993,7 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         """Returns a generator of Paragraph elements found (recursively) under this element.
 
         Arguments:
-            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the generator of all
+            index (int or None): If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the generator of all
         """
         if index is None:
             return self.select(Paragraph,None,True,default_ignore_structure)
@@ -2652,7 +3009,7 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         """Returns a generator of Sentence elements found (recursively) under this element
 
         Arguments:
-            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning a generator of all
+            index (int or None): If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning a generator of all
         """
         if index is None:
             return self.select(Sentence,None,True,default_ignore_structure)
@@ -2693,8 +3050,18 @@ class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation):
 
 
 class AbstractTextMarkup(AbstractElement):
+    """Abstract class for text markup elements, elements that appear with the :class:`TextContent` (``t``) element.
+    
+    Markup elements pertain primarily to styling, but also have other roles.
+
+    Iterating over the element of a
+    :class:`TextContent` element will first and foremost produce strings, but also
+    uncover these markup elements when present.
+    """
 
     def __init__(self, doc, *args, **kwargs):
+        """See :meth:`AbstractElement.__init__`, text is passed as a string in ``*args``."""
+
         if 'idref' in kwargs:
             self.idref = kwargs['idref']
             del kwargs['idref']
@@ -2712,6 +3079,11 @@ class AbstractTextMarkup(AbstractElement):
         #    raise ValueError("There are illegal unicode control characters present in Text Markup Content: " + repr(self.value))
 
     def settext(self, text):
+        """Sets the text content of the markup element.
+
+        Arguments:
+            text (str)
+        """
         self.data = [text]
         if not self.data:
             raise ValueError("Empty text content elements are not allowed")
@@ -2723,12 +3095,14 @@ class AbstractTextMarkup(AbstractElement):
             return self
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        """See :meth:`AbstractElement.xml`"""
         if not attribs: attribs = {}
         if self.idref:
             attribs['id'] = self.idref
         return super(AbstractTextMarkup,self).xml(attribs,elements, skipchildren)
 
     def json(self,attribs =None, recurse=True, ignorelist=False):
+        """See :meth:`AbstractElement.json`"""
         if not attribs: attribs = {}
         if self.idref:
             attribs['id'] = self.idref
@@ -2755,12 +3129,19 @@ class AbstractTextMarkup(AbstractElement):
 
 
 class TextMarkupString(AbstractTextMarkup):
-    pass
+    """Markup element to mark arbitrary substrings in text content (:class:`TextContent`)"""
 
 class TextMarkupGap(AbstractTextMarkup):
-    pass
+    """Markup element to mark gaps in text content (:class:`TextContent`)
+
+    Only consider this element for gaps in spans of untokenised text. The use of structural element :class:`Gap` is preferred.
+    """
 
 class TextMarkupCorrection(AbstractTextMarkup):
+    """Markup element to mark corrections in text content (:class:`TextContent`).
+
+    Only consider this element for corrections on untokenised text. The use of :class:`Correction` is preferred.
+    """
 
     def __init__(self, doc, *args, **kwargs):
         if 'original' in kwargs:
@@ -2803,20 +3184,20 @@ class TextMarkupCorrection(AbstractTextMarkup):
 
 
 class TextMarkupError(AbstractTextMarkup):
-    pass
+    """Markup element to mark gaps in text content (:class:`TextContent`)
+
+    Only consider this element for gaps in spans of untokenised text. The use of structural element :class:`ErrorDetection` is preferred.
+    """
 
 class TextMarkupStyle(AbstractTextMarkup):
-    pass
-
-
-
+    """Markup element to style text content (:class:`TextContent`), e.g. make text bold, italics, underlined, coloured, etc.."""
 
 
 class TextContent(AbstractElement):
     """Text content element (``t``), holds text to be associated with whatever element the text content element is a child of.
 
     Text content elements
-    on structure elements like ``Paragraph`` and ``Sentence`` are by definition untokenised. Only on ``Word`` level and deeper they are by definition tokenised.
+    on structure elements like :class:`Paragraph` and :class:`Sentence` are by definition untokenised. Only on :class:`Word`` level and deeper they are by definition tokenised.
 
     Text content elements can specify offset that refer to text at a higher parent level. Use the following keyword arguments:
         * ``ref=``: The instance to point to, this points to the element holding the text content element, not the text content element itself.
@@ -2825,10 +3206,11 @@ class TextContent(AbstractElement):
 
 
     def __init__(self, doc, *args, **kwargs):
-        """Example::
+        """
+        
+        Example::
 
                 text = folia.TextContent(doc, 'test')
-
                 text = folia.TextContent(doc, 'test',cls='original')
 
         """
@@ -2978,6 +3360,7 @@ class TextContent(AbstractElement):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        """See :meth:`AbstractElement.xml`"""
         attribs = {}
         if not self.offset is None:
             attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
@@ -2999,6 +3382,7 @@ class TextContent(AbstractElement):
         return e
 
     def json(self, attribs =None, recurse =True,ignorelist=False):
+        """See :meth:`AbstractElement.json`"""
         attribs = {}
         if not self.offset is None:
             attribs['offset'] = self.offset
@@ -3038,7 +3422,9 @@ class PhonContent(AbstractElement):
     """
 
     def __init__(self, doc, *args, **kwargs):
-        """Example::
+        """
+
+        Example::
 
                 phon = folia.PhonContent(doc, 'hɛˈləʊ̯')
                 phon = folia.PhonContent(doc, 'hɛˈləʊ̯', cls="original")
@@ -3228,6 +3614,7 @@ class PhonContent(AbstractElement):
         return super(PhonContent, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class Content(AbstractElement):     #used for raw content, subelement for Gap
+    """A container element that takes raw content, used by :class:`Gap`"""
 
     def __init__(self,doc, *args, **kwargs):
         if 'value' in kwargs:
@@ -3286,7 +3673,7 @@ class Part(AbstractStructureElement):
 
 
 class Gap(AbstractElement):
-    """Gap element. Represents skipped portions of the text. Contains Content and Desc elements"""
+    """Gap element. Represents skipped portions of the text. Usually contains :class:`Content` and possibly also a :class:`Description` element"""
 
     def __init__(self, doc, *args, **kwargs):
         if 'content' in kwargs:
@@ -3305,7 +3692,10 @@ class Gap(AbstractElement):
 
 
 class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has a double role!!
-    """Line break element, signals a line break"""
+    """Line break element, signals a line break.
+    
+    This element acts both as a structure element as well as a text markup element.
+    """
 
     def __init__(self, doc, *args, **kwargs):
         if 'linenr' in kwargs:
@@ -3372,17 +3762,24 @@ class Word(AbstractStructureElement, AllowCorrections):
     #will actually be determined by gettextdelimiter()
 
     def __init__(self, doc, *args, **kwargs):
-        """Keyword arguments:
+        """Constructor for words.
 
-            * ``space=``: Boolean indicating whether this token is followed by a space (defaults to True)
+        See :class:`AbstractElement.__init__` for all inherited keyword arguments and parameters.
 
-            Example::
+        Keyword arguments:
 
-                sentence.append( folia.Word, 'This')
-                sentence.append( folia.Word, 'is')
-                sentence.append( folia.Word, 'a')
-                sentence.append( folia.Word, 'test', space=False)
-                sentence.append( folia.Word, '.')
+        * space (bool): Indicates whether this token is followed by a space (defaults to True)
+
+        Example::
+
+            sentence.append( folia.Word, 'This')
+            sentence.append( folia.Word, 'is')
+            sentence.append( folia.Word, 'a')
+            sentence.append( folia.Word, 'test', space=False)
+            sentence.append( folia.Word, '.')
+
+        See also:
+            :class:`AbstractElement.__init__`
         """
         self.space = True
 
@@ -3522,7 +3919,24 @@ class Word(AbstractStructureElement, AllowCorrections):
 
 
     def findspans(self, type,set=None):
-        """Find span annotation of the specified type that includes this word"""
+        """Yields span annotation elements of the specified type that include this word.
+
+        Arguments:
+            type: The annotation type, can be passed as using any of the :class:`AnnotationType` member, or by passing the relevant :class:`AbstractSpanAnnotation` or :class:`AbstractAnnotationLayer` class.
+            set (str or None): Constrain by set
+
+        Example::
+
+            for chunk in word.findspans(folia.Chunk):
+                print(" Chunk class=", chunk.cls, " words=")
+                for word2 in chunk.wrefs(): #print all words in the chunk (of which the word is a part)
+                    print(word2, end="")
+                print()
+
+        Yields:
+            Matching span annotation instances (derived from :class:`AbstractSpanAnnotation`)
+        """
+
         if issubclass(type, AbstractAnnotationLayer):
             layerclass = type
         else:
@@ -3544,10 +3958,11 @@ class Feature(AbstractElement):
 
 
     def __init__(self,doc, *args, **kwargs): #pylint: disable=super-init-not-called
-        """Required keyword arguments:
-
-           * ``subset=``: the subset
-           * ``cls=``: the class
+        """Constructor.
+        
+        Keyword Arguments:
+            subset (str): the subset
+            cls (str): the class
         """
 
         self.id = None
@@ -3601,11 +4016,13 @@ class Feature(AbstractElement):
 
 
 class ValueFeature(Feature):
-    """Value feature, to be used within Metric"""
+    """Value feature, to be used within :class:`Metric`"""
     pass
 
 class Metric(AbstractElement):
-    """Metric elements allow the annotatation of any kind of metric with any kind of annotation element. Allowing for example statistical measures to be added to elements as annotation,"""
+    """Metric elements provide a key/value pair to allow the annotation of any kind of metric with any kind of annotation element.
+    
+    It is used for example for statistical measures to be added to elements as annotation."""
     pass
 
 class AbstractSubtokenAnnotation(AbstractElement, AllowGenerateID):
@@ -3616,6 +4033,7 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
     """Abstract element, all span annotation elements are derived from this class"""
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        """See :meth:`AbstractElement.xml`"""
         if not attribs: attribs = {}
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         e = super(AbstractSpanAnnotation,self).xml(attribs, elements, True)
@@ -3631,8 +4049,8 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
         return e
 
 
-
     def append(self, child, *args, **kwargs):
+        """See :meth:`AbstractElement.append`"""
         if (isinstance(child, Word) or isinstance(child, Morpheme) or isinstance(child, Phoneme))  and WordReference in self.ACCEPTED_DATA:
             #Accept Word instances instead of WordReference, references will be automagically used upon serialisation
             self.data.append(child)
@@ -3641,7 +4059,11 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
             return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)
 
     def setspan(self, *args):
-        """Sets the span of the span element anew, erases all data inside"""
+        """Sets the span of the span element anew, erases all data inside.
+        
+        Arguments:
+            *args: Instances of :class:`Word`, :class:`Morpheme` or :class:`Phoneme`
+        """
         self.data = []
         for child in args:
             self.append(child)
@@ -3686,7 +4108,7 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
         """Returns a list of word references, these can be Words but also Morphemes or Phonemes.
 
         Arguments:
-            * ``index``: If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
+            index (int or None): If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         targets =[]
         self._helper_wrefs(targets)
@@ -3733,6 +4155,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        """See :meth:`AbstractElement.xml`"""
         if self.set is False or self.set is None:
             if len(self.data) == 0: #just skip if there are no children
                 return None
@@ -3741,6 +4164,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
         return super(AbstractAnnotationLayer, self).xml(attribs, elements, skipchildren)
 
     def append(self, child, *args, **kwargs):
+        """See :meth:`AbstractElement.append`"""
         #if no set is associated with the layer yet, we learn it from span annotation elements that are added
         if self.set is False or self.set is None:
             if inspect.isclass(child):
@@ -3759,7 +4183,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
         return super(AbstractAnnotationLayer, self).append(child, *args, **kwargs)
 
-    def add(self, child, *args, **kwargs): #alias for append
+    def add(self, child, *args, **kwargsxml): #alias for append
         return self.append(child, *args, **kwargs)
 
     def annotations(self,Class,set=None):
@@ -3820,7 +4244,11 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
                         continue
 
     def findspan(self, *words):
-        """Returns the span element which spans over the specified words or morphemes"""
+        """Returns the span element which spans over the specified words or morphemes.
+
+        See also:
+            :meth:`Word.findspans`
+        """
 
         for span in self.select(AbstractSpanAnnotation,None,True):
             if tuple(span.wrefs()) == words:
@@ -3859,6 +4287,7 @@ class AbstractCorrectionChild(AbstractElement):
         return self.parent.generate_id(cls)
 
 class Reference(AbstractStructureElement):
+    """A structural element that denotes a reference, internal or external. Examples are references to footnotes, bibliographies, hyperlinks."""
 
     def __init__(self, doc, *args, **kwargs):
         if 'idref' in kwargs:
@@ -3942,6 +4371,9 @@ class Reference(AbstractStructureElement):
         return super(Reference, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class AlignReference(AbstractElement):
+    """The AlignReference element is used to point to specific elements inside the aligned source. 
+    
+    It is used with :class:`Alignment` which is responsible for pointing to the external resource."""
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
@@ -4022,6 +4454,14 @@ class AlignReference(AbstractElement):
 
 
 class Alignment(AbstractElement):
+    """
+    The Alignment element is a form of higher-order annotation taht is used to point to an external resource.
+    
+    It concerns references as annotation rather than references which are
+    explicitly part of the text, such as hyperlinks and :class:`Reference`. 
+
+    Inside the Alignment element, the :class:`AlignReference` element may be used to point to specific elements (multiple denotes a span).
+    """
 
     def __init__(self, doc, *args, **kwargs):
         if 'format' in kwargs:
@@ -4068,11 +4508,13 @@ class Alignment(AbstractElement):
 
 
 class ErrorDetection(AbstractExtendedTokenAnnotation):
+    """The ErrorDetection element is used to signal the presence of errors in a structural element."""
     pass
 
 
 
 class Suggestion(AbstractCorrectionChild):
+    """Suggestions are used in the context of :class:`Correction`, but rather than provide an authoritative correction, it instead offers a suggestion for correction."""
 
     def __init__(self,  doc, *args, **kwargs):
         if 'split' in kwargs:
@@ -4137,6 +4579,7 @@ class New(AbstractCorrectionChild):
         return self.parent.correct(**kwargs)
 
 class Original(AbstractCorrectionChild):
+    """Used in the context of :class:`Correction` to encapsulate the original annotations *prior* to correction."""
 
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):#pylint: disable=bad-classmethod-argument
@@ -4150,6 +4593,10 @@ class Original(AbstractCorrectionChild):
 
 
 class Current(AbstractCorrectionChild):
+    """Used in the context of :class:`Correction` to encapsulate the currently authoritative annotations. 
+
+    Needed only when suggestions for correction are proposed (:class:`Suggestion`) for structural elements.
+    """
 
     @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
@@ -4165,6 +4612,23 @@ class Current(AbstractCorrectionChild):
         return self.parent.correct(**kwargs)
 
 class Correction(AbstractElement, AllowGenerateID):
+    """
+    Corrections are one of the most complex annotation types in FoLiA. Corrections
+    can be applied not just over text, but over any type of structure annotation,
+    token annotation or span annotation. Corrections explicitly preserve the
+    original, and recursively so if corrections are done over other corrections.
+
+    Despite their complexity, the library treats correction transparently. Whenever
+    you query for a particular element, and it is part of a correction, you get the
+    corrected version rather than the original. The original is always *non-authoritative*
+    and normal selection methods will ignore it.
+
+    This class takes four classes as children, that in turn encapsulate the actual annotations:
+        * :class:`New` - Encapsulates the newly corrected annotation(s)
+        * :class:`Original` - Encapsulated the old original annotation(s)
+        * :class:`Current` - Encapsulates the current authoritative annotation(s)
+        * :class:`Suggestions` - Encapsulates the annotation(s) that are a non-authoritative suggestion for correction
+    """
 
     def append(self, child, *args, **kwargs):
         """See ``AbstractElement.append()``"""
@@ -4173,36 +4637,35 @@ class Correction(AbstractElement, AllowGenerateID):
         return e
 
     def hasnew(self,allowempty=False):
+        """Does the correction define new corrected annotations?"""
         for e in  self.select(New,None,False, False):
             if not allowempty and len(e) == 0: continue
             return True
         return False
 
     def hasoriginal(self,allowempty=False):
+        """Does the correction record the old annotations prior to correction?"""
         for e in self.select(Original,None,False, False):
             if not allowempty and len(e) == 0: continue
             return True
         return False
 
     def hascurrent(self, allowempty=False):
+        """Does the correction record the current authoritative annotation (needed only in a structural context when suggestions are proposed)"""
         for e in self.select(Current,None,False, False):
             if not allowempty and len(e) == 0: continue
             return True
         return False
 
     def hassuggestions(self,allowempty=False):
+        """Does the correction propose suggestions for correction?""" 
         for e in self.select(Suggestion,None,False, False):
             if not allowempty and len(e) == 0: continue
             return True
         return False
 
     def textcontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
-        """Get the text explicitly associated with this element (of the specified class).
-        Returns the TextContent instance rather than the actual text. Raises NoSuchText exception if
-        not found.
-
-        Unlike text(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the TextContent instance rather than the actual text!
-        """
+        """See :meth:`AbstractElement.textcontent`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4216,12 +4679,7 @@ class Correction(AbstractElement, AllowGenerateID):
 
 
     def phoncontent(self, cls='current', correctionhandling=CorrectionHandling.CURRENT):
-        """Get the phonetic content explicitly associated with this element (of the specified class).
-        Returns the PhonContent instance rather than the actual text. Raises NoSuchPhon exception if
-        not found.
-
-        Unlike phon(), this method does not recurse into child elements (with the sole exception of the Correction/New element), and it returns the PhonContent instance rather than the actual text!
-        """
+        """See :meth:`AbstractElement.phoncontent`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4235,6 +4693,7 @@ class Correction(AbstractElement, AllowGenerateID):
 
 
     def hastext(self, cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT):
+        """See :meth:`AbstractElement.hastext`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4247,6 +4706,7 @@ class Correction(AbstractElement, AllowGenerateID):
         return False
 
     def text(self, cls = 'current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
+        """See :meth:`AbstractElement.text`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4259,6 +4719,7 @@ class Correction(AbstractElement, AllowGenerateID):
         raise NoSuchText
 
     def hasphon(self, cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT):
+        """See :meth:`AbstractElement.hasphon`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4271,6 +4732,7 @@ class Correction(AbstractElement, AllowGenerateID):
         return False
 
     def phon(self, cls = 'current', previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
+        """See :meth:`AbstractElement.phon`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
@@ -4283,7 +4745,7 @@ class Correction(AbstractElement, AllowGenerateID):
         raise NoSuchPhon
 
     def gettextdelimiter(self, retaintokenisation=False):
-        """May return a customised text delimiter instead of the default for this class."""
+        """See :meth:`AbstractElement.gettextdelimiter`"""
         for e in self:
             if isinstance(e, New) or isinstance(e, Current):
                 return e.gettextdelimiter(retaintokenisation)
@@ -4291,6 +4753,17 @@ class Correction(AbstractElement, AllowGenerateID):
 
 
     def new(self,index = None):
+        """Get the new corrected annotation.
+        
+        This returns only one annotation if multiple exist, use `index` to select another in the sequence.
+
+        Returns:
+            an annotation element (:class:`AbstractElement`)
+
+        Raises:
+            :class:`NoSuchAnnotation`
+        """
+
         if index is None:
             try:
                 return next(self.select(New,None,False))
@@ -4302,6 +4775,16 @@ class Correction(AbstractElement, AllowGenerateID):
             raise NoSuchAnnotation
 
     def original(self,index=None):
+        """Get the old annotation prior to correction.
+        
+        This returns only one annotation if multiple exist, use `index` to select another in the sequence.
+
+        Returns:
+            an annotation element (:class:`AbstractElement`)
+
+        Raises:
+            :class:`NoSuchAnnotation`
+        """
         if index is None:
             try:
                 return next(self.select(Original,None,False, False))
@@ -4313,6 +4796,16 @@ class Correction(AbstractElement, AllowGenerateID):
             raise NoSuchAnnotation
 
     def current(self,index=None):
+        """Get the current authoritative annotation (used with suggestions in a structural context)
+        
+        This returns only one annotation if multiple exist, use `index` to select another in the sequence.
+
+        Returns:
+            an annotation element (:class:`AbstractElement`)
+
+        Raises:
+            :class:`NoSuchAnnotation`
+        """
         if index is None:
             try:
                 return next(self.select(Current,None,False))
@@ -4324,6 +4817,17 @@ class Correction(AbstractElement, AllowGenerateID):
             raise NoSuchAnnotation
 
     def suggestions(self,index=None):
+        """Get suggestions for correction.
+
+        Yields:
+            :class:`Suggestion` element that encapsulate the suggested annotations (if index is ``None`, default)
+        
+        Returns:
+            a :class:`Suggestion` element that encapsulate the suggested annotations (if index is set)
+
+        Raises:
+            :class:`IndexError`
+        """
         if index is None:
             return self.select(Suggestion,None,False, False)
         else:
@@ -4378,7 +4882,23 @@ class Correction(AbstractElement, AllowGenerateID):
 
 
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
-    """Element grouping alternative token annotation(s). Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
+    """Element grouping alternative token annotation(s). 
+    
+    Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent.
+
+    A key feature of FoLiA is its ability to make explicit alternative
+    annotations, for token annotations, this class is used to this end.
+    Alternative annotations are embedded in this structure. This implies the
+    annotation is *not authoritative*, but is merely an alternative to the
+    actual annotation (if any). Alternatives may typically occur in larger
+    numbers, representing a distribution each with a confidence value (not
+    mandatory). Each alternative is wrapped in its an instance of this class,
+    as multiple elements inside a single alternative are considered dependent
+    and part of the same alternative. Combining multiple annotation in one
+    alternative makes sense for mixed annotation types, where for instance a
+    pos tag alternative is tied to a particular lemma.
+    """
+
     pass
 
 
@@ -4476,6 +4996,7 @@ class External(AbstractElement):
 
 
     def select(self, Class, set=None, recursive=True,  ignore=True, node=None):
+        """See :meth:`AbstractElement.select`"""
         if self.include:
             return self.subdoc.data[0].select(Class,set,recursive, ignore, node) #pass it on to the text node of the subdoc
         else:
@@ -4484,7 +5005,6 @@ class External(AbstractElement):
 
 class WordReference(AbstractElement):
     """Word reference. Used to refer to words or morphemes from span annotation elements. The Python class will only be used when word reference can not be resolved, if they can, Word or Morpheme objects will be used"""
-    #REQUIRED_ATTRIBS = (Attrib.ID,)  #TODO: See if this is handled correctly in new scheme
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         #Special constructor, not calling super constructor
@@ -4543,37 +5063,47 @@ class WordReference(AbstractElement):
         return e
 
 class SyntacticUnit(AbstractSpanAnnotation):
-    """Syntactic Unit, span annotation element to be used in SyntaxLayer"""
+    """Syntactic Unit, span annotation element to be used in :class:`SyntaxLayer`"""
     pass
 
 
 class Chunk(AbstractSpanAnnotation):
-    """Chunk element, span annotation element to be used in ChunkingLayer"""
+    """Chunk element, span annotation element to be used in :class:`ChunkingLayer`"""
     pass
 
 class Entity(AbstractSpanAnnotation):
-    """Entity element, for named entities, span annotation element to be used in EntitiesLayer"""
+    """Entity element, for entities such as named entities, multi-word expressions, temporal entities. This is a span annotation element to be used in :class:`EntitiesLayer`"""
     pass
 
 class AbstractSpanRole(AbstractSpanAnnotation):
     pass
 
 class Headspan(AbstractSpanRole): #generic head element
-    pass
+    """The headspan role is used to mark the head of a span annotation.
+    
+    It can be used in various contexts, for instance to mark the head of a :class:`Dependency`.
+    It is allowed by most span annotations.
+    """
+
 
 DependencyHead = Headspan #alias, backwards compatibility with FoLiA 0.8
 
 
 class DependencyDependent(AbstractSpanRole):
+    """Span role element that marks the dependent in a dependency relation. Used in :class:`Dependency`. 
+    
+    :class:`Headspan` in turn is used to mark the head of a dependency relation."""
     pass
 
 class Dependency(AbstractSpanAnnotation):
+    """Span annotation element to encode dependency relations"""
+
     def head(self):
-        """Returns the head of the dependency relation. Instance of DependencyHead"""
-        return next(self.select(DependencyHead))
+        """Returns the head of the dependency relation. Instance of :class:`Headspan`"""
+        return next(self.select(Headspan))
 
     def dependent(self):
-        """Returns the dependent of the dependency relation. Instance of DependencyDependent"""
+        """Returns the dependent of the dependency relation. Instance of :class:`DependencyDependent`"""
         return next(self.select(DependencyDependent))
 
 
@@ -4587,10 +5117,10 @@ class LevelFeature(Feature):
     """Level feature, to be used with coreferences"""
 
 class CoreferenceLink(AbstractSpanRole):
-    """Coreference link. Used in coreferencechain."""
+    """Coreference link. Used in :class:`CoreferenceChain`"""
 
 class CoreferenceChain(AbstractSpanAnnotation):
-    """Coreference chain. Consists of coreference links."""
+    """Coreference chain. Holds :class:`CoreferenceLink` instances."""
 
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
@@ -4613,10 +5143,10 @@ class ComplexAlignment(AbstractElement):
             raise NoSuchAnnotation()
 
 class FunctionFeature(Feature):
-    """Function feature, to be used with morphemes"""
+    """Function feature, to be used with :class:`Morpheme`"""
 
 class Morpheme(AbstractStructureElement):
-    """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
+    """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in :class:`MorphologyLayer`"""
 
     def findspans(self, type,set=None):
         """Find span annotation of the specified type that include this word"""
@@ -4636,10 +5166,13 @@ class Morpheme(AbstractStructureElement):
 
 
 class Phoneme(AbstractStructureElement):
-    """Morpheme element, represents one morpheme in morphological analysis, subtoken annotation element to be used in MorphologyLayer"""
+    """Phone element, represents one phone in phonetic analysis, subtoken annotation element to be used in :class:`PhonologyLayer`"""
 
     def findspans(self, type,set=None): #TODO: this is a copy of the methods in Morpheme in Word, abstract into separate class and inherit
-        """Find span annotation of the specified type that include this phoneme"""
+        """Find span annotation of the specified type that include this phoneme.
+        
+        See :meth:`Word.findspans` for usage.
+        """
         if issubclass(type, AbstractAnnotationLayer):
             layerclass = type
         else:
@@ -4664,28 +5197,28 @@ class Phoneme(AbstractStructureElement):
 
 
 class SyntaxLayer(AbstractAnnotationLayer):
-    """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
+    """Syntax Layer: Annotation layer for :class:`SyntacticUnit` span annotation elements"""
 
 class ChunkingLayer(AbstractAnnotationLayer):
-    """Chunking Layer: Annotation layer for Chunk span annotation elements"""
+    """Chunking Layer: Annotation layer for :class:`Chunk` span annotation elements"""
 
 class EntitiesLayer(AbstractAnnotationLayer):
-    """Entities Layer: Annotation layer for Entity span annotation elements. For named entities."""
+    """Entities Layer: Annotation layer for :class:`Entity` span annotation elements. For named entities."""
 
 class DependenciesLayer(AbstractAnnotationLayer):
-    """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
+    """Dependencies Layer: Annotation layer for :class:`Dependency` span annotation elements. For dependency entities."""
 
 class MorphologyLayer(AbstractAnnotationLayer):
-    """Morphology Layer: Annotation layer for Morpheme subtoken annotation elements. For morphological analysis."""
+    """Morphology Layer: Annotation layer for :class:`Morpheme` subtoken annotation elements. For morphological analysis."""
 
 class PhonologyLayer(AbstractAnnotationLayer):
-    """Phonology Layer: Annotation layer for phonemes subtoken annotation elements. For phonetic analysis."""
+    """Phonology Layer: Annotation layer for :class:`Phoneme` subtoken annotation elements. For phonetic analysis."""
 
 class CoreferenceLayer(AbstractAnnotationLayer):
-    """Syntax Layer: Annotation layer for SyntacticUnit span annotation elements"""
+    """Syntax Layer: Annotation layer for :class:`SyntacticUnit` span annotation elements"""
 
 class SemanticRolesLayer(AbstractAnnotationLayer):
-    """Syntax Layer: Annotation layer for SemanticRole span annotation elements"""
+    """Syntax Layer: Annotation layer for :class:`SemanticRole` span annotation elements"""
 
 class ComplexAlignmentLayer(AbstractAnnotationLayer):
     """Complex alignment layer"""
@@ -4694,7 +5227,7 @@ class ComplexAlignmentLayer(AbstractAnnotationLayer):
     ANNOTATIONTYPE = AnnotationType.COMPLEXALIGNMENT
 
 class HeadFeature(Feature):
-    """Head feature, to be used within PosAnnotation"""
+    """Head feature, to be used within :class:`PosAnnotation`"""
 
 class PosAnnotation(AbstractTokenAnnotation):
     """Part-of-Speech annotation:  a token annotation element"""
@@ -4716,43 +5249,43 @@ class DomainAnnotation(AbstractExtendedTokenAnnotation):
     """Domain annotation:  an extended token annotation element"""
 
 class SynsetFeature(Feature):
-    """Synset feature, to be used within Sense"""
+    """Synset feature, to be used within :class:`Sense`"""
 
 class ActorFeature(Feature):
-    """Actor feature, to be used within Event"""
+    """Actor feature, to be used within :class:`Event`"""
 
 class BegindatetimeFeature(Feature):
-    """Begindatetime feature, to be used within Event"""
+    """Begindatetime feature, to be used within :class:`Event`"""
 
 class EnddatetimeFeature(Feature):
-    """Enddatetime feature, to be used within Event"""
+    """Enddatetime feature, to be used within :class:`Event`"""
 
 class StyleFeature(Feature):
     pass
 
 class Note(AbstractStructureElement):
-    pass
+    """Element used for notes, such as footnotes or warnings or notice blocks."""
 
 class Definition(AbstractStructureElement):
-    pass
+    """Element used in :class:`Entry` for the portion that provides a definition for the entry."""
 
 class Term(AbstractStructureElement):
-    pass
+    """A term, often used in contect of :class:`Entry`"""
 
 class Example(AbstractStructureElement):
-    pass
+    """Element that provides an example. Used for instance in the context of :class:`Entry`"""
 
 class Entry(AbstractStructureElement):
-    pass
+    """Represents an entry in a glossary/lexicon/dictionary."""
 
 
 class TimeSegment(AbstractSpanAnnotation):
-    pass
+    """A time segment"""
 
 TimedEvent = TimeSegment #alias for FoLiA 0.8 compatibility
 
 class TimingLayer(AbstractAnnotationLayer):
-    """Dependencies Layer: Annotation layer for Dependency span annotation elements. For dependency entities."""
+    """Timing layer: Annotation layer for :class:`TimeSegment` span annotation elements. """
 
 
 class SenseAnnotation(AbstractTokenAnnotation):
@@ -4763,7 +5296,7 @@ class SubjectivityAnnotation(AbstractTokenAnnotation):
 
 
 class Quote(AbstractStructureElement):
-    """Quote: a structure element. For quotes/citations. May hold words, sentences or paragraphs."""
+    """Quote: a structure element. For quotes/citations. May hold :class:`Word`, :class:`Sentence` or :class:`Paragraph` data."""
 
     def __init__(self,  doc, *args, **kwargs):
         super(Quote,self).__init__(doc, *args, **kwargs)
@@ -4802,26 +5335,28 @@ class Quote(AbstractStructureElement):
 
 
 class Sentence(AbstractStructureElement):
-    """Sentence element. A structure element. Represents a sentence and holds all its words (and possibly other structure such as LineBreaks, Whitespace and Quotes)"""
+    """Sentence element. A structure element. Represents a sentence and holds all its words (:class:`Word`), and possibly other structure such as :class:`LineBreak`, :class:`Whitespace` and :class:`Quote`"""
 
     def __init__(self,  doc, *args, **kwargs):
         """
+        Example::
 
-            Example 1::
+            sentence = paragraph.append( folia.Sentence)
 
-                sentence = paragraph.append( folia.Sentence)
+            sentence.append( folia.Word, 'This')
+            sentence.append( folia.Word, 'is')
+            sentence.append( folia.Word, 'a')
+            sentence.append( folia.Word, 'test', space=False)
+            sentence.append( folia.Word, '.')
 
-                sentence.append( folia.Word, 'This')
-                sentence.append( folia.Word, 'is')
-                sentence.append( folia.Word, 'a')
-                sentence.append( folia.Word, 'test', space=False)
-                sentence.append( folia.Word, '.')
+        Example::
 
-            Example 2::
+            sentence = folia.Sentence( doc, folia.Word(doc, 'This'),  folia.Word(doc, 'is'),  folia.Word(doc, 'a'),  folia.Word(doc, 'test', space=False),  folia.Word(doc, '.') )
+            paragraph.append(sentence)
 
-                sentence = folia.Sentence( doc, folia.Word(doc, 'This'),  folia.Word(doc, 'is'),  folia.Word(doc, 'a'),  folia.Word(doc, 'test', space=False),  folia.Word(doc, '.') )
-                paragraph.append(sentence)
 
+        See also:
+            :meth:`AbstractElement.__init__`
         """
         super(Sentence,self).__init__(doc, *args, **kwargs)
 
@@ -4834,21 +5369,25 @@ class Sentence(AbstractStructureElement):
         return None
 
     def corrections(self):
-        """Are there corrections in this sentence?"""
+        """Are there corrections in this sentence?
+        
+        Returns:
+            bool
+        """
         return bool(self.select(Correction))
 
     def paragraph(self):
-        """Obtain the paragraph this sentence is a part of (None otherwise)"""
+        """Obtain the paragraph this sentence is a part of (None otherwise). Shortcut for :meth:`AbstractElement.ancestor`"""
         return self.ancestor(Paragraph)
 
     def division(self):
-        """Obtain the division this sentence is a part of (None otherwise)"""
+        """Obtain the division this sentence is a part of (None otherwise). Shortcut for :meth:`AbstractElement.ancestor`"""
         return self.ancestor(Division)
 
 
     def correctwords(self, originalwords, newwords, **kwargs):
         """Generic correction method for words. You most likely want to use the helper functions
-           splitword() , mergewords(), deleteword(), insertword() instead"""
+           :meth:`Sentence.splitword` , :meth:`Sentence.mergewords`, :meth:`deleteword`, :meth:`insertword` instead"""
         for w in originalwords:
             if not isinstance(w, Word):
                 raise Exception("Original word is not a Word instance: " + str(type(w)))
@@ -4885,6 +5424,21 @@ class Sentence(AbstractStructureElement):
 
 
     def insertword(self, newword, prevword, **kwargs):
+        """Inserts a word **as a correction** after an existing word.
+
+        This method automatically computes the index of insertion 
+        and calls :meth:`AbstractElement.insert`
+        
+        Arguments:
+            newword (:class:`Word`): The new word to insert
+            prevword (:class:`Word`): The word to insert after
+
+        Keyword Arguments:
+            suggest (bool): Do a suggestion for correction rather than the default authoritive correction
+
+        See also:
+            :meth:`AbstractElement.insert` and :meth:`AbstractElement.getindex` If you do not want to do corrections
+        """
         if prevword:
             if isstring(prevword):
                 prevword = self.doc[u(prevword)]
@@ -4907,6 +5461,10 @@ class Sentence(AbstractStructureElement):
 
 
     def insertwordleft(self, newword, nextword, **kwargs):
+        """Inserts a word **as a correction** before an existing word.
+
+        Reverse of :meth:`Sentence.insertword`.
+        """
         if nextword:
             if isstring(nextword):
                 nextword = self.doc[u(nextword)]
@@ -4944,7 +5502,7 @@ class Event(AbstractStructureElement):
     pass
 
 class Caption(AbstractStructureElement):
-    """Element used for captions for figures or tables, contains sentences"""
+    """Element used for captions for :class:`Figure` or :class:`Table`"""
 
 
 class Label(AbstractStructureElement):
@@ -4952,10 +5510,10 @@ class Label(AbstractStructureElement):
 
 
 class ListItem(AbstractStructureElement):
-    """Single element in a List. Structure element. Contained within List element."""
+    """Single element in a List. Structure element. Contained within :class:`List` element."""
 
 class List(AbstractStructureElement):
-    """Element for enumeration/itemisation. Structure element. Contains ListItem elements."""
+    """Element for enumeration/itemisation. Structure element. Contains :class:`ListItem` elements."""
 
 
 class Figure(AbstractStructureElement):
@@ -4979,24 +5537,28 @@ class Figure(AbstractStructureElement):
 
 
 class Head(AbstractStructureElement):
-    """Head element. A structure element. Acts as the header/title of a division. There may be one per division. Contains sentences."""
+    """Head element. A structure element. Acts as the header/title of a :class:`Division`. There may be one per division. Contains sentences."""
 
 class Paragraph(AbstractStructureElement):
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
 
 
 class Cell(AbstractStructureElement):
+    """A cell in a :class:`Row` in a :class:`Table`"""
     pass
 
 class Row(AbstractStructureElement):
+    """A row in a :class:`Table`"""
     pass
 
 
 class TableHead(AbstractStructureElement):
+    """Encapsulated the header of a table, contains :class:`Cell` elements"""
     pass
 
 
 class Table(AbstractStructureElement):
+    """A table consisting of :class:`Row` elements that in turn consist of :class:`Cell` elements"""
     pass
 
 
@@ -5011,15 +5573,20 @@ class Division(AbstractStructureElement):
 
 
 class Speech(AbstractStructureElement):
-    """A full speech. This is a high-level element. This element may contain divisions, paragraphs, sentences, etc.."""
+    """A full speech. This is a high-level element. This element may contain :class:`Division`,:class:`Paragraph`, class:`Sentence`, etc.."""
     # (both SPEAKABLE and PRINTABLE)
 
 class Text(AbstractStructureElement):
-    """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain divisions, paragraphs, sentences, etc.."""
+    """A full text. This is a high-level element (not to be confused with TextContent!). This element may contain :class:`Division`,:class:`Paragraph`, class:`Sentence`, etc.."""
     # (both SPEAKABLE and PRINTABLE)
 
 
 class ForeignData(AbstractElement):
+    """The ForeignData element encapsulated data that is not in FoLiA but in a different format.
+
+    Such data must use a different XML namespace and will be preserved as-is, that is the ``lxml.etree.Element`` instance is retained unmodified. No further interpretation takes place.
+    """
+
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
         self.data = []
         if 'node' not in kwargs:
@@ -5045,11 +5612,13 @@ class ForeignData(AbstractElement):
         return ForeignData(doc, node=node)
 
     def select(self, Class, set=None, recursive=True,  ignore=True, node=None): #pylint: disable=bad-classmethod-argument,redefined-builtin
+        """This is a dummy method that returns an empty generator, select() does not work on ForeignData"""
         #select can never descend into ForeignData, empty generator:
         return
         yield
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
+        """Returns the XML node (an lxml.etree.Element) that holds the foreign data"""
         return self.node
 
     @classmethod
@@ -5090,7 +5659,7 @@ class RegExp(object):
 class Pattern(object):
     """
     This class describes a pattern over words to be searched for. The
-``Document.findwords()`` method can subsequently be called with this pattern,
+:meth:`Document.findwords` method can subsequently be called with this pattern,
 and it will return all the words that match. An example will best illustrate
 this, first a trivial example of searching for one word::
 
@@ -5302,7 +5871,10 @@ class NativeMetaData(object):
 
 
 class Document(object):
-    """This is the FoLiA Document, all elements have to be associated with a FoLiA document. Besides holding elements, the document hold metadata including declaration, and an index of all IDs."""
+    """This is the FoLiA Document and holds all its data in memory.
+    
+    All FoLiA elements have to be associated with a FoLiA document. 
+    Besides holding elements, the document may hold metadata including declarations, and an index of all IDs."""
 
     IDSEPARATOR = '.'
 
@@ -5332,15 +5904,14 @@ class Document(object):
              * folia.Mode.MEMORY - The entire FoLiA Document will be loaded into memory. This is the default mode and the only mode in which documents can be manipulated and saved again.
              * folia.Mode.XPATH - The full XML tree will still be loaded into memory, but conversion to FoLiA classes occurs only when queried. This mode can be used when the full power of XPath is required.
 
+        Keyword Arguments:
 
-        Optional keyword arguments:
-
-            ``setdefinition=``:  A dictionary of set definitions, the key corresponds to the set name, the value is a SetDefinition instance
-            ``loadsetdefinitions=``:  Boolean, download and load set definitions (default: False)
-            ``deepvalidation=``:  Boolean, do deep validation of the document (default: False), implies ``loadsetdefinitions``
-            ``preparsexmlcallback=``:  Callback for a function taking one argument (``node``, an lxml node). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort parsing this element (and all its children)
-            ``parsexmlcallback=``:  Callback for a function taking one argument (``element``, a FoLiA element). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort adding this element (and all its children)
-            ``debug=``:  Boolean to enable/disable debug
+            setdefinition (dict):  A dictionary of set definitions, the key corresponds to the set name, the value is a SetDefinition instance
+            loadsetdefinitions (bool):  download and load set definitions (default: False)
+            deepvalidation (bool): Do deep validation of the document (default: False), implies ``loadsetdefinitions``
+            preparsexmlcallback (function):  Callback for a function taking one argument (``node``, an lxml node). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort parsing this element (and all its children)
+            parsexmlcallback (function):  Callback for a function taking one argument (``element``, a FoLiA element). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort adding this element (and all its children)
+            debug (bool): Boolean to enable/disable debug
         """
 
 
@@ -5488,7 +6059,11 @@ class Document(object):
     #    del self.data
 
     def load(self, filename):
-        """Load a FoLiA or D-Coi XML file"""
+        """Load a FoLiA XML file.
+
+        Argument:
+            filename (str): The file to load
+        """
         #if LXE and self.mode != Mode.XPATH:
         #    #workaround for xml:id problem (disabled)
         #    #f = open(filename)
@@ -5520,10 +6095,10 @@ class Document(object):
             yield x
 
     def save(self, filename=None):
-        """Save the document to FoLiA XML.
+        """Save the document to file.
 
         Arguments:
-            * ``filename=``: The filename to save to. If not set (None), saves to the same file as loaded from.
+            * filename (str): The filename to save to. If not set (``None``, default), saves to the same file as loaded from.
         """
         if not filename:
             filename = self.filename
@@ -5559,7 +6134,7 @@ class Document(object):
 
 
     def __contains__(self, key):
-        """Tests if the specified ID is in the document index"""
+        """Tests if the specified element ID is in the document index"""
         if key in self.index:
             return True
         elif self.subdocs:
@@ -5617,11 +6192,16 @@ class Document(object):
         self.data.append(text)
         return text
 
+    def add(self,text):
+        """Alias for :meth:`Document.append`"""
+        return self.append(text)
+
     def create(self, Class, *args, **kwargs):
         """Create an element associated with this Document. This method may be obsolete and removed later."""
         return Class(self, *args, **kwargs)
 
     def xmldeclarations(self):
+        """Internal method to generate XML nodes for all declarations"""
         l = []
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
 
@@ -5660,6 +6240,11 @@ class Document(object):
         return l
 
     def jsondeclarations(self):
+        """Return all declarations in a form ready to be serialised to JSON.
+        
+        Returns:
+            list of dict 
+        """
         l = []
         for annotationtype, set in self.annotations:
             label = None
@@ -5696,6 +6281,14 @@ class Document(object):
         return l
 
     def xml(self):
+        """Serialise the document to XML.
+
+        Returns:
+            lxml.etree.Element
+
+        See also:
+            :meth:`Document.xmlstring`
+        """
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
@@ -5725,6 +6318,13 @@ class Document(object):
         return e
 
     def json(self):
+        """Serialise the document to a ``dict`` ready for serialisation to JSON.
+
+        Example::
+
+            import json
+            jsondoc = json.dumps(doc.json())
+        """
         jsondoc = {'id': self.id, 'children': [], 'declarations': self.jsondeclarations() }
         if self.version:
             jsondoc['version'] = self.version
@@ -5737,6 +6337,7 @@ class Document(object):
         return jsondoc
 
     def xmlmetadata(self):
+        """Internal method to serialize XML declarations"""
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         if self.metadatatype == MetaDataType.NATIVE:
             e = []
@@ -5756,6 +6357,7 @@ class Document(object):
 
 
     def parsexmldeclarations(self, node):
+        """Internal method to parse XML declarations"""
         if self.debug >= 1:
             print("[PyNLPl FoLiA DEBUG] Processing Annotation Declarations",file=stderr)
         self.declareprocessed = True
@@ -5875,6 +6477,7 @@ class Document(object):
 
 
     def setimdi(self, node): #OBSOLETE
+        """OBSOLETE"""
         ns = {'imdi': 'http://www.mpi.nl/IMDI/Schema/IMDI'}
         self.metadatatype = MetaDataType.IMDI
         if LXE:
@@ -5893,6 +6496,24 @@ class Document(object):
         if n and n[0].text: self._language = n[0].text
 
     def declare(self, annotationtype, set, **kwargs):
+        """Declare a new annotation type to be used in the document.
+
+        Keyword arguments can be used to set defaults for any annotation of this type and set.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            set (str): the set, should formally be a URL pointing to the set definition
+
+        Keyword Arguments:
+            annotator (str): Sets a default annotator
+            annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process.
+            datetime (datetime.datetime): Sets the default datetime
+
+        Example::
+
+            doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', annotator="mytagger", annotatortype=folia.AnnotatorType.AUTO)
+        """
+
         if inspect.isclass(annotationtype):
             annotationtype = annotationtype.ANNOTATIONTYPE
         if not (annotationtype, set) in self.annotations:
@@ -5905,11 +6526,37 @@ class Document(object):
         self.annotationdefaults[annotationtype][set] = kwargs
 
     def declared(self, annotationtype, set):
+        """Checks if the annotation type is present (i.e. declared) in the document.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            set (str): the set, should formally be a URL pointing to the set definition
+
+        Example::
+
+            if doc.declared(folia.PosAnnotation, 'http://some/path/brown-tag-set'):
+                ..
+
+        Returns:
+            bool
+        """
         if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
         return ( (annotationtype,set) in self.annotations)
 
 
     def defaultset(self, annotationtype):
+        """Obtain the default set for the specified annotation type.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+
+        Returns:
+            the set (str)
+
+        Raises:
+            :class:`NoDefaultError` if the annotation type does not exist or if there is ambiguity (multiple sets for the same type)
+        """
+
         if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         try:
             return list(self.annotationdefaults[annotationtype].keys())[0]
@@ -5920,6 +6567,19 @@ class Document(object):
 
 
     def defaultannotator(self, annotationtype, set=None):
+        """Obtain the default annotator for the specified annotation type and set.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            set (str): the set, should formally be a URL pointing to the set definition
+
+        Returns:
+            the set (str)
+
+        Raises:
+            :class:`NoDefaultError` if the annotation type does not exist or if there is ambiguity (multiple sets for the same type)
+        """
+
         if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         if not set: set = self.defaultset(annotationtype)
         try:
@@ -5928,6 +6588,18 @@ class Document(object):
             raise NoDefaultError
 
     def defaultannotatortype(self, annotationtype,set=None):
+        """Obtain the default annotator type for the specified annotation type and set.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            set (str): the set, should formally be a URL pointing to the set definition
+
+        Returns:
+            ``AnnotatorType.AUTO`` or ``AnnotatorType.MANUAL``
+
+        Raises:
+            :class:`NoDefaultError` if the annotation type does not exist or if there is ambiguity (multiple sets for the same type)
+        """
         if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         if not set: set = self.defaultset(annotationtype)
         try:
@@ -5937,6 +6609,18 @@ class Document(object):
 
 
     def defaultdatetime(self, annotationtype,set=None):
+        """Obtain the default datetime for the specified annotation type and set.
+
+        Arguments:
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            set (str): the set, should formally be a URL pointing to the set definition
+
+        Returns:
+            the set (str)
+
+        Raises:
+            :class:`NoDefaultError` if the annotation type does not exist or if there is ambiguity (multiple sets for the same type)
+        """
         if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
         if not set: set = self.defaultset(annotationtype)
         try:
@@ -5949,7 +6633,9 @@ class Document(object):
 
 
     def title(self, value=None):
-        """No arguments: Get the document's title from metadata
+        """Get or set the document's title from/in the metadata
+
+           No arguments: Get the document's title from metadata
            Argument: Set the document's title in metadata
         """
         if not (value is None):
@@ -5966,7 +6652,9 @@ class Document(object):
             return self._title
 
     def date(self, value=None):
-        """No arguments: Get the document's date from metadata
+        """Get or set the document's date from/in the metadata.
+
+           No arguments: Get the document's date from metadata
            Argument: Set the document's date in metadata
         """
         if not (value is None):
@@ -6034,6 +6722,8 @@ class Document(object):
             return self._language
 
     def parsemetadata(self, node):
+        """Internal method to parse metadata"""
+
         if 'type' in node.attrib:
             self.metadatatype = node.attrib['type']
         else:
@@ -6075,7 +6765,9 @@ class Document(object):
 
 
     def parsexml(self, node, ParentClass = None):
-        """Main XML parser, will invoke class-specific XML parsers. For internal use."""
+        """Internal method.
+
+        This is the main XML parser, will invoke class-specific XML parsers."""
         if (LXE and isinstance(node,ElementTree._ElementTree)) or (not LXE and isinstance(node, ElementTree.ElementTree)): #pylint: disable=protected-access
             node = node.getroot()
         elif isstring(node):
@@ -6166,6 +6858,7 @@ class Document(object):
 
 
     def select(self, Class, set=None, recursive=True,  ignore=True):
+        """See :meth:`AbstractElement.select`"""
         if self.mode == Mode.MEMORY:
             for t in self.data:
                 if Class.__name__ == 'Text':
@@ -6175,6 +6868,7 @@ class Document(object):
                         yield e
 
     def count(self, Class, set=None, recursive=True,ignore=True):
+        """See :meth:`AbstractElement.count`"""
         if self.mode == Mode.MEMORY:
             s = 0
             for t in self.data:
@@ -6231,6 +6925,9 @@ class Document(object):
 
     def text(self, cls='current', retaintokenisation=False):
         """Returns the text of the entire document (returns a unicode instance)
+
+        See also:
+            :meth:`AbstractElement.text`
         """
 
         #backward compatibility, old versions didn't have cls as first argument, so if a boolean is passed first we interpret it as the 2nd:
@@ -6248,6 +6945,7 @@ class Document(object):
         return s
 
     def xmlstring(self):
+        """Return the XML representation of the document as a string."""
         s = ElementTree.tostring(self.xml(), xml_declaration=True, pretty_print=True, encoding='utf-8')
         if sys.version < '3':
             if isinstance(s, str):
@@ -6648,6 +7346,14 @@ def relaxng_declarations():
 
 
 def relaxng(filename=None):
+    """Generates a RelaxNG Schema for FoLiA. Optionally saves it to file.
+
+    Args:
+        filename (str): Save the schema to the following filename
+
+    Returns:
+        lxml.ElementTree: The schema
+    """
     E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
     grammar = E.grammar( E.start( E.element( #FoLiA
                 E.attribute(name='id',ns="http://www.w3.org/XML/1998/namespace"),
@@ -6835,7 +7541,9 @@ def findwords(doc, worditerator, *args, **kwargs):
                     buffers.remove(buffer) #remove buffer
 
 class Reader(object):
-    """Streaming FoLiA reader. The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found. If you are querying a corpus of large FoLiA documents for a specific structure, then it is strongly recommend to use the Reader rather than the standard Document!"""
+    """Streaming FoLiA reader.
+
+    The reader allows you to read a FoLiA Document without holding the whole tree structure in memory. The document will be read and the elements you seek returned as they are found. If you are querying a corpus of large FoLiA documents for a specific structure, then it is strongly recommend to use the Reader rather than the standard Document!"""
 
 
     def __init__(self, filename, target, *args, **kwargs):
