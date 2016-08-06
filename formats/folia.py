@@ -4117,7 +4117,7 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
         return super(AbstractAnnotationLayer, self).append(child, *args, **kwargs)
 
-    def add(self, child, *args, **kwargsxml): #alias for append
+    def add(self, child, *args, **kwargs): #alias for append
         return self.append(child, *args, **kwargs)
 
     def annotations(self,Class,set=None):
