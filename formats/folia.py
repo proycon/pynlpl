@@ -2985,7 +2985,7 @@ class AbstractExtendedTokenAnnotation(AbstractTokenAnnotation):
 
 class AbstractTextMarkup(AbstractElement):
     """Abstract class for text markup elements, elements that appear with the :class:`TextContent` (``t``) element.
-    
+
     Markup elements pertain primarily to styling, but also have other roles.
 
     Iterating over the element of a
@@ -3141,7 +3141,7 @@ class TextContent(AbstractElement):
 
     def __init__(self, doc, *args, **kwargs):
         """
-        
+
         Example::
 
                 text = folia.TextContent(doc, 'test')
@@ -3603,11 +3603,16 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
         return Content(doc, **kwargs)
 
 class Part(AbstractStructureElement):
-    pass
+    """Generic structure element used to mark a part inside another block.
+
+    Do **not** use this for morphology, use :class:`Morpheme` instead.
+    """
 
 
 class Gap(AbstractElement):
-    """Gap element. Represents skipped portions of the text. Usually contains :class:`Content` and possibly also a :class:`Description` element"""
+    """Gap element, represents skipped portions of the text.
+
+    Usually contains :class:`Content` and possibly also a :class:`Description` element"""
 
     def __init__(self, doc, *args, **kwargs):
         if 'content' in kwargs:
@@ -3627,7 +3632,7 @@ class Gap(AbstractElement):
 
 class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has a double role!!
     """Line break element, signals a line break.
-    
+
     This element acts both as a structure element as well as a text markup element.
     """
 
@@ -3893,7 +3898,7 @@ class Feature(AbstractElement):
 
     def __init__(self,doc, *args, **kwargs): #pylint: disable=super-init-not-called
         """Constructor.
-        
+
         Keyword Arguments:
             subset (str): the subset
             cls (str): the class
@@ -3955,7 +3960,7 @@ class ValueFeature(Feature):
 
 class Metric(AbstractElement):
     """Metric elements provide a key/value pair to allow the annotation of any kind of metric with any kind of annotation element.
-    
+
     It is used for example for statistical measures to be added to elements as annotation."""
     pass
 
@@ -3994,7 +3999,7 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
 
     def setspan(self, *args):
         """Sets the span of the span element anew, erases all data inside.
-        
+
         Arguments:
             *args: Instances of :class:`Word`, :class:`Morpheme` or :class:`Phoneme`
         """
@@ -4305,8 +4310,8 @@ class Reference(AbstractStructureElement):
         return super(Reference, cls).relaxng(includechildren, extraattribs, extraelements)
 
 class AlignReference(AbstractElement):
-    """The AlignReference element is used to point to specific elements inside the aligned source. 
-    
+    """The AlignReference element is used to point to specific elements inside the aligned source.
+
     It is used with :class:`Alignment` which is responsible for pointing to the external resource."""
 
     def __init__(self, doc, *args, **kwargs): #pylint: disable=super-init-not-called
@@ -4390,9 +4395,9 @@ class AlignReference(AbstractElement):
 class Alignment(AbstractElement):
     """
     The Alignment element is a form of higher-order annotation taht is used to point to an external resource.
-    
+
     It concerns references as annotation rather than references which are
-    explicitly part of the text, such as hyperlinks and :class:`Reference`. 
+    explicitly part of the text, such as hyperlinks and :class:`Reference`.
 
     Inside the Alignment element, the :class:`AlignReference` element may be used to point to specific elements (multiple denotes a span).
     """
@@ -4527,7 +4532,7 @@ class Original(AbstractCorrectionChild):
 
 
 class Current(AbstractCorrectionChild):
-    """Used in the context of :class:`Correction` to encapsulate the currently authoritative annotations. 
+    """Used in the context of :class:`Correction` to encapsulate the currently authoritative annotations.
 
     Needed only when suggestions for correction are proposed (:class:`Suggestion`) for structural elements.
     """
@@ -4592,7 +4597,7 @@ class Correction(AbstractElement, AllowGenerateID):
         return False
 
     def hassuggestions(self,allowempty=False):
-        """Does the correction propose suggestions for correction?""" 
+        """Does the correction propose suggestions for correction?"""
         for e in self.select(Suggestion,None,False, False):
             if not allowempty and len(e) == 0: continue
             return True
@@ -4688,7 +4693,7 @@ class Correction(AbstractElement, AllowGenerateID):
 
     def new(self,index = None):
         """Get the new corrected annotation.
-        
+
         This returns only one annotation if multiple exist, use `index` to select another in the sequence.
 
         Returns:
@@ -4710,7 +4715,7 @@ class Correction(AbstractElement, AllowGenerateID):
 
     def original(self,index=None):
         """Get the old annotation prior to correction.
-        
+
         This returns only one annotation if multiple exist, use `index` to select another in the sequence.
 
         Returns:
@@ -4731,7 +4736,7 @@ class Correction(AbstractElement, AllowGenerateID):
 
     def current(self,index=None):
         """Get the current authoritative annotation (used with suggestions in a structural context)
-        
+
         This returns only one annotation if multiple exist, use `index` to select another in the sequence.
 
         Returns:
@@ -4755,7 +4760,7 @@ class Correction(AbstractElement, AllowGenerateID):
 
         Yields:
             :class:`Suggestion` element that encapsulate the suggested annotations (if index is ``None`, default)
-        
+
         Returns:
             a :class:`Suggestion` element that encapsulate the suggested annotations (if index is set)
 
@@ -4816,8 +4821,8 @@ class Correction(AbstractElement, AllowGenerateID):
 
 
 class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
-    """Element grouping alternative token annotation(s). 
-    
+    """Element grouping alternative token annotation(s).
+
     Multiple alternative elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent.
 
     A key feature of FoLiA is its ability to make explicit alternative
@@ -5014,7 +5019,7 @@ class AbstractSpanRole(AbstractSpanAnnotation):
 
 class Headspan(AbstractSpanRole): #generic head element
     """The headspan role is used to mark the head of a span annotation.
-    
+
     It can be used in various contexts, for instance to mark the head of a :class:`Dependency`.
     It is allowed by most span annotations.
     """
@@ -5024,8 +5029,8 @@ DependencyHead = Headspan #alias, backwards compatibility with FoLiA 0.8
 
 
 class DependencyDependent(AbstractSpanRole):
-    """Span role element that marks the dependent in a dependency relation. Used in :class:`Dependency`. 
-    
+    """Span role element that marks the dependent in a dependency relation. Used in :class:`Dependency`.
+
     :class:`Headspan` in turn is used to mark the head of a dependency relation."""
     pass
 
@@ -5104,7 +5109,7 @@ class Phoneme(AbstractStructureElement):
 
     def findspans(self, type,set=None): #TODO: this is a copy of the methods in Morpheme in Word, abstract into separate class and inherit
         """Find span annotation of the specified type that include this phoneme.
-        
+
         See :meth:`Word.findspans` for usage.
         """
         if issubclass(type, AbstractAnnotationLayer):
@@ -5304,7 +5309,7 @@ class Sentence(AbstractStructureElement):
 
     def corrections(self):
         """Are there corrections in this sentence?
-        
+
         Returns:
             bool
         """
@@ -5360,9 +5365,9 @@ class Sentence(AbstractStructureElement):
     def insertword(self, newword, prevword, **kwargs):
         """Inserts a word **as a correction** after an existing word.
 
-        This method automatically computes the index of insertion 
+        This method automatically computes the index of insertion
         and calls :meth:`AbstractElement.insert`
-        
+
         Arguments:
             newword (:class:`Word`): The new word to insert
             prevword (:class:`Word`): The word to insert after
@@ -5433,7 +5438,7 @@ class Utterance(AbstractStructureElement):
     """Utterance element. A structure element for speech annotation."""
 
 class Event(AbstractStructureElement):
-    pass
+    """Structural element representing events, often used in new media contexts for things such as tweets,chat messages and forum posts."""
 
 class Caption(AbstractStructureElement):
     """Element used for captions for :class:`Figure` or :class:`Table`"""
@@ -5471,7 +5476,9 @@ class Figure(AbstractStructureElement):
 
 
 class Head(AbstractStructureElement):
-    """Head element. A structure element. Acts as the header/title of a :class:`Division`. There may be one per division. Contains sentences."""
+    """Head element; a structure element that acts as the header/title of a :class:`Division`.
+
+    There may be only one per division. Often contains sentences (:class:`Sentence`) or Words (:class:`Word`)."""
 
 class Paragraph(AbstractStructureElement):
     """Paragraph element. A structure element. Represents a paragraph and holds all its sentences (and possibly other structure Whitespace and Quotes)."""
@@ -5806,8 +5813,8 @@ class NativeMetaData(object):
 
 class Document(object):
     """This is the FoLiA Document and holds all its data in memory.
-    
-    All FoLiA elements have to be associated with a FoLiA document. 
+
+    All FoLiA elements have to be associated with a FoLiA document.
     Besides holding elements, the document may hold metadata including declarations, and an index of all IDs."""
 
     IDSEPARATOR = '.'
@@ -6175,9 +6182,9 @@ class Document(object):
 
     def jsondeclarations(self):
         """Return all declarations in a form ready to be serialised to JSON.
-        
+
         Returns:
-            list of dict 
+            list of dict
         """
         l = []
         for annotationtype, set in self.annotations:
