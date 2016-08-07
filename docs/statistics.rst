@@ -11,13 +11,13 @@ Generic functions
 
 Amongst others, the following generic statistical functions are available::
 
-* ``mean(list)'' - Computes the mean of a given list of numbers
+* ``mean(list)`` - Computes the mean of a given list of numbers
 
-* ``median(list)'' - Computes the median of a given list of numbers
+* ``median(list)`` - Computes the median of a given list of numbers
 
-* ``stddev(list)'' - Computes the standard deviation of a given list of numbers  
+* ``stddev(list)`` - Computes the standard deviation of a given list of numbers  
 
-* ``normalize(list)'' - Normalizes a list of numbers so that the sum is 1.0 .
+* ``normalize(list)`` - Normalizes a list of numbers so that the sum is 1.0 .
 
 
 Frequency Lists and Distributions
@@ -53,9 +53,8 @@ This too offers a dictionary-like interface, where values are by definition norm
 A frequency list can be saved to file using the ``save(filename)`` method, and loaded back from file using the ``load(filename)`` method. The ``output()`` method is a generator yielding strings for each line of output, in ranked order.
 
 
-
 API Reference
-===============
+----------------
 
 
 .. automodule:: pynlpl.statistics

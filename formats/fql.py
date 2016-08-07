@@ -1733,6 +1733,56 @@ class Context(object):
         self.defaultsets = {}
 
 class Query(object):
+    """This class represents an FQL query.
+    
+    Selecting a word with a particular text is done as follows, ``doc`` is an instance of :class:`pynlpl.formats.folia.Document`::
+
+        query = fql.Query('SELECT w WHERE text = "house"')
+        for word in query(doc):
+            print(word)  #this will be an instance of folia.Word
+
+    Regular expression matching can be done using the ``MATCHES`` operator::
+
+        query = fql.Query('SELECT w WHERE text MATCHES "^house.*$"')
+        for word in query(doc):
+            print(word)  
+
+    The classes of other annotation types can be easily queried as follows::
+
+        query = fql.Query('SELECT w WHERE :pos = "v"' AND :lemma = "be"')
+        for word in query(doc):
+            print(word) 
+
+    You can constrain your queries to a particular target selection using the ``FOR`` keyword::
+
+        query = fql.Query('SELECT w WHERE text MATCHES "^house.*$" FOR s WHERE text CONTAINS "sell"')
+        for word in query(doc):
+            print(word)
+
+    This construction also allows you to select the actual annotations. To select all people (a named entity) for words that are not John::
+
+        query = fql.Query('SELECT entity WHERE class = "person" FOR w WHERE text != "John"')
+        for entity in query(doc):
+            print(entity) #this will be an instance of folia.Entity
+
+    **FOR** statement may be chained, and Explicit IDs can be passed using the ``ID`` keyword::
+
+        query = fql.Query('SELECT entity WHERE class = "person" FOR w WHERE text != "John" FOR div ID "section.21"')
+        for entity in query(doc):
+            print(entity) 
+        
+    Sets are specified using the **OF** keyword, it can be omitted if there is only one for the annotation type, but will be required otherwise::
+
+        query = fql.Query('SELECT su OF "http://some/syntax/set" WHERE class = "np"')
+        for su in query(doc):
+            print(su) #this will be an instance of folia.SyntacticUnit
+
+    We have just covered just the **SELECT** keyword, FQL has other keywords for manipulating documents, such as **EDIT**, **ADD**, **APPEND** and **PREPEND**.
+
+    Note:
+        Consult the FQL documentation at https://github.com/proycon/foliadocserve/blob/master/README.rst for further documentation on the language.
+
+    """
     def __init__(self, q, context=Context()):
         self.action = None
         self.targets = None

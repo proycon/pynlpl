@@ -57,7 +57,7 @@ as follows::
 
 Once you have loaded a document, all data is available for you to read and manipulate as you see fit. We will first illustrate some simple use cases:
 
-To save a document back the file it was loaded from, we do::
+To save a document back to the file it was loaded from, we do::
 
     doc.save()
 
@@ -226,7 +226,7 @@ select a specific item in the sequence::
 Navigating a document
 --------------------------
 
-The :meth:`AbstractElement.select`` method is your main tool for descending
+The :meth:`AbstractElement.select` method is your main tool for descending
 downwards in the document tree. There are occassions, however, when you want go
 upwards or sideways. The :meth:`AbstractElement.next` and
 :meth:`AbstractElement.previous` methods can be used for sideway navigation,
@@ -840,6 +840,20 @@ FQL is documented `here
 overview is beyond the scope of this documentation. We will just introduce some
 basic selection queries so you can develop an initial impression of the language's abilities.
 
+All FQL processing is done via the following class, as already seen in the
+previous section:
+
+.. currentmodule:: pynlpl.formats.fql
+
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: fullclass.rst
+
+    Query
+
+.. currentmodule:: pynlpl.formats.folia
+
 Selecting a word with a particular text is done as follows::
 
     query = fql.Query('SELECT w WHERE text = "house"')
@@ -892,8 +906,17 @@ Streaming Reader
 
 Throughout this tutorial you have seen the :class:`Document`` class as a means
 of reading FoLiA documents. This class always loads the entire document in
-memory, which can be a considerable resource demand. The :class:`Reader` class
-provides an alternative to loading FoLiA documents. It does not load the entire
+memory, which can be a considerable resource demand. The following class
+provides an alternative to loading FoLiA documents:
+
+.. autosummary:: 
+    :nosignatures:
+    :toctree: _autosummary
+    :template: fullclass.rst
+
+    Reader
+
+It does not load the entire
 document in memory but merely returns the elements you are interested in. This
 results in far less memory usage and also provides a speed-up.
 
