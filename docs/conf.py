@@ -13,6 +13,7 @@
 
 import sys, os
 from pynlpl import VERSION
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -22,7 +23,7 @@ from pynlpl import VERSION
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest',] # 'sphinx.ext.todo']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon','sphinx.ext.autosummary']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -38,7 +39,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyNLPl'
-copyright = u'2013, Maarten van Gompel'
+copyright = u'2016, Maarten van Gompel'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -120,7 +121,7 @@ html_theme = 'default'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -158,7 +159,7 @@ html_static_path = ['_static']
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PyNLPldoc'
+# htmlhelp_basename = 'pynlpl'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -172,7 +173,7 @@ latex_paper_size = 'a4'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'PyNLPl.tex', u'PyNLPl Documentation',
+  ('index', 'pynlpl.tex', u'PyNLPl Documentation',
    u'Maarten van Gompel', 'manual'),
 ]
 
@@ -192,3 +193,5 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+autosummary_generate = True

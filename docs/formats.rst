@@ -8,6 +8,11 @@ Corpus Gesproken Nederlands
     :members:
     :undoc-members:
 
+FoLiA
+::::::::::::::::::::::::::::::
+
+See folia_ : folia.html
+
 GIZA++
 ::::::::::::::::::::::::::::::
 
@@ -32,10 +37,6 @@ SoNaR
     :undoc-members:
 
 
-FoLiA
-::::::::::::::::::::::::::::::
-
-See folia_ : folia.html
 
 Taggerdata
 ::::::::::::::::::::::::::::::
@@ -49,12 +50,6 @@ TiMBL
 ::::::::::::::::::::::::::::::
 
 .. automodule:: pynlpl.formats.timbl
-    :members:
-    :undoc-members:
-
-FoLiA
-::::::::::::::::::::::::::::::
-.. automodule:: formats.folia
     :members:
     :undoc-members:
 
