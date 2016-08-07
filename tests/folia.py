@@ -1869,6 +1869,17 @@ class Test4Edit(unittest.TestCase):
         w.settext('terwijl')
         self.assertEqual(w.text(), 'terwijl')
 
+    def test017b_wordtext(self):
+        """Edit Check - Altering word text with reserved symbols"""
+
+        #Important note: directly altering text is usually bad practise, you'll want to use proper corrections instead.
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.9']
+
+        w.settext('1 & 1 > 0')
+        self.assertEqual(w.text(), '1 & 1 > 0')
+        self.assertEqual(w.textcontent().xmlstring(), '<t xmlns="http://ilk.uvt.nl/folia">1 &amp; 1 &gt; 0</t>')
+
+
     def test018a_sentencetext(self):
         """Edit Check - Altering sentence text (untokenised by definition)"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
