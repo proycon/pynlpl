@@ -35,6 +35,7 @@
 
    .. rubric:: Method Details
 
+   .. automethod::  __init__
    {% for m in methods %}
    .. automethod:: {{ m }}
    {% endfor %}
