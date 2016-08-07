@@ -57,7 +57,7 @@ as follows::
 
 Once you have loaded a document, all data is available for you to read and manipulate as you see fit. We will first illustrate some simple use cases:
 
-To save a document back the file it was loaded from, we do::
+To save a document back to the file it was loaded from, we do::
 
     doc.save()
 
@@ -226,7 +226,7 @@ select a specific item in the sequence::
 Navigating a document
 --------------------------
 
-The :meth:`AbstractElement.select`` method is your main tool for descending
+The :meth:`AbstractElement.select` method is your main tool for descending
 downwards in the document tree. There are occassions, however, when you want go
 upwards or sideways. The :meth:`AbstractElement.next` and
 :meth:`AbstractElement.previous` methods can be used for sideway navigation,
