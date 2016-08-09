@@ -3103,16 +3103,12 @@ class AbstractTextMarkup(AbstractElement):
         return super(AbstractTextMarkup,self).json(attribs,recurse, ignorelist)
 
     @classmethod
-    def parsexml(Class, node, doc):
+    def parsexml(Class, node, doc, **kwargs):
+        if not kwargs: kwargs ={}
         if 'id' in node.attrib:
-            idref = node.attrib['id']
+            kwargs['idref'] = node.attrib['id']
             del node.attrib['id']
-        else:
-            idref = None
-        instance = super(AbstractTextMarkup,Class).parsexml(node, doc)
-        if idref:
-            instance.idref = idref
-        return instance
+        return super(AbstractTextMarkup,Class).parsexml(node, doc, **kwargs)
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -3158,16 +3154,12 @@ class TextMarkupCorrection(AbstractTextMarkup):
         return super(TextMarkupCorrection,self).json(attribs,recurse,ignorelist)
 
     @classmethod
-    def parsexml(Class, node, doc):
+    def parsexml(Class, node, doc, **kwargs):
+        if not kwargs: kwargs = {}
         if 'original' in node.attrib:
-            original = node.attrib['original']
+            kwargs['original'] = node.attrib['original']
             del node.attrib['original']
-        else:
-            original = None
-        instance = super(TextMarkupCorrection,Class).parsexml(node, doc)
-        if original:
-            instance.original = original
-        return instance
+        return super(TextMarkupCorrection,Class).parsexml(node, doc, **kwargs)
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
@@ -3342,14 +3334,14 @@ class TextContent(AbstractElement):
 
 
     @classmethod
-    def parsexml(Class, node, doc):
+    def parsexml(Class, node, doc, **kwargs):
         """(Method for internal usage, see AbstractElement)"""
-        e = super(TextContent,Class).parsexml(node,doc)
+        if not kwargs: kwargs = {}
         if 'offset' in node.attrib:
-            e.offset = int(node.attrib['offset'])
+            kwargs['offset'] = int(node.attrib['offset'])
         if 'ref' in node.attrib:
-            e.ref = node.attrib['ref']
-        return e
+            kwargs['ref'] = node.attrib['ref']
+        return super(TextContent,Class).parsexml(node,doc, **kwargs)
 
 
 
@@ -3558,14 +3550,14 @@ class PhonContent(AbstractElement):
 
 
     @classmethod
-    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
+    def parsexml(Class, node, doc, **kwargs):#pylint: disable=bad-classmethod-argument
         """(Method for internal usage, see AbstractElement)"""
-        e = super(PhonContent,Class).parsexml(node,doc)
-        if e and 'offset' in node.attrib:
-            e.offset = int(node.attrib['offset'])
-        if e and 'ref' in node.attrib:
-            e.ref = node.attrib['ref']
-        return e
+        if not kwargs: kwargs = {}
+        if 'offset' in node.attrib:
+            kwargs['offset'] = int(node.attrib['offset'])
+        if 'ref' in node.attrib:
+            kwargs['ref'] = node.attrib['ref']
+        return super(PhonContent,Class).parsexml(node,doc, **kwargs)
 
 
 
@@ -3657,8 +3649,8 @@ class Content(AbstractElement):     #used for raw content, subelement for Gap
         return E.define( E.element(E.text(), name=cls.XMLTAG), name=cls.XMLTAG, ns=NSFOLIA)
 
     @classmethod
-    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
-        kwargs = {}
+    def parsexml(Class, node, doc, **kwargs):#pylint: disable=bad-classmethod-argument
+        if not kwargs: kwargs = {}
         kwargs['value'] = node.text
         return Content(doc, **kwargs)
 
@@ -3879,9 +3871,9 @@ class Word(AbstractStructureElement, AllowCorrections):
             raise
 
     @classmethod
-    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
+    def parsexml(Class, node, doc, **kwargs):#pylint: disable=bad-classmethod-argument
         assert Class is Word
-        instance = super(Word,Class).parsexml(node, doc)
+        instance = super(Word,Class).parsexml(node, doc, **kwargs) #we do this the old way (no kwargs used, because for some reason I forgot we need to whether instance evaluates to True)
         if 'space' in node.attrib and instance:
             if node.attrib['space'] == 'no':
                 instance.space = False
@@ -4333,31 +4325,18 @@ class Reference(AbstractStructureElement):
             return self
 
     @classmethod
-    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
+    def parsexml(Class, node, doc, **kwargs):#pylint: disable=bad-classmethod-argument
+        if not kwargs: kwargs = {}
         if 'id' in node.attrib:
-            idref = node.attrib['id']
+            kwargs['idref'] = node.attrib['id']
             del node.attrib['id']
-        else:
-            idref = None
         if 'type' in node.attrib:
-            t = node.attrib['type']
+            kwargs['type'] = node.attrib['type']
             del node.attrib['type']
-        else:
-            idref = None
         if 'format' in node.attrib:
-            f = node.attrib['format']
+            kwargs['format'] = node.attrib['format']
             del node.attrib['format']
-        else:
-            f = None
-        instance = super(Reference,Class).parsexml(node, doc)
-        if instance:
-            if idref:
-                instance.idref = idref
-            if t:
-                instance.type =  t
-            if f:
-                instance.format = f
-        return instance
+        return super(Reference,Class).parsexml(node, doc, **kwargs)
 
 
     @classmethod
@@ -4405,11 +4384,12 @@ class AlignReference(AbstractElement):
 
 
     @classmethod
-    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
+    def parsexml(Class, node, doc, **kwargs):#pylint: disable=bad-classmethod-argument
         assert Class is AlignReference or issubclass(Class, AlignReference)
 
         #special handling for word references
-        kwargs = {'id':node.attrib['id']}
+        if not kwargs: kwargs = {}
+        kwargs['id'] = node.attrib['id']
         if not 'type' in node.attrib:
             raise ValueError("No type in alignment reference")
         if 't' in node.attrib:
@@ -4471,17 +4451,11 @@ class Alignment(AbstractElement):
         super(Alignment,self).__init__(doc, *args, **kwargs)
 
     @classmethod
-    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
+    def parsexml(Class, node, doc, **kwargs):#pylint: disable=bad-classmethod-argument
         if 'format' in node.attrib:
-            format = node.attrib['format']
+            kwargs['format'] = node.attrib['format']
             del node.attrib['format']
-        else:
-            format = None
-        instance = super(Alignment,Class).parsexml(node, doc)
-        if instance:
-            if format:
-                instance.format = format
-        return instance
+        return super(Alignment,Class).parsexml(node, doc, **kwargs)
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
         if not attribs: attribs = {}
@@ -4529,13 +4503,13 @@ class Suggestion(AbstractCorrectionChild):
         super(Suggestion,self).__init__(doc, *args, **kwargs)
 
     @classmethod
-    def parsexml(Class, node, doc): #pylint: disable=bad-classmethod-argument
-        e = super(Suggestion,Class).parsexml(node, doc)
+    def parsexml(Class, node, doc, **kwargs): #pylint: disable=bad-classmethod-argument
+        if not kwargs: kwargs = {}
         if 'split' in node.attrib:
-            e.split = node.attrib['split']
+            kwargs['split'] = node.attrib['split']
         if 'merge' in node.attrib:
-            e.merge = node.attrib['merge']
-        return e
+            kwargs['merge'] = node.attrib['merge']
+        return super(Suggestion,Class).parsexml(node, doc, **kwargs)
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
         if not attribs: attribs= {}
@@ -4964,14 +4938,15 @@ class External(AbstractElement):
 
 
     @classmethod
-    def parsexml(Class, node, doc):
+    def parsexml(Class, node, doc, **kwargs):
         assert Class is External or issubclass(Class, External)
+        if not kwargs: kwargs = {}
         #special handling for external
         source = node.attrib['src']
         if 'include' in node.attrib:
-            include = node.attrib['include']
+            kwargs['include'] = node.attrib['include']
         else:
-            include = False
+            kwargs['include'] = False
         if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found external",file=stderr)
         return External(doc, source=source, include=include)
 
@@ -5026,7 +5001,7 @@ class WordReference(AbstractElement):
         self.auth = True
 
     @classmethod
-    def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
+    def parsexml(Class, node, doc, **kwargs):#pylint: disable=bad-classmethod-argument
         assert Class is WordReference or issubclass(Class, WordReference)
         #special handling for word references
         id = node.attrib['id']
@@ -5610,7 +5585,7 @@ class ForeignData(AbstractElement):
             self._checknamespace(subnode)
 
     @classmethod
-    def parsexml(Class, node, doc):
+    def parsexml(Class, node, doc, **kwargs):
         return ForeignData(doc, node=node)
 
     def select(self, Class, set=None, recursive=True,  ignore=True, node=None): #pylint: disable=bad-classmethod-argument,redefined-builtin
