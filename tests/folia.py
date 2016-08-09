@@ -1879,7 +1879,6 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual(w.text(), '1 & 1 > 0')
         self.assertEqual(w.textcontent().xmlstring(), '<t xmlns="http://ilk.uvt.nl/folia">1 &amp; 1 &gt; 0</t>')
 
-
     def test018a_sentencetext(self):
         """Edit Check - Altering sentence text (untokenised by definition)"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']

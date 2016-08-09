@@ -2615,7 +2615,7 @@ class Comment(AbstractElement):
     def parsexml(Class, node, doc):
         kwargs = {}
         kwargs['value'] = node.text
-        return Description(doc, **kwargs)
+        return Comment(doc, **kwargs)
 
 
 class AllowCorrections(object):
