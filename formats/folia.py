@@ -1865,7 +1865,13 @@ class AbstractElement(object):
 
         if elements: #extra elements
             for e2 in elements:
-                e.append(e2)
+                if isinstance(e2, str) or (sys.version < '3' and isinstance(e2, unicode)):
+                    if e.text is None:
+                        e.text = e2
+                    else:
+                        e.text += e2
+                else:
+                    e.append(e2)
         return e
 
 
@@ -2342,7 +2348,7 @@ class AbstractElement(object):
             return E.define( E.element(*(preamble + attribs), **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
 
     @classmethod
-    def parsexml(Class, node, doc): #pylint: disable=bad-classmethod-argument
+    def parsexml(Class, node, doc, **kwargs): #pylint: disable=bad-classmethod-argument
         """Internal class method used for turning an XML element into an instance of the Class.
 
         Args:
@@ -2366,7 +2372,7 @@ class AbstractElement(object):
 
         dcoi = node.tag.startswith('{' + NSDCOI + '}')
         args = []
-        kwargs = {}
+        if not kwargs: kwargs = {}
         text = None #for dcoi support
         if (Class.TEXTCONTAINER or Class.PHONCONTAINER) and node.text:
             args.append(node.text)
@@ -2539,12 +2545,7 @@ class Description(AbstractElement):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-
-        if not attribs:
-            attribs = {}
-
-        return E.desc(self.value, **attribs)
+        return super(Description, self).xml(attribs, [self.value],skipchildren)
 
     def json(self,attribs =None, recurse=True, ignorelist=False):
         jsonnode = {'type': self.XMLTAG, 'value': self.value}
@@ -2554,11 +2555,10 @@ class Description(AbstractElement):
         return jsonnode
 
     @classmethod
-    def parsexml(Class, node, doc):
-        kwargs = {}
+    def parsexml(Class, node, doc, **kwargs):
+        if not kwargs: kwargs = {}
         kwargs['value'] = node.text
-        return Description(doc, **kwargs)
-
+        return super(Description,Class).parsexml(node, doc, **kwargs)
 
 
 class Comment(AbstractElement):
@@ -2597,12 +2597,7 @@ class Comment(AbstractElement):
 
 
     def xml(self, attribs = None,elements = None, skipchildren = False):
-        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
-
-        if not attribs:
-            attribs = {}
-
-        return E.comment(self.value, **attribs)
+        return super(Comment, self).xml(attribs, [self.value],skipchildren)
 
     def json(self,attribs =None, recurse=True, ignorelist=False):
         jsonnode = {'type': self.XMLTAG, 'value': self.value}
@@ -2612,11 +2607,10 @@ class Comment(AbstractElement):
         return jsonnode
 
     @classmethod
-    def parsexml(Class, node, doc):
-        kwargs = {}
+    def parsexml(Class, node, doc, **kwargs):
+        if not kwargs: kwargs = {}
         kwargs['value'] = node.text
-        return Comment(doc, **kwargs)
-
+        return super(Comment,Class).parsexml(node, doc, **kwargs)
 
 class AllowCorrections(object):
     def correct(self, **kwargs):
