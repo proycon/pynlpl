@@ -5605,6 +5605,7 @@ class ForeignData(AbstractElement):
             self._checknamespace(subnode)
         self.doc = doc
         self.id = None
+        self.auth = True
         #do not call superconstructor
 
     def _checknamespace(self, node):
