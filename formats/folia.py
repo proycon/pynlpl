@@ -2602,7 +2602,7 @@ class Comment(AbstractElement):
         if not attribs:
             attribs = {}
 
-        return E.desc(self.value, **attribs)
+        return E.comment(self.value, **attribs)
 
     def json(self,attribs =None, recurse=True, ignorelist=False):
         jsonnode = {'type': self.XMLTAG, 'value': self.value}
