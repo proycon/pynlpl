@@ -122,7 +122,7 @@ class Attrib:
 #foliaspec:annotationtype
 #Defines all annotation types (as part of the AnnotationType enumeration)
 class AnnotationType:
-    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ERRORDETECTION, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, ENTRY, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL = range(42)
+    TEXT, TOKEN, DIVISION, PARAGRAPH, LIST, FIGURE, WHITESPACE, LINEBREAK, SENTENCE, POS, LEMMA, DOMAIN, SENSE, SYNTAX, CHUNKING, ENTITY, CORRECTION, ERRORDETECTION, PHON, SUBJECTIVITY, MORPHOLOGICAL, EVENT, DEPENDENCY, TIMESEGMENT, GAP, NOTE, ALIGNMENT, COMPLEXALIGNMENT, COREFERENCE, SEMROLE, METRIC, LANG, STRING, TABLE, STYLE, PART, UTTERANCE, ENTRY, TERM, DEFINITION, EXAMPLE, PHONOLOGICAL, PREDICATE, OBSERVATION, SENTIMENT, STATEMENT = range(46)
 
 
     #Alternative is a special one, not declared and not used except for ID generation
@@ -7644,7 +7644,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-04 15:53:33, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-10 16:29:25, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7677,14 +7677,18 @@ ANNOTATIONTYPE2XML = {
     AnnotationType.METRIC:  "metric" ,
     AnnotationType.MORPHOLOGICAL:  "morpheme" ,
     AnnotationType.NOTE:  "note" ,
+    AnnotationType.OBSERVATION:  "predicate" ,
     AnnotationType.PARAGRAPH:  "p" ,
     AnnotationType.PART:  "part" ,
     AnnotationType.PHON:  "ph" ,
     AnnotationType.PHONOLOGICAL:  "phoneme" ,
     AnnotationType.POS:  "pos" ,
+    AnnotationType.PREDICATE:  "predicate" ,
     AnnotationType.SEMROLE:  "semrole" ,
     AnnotationType.SENSE:  "sense" ,
     AnnotationType.SENTENCE:  "s" ,
+    AnnotationType.SENTIMENT:  "sentiment" ,
+    AnnotationType.STATEMENT:  "statement" ,
     AnnotationType.STRING:  "str" ,
     AnnotationType.SUBJECTIVITY:  "subjectivity" ,
     AnnotationType.SYNTAX:  "su" ,
@@ -7748,6 +7752,8 @@ XML2CLASS = {
     "morphology": MorphologyLayer,
     "new": New,
     "note": Note,
+    "predicate": Observation,
+    "obvervations": ObservationLayer,
     "original": Original,
     "p": Paragraph,
     "part": Part,
@@ -7755,14 +7761,21 @@ XML2CLASS = {
     "phoneme": Phoneme,
     "phonology": PhonologyLayer,
     "pos": PosAnnotation,
+    "predicate": Predicate,
     "quote": Quote,
     "ref": Reference,
+    "relation": Relation,
     "row": Row,
     "semrole": SemanticRole,
     "semroles": SemanticRolesLayer,
     "sense": SenseAnnotation,
     "s": Sentence,
+    "sentiment": Sentiment,
+    "sentiments": SentimentLayer,
+    "source": Source,
     "speech": Speech,
+    "statement": Statement,
+    "statements": StatementLayer,
     "str": String,
     "subjectivity": SubjectivityAnnotation,
     "suggestion": Suggestion,
@@ -7770,6 +7783,7 @@ XML2CLASS = {
     "syntax": SyntaxLayer,
     "table": Table,
     "tablehead": TableHead,
+    "target": Target,
     "term": Term,
     "text": Text,
     "t": TextContent,
@@ -7796,8 +7810,11 @@ ANNOTATIONTYPE2LAYERCLASS = {
     AnnotationType.DEPENDENCY:  DependenciesLayer ,
     AnnotationType.ENTITY:  EntitiesLayer ,
     AnnotationType.MORPHOLOGICAL:  MorphologyLayer ,
+    AnnotationType.OBSERVATION:  ObservationLayer ,
     AnnotationType.PHONOLOGICAL:  PhonologyLayer ,
     AnnotationType.SEMROLE:  SemanticRolesLayer ,
+    AnnotationType.SENTIMENT:  SentimentLayer ,
+    AnnotationType.STATEMENT:  StatementLayer ,
     AnnotationType.SYNTAX:  SyntaxLayer ,
     AnnotationType.TIMESEGMENT:  TimingLayer ,
 }
@@ -7852,12 +7869,12 @@ AbstractCorrectionChild.SPEAKABLE = True
 AbstractCorrectionChild.TEXTDELIMITER = None
 #------ AbstractExtendedTokenAnnotation -------
 #------ AbstractSpanAnnotation -------
-AbstractSpanAnnotation.ACCEPTED_DATA = (Alignment, Comment, Description, ForeignData, Metric,)
+AbstractSpanAnnotation.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, ForeignData, Metric,)
 AbstractSpanAnnotation.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
 AbstractSpanAnnotation.PRINTABLE = True
 AbstractSpanAnnotation.SPEAKABLE = True
 #------ AbstractSpanRole -------
-AbstractSpanRole.ACCEPTED_DATA = (Alignment, Comment, Description, Feature, ForeignData, Metric, WordReference,)
+AbstractSpanRole.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Metric, WordReference,)
 AbstractSpanRole.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME,)
 #------ AbstractStructureElement -------
 AbstractStructureElement.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, ForeignData, Metric, Part,)
@@ -7922,7 +7939,7 @@ Cell.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, 
 Cell.TEXTDELIMITER = " | "
 Cell.XMLTAG = "cell"
 #------ Chunk -------
-Chunk.ACCEPTED_DATA = (Alignment, Comment, Description, Feature, ForeignData, Metric, WordReference,)
+Chunk.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Metric, WordReference,)
 Chunk.ANNOTATIONTYPE = AnnotationType.CHUNKING
 Chunk.XMLTAG = "chunk"
 #------ ChunkingLayer -------
@@ -7950,7 +7967,7 @@ ComplexAlignmentLayer.XMLTAG = "complexalignments"
 Content.OCCURRENCES = 1
 Content.XMLTAG = "content"
 #------ CoreferenceChain -------
-CoreferenceChain.ACCEPTED_DATA = (Alignment, Comment, CoreferenceLink, Description, ForeignData, Metric,)
+CoreferenceChain.ACCEPTED_DATA = (AlignReference, Alignment, Comment, CoreferenceLink, Description, ForeignData, Metric,)
 CoreferenceChain.ANNOTATIONTYPE = AnnotationType.COREFERENCE
 CoreferenceChain.REQUIRED_DATA = (CoreferenceLink,)
 CoreferenceChain.XMLTAG = "coreferencechain"
@@ -7960,7 +7977,7 @@ CoreferenceLayer.ANNOTATIONTYPE = AnnotationType.COREFERENCE
 CoreferenceLayer.PRIMARYELEMENT = False
 CoreferenceLayer.XMLTAG = "coreferences"
 #------ CoreferenceLink -------
-CoreferenceLink.ACCEPTED_DATA = (Alignment, Comment, Description, Feature, ForeignData, Headspan, LevelFeature, Metric, ModalityFeature, TimeFeature, WordReference,)
+CoreferenceLink.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Headspan, LevelFeature, Metric, ModalityFeature, TimeFeature, WordReference,)
 CoreferenceLink.ANNOTATIONTYPE = AnnotationType.COREFERENCE
 CoreferenceLink.PRIMARYELEMENT = False
 CoreferenceLink.XMLTAG = "coreferencelink"
@@ -7986,7 +8003,7 @@ DependenciesLayer.ANNOTATIONTYPE = AnnotationType.DEPENDENCY
 DependenciesLayer.PRIMARYELEMENT = False
 DependenciesLayer.XMLTAG = "dependencies"
 #------ Dependency -------
-Dependency.ACCEPTED_DATA = (Alignment, Comment, DependencyDependent, Description, Feature, ForeignData, Headspan, Metric,)
+Dependency.ACCEPTED_DATA = (AlignReference, Alignment, Comment, DependencyDependent, Description, Feature, ForeignData, Headspan, Metric,)
 Dependency.ANNOTATIONTYPE = AnnotationType.DEPENDENCY
 Dependency.REQUIRED_DATA = (DependencyDependent, Headspan,)
 Dependency.XMLTAG = "dependency"
@@ -8014,7 +8031,7 @@ EntitiesLayer.ANNOTATIONTYPE = AnnotationType.ENTITY
 EntitiesLayer.PRIMARYELEMENT = False
 EntitiesLayer.XMLTAG = "entities"
 #------ Entity -------
-Entity.ACCEPTED_DATA = (Alignment, Comment, Description, Feature, ForeignData, Metric, WordReference,)
+Entity.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Metric, WordReference,)
 Entity.ANNOTATIONTYPE = AnnotationType.ENTITY
 Entity.XMLTAG = "entity"
 #------ Entry -------
@@ -8120,6 +8137,15 @@ New.XMLTAG = "new"
 Note.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Example, Feature, Figure, ForeignData, Head, Linebreak, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Whitespace, Word,)
 Note.ANNOTATIONTYPE = AnnotationType.NOTE
 Note.XMLTAG = "note"
+#------ Observation -------
+Observation.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Metric, WordReference,)
+Observation.ANNOTATIONTYPE = AnnotationType.OBSERVATION
+Observation.XMLTAG = "predicate"
+#------ ObservationLayer -------
+ObservationLayer.ACCEPTED_DATA = (Comment, Correction, Description, ForeignData, Observation,)
+ObservationLayer.ANNOTATIONTYPE = AnnotationType.OBSERVATION
+ObservationLayer.PRIMARYELEMENT = False
+ObservationLayer.XMLTAG = "obvervations"
 #------ Original -------
 Original.AUTH = False
 Original.OCCURRENCES = 1
@@ -8158,6 +8184,10 @@ PhonologyLayer.XMLTAG = "phonology"
 PosAnnotation.ACCEPTED_DATA = (Comment, Description, Feature, ForeignData, HeadFeature, Metric,)
 PosAnnotation.ANNOTATIONTYPE = AnnotationType.POS
 PosAnnotation.XMLTAG = "pos"
+#------ Predicate -------
+Predicate.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Metric, SemanticRole, WordReference,)
+Predicate.ANNOTATIONTYPE = AnnotationType.PREDICATE
+Predicate.XMLTAG = "predicate"
 #------ Quote -------
 Quote.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Division, Feature, ForeignData, Gap, Metric, Paragraph, Part, Quote, Sentence, String, TextContent, Utterance, Word,)
 Quote.XMLTAG = "quote"
@@ -8165,17 +8195,19 @@ Quote.XMLTAG = "quote"
 Reference.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, ForeignData, Metric, Paragraph, Part, PhonContent, Quote, Sentence, String, TextContent, Utterance, Word,)
 Reference.TEXTDELIMITER = None
 Reference.XMLTAG = "ref"
+#------ Relation -------
+Relation.XMLTAG = "relation"
 #------ Row -------
 Row.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Cell, Comment, Correction, Description, Feature, ForeignData, Metric, Part,)
 Row.TEXTDELIMITER = "\n"
 Row.XMLTAG = "row"
 #------ SemanticRole -------
-SemanticRole.ACCEPTED_DATA = (Alignment, Comment, Description, Feature, ForeignData, Headspan, Metric, WordReference,)
+SemanticRole.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Headspan, Metric, WordReference,)
 SemanticRole.ANNOTATIONTYPE = AnnotationType.SEMROLE
 SemanticRole.REQUIRED_ATTRIBS = (Attrib.CLASS,)
 SemanticRole.XMLTAG = "semrole"
 #------ SemanticRolesLayer -------
-SemanticRolesLayer.ACCEPTED_DATA = (Comment, Correction, Description, ForeignData, SemanticRole,)
+SemanticRolesLayer.ACCEPTED_DATA = (Comment, Correction, Description, ForeignData, Predicate, SemanticRole,)
 SemanticRolesLayer.ANNOTATIONTYPE = AnnotationType.SEMROLE
 SemanticRolesLayer.PRIMARYELEMENT = False
 SemanticRolesLayer.XMLTAG = "semroles"
@@ -8188,10 +8220,30 @@ Sentence.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotati
 Sentence.ANNOTATIONTYPE = AnnotationType.SENTENCE
 Sentence.TEXTDELIMITER = " "
 Sentence.XMLTAG = "s"
+#------ Sentiment -------
+Sentiment.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Headspan, Metric, Source, Target, WordReference,)
+Sentiment.ANNOTATIONTYPE = AnnotationType.SENTIMENT
+Sentiment.XMLTAG = "sentiment"
+#------ SentimentLayer -------
+SentimentLayer.ACCEPTED_DATA = (Comment, Correction, Description, ForeignData, Sentiment,)
+SentimentLayer.ANNOTATIONTYPE = AnnotationType.SENTIMENT
+SentimentLayer.PRIMARYELEMENT = False
+SentimentLayer.XMLTAG = "sentiments"
+#------ Source -------
+Source.XMLTAG = "source"
 #------ Speech -------
 Speech.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Division, Entry, Event, Example, External, Feature, ForeignData, Gap, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, String, TextContent, Utterance, Word,)
 Speech.TEXTDELIMITER = "\n\n\n"
 Speech.XMLTAG = "speech"
+#------ Statement -------
+Statement.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Headspan, Metric, Relation, Source, WordReference,)
+Statement.ANNOTATIONTYPE = AnnotationType.STATEMENT
+Statement.XMLTAG = "statement"
+#------ StatementLayer -------
+StatementLayer.ACCEPTED_DATA = (Comment, Correction, Description, ForeignData, Statement,)
+StatementLayer.ANNOTATIONTYPE = AnnotationType.STATEMENT
+StatementLayer.PRIMARYELEMENT = False
+StatementLayer.XMLTAG = "statements"
 #------ String -------
 String.ACCEPTED_DATA = (AbstractExtendedTokenAnnotation, Alignment, Comment, Correction, Description, Feature, ForeignData, Metric, PhonContent, TextContent,)
 String.ANNOTATIONTYPE = AnnotationType.STRING
@@ -8213,7 +8265,7 @@ Suggestion.XMLTAG = "suggestion"
 SynsetFeature.SUBSET = "synset"
 SynsetFeature.XMLTAG = None
 #------ SyntacticUnit -------
-SyntacticUnit.ACCEPTED_DATA = (Alignment, Comment, Description, Feature, ForeignData, Metric, SyntacticUnit, WordReference,)
+SyntacticUnit.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Metric, SyntacticUnit, WordReference,)
 SyntacticUnit.ANNOTATIONTYPE = AnnotationType.SYNTAX
 SyntacticUnit.XMLTAG = "su"
 #------ SyntaxLayer -------
@@ -8228,6 +8280,8 @@ Table.XMLTAG = "table"
 #------ TableHead -------
 TableHead.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, ForeignData, Metric, Part, Row,)
 TableHead.XMLTAG = "tablehead"
+#------ Target -------
+Target.XMLTAG = "target"
 #------ Term -------
 Term.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Event, Feature, Figure, ForeignData, Gap, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Word,)
 Term.ANNOTATIONTYPE = AnnotationType.TERM
@@ -8270,7 +8324,7 @@ TextMarkupStyle.XMLTAG = "t-style"
 TimeFeature.SUBSET = "time"
 TimeFeature.XMLTAG = None
 #------ TimeSegment -------
-TimeSegment.ACCEPTED_DATA = (ActorFeature, Alignment, BegindatetimeFeature, Comment, Description, EnddatetimeFeature, Feature, ForeignData, Metric, WordReference,)
+TimeSegment.ACCEPTED_DATA = (ActorFeature, AlignReference, Alignment, BegindatetimeFeature, Comment, Description, EnddatetimeFeature, Feature, ForeignData, Metric, WordReference,)
 TimeSegment.ANNOTATIONTYPE = AnnotationType.TIMESEGMENT
 TimeSegment.XMLTAG = "timesegment"
 #------ TimingLayer -------
