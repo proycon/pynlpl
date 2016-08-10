@@ -7681,7 +7681,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-10 16:51:56, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-10 22:13:55, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7790,7 +7790,7 @@ XML2CLASS = {
     "new": New,
     "note": Note,
     "predicate": Observation,
-    "obvervations": ObservationLayer,
+    "observations": ObservationLayer,
     "original": Original,
     "p": Paragraph,
     "part": Part,
@@ -8182,7 +8182,7 @@ Observation.XMLTAG = "predicate"
 ObservationLayer.ACCEPTED_DATA = (Comment, Correction, Description, ForeignData, Observation,)
 ObservationLayer.ANNOTATIONTYPE = AnnotationType.OBSERVATION
 ObservationLayer.PRIMARYELEMENT = False
-ObservationLayer.XMLTAG = "obvervations"
+ObservationLayer.XMLTAG = "observations"
 #------ Original -------
 Original.AUTH = False
 Original.OCCURRENCES = 1
