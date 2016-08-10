@@ -5259,6 +5259,12 @@ class SynsetFeature(Feature):
 class ActorFeature(Feature):
     """Actor feature, to be used within :class:`Event`"""
 
+class PolarityFeature(Feature):
+    """Polarity feature, to be used within :class:`Sentiment`"""
+
+class StrengthFeature(Feature):
+    """Strength feature, to be used within :class:`Sentiment`"""
+
 class BegindatetimeFeature(Feature):
     """Begindatetime feature, to be used within :class:`Event`"""
 
