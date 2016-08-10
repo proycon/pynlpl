@@ -224,8 +224,8 @@ class Filter(object): #WHERE ....
                 operator = q[i+1]
                 if q[i] == "class":
                     v = lambda x,y='cls': getattr(x,y)
-                elif q[i] == "text":
-                    v = lambda x,y='text': getattr(x,'text')()
+                elif q[i] in ("text","value"):
+                    v = lambda x,y='text': getattr(x,'value') if isinstance(x, (folia.Description, folia.Comment, folia.Content)) else getattr(x,'text')()
                 else:
                     v = lambda x,y=q[i]: getattr(x,y)
                 if operator == '=' or operator == '==':
