@@ -5050,6 +5050,7 @@ class Entity(AbstractSpanAnnotation):
     pass
 
 class AbstractSpanRole(AbstractSpanAnnotation):
+    #TODO: span roles don't take classes, derived off spanannotation allows too much
     pass
 
 class Headspan(AbstractSpanRole): #generic head element
@@ -5068,6 +5069,15 @@ class DependencyDependent(AbstractSpanRole):
 
     :class:`Headspan` in turn is used to mark the head of a dependency relation."""
     pass
+
+class Source(AbstractSpanRole):
+    """The source span role is used to mark the source in a :class:`Sentiment` or :class:`Statement` """
+
+class Target(AbstractSpanRole):
+    """The target span role is used to mark the target in a :class:`Sentiment` """
+
+class Relation(AbstractSpanRole):
+    """The relation span role is used to mark the relation between the content of a statement and its source in a :class:`Statement`"""
 
 class Dependency(AbstractSpanAnnotation):
     """Span annotation element to encode dependency relations"""
@@ -5098,6 +5108,18 @@ class CoreferenceChain(AbstractSpanAnnotation):
 
 class SemanticRole(AbstractSpanAnnotation):
     """Semantic Role"""
+
+class Predicate(AbstractSpanAnnotation):
+    """Predicate, used within :class:`SemanticRolesLayer`, takes :class:`SemanticRole` annotations as children, but has its own annotation type and separate declaration"""
+
+class Sentiment(AbstractSpanAnnotation):
+    """Sentiment. Takes span roles :class:`Headspan`, :class:`Source` and :class:`Target` as children"""
+
+class Statement(AbstractSpanAnnotation):
+    """Statement. Takes span roles :class:`Headspan`, :class:`Source` and :class:`Relation` as children"""
+
+class Observation(AbstractSpanAnnotation):
+    """Observation."""
 
 class ComplexAlignment(AbstractElement):
     """Complex Alignment"""
@@ -5193,6 +5215,15 @@ class CoreferenceLayer(AbstractAnnotationLayer):
 
 class SemanticRolesLayer(AbstractAnnotationLayer):
     """Syntax Layer: Annotation layer for :class:`SemanticRole` span annotation elements"""
+
+class StatementLayer(AbstractAnnotationLayer):
+    """Statement Layer: Annotation layer for :class:`Statement` span annotation elements, used for attribution annotation."""
+
+class SentimentLayer(AbstractAnnotationLayer):
+    """Sentiment Layer: Annotation layer for :class:`Sentiment` span annotation elements, used for sentiment analysis."""
+
+class ObservationLayer(AbstractAnnotationLayer):
+    """Observation Layer: Annotation layer for :class:`Observation` span annotation elements."""
 
 class ComplexAlignmentLayer(AbstractAnnotationLayer):
     """Complex alignment layer"""
