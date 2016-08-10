@@ -1562,8 +1562,12 @@ class Action(object): #Action expression
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Applying EDIT to focus ", repr(focus),file=sys.stderr)
                                 for attr, value in action.assignments.items():
                                     if attr in ("text","value"):
-                                        if debug: print("[FQL EVALUATION DEBUG] Action - settext("+ value+ ") on focus ", repr(focus),file=sys.stderr)
-                                        focus.settext(value)
+                                        if isinstance(focus, (folia.Description, folia.Comment, folia.Content)):
+                                            if debug: print("[FQL EVALUATION DEBUG] Action - setting value ("+ value+ ") on focus ", repr(focus),file=sys.stderr)
+                                            focus.value = value
+                                        else:
+                                            if debug: print("[FQL EVALUATION DEBUG] Action - settext("+ value+ ") on focus ", repr(focus),file=sys.stderr)
+                                            focus.settext(value)
                                     elif attr == "class":
                                         if debug: print("[FQL EVALUATION DEBUG] Action - " + attr +  " = " + value + " on focus ", repr(focus),file=sys.stderr)
                                         focus.cls = value
