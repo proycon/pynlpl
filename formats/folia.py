@@ -7681,7 +7681,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-10 22:13:55, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-10 22:15:50, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7714,7 +7714,7 @@ ANNOTATIONTYPE2XML = {
     AnnotationType.METRIC:  "metric" ,
     AnnotationType.MORPHOLOGICAL:  "morpheme" ,
     AnnotationType.NOTE:  "note" ,
-    AnnotationType.OBSERVATION:  "predicate" ,
+    AnnotationType.OBSERVATION:  "observation" ,
     AnnotationType.PARAGRAPH:  "p" ,
     AnnotationType.PART:  "part" ,
     AnnotationType.PHON:  "ph" ,
@@ -7789,7 +7789,7 @@ XML2CLASS = {
     "morphology": MorphologyLayer,
     "new": New,
     "note": Note,
-    "predicate": Observation,
+    "observation": Observation,
     "observations": ObservationLayer,
     "original": Original,
     "p": Paragraph,
@@ -8177,7 +8177,7 @@ Note.XMLTAG = "note"
 #------ Observation -------
 Observation.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Metric, WordReference,)
 Observation.ANNOTATIONTYPE = AnnotationType.OBSERVATION
-Observation.XMLTAG = "predicate"
+Observation.XMLTAG = "observation"
 #------ ObservationLayer -------
 ObservationLayer.ACCEPTED_DATA = (Comment, Correction, Description, ForeignData, Observation,)
 ObservationLayer.ANNOTATIONTYPE = AnnotationType.OBSERVATION
