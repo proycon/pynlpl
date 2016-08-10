@@ -7675,7 +7675,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-10 16:29:25, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-10 16:51:56, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -8211,6 +8211,9 @@ PhonologyLayer.ACCEPTED_DATA = (Comment, Correction, Description, ForeignData, P
 PhonologyLayer.ANNOTATIONTYPE = AnnotationType.PHONOLOGICAL
 PhonologyLayer.PRIMARYELEMENT = False
 PhonologyLayer.XMLTAG = "phonology"
+#------ PolarityFeature -------
+PolarityFeature.SUBSET = "polarity"
+PolarityFeature.XMLTAG = None
 #------ PosAnnotation -------
 PosAnnotation.ACCEPTED_DATA = (Comment, Description, Feature, ForeignData, HeadFeature, Metric,)
 PosAnnotation.ANNOTATIONTYPE = AnnotationType.POS
@@ -8252,7 +8255,7 @@ Sentence.ANNOTATIONTYPE = AnnotationType.SENTENCE
 Sentence.TEXTDELIMITER = " "
 Sentence.XMLTAG = "s"
 #------ Sentiment -------
-Sentiment.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Headspan, Metric, Source, Target, WordReference,)
+Sentiment.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, Feature, ForeignData, Headspan, Metric, PolarityFeature, Source, StrengthFeature, Target, WordReference,)
 Sentiment.ANNOTATIONTYPE = AnnotationType.SENTIMENT
 Sentiment.XMLTAG = "sentiment"
 #------ SentimentLayer -------
@@ -8275,6 +8278,9 @@ StatementLayer.ACCEPTED_DATA = (Comment, Correction, Description, ForeignData, S
 StatementLayer.ANNOTATIONTYPE = AnnotationType.STATEMENT
 StatementLayer.PRIMARYELEMENT = False
 StatementLayer.XMLTAG = "statements"
+#------ StrengthFeature -------
+StrengthFeature.SUBSET = "strength"
+StrengthFeature.XMLTAG = None
 #------ String -------
 String.ACCEPTED_DATA = (AbstractExtendedTokenAnnotation, Alignment, Comment, Correction, Description, Feature, ForeignData, Metric, PhonContent, TextContent,)
 String.ANNOTATIONTYPE = AnnotationType.STRING
