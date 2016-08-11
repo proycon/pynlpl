@@ -884,6 +884,16 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( sentiment.annotation(folia.Source).text(), "Hij")
         self.assertEqual( sentiment.annotation(folia.Headspan).text(), "erg teleurgesteld")
 
+    def test050_statement(self):
+        """Sanity check - Statements"""
+        sentence = self.doc['WR-P-E-J-0000000001.sandbox.2.s.2']
+        sentiments = sentence.annotation(folia.StatementLayer)
+        sentiment = sentiments.annotation(folia.Statement)
+        self.assertEqual( sentiment.cls , "promise")
+        self.assertEqual( sentiment.annotation(folia.Source).text(), "Hij")
+        self.assertEqual( sentiment.annotation(folia.Relation).text(), "had beloofd")
+        self.assertEqual( sentiment.annotation(folia.Headspan).text(), "hij zou winnen")
+
     def test099_write(self):
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
