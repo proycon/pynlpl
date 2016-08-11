@@ -4068,7 +4068,7 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
 
     def annotation(self, type, set=None):
         """Will return a **single** annotation (even if there are multiple). Raises a ``NoSuchAnnotation`` exception if none was found"""
-        l = self.count(type,set,True,default_ignore_annotations)
+        l = list(self.select(type,set,True,default_ignore_annotations))
         if len(l) >= 1:
             return l[0]
         else:
