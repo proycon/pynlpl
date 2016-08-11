@@ -4074,6 +4074,26 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
         else:
             raise NoSuchAnnotation()
 
+    def annotations(self,Class,set=None):
+        """Obtain annotations. Very similar to ``select()`` but raises an error if the annotation was not found.
+
+        Arguments:
+            * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation)
+            * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
+
+        Yields:
+            elements
+
+        Raises:
+            ``NoSuchAnnotation`` if the specified annotation does not exist.
+        """
+        found = False
+        for e in self.select(Class,set,True,default_ignore_annotations):
+            found = True
+            yield e
+        if not found:
+            raise NoSuchAnnotation()
+
     def _helper_wrefs(self, targets):
         """Internal helper function"""
         for c in self:
@@ -4184,8 +4204,8 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
             * ``Class`` - The Class you want to retrieve (e.g. PosAnnotation)
             * ``set``   - The set you want to retrieve (defaults to None, which selects irregardless of set)
 
-        Returns:
-            A list of elements
+        Yields:
+            elements
 
         Raises:
             ``NoSuchAnnotation`` if the specified annotation does not exist.
