@@ -873,6 +873,17 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( observation.cls , "ei_ij_error")
         self.assertEqual( observation.description() , "Confusion between EI and IJ diphtongues")
 
+    def test049_sentiment(self):
+        """Sanity check - Sentiments"""
+        sentence = self.doc['WR-P-E-J-0000000001.sandbox.2.s.3']
+        sentiments = sentence.annotation(folia.SentimentLayer)
+        sentiment = sentiments.annotation(folia.Sentiment)
+        self.assertEqual( sentiment.cls , "disappointment")
+        self.assertEqual( sentiment.feat('polarity') , "negative")
+        self.assertEqual( sentiment.feat('strength') , "strong")
+        self.assertEqual( sentiment.annotation(folia.Source).text(), "Hij")
+        self.assertEqual( sentiment.annotation(folia.Headspan).text(), "erg teleurgesteld")
+
     def test099_write(self):
         """Sanity Check - Writing to file"""
         self.doc.save('/tmp/foliasavetest.xml')
