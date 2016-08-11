@@ -471,7 +471,10 @@ class Test2Sanity(unittest.TestCase):
         """Sanity Check - Semantic Role Labelling"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.7']
         semrolelayer = s.annotation(folia.SemanticRolesLayer)
-        roles = list(semrolelayer.annotations(folia.SemanticRole))
+        predicate = semrolelayer.annotation(folia.Predicate)
+        self.assertEqual( predicate.cls,  'aanduiden' )
+
+        roles = list(predicate.annotations(folia.SemanticRole))
 
         self.assertEqual( roles[0].cls,  'actor' )
         self.assertEqual( roles[1].cls,  'patient' )
