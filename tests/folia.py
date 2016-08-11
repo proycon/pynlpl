@@ -866,6 +866,12 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( aref.type, 'w' )
         self.assertEqual( aref.t,"handschriften" )
 
+    def test048_observations(self):
+        """Sanity check - Observations"""
+        word = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.9']
+        observation = list(word.findspans(folia.ObservationLayer))[0]
+        self.assertEqual( observation.cls , "ei_ij_error")
+        self.assertEqual( observation.description() , "Confusion between EI and IJ diphtongues")
 
     def test099_write(self):
         """Sanity Check - Writing to file"""
