@@ -334,11 +334,12 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'confidence' in kwargs:
         if not Attrib.CONFIDENCE in supported:
             raise ValueError("Confidence is not supported")
-        try:
-            object.confidence = float(kwargs['confidence'])
-            assert object.confidence >= 0.0 and object.confidence <= 1.0
-        except:
-            raise ValueError("Confidence must be a floating point number between 0 and 1, got " + repr(kwargs['confidence']) )
+        if kwargs['confidence'] is not None:
+            try:
+                object.confidence = float(kwargs['confidence'])
+                assert object.confidence >= 0.0 and object.confidence <= 1.0
+            except:
+                raise ValueError("Confidence must be a floating point number between 0 and 1, got " + repr(kwargs['confidence']) )
         del kwargs['confidence']
     elif Attrib.CONFIDENCE in required:
         raise ValueError("Confidence is required for " + object.__class__.__name__)
