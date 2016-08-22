@@ -7160,16 +7160,17 @@ class ConstraintDefinition(object):
         restrictions = []
         exceptions = []
         for subnode in node:
-            if subnode.tag == '{' + NSFOLIA + '}restrict':
-                if 'subset' in subnode.attrib:
-                    restrictions.append( (subnode.attrib['subset'], subnode.attrib['class']) )
-                else:
-                    restrictions.append( (None, subnode.attrib['class']) )
-            elif subnode.tag == '{' + NSFOLIA + '}except':
-                if 'subset' in subnode.attrib:
-                    exceptions.append( (subnode.attrib['subset'], subnode.attrib['class']) )
-                else:
-                    exceptions.append( (None, subnode.attrib['class']) )
+            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)):
+                if subnode.tag == '{' + NSFOLIA + '}restrict':
+                    if 'subset' in subnode.attrib:
+                        restrictions.append( (subnode.attrib['subset'], subnode.attrib['class']) )
+                    else:
+                        restrictions.append( (None, subnode.attrib['class']) )
+                elif subnode.tag == '{' + NSFOLIA + '}except':
+                    if 'subset' in subnode.attrib:
+                        exceptions.append( (subnode.attrib['subset'], subnode.attrib['class']) )
+                    else:
+                        exceptions.append( (None, subnode.attrib['class']) )
 
         if '{http://www.w3.org/XML/1998/namespace}id' in node.attrib:
             id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
@@ -7203,12 +7204,13 @@ class ClassDefinition(AbstractDefinition):
         constraints = []
         subclasses= []
         for subnode in node:
-            if subnode.tag == '{' + NSFOLIA + '}constraint':
-                constraints.append( ConstraintDefinition.parsexml(subnode, constraintindex) )
-            elif subnode.tag == '{' + NSFOLIA + '}class':
-                subclasses.append( ClassDefinition.parsexml(subnode, constraintindex) )
-            elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
-                raise Exception("Invalid tag in Class definition: " + subnode.tag)
+            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)):
+                if subnode.tag == '{' + NSFOLIA + '}constraint':
+                    constraints.append( ConstraintDefinition.parsexml(subnode, constraintindex) )
+                elif subnode.tag == '{' + NSFOLIA + '}class':
+                    subclasses.append( ClassDefinition.parsexml(subnode, constraintindex) )
+                elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
+                    raise Exception("Invalid tag in Class definition: " + subnode.tag)
 
         return ClassDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],label, constraints, subclasses)
 
@@ -7254,12 +7256,13 @@ class SubsetDefinition(AbstractDefinition):
         classes = []
         constraints = []
         for subnode in node:
-            if subnode.tag == '{' + NSFOLIA + '}class':
-                classes.append( ClassDefinition.parsexml(subnode, constraintindex) )
-            elif subnode.tag == '{' + NSFOLIA + '}constraint':
-                constraints.append( ConstraintDefinition.parsexml(subnode, constraintindex) )
-            elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
-                raise Exception("Invalid tag in Set definition: " + subnode.tag)
+            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)):
+                if subnode.tag == '{' + NSFOLIA + '}class':
+                    classes.append( ClassDefinition.parsexml(subnode, constraintindex) )
+                elif subnode.tag == '{' + NSFOLIA + '}constraint':
+                    constraints.append( ConstraintDefinition.parsexml(subnode, constraintindex) )
+                elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
+                    raise Exception("Invalid tag in Set definition: " + subnode.tag)
 
         return SubsetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type,classes, constraints)
 
@@ -7315,12 +7318,15 @@ class SetDefinition(AbstractDefinition):
             label = None
 
         for subnode in node:
-            if subnode.tag == '{' + NSFOLIA + '}class':
-                classes.append( ClassDefinition.parsexml(subnode, constraintindex) )
-            elif subnode.tag == '{' + NSFOLIA + '}subset':
-                subsets.append( SubsetDefinition.parsexml(subnode, constraintindex) )
-            elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
-                raise SetDefinitionError("Invalid tag in Set definition: " + subnode.tag)
+            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)):
+                if subnode.tag == '{' + NSFOLIA + '}class':
+                    classes.append( ClassDefinition.parsexml(subnode, constraintindex) )
+                elif subnode.tag == '{' + NSFOLIA + '}subset':
+                    subsets.append( SubsetDefinition.parsexml(subnode, constraintindex) )
+                elif subnode.tag == '{' + NSFOLIA + '}constraint':
+                    pass
+                elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
+                    raise SetDefinitionError("Invalid tag in Set definition: " + subnode.tag)
 
         return SetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type,classes, subsets, constraintindex, label)
 
