@@ -7192,7 +7192,9 @@ class ClassDefinition(AbstractDefinition):
 
     @classmethod
     def parsexml(Class, node, constraintindex):
-        assert node.tag == '{' + NSFOLIA + '}class'
+        if not node.tag == '{' + NSFOLIA + '}class':
+            raise Exception("Expected class tag for this xml node, got" + node.tag)
+
         if 'label' in node.attrib:
             label = node.attrib['label']
         else:
@@ -7234,7 +7236,8 @@ class SubsetDefinition(AbstractDefinition):
 
     @classmethod
     def parsexml(Class, node, constraintindex= {}):
-        assert node.tag == '{' + NSFOLIA + '}subset'
+        if not node.tag == '{' + NSFOLIA + '}subset':
+            raise Exception("Expected subset tag for this xml node, got" + node.tag)
 
         if 'type' in node.attrib:
             if node.attrib['type'] == 'open':
@@ -7315,7 +7318,7 @@ class SetDefinition(AbstractDefinition):
             if subnode.tag == '{' + NSFOLIA + '}class':
                 classes.append( ClassDefinition.parsexml(subnode, constraintindex) )
             elif subnode.tag == '{' + NSFOLIA + '}subset':
-                subsets.append( ClassDefinition.parsexml(subnode, constraintindex) )
+                subsets.append( SubsetDefinition.parsexml(subnode, constraintindex) )
             elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
                 raise SetDefinitionError("Invalid tag in Set definition: " + subnode.tag)
 
