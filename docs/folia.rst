@@ -507,6 +507,10 @@ FoLiA distinguishes the following span annotation elements:
     CoreferenceChain
     Dependency
     Entity
+    Observation
+    Predicate
+    Sentiment
+    Statement
     SyntacticUnit
     SemanticRole
     TimeSegment
@@ -522,6 +526,9 @@ These are placed in the following annotation layers:
     CoreferenceLayer
     DependenciesLayer
     EntitiesLayer
+    ObservationLayer
+    SentimentLayer
+    StatementLayer
     SyntaxLayer
     SemanticRolesLayer
     TimingLayer
