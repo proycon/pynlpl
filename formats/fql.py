@@ -1628,6 +1628,7 @@ class Action(object): #Action expression
                         else:
                             action.assignments['set'] = action.focus.set = query.doc.defaultset(action.focus.Class)
 
+
                     if isinstance(contextselector, tuple) and len(contextselector) == 2:
                         targetselection = contextselector[0](*contextselector[1])
                     else:

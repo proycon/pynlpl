@@ -3938,10 +3938,19 @@ class Word(AbstractStructureElement, AllowCorrections):
             if not e.parent: break
             e = e.parent
             for layer in e.select(layerclass,set,False):
-                for e2 in layer:
-                    if (type is layerclass and isinstance(e2, AbstractSpanAnnotation)) or (type is not layerclass and isinstance(e2, type)):
-                        if self in e2.wrefs():
+                if type is layerclass:
+                    for e2 in layer.select(AbstractSpanAnnotation,set,True, (True, Word, Morpheme)):
+                        if not isinstance(e2, AbstractSpanRole) and self in e2.wrefs():
                             yield e2
+                else:
+                    for e2 in layer.select(type,set,True, (True, Word, Morpheme)):
+                        if not isinstance(e2, AbstractSpanRole) and self in e2.wrefs():
+                            yield e2
+
+                #for e2 in layer:
+                #    if (type is layerclass and isinstance(e2, AbstractSpanAnnotation)) or (type is not layerclass and isinstance(e2, type)):
+                #        if self in e2.wrefs():
+                #            yield e2
 
 
 class Feature(AbstractElement):
