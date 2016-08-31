@@ -7711,7 +7711,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-10 22:15:50, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-31 21:11:43, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7884,6 +7884,7 @@ ANNOTATIONTYPE2LAYERCLASS = {
     AnnotationType.STATEMENT:  StatementLayer ,
     AnnotationType.SYNTAX:  SyntaxLayer ,
     AnnotationType.TIMESEGMENT:  TimingLayer ,
+    AnnotationType.PREDICATE:  SemanticRolesLayer
 }
 
 #foliaspec:default_ignore
