@@ -35,6 +35,9 @@ import gzip
 import bz2
 import re
 
+
+FOLIARELEASE = "v1.3.0.52"
+
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
 elif os.path.exists('../FoLiA'):
@@ -42,7 +45,12 @@ elif os.path.exists('../FoLiA'):
 else:
     FOLIAPATH = 'FoLiA'
     print("Downloading FoLiA",file=sys.stderr)
-    os.system("git clone https://github.com/proycon/folia.git FoLiA")
+    os.system("git clone https://github.com/proycon/folia.git FoLiA && cd FoLiA && git checkout tags/" + FOLIARELEASE + ' && cd ..')
+
+if 'TMPDIR' in os.environ:
+    TMPDIR = os.environ['TMPDIR']
+else:
+    TMPDIR = '/tmp/'
 
 if sys.version < '3':
     from StringIO import StringIO
@@ -60,14 +68,14 @@ else:
 def xmlcheck(xml,expect):
     #obj1 = lxml.objectify.fromstring(expect)
     #expect = lxml.etree.tostring(obj1)
-    f = io.open('/tmp/foliatest.fragment.expect.xml','w',encoding='utf-8')
+    f = io.open(os.path.join(TMPDIR, 'foliatest.fragment.expect.xml'),'w',encoding='utf-8')
     f.write(expect)
     f.close()
-    f = io.open('/tmp/foliatest.fragment.out.xml','w', encoding='utf-8')
+    f = io.open(os.path.join(TMPDIR , 'foliatest.fragment.out.xml'),'w', encoding='utf-8')
     f.write(xml)
     f.close()
 
-    retcode = os.system('xmldiff -c /tmp/foliatest.fragment.expect.xml /tmp/foliatest.fragment.out.xml')
+    retcode = os.system('xmldiff -c ' + os.path.join(TMPDIR, 'foliatest.fragment.expect.xml') + ' ' + os.path.join(TMPDIR,'foliatest.fragment.out.xml'))
     passed = (retcode == 0)
 
     #obj2 = lxml.objectify.fromstring(xml)
@@ -89,11 +97,11 @@ class Test1Read(unittest.TestCase):
         """Reading from file"""
         global FOLIAEXAMPLE
         #write example to file
-        f = io.open('/tmp/foliatest.xml','w',encoding='utf-8')
+        f = io.open(os.path.join(TMPDIR,'foliatest.xml'),'w',encoding='utf-8')
         f.write(FOLIAEXAMPLE)
         f.close()
 
-        doc = folia.Document(file='/tmp/foliatest.xml')
+        doc = folia.Document(file=os.path.join(TMPDIR,'foliatest.xml'))
         self.assertTrue(isinstance(doc,folia.Document))
 
         #sanity check: reading from file must yield the exact same data as reading from string
@@ -104,11 +112,11 @@ class Test1Read(unittest.TestCase):
         """Reading from GZ file"""
         global FOLIAEXAMPLE
         #write example to file
-        f = gzip.GzipFile('/tmp/foliatest.xml.gz','w')
+        f = gzip.GzipFile(os.path.join(TMPDIR,'foliatest.xml.gz'),'w')
         f.write(FOLIAEXAMPLE.encode('utf-8'))
         f.close()
 
-        doc = folia.Document(file='/tmp/foliatest.xml.gz')
+        doc = folia.Document(file=os.path.join(TMPDIR,'foliatest.xml.gz'))
         self.assertTrue(isinstance(doc,folia.Document))
 
         #sanity check: reading from file must yield the exact same data as reading from string
@@ -120,11 +128,11 @@ class Test1Read(unittest.TestCase):
         """Reading from BZ2 file"""
         global FOLIAEXAMPLE
         #write example to file
-        f = bz2.BZ2File('/tmp/foliatest.xml.bz2','w')
+        f = bz2.BZ2File(os.path.join(TMPDIR,'foliatest.xml.bz2'),'w')
         f.write(FOLIAEXAMPLE.encode('utf-8'))
         f.close()
 
-        doc = folia.Document(file='/tmp/foliatest.xml.bz2')
+        doc = folia.Document(file=os.path.join(TMPDIR,'foliatest.xml.bz2'))
         self.assertTrue(isinstance(doc,folia.Document))
 
         #sanity check: reading from file must yield the exact same data as reading from string
@@ -899,34 +907,32 @@ class Test2Sanity(unittest.TestCase):
 
     def test099_write(self):
         """Sanity Check - Writing to file"""
-        self.doc.save('/tmp/foliasavetest.xml')
+        self.doc.save(os.path.join(TMPDIR,'foliasavetest.xml'))
 
     def test099b_write(self):
         """Sanity Check - Writing to GZ file"""
-        self.doc.save('/tmp/foliasavetest.xml.gz')
+        self.doc.save(os.path.join(TMPDIR,'foliasavetest.xml.gz'))
 
     def test099c_write(self):
         """Sanity Check - Writing to BZ2 file"""
-        self.doc.save('/tmp/foliasavetest.xml.bz2')
+        self.doc.save(os.path.join(TMPDIR,'foliasavetest.xml.bz2'))
 
     def test100a_sanity(self):
         """Sanity Check - A - Checking output file against input (should be equal)"""
-        global FOLIAEXAMPLE
-        f = io.open('/tmp/foliatest.xml','w',encoding='utf-8')
+        f = io.open(os.path.join(TMPDIR,'foliatest.xml'),'w',encoding='utf-8')
         f.write(FOLIAEXAMPLE)
         f.close()
-        self.doc.save('/tmp/foliatest100.xml')
-        self.assertEqual(  folia.Document(file='/tmp/foliatest100.xml',debug=False), self.doc )
+        self.doc.save(os.path.join(TMPDIR,'foliatest100.xml'))
+        self.assertEqual(  folia.Document(file=os.path.join(TMPDIR,'foliatest100.xml'),debug=False), self.doc )
 
     def test100b_sanity_xmldiff(self):
         """Sanity Check - B - Checking output file against input using xmldiff (should be equal)"""
-        global FOLIAEXAMPLE
-        f = io.open('/tmp/foliatest.xml','w',encoding='utf-8')
+        f = io.open(os.path.join(TMPDIR,'foliatest.xml'),'w',encoding='utf-8')
         f.write(FOLIAEXAMPLE)
         f.close()
         #use xmldiff to compare the two:
-        self.doc.save('/tmp/foliatest100.xml')
-        retcode = os.system('xmldiff -c /tmp/foliatest.xml /tmp/foliatest100.xml')
+        self.doc.save(os.path.join(TMPDIR,'foliatest100.xml'))
+        retcode = os.system('xmldiff -c ' + os.path.join(TMPDIR,'foliatest.xml') + ' ' + os.path.join(TMPDIR,'foliatest100.xml'))
         #retcode = 1 #disabled (memory hog)
         self.assertEqual( retcode, 0)
 
@@ -2347,7 +2353,7 @@ class Test6Query(unittest.TestCase):
 
 class Test9Reader(unittest.TestCase):
     def setUp(self):
-        self.reader = folia.Reader("/tmp/foliatest.xml", folia.Word)
+        self.reader = folia.Reader(os.path.join(TMPDIR,"foliatest.xml"), folia.Word)
 
     def test000_worditer(self):
         """Stream reader - Iterating over words"""
@@ -2413,7 +2419,7 @@ class Test7XpathQuery(unittest.TestCase):
     def test050_findwords_xpath(self):
         """Xpath Querying - Collect all words (including non-authoritative)"""
         count = 0
-        for word in folia.Query('/tmp/foliatest.xml','//f:w'):
+        for word in folia.Query(os.path.join(TMPDIR,'foliatest.xml'),'//f:w'):
             count += 1
             self.assertTrue( isinstance(word, folia.Word) )
         self.assertEqual(count, 192)
@@ -2421,7 +2427,7 @@ class Test7XpathQuery(unittest.TestCase):
     def test051_findwords_xpath(self):
         """Xpath Querying - Collect all words (authoritative only)"""
         count = 0
-        for word in folia.Query('/tmp/foliatest.xml','//f:w[not(ancestor-or-self::*/@auth)]'):
+        for word in folia.Query(os.path.join(TMPDIR,'foliatest.xml'),'//f:w[not(ancestor-or-self::*/@auth)]'):
             count += 1
             self.assertTrue( isinstance(word, folia.Word) )
         self.assertEqual(count, 190)
@@ -2434,17 +2440,17 @@ class Test8Validation(unittest.TestCase):
 
       def test001_shallowvalidation(self):
         """Validation - Shallow validation against automatically generated RelaxNG schema"""
-        folia.validate('/tmp/foliasavetest.xml')
+        folia.validate(os.path.join(TMPDIR,'foliasavetest.xml'))
 
       def test002_loadsetdefinitions(self):
         """Validation - Loading of set definitions"""
-        doc = folia.Document(file='/tmp/foliatest.xml', loadsetdefinitions=True)
+        doc = folia.Document(file=os.path.join(TMPDIR,'foliatest.xml'), loadsetdefinitions=True)
         assert isinstance( doc.setdefinitions["http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"], folia.SetDefinition)
 
       def test003_deepvalidation(self):
         """Validation - Deep Validation"""
         try:
-            doc = folia.Document(file='/tmp/foliatest.xml', deepvalidation=True, allowadhocsets=True)
+            doc = folia.Document(file=os.path.join(TMPDIR,'foliatest.xml'), deepvalidation=True, allowadhocsets=True)
             assert isinstance( doc.setdefinitions["http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"], folia.SetDefinition)
         except NotImplementedError:
             print("Deep validation not implemented yet! (not failing over this)",file=sys.stderr)
