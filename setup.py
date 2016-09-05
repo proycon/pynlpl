@@ -40,14 +40,14 @@ if sys.version > '3':
 
 setup(
     name = "PyNLPl",
-    version = "1.0.1", #edit version in __init__.py as well and ensure tests/folia.py FOLIARELEASE points to the right version!
+    version = "1.0.2", #edit version in __init__.py as well and ensure tests/folia.py FOLIARELEASE points to the right version!
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
     description = ("PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl can be used for basic tasks such as the extraction of n-grams and frequency lists, and to build simple language model. There are also more complex data types and algorithms. Moreover, there are parsers for file formats common in NLP (e.g. FoLiA/Giza/Moses/ARPA/Timbl/CQL). There are also clients to interface with various NLP specific servers. PyNLPl most notably features a very extensive library for working with FoLiA XML (Format for Linguistic Annotation)."),
     license = "GPL",
     keywords = "nlp computational_linguistics search ngrams language_models linguistics toolkit",
     url = "https://github.com/proycon/pynlpl",
-    packages=['pynlpl','pynlpl.clients','pynlpl.lm','pynlpl.formats','pynlpl.mt','pynlpl.tools'],
+    packages=['pynlpl','pynlpl.clients','pynlpl.lm','pynlpl.formats','pynlpl.mt','pynlpl.tools','pynlpl.tests'],
     long_description=read('README.rst'),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -60,8 +60,8 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
     zip_safe=False,
-    #include_package_data=True,
-    #package_data = {'': ['*.wsgi','*.js','*.xsl','*.gif','*.png','*.xml','*.html','*.jpg','*.svg','*.rng'] },
+    include_package_data=True,
+    package_data = {'pynlpl': ['tests/test.sh', 'tests/evaluation_timbl/*'] },
     install_requires=['lxml >= 2.2','httplib2 >= 0.6','numpy'],
     entry_points = entry_points
 )
