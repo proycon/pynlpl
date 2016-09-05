@@ -16,14 +16,14 @@ cd $TESTDIR
 GOOD=1
 
 echo "Testing CGN">&2
-python cgn.py
+$PYTHON cgn.py
 if [ $? -ne 0 ]; then
     echo "Test failed!!!" >&2
     GOOD=0
 fi
 
 echo "Testing datatypes">&2
-python datatypes.py
+$PYTHON datatypes.py
 if [ $? -ne 0 ]; then
     echo "Test failed!!!" >&2
     GOOD=0
@@ -31,7 +31,7 @@ fi
 
 
 echo "Testing evaluation">&2
-python evaluation.py
+$PYTHON evaluation.py
 if [ $? -ne 0 ]; then
     echo "Test failed!!!" >&2
     GOOD=0
@@ -39,14 +39,14 @@ fi
 
 
 echo "Testing search">&2
-python search.py
+$PYTHON search.py
 if [ $? -ne 0 ]; then
     echo "Test failed!!!" >&2
     GOOD=0
 fi
 
 echo "Testing textprocessors">&2
-python textprocessors.py
+$PYTHON textprocessors.py
 if [ $? -ne 0 ]; then
     echo "Test failed!!!" >&2
     GOOD=0
@@ -54,7 +54,7 @@ fi
 
 
 echo "Testing statistics">&2
-python statistics.py
+$PYTHON statistics.py
 if [ $? -ne 0 ]; then
     echo "Test failed!!!" >&2
     GOOD=0
@@ -62,28 +62,28 @@ fi
 
 
 echo "Testing formats">&2
-python formats.py
+$PYTHON formats.py
 if [ $? -ne 0 ]; then
     echo "Test failed!!!" >&2
     GOOD=0
 fi
 
 echo "Testing folia">&2
-python folia.py
+$PYTHON folia.py
 if [ $? -ne 0 ]; then
     echo "Test failed!!!" >&2
     GOOD=0
 fi
 
 echo "Testing FQL">&2
-python fql.py
+$PYTHON fql.py
 if [ $? -ne 0 ]; then
     echo "Test failed!!!" >&2
     GOOD=0
 fi
 
 echo "Testing CQL">&2
-python cql.py
+$PYTHON cql.py
 if [ $? -ne 0 ]; then
     echo "Test failed!!!" >&2
     GOOD=0

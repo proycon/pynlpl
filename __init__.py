@@ -2,4 +2,4 @@
 
 The library is divided into several packages and modules. It is designed for Python 2.6 and upwards. Including Python 3."""
 
-VERSION = "1.0.3"
+VERSION = "1.0.4"
