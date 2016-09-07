@@ -100,6 +100,7 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
             line = self.filterout(line.strip())
             if self.currentclient and line:
                 self.currentclient.sendLine(line)
+                print("Sent output back to client",file=stderr)
 
     def errReceived(self, data):
         try:
@@ -115,6 +116,7 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
             line = self.filtererr(line.strip())
             if self.sendstderr and self.currentclient and line:
                 self.currentclient.sendLine(line)
+                print("Sent stderr output back to client",file=stderr)
 
 
     def processExited(self, reason):
@@ -137,4 +139,4 @@ class GenericWrapperServer:
 
         gwsfactory = GWSFactory(gwsprocessprotocol)
         reactor.listenTCP(port, gwsfactory)
-        reactor.run()
+        reactorirun()
