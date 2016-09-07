@@ -55,7 +55,7 @@ class GWSNetProtocol(basic.LineReceiver):
                 self.factory.processprotocol.transport.write(line)
             self.factory.processprotocol.transport.write(b('\n'))
         else:
-            self.factory.processprotocol.transport.write(b(line + '\n'))
+            self.factory.processprotocol.transport.write(b(line) + b('\n'))
         self.factory.processprotocol.currentclient = self
 
     def connectionLost(self, reason):
