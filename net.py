@@ -139,4 +139,4 @@ class GenericWrapperServer:
 
         gwsfactory = GWSFactory(gwsprocessprotocol)
         reactor.listenTCP(port, gwsfactory)
-        reactorirun()
+        reactor.run()
