@@ -42,7 +42,10 @@ class GWSNetProtocol(basic.LineReceiver):
 
     def lineReceived(self, line):
         try:
-            print("Client in: " + line,file=stderr)
+            if sys.version >= '3' and isinstance(data,bytes):
+                print("Client in: " + str(line,'utf-8'),file=stderr)
+            else:
+                print("Client in: " + line,file=stderr)
         except UnicodeDecodeError:
             print("Client in: (unicodeerror)",file=stderr)
         if sys.version < '3':
@@ -88,7 +91,7 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
     def outReceived(self, data):
         try:
             if sys.version >= '3' and isinstance(data,bytes):
-                print("Process out " + data.encode('utf-8'),file=stderr)
+                print("Process out " + str(data, 'utf-8'),file=stderr)
             else:
                 print("Process out " + data,file=stderr)
         except UnicodeDecodeError:
@@ -101,7 +104,7 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
     def errReceived(self, data):
         try:
             if sys.version >= '3' and isinstance(data,bytes):
-                print("Process err " + data.encode('utf-8'),file=stderr)
+                print("Process err " + str(data,'utf-8'), file=sys.stderr)
             else:
                 print("Process err " + data,file=stderr)
         except UnicodeDecodeError:
