@@ -99,7 +99,7 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         for line in b(data).strip().split(b('\n')):
             line = self.filterout(line.strip())
             if self.currentclient and line:
-                self.currentclient.sendLine(line)
+                self.currentclient.sendLine(b(line))
                 print("Sent output back to client",file=stderr)
             elif not self.currentclient:
                 print("(No client associated)",file=stderr)
@@ -117,7 +117,7 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
         for line in b(data).strip().split(b('\n')):
             line = self.filtererr(line.strip())
             if self.sendstderr and self.currentclient and line:
-                self.currentclient.sendLine(line)
+                self.currentclient.sendLine(b(line))
                 print("Sent stderr output back to client",file=stderr)
             elif not self.currentclient:
                 print("(No client associated)",file=stderr)
