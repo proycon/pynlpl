@@ -101,6 +101,8 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
             if self.currentclient and line:
                 self.currentclient.sendLine(line)
                 print("Sent output back to client",file=stderr)
+            elif not self.currentclient:
+                print("(No client associated)",file=stderr)
 
     def errReceived(self, data):
         try:
@@ -117,6 +119,8 @@ class GWSProcessProtocol(protocol.ProcessProtocol):
             if self.sendstderr and self.currentclient and line:
                 self.currentclient.sendLine(line)
                 print("Sent stderr output back to client",file=stderr)
+            elif not self.currentclient:
+                print("(No client associated)",file=stderr)
 
 
     def processExited(self, reason):
