@@ -42,7 +42,7 @@ class GWSNetProtocol(basic.LineReceiver):
 
     def lineReceived(self, line):
         try:
-            if sys.version >= '3' and isinstance(data,bytes):
+            if sys.version >= '3' and isinstance(line,bytes):
                 print("Client in: " + str(line,'utf-8'),file=stderr)
             else:
                 print("Client in: " + line,file=stderr)
