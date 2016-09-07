@@ -35,7 +35,8 @@ class GWSNetProtocol(basic.LineReceiver):
     def connectionMade(self):
         print("Client connected", file=stderr)
         self.factory.connections += 1
-        if self.factory.connections != 1:
+        if self.factory.connections < 1:
+            print("Losing last connection",self.factory.connections,file=sys.stderr)
             self.transport.loseConnection()
         else:
             self.sendLine(b("READY"))
