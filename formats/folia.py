@@ -5889,7 +5889,10 @@ class NativeMetaData(object):
 
     def __setitem__(self, key, value):
         exists = key in self.data
-        self.data[key] = value
+        if sys.version < '3':
+            self.data[key] = unicode(value)
+        else:
+            self.data[key] = str(value)
         if not exists: self.order.append(key)
 
     def __iter__(self):
