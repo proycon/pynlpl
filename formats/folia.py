@@ -69,9 +69,9 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 
 #foliaspec:version:FOLIAVERSION
 #The FoLiA version
-FOLIAVERSION = "1.3.0"
+FOLIAVERSION = "1.3.1"
 
-LIBVERSION = FOLIAVERSION + '.82' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.83' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -7725,7 +7725,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.3.0 on 2016-08-31 21:11:43, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.3.1 on 2016-09-20 14:42:43, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -8299,6 +8299,7 @@ SemanticRolesLayer.XMLTAG = "semroles"
 #------ SenseAnnotation -------
 SenseAnnotation.ACCEPTED_DATA = (Comment, Description, Feature, ForeignData, Metric, SynsetFeature,)
 SenseAnnotation.ANNOTATIONTYPE = AnnotationType.SENSE
+SenseAnnotation.OCCURRENCES_PER_SET = 0
 SenseAnnotation.XMLTAG = "sense"
 #------ Sentence -------
 Sentence.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Entry, Event, Example, Feature, ForeignData, Gap, Linebreak, Metric, Note, Part, PhonContent, Quote, Reference, String, TextContent, Whitespace, Word,)
