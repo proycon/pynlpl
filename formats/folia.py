@@ -6560,7 +6560,7 @@ class Document(object):
 
             doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', annotator="mytagger", annotatortype=folia.AnnotatorType.AUTO)
         """
-        if not isinstance(set,str):
+        if (sys.version > '3' and not isinstance(set,str)) or (sys.version < '3' and not isinstance(set,(str,unicode))):
             raise ValueError("Set parameter for declare() must be a string")
 
         if inspect.isclass(annotationtype):
