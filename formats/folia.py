@@ -7725,7 +7725,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.3.1 on 2016-09-20 14:42:43, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.3.1 on 2016-09-21 14:33:14, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -8049,7 +8049,7 @@ ComplexAlignmentLayer.XMLTAG = "complexalignments"
 Content.OCCURRENCES = 1
 Content.XMLTAG = "content"
 #------ CoreferenceChain -------
-CoreferenceChain.ACCEPTED_DATA = (AlignReference, Alignment, Comment, CoreferenceLink, Description, ForeignData, Metric,)
+CoreferenceChain.ACCEPTED_DATA = (AlignReference, Alignment, Comment, CoreferenceLink, Description, Feature, ForeignData, Metric,)
 CoreferenceChain.ANNOTATIONTYPE = AnnotationType.COREFERENCE
 CoreferenceChain.REQUIRED_DATA = (CoreferenceLink,)
 CoreferenceChain.XMLTAG = "coreferencechain"
