@@ -228,18 +228,22 @@ class Filter(object): #WHERE ....
                     v = lambda x,y='text': getattr(x,'value') if isinstance(x, (folia.Description, folia.Comment, folia.Content)) else getattr(x,'text')()
                 else:
                     v = lambda x,y=q[i]: getattr(x,y)
+                if q[i] == 'confidence':
+                    cnv = float
+                else:
+                    cnv =  lambda x: x
                 if operator == '=' or operator == '==':
                     filters.append( lambda x,y=q[i+2],v=v : v(x) == y )
                 elif operator == '!=':
                     filters.append( lambda x,y=q[i+2],v=v : v(x) != y )
                 elif operator == '>':
-                    filters.append( lambda x,y=q[i+2],v=v : v(x) > y )
+                    filters.append( lambda x,y=cnv(q[i+2]),v=v : False if v(x) is None else v(x) > y )
                 elif operator == '<':
-                    filters.append( lambda x,y=q[i+2],v=v : v(x) < y )
+                    filters.append( lambda x,y=cnv(q[i+2]),v=v : False if v(x) is None else v(x) < y )
                 elif operator == '>=':
-                    filters.append( lambda x,y=q[i+2],v=v : v(x) >= y )
+                    filters.append( lambda x,y=cnv(q[i+2]),v=v : False if v(x) is None else v(x) >= y )
                 elif operator == '<=':
-                    filters.append( lambda x,y=q[i+2],v=v : v(x) <= y )
+                    filters.append( lambda x,y=cnv(q[i+2]),v=v : False if v(x) is None else v(x) <= y )
                 elif operator == 'CONTAINS':
                     filters.append( lambda x,y=q[i+2],v=v : v(x).find( y ) != -1 )
                 elif operator == 'NOTCONTAINS':
