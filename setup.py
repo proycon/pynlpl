@@ -63,6 +63,6 @@ setup(
     zip_safe=False,
     include_package_data=True,
     package_data = {'pynlpl': ['tests/test.sh', 'tests/evaluation_timbl/*'] },
-    install_requires=['lxml >= 2.2','httplib2 >= 0.6','numpy'],
+    install_requires=['lxml >= 2.2','httplib2 >= 0.6'],
     entry_points = entry_points
 )

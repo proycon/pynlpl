@@ -2288,7 +2288,11 @@ class AbstractElement(object):
 
         elements = [] #(including attributes)
         if cls.TEXTCONTAINER or cls.PHONCONTAINER:
-            elements.append( E.text() )
+            elements.append( E.text())
+            #We actually want to require non-empty text (E.text() is not sufficient)
+            #but this is not solved yet, see https://github.com/proycon/folia/issues/19
+            #elements.append( E.data(E.param(r".+",name="pattern"),type='string'))
+            #elements.append( E.data(E.param(r"(.|\n|\r)*\S+(.|\n|\r)*",name="pattern"),type='string'))
         done = {}
         if includechildren and cls.ACCEPTED_DATA: #pylint: disable=too-many-nested-blocks
             for c in cls.ACCEPTED_DATA:
@@ -7446,7 +7450,8 @@ def relaxng(filename=None):
             E.define( E.element(E.anyName(), E.zeroOrMore(E.ref(name="any_attribute")), E.zeroOrMore(E.ref(name="any_content"))), name="any_element"),
             E.define( E.attribute(E.anyName()), name="any_attribute"),
             #Definition for allowing alien-namespace attributes on any element
-            E.define( E.zeroOrMore(E.attribute(E.anyName(getattr(E,'except')(E.nsName(),E.nsName(ns=""),E.nsName(ns="http://www.w3.org/XML/1998/namespace"),E.nsName(ns="http://www.w3.org/1999/xlink"))))), name="allow_foreign_attributes")
+            E.define( E.zeroOrMore(E.attribute(E.anyName(getattr(E,'except')(E.nsName(),E.nsName(ns=""),E.nsName(ns="http://www.w3.org/XML/1998/namespace"),E.nsName(ns="http://www.w3.org/1999/xlink"))))), name="allow_foreign_attributes"),
+            datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes",
             )
 
     done = {}

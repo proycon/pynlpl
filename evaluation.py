@@ -30,7 +30,10 @@ import io
 
 from pynlpl.statistics import FrequencyList
 from collections import defaultdict
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    np = None
 import subprocess
 import itertools
 import time
@@ -77,6 +80,9 @@ def auc(x, y, reorder=False): #from sklearn, http://scikit-learn.org, licensed u
     auc_score : Computes the area under the ROC curve
 
     """
+    if np is None:
+        raise ImportError("No numpy installed")
+
     # XXX: Consider using  ``scipy.integrate`` instead, or moving to
     # ``utils.extmath``
     if not isinstance(x, np.ndarray): x = np.array(x)
