@@ -35,8 +35,8 @@ MASK_LITERAL = 1
 MASK_EXPRESSION = 2
 MAXEXPANSION = 99
 
-FOLIAVERSION = '1.3.0'
-FQLVERSION = '0.3.0'
+FOLIAVERSION = '1.3.1'
+FQLVERSION = '0.3.1'
 
 class SyntaxError(Exception):
     pass
@@ -110,7 +110,7 @@ class UnparsedQuery(object):
                                 s2 = s[i+1:j]
                                 break
                     if not s2 is None:
-                        self.q.append(s2.replace('\\"','"')) #undo escaped quotes
+                        self.q.append(s2.replace('\\"','"').replace("\\n","\n")) #undo escaped quotes and newlines
                         self.mask.append(MASK_LITERAL)
                         i = j
                         begin = i+1
