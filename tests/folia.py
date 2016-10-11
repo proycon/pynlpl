@@ -991,6 +991,33 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( doc.metadata.node.xpath('//dc:creator', namespaces={'dc':'http://purl.org/dc/elements/1.1/'})[0].text , 'proycon' )
         xmlcheck(doc.xmlstring(), xml)
 
+    def test101d_metadatainternal(self):
+        """Sanity Check - Metadata internal (double)"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+<metadata type="dc">
+  <annotations>
+  </annotations>
+  <foreign-data xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:identifier>mydoc</dc:identifier>
+    <dc:format>text/xml</dc:format>
+    <dc:type>Example</dc:type>
+    <dc:contributor>proycon</dc:contributor>
+    <dc:creator>proycon</dc:creator>
+    <dc:language>en</dc:language>
+    <dc:publisher>Radboud University</dc:publisher>
+  </foreign-data>
+  <foreign-data xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:rights>public Domain</dc:rights>
+  </foreign-data>
+</metadata>
+<text xml:id="test.text" />
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc.metadatatype, "dc" )
+        self.assertEqual( doc.metadata.node.xpath('//dc:creator', namespaces={'dc':'http://purl.org/dc/elements/1.1/'})[0].text , 'proycon' )
+        xmlcheck(doc.xmlstring(), xml)
+
     def test102a_declarations(self):
         """Sanity Check - Declarations - Default set"""
         xml = """<?xml version="1.0"?>\n

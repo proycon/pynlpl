@@ -5646,6 +5646,7 @@ class ForeignData(AbstractElement):
         self.doc = doc
         self.id = None
         self.auth = True
+        self.next = None #chains foreigndata
         #do not call superconstructor
 
     def _checknamespace(self, node):
@@ -6400,7 +6401,13 @@ class Document(object):
             if self.metadatafile:
                 return [] #external
             elif self.metadata is not None:
-                return [self.metadata.xml()] #in-document
+                #in-document
+                e = []
+                m = self.metadata
+                while m is not None:
+                    e.append(m.xml())
+                    m = m.next
+                return e
             else:
                 return []
 
@@ -6806,7 +6813,11 @@ class Document(object):
                 if self.metadatatype == "native":
                     raise MetaDataError("Encountered a foreign-data element but metadata type is native!")
                 elif self.metadata is not None:
-                    raise MetaDataError("Multiple foreign-data elements are not allowed")
+                    #multiple foreign-data elements, chain:
+                    e = self.metadata
+                    while e.next is not None:
+                        e = e.next
+                    e.next = ForeignData(self, node=subnode)
                 else:
                     self.metadata = ForeignData(self, node=subnode)
             elif subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT': #backward-compatibility for old IMDI without foreign-key
@@ -7427,6 +7438,9 @@ def relaxng(filename=None):
                     E.element( E.zeroOrMore( E.choice( *relaxng_declarations() ) ) ,name='annotations'),
                     E.zeroOrMore(
                         E.element(E.attribute(name='id'), E.text(), name='meta'),
+                    ),
+                    E.zeroOrMore(
+                        E.ref(name="foreign-data"),
                     ),
                     #E.optional(
                     #    E.ref(name='METATRANSCRIPT')
