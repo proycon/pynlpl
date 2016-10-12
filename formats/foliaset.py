@@ -95,7 +95,16 @@ class LegacyClassDefinition(object):
             jsonnode['subclasses'].append(subclass.json())
         return jsonnode
 
+    def rdf(self,graph, basens,parentset, parentclass=None):
+        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.RDF.type, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#Class')))
+        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#id'), rdflib.term.Literal(self.id)))
+        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#label'), rdflib.term.Literal(self.label)))
+        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#memberOf'), rdflib.term.URIRef(basens + '#Set.' + self.id) ))
+        if parentclass:
+            graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#parentClass'), rdflib.term.URIRef(basens + '#parentClass.' + self.id) ))
 
+        for subclass in self.subclasses:
+            subclass.rdf(graph,basens,parentset, self.id)
 
 class LegacySetDefinition(AbstractDefinition):
     def __init__(self, id, type, classes = [], subsets = [], label =None):
@@ -142,11 +151,6 @@ class LegacySetDefinition(AbstractDefinition):
 
         return LegacySetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type,classes, subsets, label)
 
-    def testclass(self,cls):
-        raise NotImplementedError #TODO, IMPLEMENT!
-
-    def testsubclass(self, cls, subset, subclass):
-        raise NotImplementedError #TODO, IMPLEMENT!
 
     def json(self):
         jsonnode = {'id': self.id}
@@ -168,29 +172,25 @@ class LegacySetDefinition(AbstractDefinition):
             jsonnode['classorder'].append( c.id )
         return jsonnode
 
-    def rdf(self,graph,namespace, parent=None):
-        #TODO
-        graph.add((rdflib.URIRef(
-
+    def rdf(self,graph, basens=None,parent=None):
+        if not basens:
+            basens = "http://folia.science.ru.nl/setdefinitions/" + self.id
+        graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.RDF.type, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#Set')))
+        if self.id:
+            graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#id'), rdflib.term.Literal(self.id)))
         if self.type == SetType.OPEN:
-
-        s = "<#" + self.id + ">\n"
-        props = []
-        if self.type == SetType.OPEN:
-            s += "a fds:OpenSet"
-        elif self.type == SetType.CLOSED:
-            s += "a fds:ClosedSet"
-        elif self.type == SetType.MIXED:
-            s += "a fds:MixedSet"
+            graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#open'), rdflib.term.Literal(True)))
         if self.label:
-            s += "    fds:label \"" + self.label.replace('"','\\"') + "\""
+            graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#label'), rdflib.term.Literal(self.label)))
         if self.parent:
-            s += "    fds:subsetOf <#" + self.id + "> .\n"
+            graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#subsetOf'), rdflib.term.URIRef(basens + '#Set.' + self.parent)))
 
-        s += "\n"
-        for subset in self.subsets:
-            s += subset.turtle(self)
-        return s
+        for c in self.classes:
+            c.rdf(graph, basens, self.id)
+
+        for s in self.subsets:
+            s.rdf(graph, basens, self.id)
+
 
 def xmltreefromstring(s):
     """Internal function, deals with different Python versions, unicode strings versus bytes, and with the leak bug in lxml"""
@@ -253,8 +253,11 @@ class SetDefinition(object):
             self.graph = rdflib.Graph()
             self.graph.parse(location=url, format=format)
 
+    def testclass(self,cls):
+        raise NotImplementedError #TODO, IMPLEMENT!
+
+    def testsubclass(self, cls, subset, subclass):
+        raise NotImplementedError #TODO, IMPLEMENT!
+
     def json(self):
-        #TODO: serialise to json
-        #for subj, rel, obj in self.graph:
-
-
+        raise NotImplementedError #TODO, IMPLEMENT!
