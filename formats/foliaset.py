@@ -174,7 +174,7 @@ class LegacySetDefinition(AbstractDefinition):
 
     def rdf(self,graph, basens=None,parent=None):
         if not basens:
-            basens = "http://folia.science.ru.nl/setdefinitions/" + self.id
+            basens = NSFOLIASETDEFINITION + "/" + self.id
         graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.RDF.type, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#Set')))
         if self.id:
             graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#id'), rdflib.term.Literal(self.id)))
@@ -212,7 +212,7 @@ def xmltreefromstring(s):
             return ElementTree.parse(BytesIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
 
 class SetDefinition(object):
-    def __init__(self, url, format=None):
+    def __init__(self, url, format=None, basens=None):
         self.graph = rdflib.Graph()
         if not format:
             #try to guess format from URL
@@ -233,6 +233,8 @@ class SetDefinition(object):
                 f = io.open(url,'r',encoding='utf-8')
             else:
                 #remote URL
+                if basens is None:
+                    basens = url
                 try:
                     f = urlopen(url)
                 except:
@@ -248,7 +250,7 @@ class SetDefinition(object):
                 raise SetDefinitionError("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
             legacyset = LegacySetDefinition.parsexml(root)
             self.graph = rdflib.Graph()
-            legacyset.rdf(self.graph)
+            legacyset.rdf(self.graph, basens)
         else:
             self.graph = rdflib.Graph()
             self.graph.parse(location=url, format=format)
