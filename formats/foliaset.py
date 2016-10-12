@@ -209,7 +209,7 @@ def xmltreefromstring(s):
             return ElementTree.parse(BytesIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
 
 class SetDefinition(object):
-    def __init__(self, url, format=None, basens=None):
+    def __init__(self, url, format=None, basens=""):
         self.graph = rdflib.Graph()
         if not format:
             #try to guess format from URL
@@ -230,7 +230,7 @@ class SetDefinition(object):
                 f = io.open(url,'r',encoding='utf-8')
             else:
                 #remote URL
-                if basens is None:
+                if not basens:
                     basens = url
                 try:
                     f = urlopen(url)
