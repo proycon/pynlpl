@@ -92,16 +92,16 @@ class LegacyClassDefinition(object):
             jsonnode['subclasses'].append(subclass.json())
         return jsonnode
 
-    def rdf(self,graph, basens,parentset, parentclass=None):
+    def rdf(self,graph, basens,parentseturi, parentclass=None):
         graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.RDF.type, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#Class')))
         graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#id'), rdflib.term.Literal(self.id)))
         graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#label'), rdflib.term.Literal(self.label)))
-        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#memberOf'), rdflib.term.URIRef(basens + '#Set.' + self.id) ))
+        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#memberOf'), parentseturi ))
         if parentclass:
             graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#parentClass'), rdflib.term.URIRef(basens + '#parentClass.' + self.id) ))
 
         for subclass in self.subclasses:
-            subclass.rdf(graph,basens,parentset, self.id)
+            subclass.rdf(graph,basens,parentseturi, self.id)
 
 class LegacySetDefinition(object):
     def __init__(self, id, type, classes = [], subsets = [], label =None):
@@ -169,24 +169,30 @@ class LegacySetDefinition(object):
             jsonnode['classorder'].append( c.id )
         return jsonnode
 
-    def rdf(self,graph, basens="",parent=None):
+    def rdf(self,graph, basens="",parenturi=None):
         if not basens:
             basens = NSFOLIASETDEFINITION + "/" + self.id
-        graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.RDF.type, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#Set')))
+        if not parenturi:
+            graph.bind( self.id, basens + '#', override=True ) #set a prefix for our namespace (does not use @base because of issue RDFLib/rdflib#559 )
+            seturi = rdflib.term.URIRef(basens + '#Set')
+        else:
+            seturi = rdflib.term.URIRef(basens + '#Subset.' + self.id)
+
+        graph.add((seturi, rdflib.RDF.type, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#Set')))
         if self.id:
-            graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#id'), rdflib.term.Literal(self.id)))
+            graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#id'), rdflib.term.Literal(self.id)))
         if self.type == SetType.OPEN:
-            graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#open'), rdflib.term.Literal(True)))
+            graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#open'), rdflib.term.Literal(True)))
         if self.label:
-            graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#label'), rdflib.term.Literal(self.label)))
-        if self.parent:
-            graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#subsetOf'), rdflib.term.URIRef(basens + '#Set.' + self.parent)))
+            graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#label'), rdflib.term.Literal(self.label)))
+        if parenturi:
+            graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#subsetOf'), parenturi))
 
         for c in self.classes:
-            c.rdf(graph, basens, self.id)
+            c.rdf(graph, basens, seturi)
 
         for s in self.subsets:
-            s.rdf(graph, basens, self.id)
+            s.rdf(graph, basens, seturi)
 
 
 def xmltreefromstring(s):
@@ -211,6 +217,8 @@ def xmltreefromstring(s):
 class SetDefinition(object):
     def __init__(self, url, format=None, basens=""):
         self.graph = rdflib.Graph()
+        self.basens = basens
+        self.graph.bind( 'fsd', NSFOLIASETDEFINITION+'#', override=True)
         if not format:
             #try to guess format from URL
             if url.endswith('.ttl'):
@@ -230,8 +238,8 @@ class SetDefinition(object):
                 f = io.open(url,'r',encoding='utf-8')
             else:
                 #remote URL
-                if not basens:
-                    basens = url
+                if not self.basens:
+                    self.basens = url
                 try:
                     f = urlopen(url)
                 except:
@@ -246,10 +254,8 @@ class SetDefinition(object):
             if root.tag != '{' + NSFOLIA + '}set':
                 raise SetDefinitionError("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
             legacyset = LegacySetDefinition.parsexml(root)
-            self.graph = rdflib.Graph()
-            legacyset.rdf(self.graph, basens)
+            legacyset.rdf(self.graph, self.basens)
         else:
-            self.graph = rdflib.Graph()
             self.graph.parse(location=url, format=format)
 
     def testclass(self,cls):
