@@ -71,13 +71,16 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 #The FoLiA version
 FOLIAVERSION = "1.4.0"
 
-LIBVERSION = FOLIAVERSION + '.83' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.84' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
 #foliaspec:namespace:NSFOLIA
 #The FoLiA XML namespace
 NSFOLIA = "http://ilk.uvt.nl/folia"
+
+#foliaspec:setdefinitionnamespace:NSFOLIASETDEFINITION
+NSFOLIASETDEFINITION = "http://folia.science.ru.nl/setdefinition"
 
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 nslen = len(NSFOLIA) + 2
@@ -7241,8 +7244,11 @@ class ClassDefinition(AbstractDefinition):
                     subclasses.append( ClassDefinition.parsexml(subnode, constraintindex) )
                 elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
                     raise Exception("Invalid tag in Class definition: " + subnode.tag)
-
-        return ClassDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],label, constraints, subclasses)
+        if '{http://www.w3.org/XML/1998/namespace}id' in node.attrib:
+            idkey = '{http://www.w3.org/XML/1998/namespace}id'
+        else:
+            idkey = 'id'
+        return ClassDefinition(node.attrib[idkey],label, constraints, subclasses)
 
 
     def __iter__(self):
