@@ -218,6 +218,7 @@ class SetDefinition(object):
     def __init__(self, url, format=None, basens=""):
         self.graph = rdflib.Graph()
         self.basens = basens
+        self.set_id_uri_cache = {}
         self.graph.bind( 'fsd', NSFOLIASETDEFINITION+'#', override=True)
         if not format:
             #try to guess format from URL
@@ -263,6 +264,36 @@ class SetDefinition(object):
 
     def testsubclass(self, cls, subset, subclass):
         raise NotImplementedError #TODO, IMPLEMENT!
+
+    def get_set_uri(self, set_id=None):
+        if set_id in self.set_id_uri_cache:
+            return self.set_id_uri_cache[set_id]
+        if set_id:
+            for row in self.graph.query("SELECT ?s WHERE { ?s rdf:type fsd:Set ; fsd:id \"" + set_id + "\" }"):
+                self.set_id_uri_cache[set_id] = row.s
+                return row.s
+        else:
+            for row in self.graph.query("SELECT ?s WHERE { ?s rdf:type fsd:Set . FILTER NOT EXISTS { ?s fsd:subsetOf ?y } }"):
+                self.set_id_uri_cache[set_id] = row.s
+                return row.s
+
+    def classes(self, set_uri_or_id=None):
+        if set_uri_or_id.startswith('http://') or set_uri_or_id.startswith('https://'):
+            set_uri = set_uri_or_id
+        else:
+            set_uri = self.get_set_uri(set_uri_or_id)
+
+        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel WHERE { ?classuri rdf:type fsd:Class ; fsd:id ?classid; fsd:memberOf <" + set_uri + "> . OPTIONAL { ?classuri fsd:label ?classlabel } }"):
+            yield str(row.classuri), str(row.classid), str(row.classlabel)
+
+    def subsets(self, set_uri_or_id=None):
+        if set_uri_or_id.startswith('http://') or set_uri_or_id.startswith('https://'):
+            set_uri = set_uri_or_id
+        else:
+            set_uri = self.get_set_uri(set_uri_or_id)
+
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel WHERE { ?seturi rdf:type fsd:Set ; fsd:subsetOf <" + set_uri + "> . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } }"):
+            yield str(row.seturi), str(row.setid), str(row.setlabel)
 
     def json(self):
         raise NotImplementedError #TODO, IMPLEMENT!
