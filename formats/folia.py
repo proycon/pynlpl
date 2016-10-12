@@ -62,6 +62,7 @@ else:
     stdout = sys.stdout
 
 from pynlpl.common import u, isstring
+from pynlpl.formats.foliaset import SetDefinition
 import pynlpl.algorithms
 
 
@@ -79,8 +80,6 @@ LIBVERSION = FOLIAVERSION + '.84' #== FoLiA version + library revision
 #The FoLiA XML namespace
 NSFOLIA = "http://ilk.uvt.nl/folia"
 
-#foliaspec:setdefinitionnamespace:NSFOLIASETDEFINITION
-NSFOLIASETDEFINITION = "http://folia.science.ru.nl/setdefinition"
 
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 nslen = len(NSFOLIA) + 2
@@ -165,12 +164,6 @@ class UnresolvableTextContent(Exception):
     pass
 
 class MalformedXMLError(Exception):
-    pass
-
-class DeepValidationError(Exception):
-    pass
-
-class SetDefinitionError(DeepValidationError):
     pass
 
 class ModeError(Exception):
@@ -6453,7 +6446,7 @@ class Document(object):
                 if set and self.loadsetdefinitions and set not in self.setdefinitions:
                     if set[:7] == "http://" or set[:8] == "https://" or set[:6] == "ftp://":
                         try:
-                            self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
+                            self.setdefinitions[set] = SetDefinition(set) #will raise exception on error
                         except DeepValidationError:
                             print("WARNING: Set " + set + " could not be downloaded, ignoring!",file=sys.stderr) #warning and ignore
 
@@ -7166,255 +7159,8 @@ class CorpusProcessor(object):
 
 
 
-class SetType:
-    CLOSED, OPEN, MIXED = range(3)
-
-class AbstractDefinition(object):
-    pass
-
-class ConstraintDefinition(object):
-    def __init__(self, id,  restrictions = {}, exceptions = {}):
-        self.id = id
-        self.restrictions = restrictions
-        self.exceptions = exceptions
-
-    @classmethod
-    def parsexml(Class, node, constraintindex):
-        assert node.tag == '{' + NSFOLIA + '}constraint'
-
-        if 'ref' in node.attrib:
-            try:
-                return constraintindex[node.attrib['ref']]
-            except KeyError:
-                raise KeyError("Unresolvable constraint: " + node.attrib['ref'])
 
 
-
-        restrictions = []
-        exceptions = []
-        for subnode in node:
-            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)):
-                if subnode.tag == '{' + NSFOLIA + '}restrict':
-                    if 'subset' in subnode.attrib:
-                        restrictions.append( (subnode.attrib['subset'], subnode.attrib['class']) )
-                    else:
-                        restrictions.append( (None, subnode.attrib['class']) )
-                elif subnode.tag == '{' + NSFOLIA + '}except':
-                    if 'subset' in subnode.attrib:
-                        exceptions.append( (subnode.attrib['subset'], subnode.attrib['class']) )
-                    else:
-                        exceptions.append( (None, subnode.attrib['class']) )
-
-        if '{http://www.w3.org/XML/1998/namespace}id' in node.attrib:
-            id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
-            instance = ConstraintDefinition(id, restrictions,exceptions)
-            constraintindex[id] = instance
-        else:
-            instance = ConstraintDefinition(None, restrictions,exceptions)
-        return instance
-
-
-    def json(self):
-        return {'id': self.id} #TODO: Implement
-
-class ClassDefinition(AbstractDefinition):
-    def __init__(self,id, label, constraints=[], subclasses=[]):
-        self.id = id
-        self.label = label
-        self.constraints = constraints
-        self.subclasses = subclasses
-
-    @classmethod
-    def parsexml(Class, node, constraintindex):
-        if not node.tag == '{' + NSFOLIA + '}class':
-            raise Exception("Expected class tag for this xml node, got" + node.tag)
-
-        if 'label' in node.attrib:
-            label = node.attrib['label']
-        else:
-            label = ""
-
-        constraints = []
-        subclasses= []
-        for subnode in node:
-            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)):
-                if subnode.tag == '{' + NSFOLIA + '}constraint':
-                    constraints.append( ConstraintDefinition.parsexml(subnode, constraintindex) )
-                elif subnode.tag == '{' + NSFOLIA + '}class':
-                    subclasses.append( ClassDefinition.parsexml(subnode, constraintindex) )
-                elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
-                    raise Exception("Invalid tag in Class definition: " + subnode.tag)
-        if '{http://www.w3.org/XML/1998/namespace}id' in node.attrib:
-            idkey = '{http://www.w3.org/XML/1998/namespace}id'
-        else:
-            idkey = 'id'
-        return ClassDefinition(node.attrib[idkey],label, constraints, subclasses)
-
-
-    def __iter__(self):
-        for c in self.subclasses:
-            yield c
-
-    def json(self):
-        jsonnode = {'id': self.id, 'label': self.label}
-        jsonnode['constraints'] = []
-        jsonnode['subclasses'] = []
-        for constraint in self.constraints:
-            jsonnode['constaints'].append(constraint.json())
-        for subclass in self.subclasses:
-            jsonnode['subclasses'].append(subclass.json())
-        return jsonnode
-
-class SubsetDefinition(AbstractDefinition):
-    def __init__(self, id, type, classes = [], constraints = []):
-        self.id = id
-        self.type = type
-        self.classes = classes
-        self.constraints = constraints
-
-    @classmethod
-    def parsexml(Class, node, constraintindex= {}):
-        if not node.tag == '{' + NSFOLIA + '}subset':
-            raise Exception("Expected subset tag for this xml node, got" + node.tag)
-
-        if 'type' in node.attrib:
-            if node.attrib['type'] == 'open':
-                type = SetType.OPEN
-            elif node.attrib['type'] == 'closed':
-                type = SetType.CLOSED
-            elif node.attrib['type'] == 'mixed':
-                type = SetType.MIXED
-            else:
-                raise Exception("Invalid set type: ", type)
-        else:
-            type = SetType.MIXED
-
-        classes = []
-        constraints = []
-        for subnode in node:
-            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)):
-                if subnode.tag == '{' + NSFOLIA + '}class':
-                    classes.append( ClassDefinition.parsexml(subnode, constraintindex) )
-                elif subnode.tag == '{' + NSFOLIA + '}constraint':
-                    constraints.append( ConstraintDefinition.parsexml(subnode, constraintindex) )
-                elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
-                    raise Exception("Invalid tag in Set definition: " + subnode.tag)
-
-        return SubsetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type,classes, constraints)
-
-
-    def json(self):
-        jsonnode = {'id': self.id}
-        if self.type == SetType.OPEN:
-            jsonnode['type'] = 'open'
-        elif self.type == SetType.CLOSED:
-            jsonnode['type'] = 'closed'
-        elif self.type == SetType.MIXED:
-            jsonnode['type'] = 'mixed'
-        jsonnode['constraints'] = []
-        for constraint in self.constraints:
-            jsonnode['constraints'].append(constraint.json())
-        jsonnode['classes'] = {}
-        for c in self.classes:
-            jsonnode['classes'][c.id] = c.json()
-        return jsonnode
-
-class SetDefinition(AbstractDefinition):
-    def __init__(self, id, type, classes = [], subsets = [], constraintindex = {}, label =None):
-        isncname(id)
-        self.id = id
-        self.type = type
-        self.label = label
-        self.classes = classes
-        self.subsets = subsets
-        self.constraintindex = constraintindex
-
-
-    @classmethod
-    def parsexml(Class, node):
-        assert node.tag == '{' + NSFOLIA + '}set'
-        classes = []
-        subsets= []
-        constraintindex = {}
-        if 'type' in node.attrib:
-            if node.attrib['type'] == 'open':
-                type = SetType.OPEN
-            elif node.attrib['type'] == 'closed':
-                type = SetType.CLOSED
-            elif node.attrib['type'] == 'mixed':
-                type = SetType.MIXED
-            else:
-                raise Exception("Invalid set type: ", type)
-        else:
-            type = SetType.MIXED
-
-        if 'label' in node.attrib:
-            label = node.attrib['label']
-        else:
-            label = None
-
-        for subnode in node:
-            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)):
-                if subnode.tag == '{' + NSFOLIA + '}class':
-                    classes.append( ClassDefinition.parsexml(subnode, constraintindex) )
-                elif subnode.tag == '{' + NSFOLIA + '}subset':
-                    subsets.append( SubsetDefinition.parsexml(subnode, constraintindex) )
-                elif subnode.tag == '{' + NSFOLIA + '}constraint':
-                    pass
-                elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
-                    raise SetDefinitionError("Invalid tag in Set definition: " + subnode.tag)
-
-        return SetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type,classes, subsets, constraintindex, label)
-
-    def testclass(self,cls):
-        raise NotImplementedError #TODO, IMPLEMENT!
-
-    def testsubclass(self, cls, subset, subclass):
-        raise NotImplementedError #TODO, IMPLEMENT!
-
-    def json(self):
-        jsonnode = {'id': self.id}
-        if self.label:
-            jsonnode['label'] = self.label
-        if self.type == SetType.OPEN:
-            jsonnode['type'] = 'open'
-        elif self.type == SetType.CLOSED:
-            jsonnode['type'] = 'closed'
-        elif self.type == SetType.MIXED:
-            jsonnode['type'] = 'mixed'
-        jsonnode['subsets'] = {}
-        for subset in self.subsets:
-            jsonnode['subsets'][subset.id] = subset.json()
-        jsonnode['classes'] = {}
-        jsonnode['classorder'] = []
-        for c in sorted(self.classes, key=lambda x: x.label):
-            jsonnode['classes'][c.id] = c.json()
-            jsonnode['classorder'].append( c.id )
-        return jsonnode
-
-
-
-def loadsetdefinition(filename):
-    if filename[0] == '/' or filename[0] == '.':
-        try:
-            tree = ElementTree.parse(filename, ElementTree.XMLParser(collect_ids=False))
-        except TypeError:
-            tree = ElementTree.parse(filename, ElementTree.XMLParser())
-    else:
-        try:
-            f = urlopen(filename)
-        except:
-            raise DeepValidationError("Unable to download " + filename)
-        try:
-            tree = xmltreefromstring(f.read())
-        except IOError:
-            raise DeepValidationError("Unable to download " + filename)
-        f.close()
-    root = tree.getroot()
-    if root.tag != '{' + NSFOLIA + '}set':
-        raise SetDefinitionError("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
-
-    return SetDefinition.parsexml(root)
 
 
 def relaxng_declarations():
