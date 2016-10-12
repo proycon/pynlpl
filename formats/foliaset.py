@@ -27,8 +27,6 @@ import sys
 import io
 import rdflib
 from lxml import etree as ElementTree
-
-from lxml.builder import ElementMaker
 if sys.version < '3':
     from StringIO import StringIO #pylint: disable=import-error,wrong-import-order
     from urllib import urlopen #pylint: disable=no-name-in-module,wrong-import-order
@@ -69,12 +67,11 @@ class LegacyClassDefinition(object):
         else:
             label = ""
 
-        constraints = []
         subclasses= []
         for subnode in node:
-            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)):
+            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)): #pylint: disable=undefined-variable
                 if subnode.tag == '{' + NSFOLIA + '}class':
-                    subclasses.append( LegacyClassDefinition.parsexml(subnode, constraintindex) )
+                    subclasses.append( LegacyClassDefinition.parsexml(subnode) )
                 elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
                     raise Exception("Invalid tag in Class definition: " + subnode.tag)
         if '{http://www.w3.org/XML/1998/namespace}id' in node.attrib:
@@ -106,7 +103,7 @@ class LegacyClassDefinition(object):
         for subclass in self.subclasses:
             subclass.rdf(graph,basens,parentset, self.id)
 
-class LegacySetDefinition(AbstractDefinition):
+class LegacySetDefinition(object):
     def __init__(self, id, type, classes = [], subsets = [], label =None):
         self.id = id
         self.type = type
@@ -139,7 +136,7 @@ class LegacySetDefinition(AbstractDefinition):
             label = None
 
         for subnode in node:
-            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)):
+            if isinstance(subnode.tag, str) or (sys.version < '3' and isinstance(subnode.tag, unicode)): #pylint: disable=undefined-variable
                 if subnode.tag == '{' + NSFOLIA + '}class':
                     classes.append( LegacyClassDefinition.parsexml(subnode) )
                 elif not issubset and subnode.tag == '{' + NSFOLIA + '}subset':
@@ -147,7 +144,7 @@ class LegacySetDefinition(AbstractDefinition):
                 elif subnode.tag == '{' + NSFOLIA + '}constraint':
                     pass
                 elif subnode.tag[:len(NSFOLIA) +2] == '{' + NSFOLIA + '}':
-                    raise LegacySetDefinitionError("Invalid tag in Set definition: " + subnode.tag)
+                    raise SetDefinitionError("Invalid tag in Set definition: " + subnode.tag)
 
         return LegacySetDefinition(node.attrib['{http://www.w3.org/XML/1998/namespace}id'],type,classes, subsets, label)
 
@@ -172,7 +169,7 @@ class LegacySetDefinition(AbstractDefinition):
             jsonnode['classorder'].append( c.id )
         return jsonnode
 
-    def rdf(self,graph, basens=None,parent=None):
+    def rdf(self,graph, basens="",parent=None):
         if not basens:
             basens = "http://folia.science.ru.nl/setdefinitions/" + self.id
         graph.add((rdflib.term.URIRef(basens + '#Set.' + self.id), rdflib.RDF.type, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#Set')))
