@@ -232,7 +232,7 @@ class SetDefinition(object):
                 format = 'application/foliaset+xml' #legacy
 
         if format in ('application/foliaset+xml','legacy',None):
-            #legacy format
+            #legacy format, has some checks and fallbacks if the format turns out to be RDF anyway
             self.legacyset = None
             if url[0] == '/' or url[0] == '.':
                 #local file
