@@ -98,7 +98,7 @@ class LegacyClassDefinition(object):
         graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#label'), rdflib.term.Literal(self.label)))
         graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#memberOf'), parentseturi ))
         if parentclass:
-            graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#parentClass'), rdflib.term.URIRef(basens + '#parentClass.' + self.id) ))
+            graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#parentClass'), rdflib.term.URIRef(basens + '#' + parentclass) ))
 
         for subclass in self.subclasses:
             subclass.rdf(graph,basens,parentseturi, self.id)
@@ -289,12 +289,13 @@ class SetDefinition(object):
     def mainset(self):
         """Returns information regarding the set"""
         set_uri = self.get_set_uri()
-        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type fsd:Set ; fsd:subsetOf <" + set_uri + "> . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen }"):
-            return {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel), 'open': bool(row.setopen) }
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type fsd:Set . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } FILTER NOT EXISTS { ?s fsd:subsetOf ?y } }"):
+            return {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel) if row.setlabel else "", 'open': bool(row.setopen) }
+        raise DeepValidationError("Unable to find main set (set_uri=" + str(set_uri)+"), this should not happen")
 
     def classes(self, set_uri_or_id=None, nestedhierarchy=False):
         """Returns a dictionary of classes for the specified (sub)set (if None, default, the main set is selected)"""
-        if set_uri_or_id.startswith('http://') or set_uri_or_id.startswith('https://'):
+        if set_uri_or_id and set_uri_or_id.startswith(('http://','https://')):
             set_uri = set_uri_or_id
         else:
             set_uri = self.get_set_uri(set_uri_or_id)
@@ -303,8 +304,8 @@ class SetDefinition(object):
 
         classes= {}
         uri2idmap = {}
-        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass WHERE { ?classuri rdf:type fsd:Class ; fsd:id ?classid; fsd:memberOf <" + set_uri + "> . OPTIONAL { ?classuri fsd:label ?classlabel } OPTIONAL ?parentclass { ?classurl fsd:parentClass ?parentclass }"):
-            classinfo = {'uri': str(row.classuri), 'id': str(row.classid),'label': str(row.classlabel) }
+        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass WHERE { ?classuri rdf:type fsd:Class ; fsd:id ?classid; fsd:memberOf <" + str(set_uri) + "> . OPTIONAL { ?classuri fsd:label ?classlabel } OPTIONAL { ?classuri fsd:parentClass ?parentclass } }"):
+            classinfo = {'uri': str(row.classuri), 'id': str(row.classid),'label': str(row.classlabel) if row.classlabel else "" }
             if nestedhierarchy:
                 uri2idmap[str(row.classuri)] = str(row.classid)
             if row.parentclass:
@@ -326,15 +327,15 @@ class SetDefinition(object):
         return classes
 
     def subsets(self, set_uri_or_id=None):
-        if set_uri_or_id.startswith('http://') or set_uri_or_id.startswith('https://'):
+        if set_uri_or_id and set_uri_or_id.startswith(('http://', 'https://')):
             set_uri = set_uri_or_id
         else:
             set_uri = self.get_set_uri(set_uri_or_id)
 
         assert set_uri is not None
 
-        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type fsd:Set ; fsd:subsetOf <" + set_uri + "> . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } }"):
-            yield {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel), 'open': bool(row.setopen) }
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type fsd:Set ; fsd:subsetOf <" + str(set_uri) + "> . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } }"):
+            yield {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel) if row.setlabel else "", 'open': bool(row.setopen) }
 
     def json(self):
         data = {'subsets': {}}
