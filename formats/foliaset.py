@@ -260,10 +260,19 @@ class SetDefinition(object):
             self.graph.parse(location=url, format=format)
 
     def testclass(self,cls):
-        raise NotImplementedError #TODO, IMPLEMENT!
+        """Test for the presence of the class, returns the full URI or raises an exception"""
+        for row in self.graph.query("SELECT ?c WHERE { ?c rdf:type fsd:Class ; fsd:id \"" + cls + "\"; fsd.memberOf <" + self.get_set_uri() + "> }"):
+            return str(row.c)
+        raise DeepValidationError("Not a valid class: " + cls)
 
     def testsubclass(self, cls, subset, subclass):
-        raise NotImplementedError #TODO, IMPLEMENT!
+        """Test for the presence of a class in a subset (used with features), returns the full URI or raises an exception"""
+        subset_uri = self.get_set_uri(subset)
+        if not subset_uri:
+            raise DeepValidationError("Not a valid subset: " + subset)
+        for row in self.graph.query("SELECT ?c WHERE { ?c rdf:type fsd:Class ; fsd:id \"" + subclass + "\"; fsd.memberOf <" + subset_uri + "> }"):
+            return str(row.c)
+        raise DeepValidationError("Not a valid class in subset " + subset + ": " + subclass)
 
     def get_set_uri(self, set_id=None):
         if set_id in self.set_id_uri_cache:
@@ -278,15 +287,19 @@ class SetDefinition(object):
                 return row.s
 
     def mainset(self):
+        """Returns information regarding the set"""
         set_uri = self.get_set_uri()
-        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel WHERE { ?seturi rdf:type fsd:Set ; fsd:subsetOf <" + set_uri + "> . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } }"):
-            yield str(row.seturi), str(row.setid), str(row.setlabel)
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type fsd:Set ; fsd:subsetOf <" + set_uri + "> . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen }"):
+            return {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel), 'open': bool(row.setopen) }
 
     def classes(self, set_uri_or_id=None, nestedhierarchy=False):
+        """Returns a dictionary of classes for the specified (sub)set (if None, default, the main set is selected)"""
         if set_uri_or_id.startswith('http://') or set_uri_or_id.startswith('https://'):
             set_uri = set_uri_or_id
         else:
             set_uri = self.get_set_uri(set_uri_or_id)
+
+        assert set_uri is not None
 
         classes= {}
         uri2idmap = {}
@@ -318,8 +331,27 @@ class SetDefinition(object):
         else:
             set_uri = self.get_set_uri(set_uri_or_id)
 
-        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel WHERE { ?seturi rdf:type fsd:Set ; fsd:subsetOf <" + set_uri + "> . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } }"):
-            yield str(row.seturi), str(row.setid), str(row.setlabel)
+        assert set_uri is not None
+
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type fsd:Set ; fsd:subsetOf <" + set_uri + "> . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } }"):
+            yield {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel), 'open': bool(row.setopen) }
 
     def json(self):
-        raise NotImplementedError #TODO, IMPLEMENT!
+        data = {'subsets': {}}
+        setinfo = self.mainset()
+        #backward compatibility, set type:
+        if setinfo['open']:
+            setinfo['type'] = 'open'
+        else:
+            setinfo['type'] = 'closed'
+        data.update(setinfo)
+        data['classes'] = self.classes()
+        for subsetinfo in self.subsets():
+            #backward compatibility, set type:
+            if subsetinfo['open']:
+                subsetinfo['type'] = 'open'
+            else:
+                subsetinfo['type'] = 'closed'
+            data['subsets'][subsetinfo['id']] = subsetinfo
+            data['subsets'][subsetinfo['id']]['classes'] = self.classes(subsetinfo['uri'])
+        return data
