@@ -289,7 +289,7 @@ class SetDefinition(object):
     def mainset(self):
         """Returns information regarding the set"""
         set_uri = self.get_set_uri()
-        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type fsd:Set . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } FILTER NOT EXISTS { ?s fsd:subsetOf ?y } }"):
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type fsd:Set . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } FILTER NOT EXISTS { ?seturi fsd:subsetOf ?y } }"):
             return {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel) if row.setlabel else "", 'open': bool(row.setopen) }
         raise DeepValidationError("Unable to find main set (set_uri=" + str(set_uri)+"), this should not happen")
 
