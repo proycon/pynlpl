@@ -277,14 +277,40 @@ class SetDefinition(object):
                 self.set_id_uri_cache[set_id] = row.s
                 return row.s
 
-    def classes(self, set_uri_or_id=None):
+    def mainset(self):
+        set_uri = self.get_set_uri()
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel WHERE { ?seturi rdf:type fsd:Set ; fsd:subsetOf <" + set_uri + "> . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } }"):
+            yield str(row.seturi), str(row.setid), str(row.setlabel)
+
+    def classes(self, set_uri_or_id=None, nestedhierarchy=False):
         if set_uri_or_id.startswith('http://') or set_uri_or_id.startswith('https://'):
             set_uri = set_uri_or_id
         else:
             set_uri = self.get_set_uri(set_uri_or_id)
 
-        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel WHERE { ?classuri rdf:type fsd:Class ; fsd:id ?classid; fsd:memberOf <" + set_uri + "> . OPTIONAL { ?classuri fsd:label ?classlabel } }"):
-            yield str(row.classuri), str(row.classid), str(row.classlabel)
+        classes= {}
+        uri2idmap = {}
+        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass WHERE { ?classuri rdf:type fsd:Class ; fsd:id ?classid; fsd:memberOf <" + set_uri + "> . OPTIONAL { ?classuri fsd:label ?classlabel } OPTIONAL ?parentclass { ?classurl fsd:parentClass ?parentclass }"):
+            classinfo = {'uri': str(row.classuri), 'id': str(row.classid),'label': str(row.classlabel) }
+            if nestedhierarchy:
+                uri2idmap[str(row.classuri)] = str(row.classid)
+            if row.parentclass:
+                classinfo['parentclass'] =  str(row.parentclass) #uri
+            classes[str(row.classid)] = classinfo
+
+        if nestedhierarchy:
+            #build hierarchy
+            removekeys = []
+            for classid, classinfo in classes.items():
+                if 'parentclass' in classinfo:
+                    removekeys.append(classid)
+                    parentclassid = uri2idmap[classinfo['parentclass']]
+                    if 'subclasses' not in classes[parentclassid]:
+                        classes[parentclassid]['subclasses'] = {}
+                    classes[parentclassid]['subclasses'][classid] = classinfo
+            for key in removekeys:
+                del classes[key]
+        return classes
 
     def subsets(self, set_uri_or_id=None):
         if set_uri_or_id.startswith('http://') or set_uri_or_id.startswith('https://'):
