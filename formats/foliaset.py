@@ -246,14 +246,24 @@ class SetDefinition(object):
                 except:
                     raise DeepValidationError("Unable to download " + url)
             try:
-                tree = xmltreefromstring(f.read())
+                data = f.read()
             except IOError:
                 raise DeepValidationError("Unable to download " + url)
             finally:
                 f.close()
+            if data[0] == '@':
+                #this is not gonna be valid XML, but looks like turtle/n3 RDF
+                self.graph.parse(location=url, format='text/turtle')
+                return
+            tree = xmltreefromstring(data)
             root = tree.getroot()
             if root.tag != '{' + NSFOLIA + '}set':
-                raise SetDefinitionError("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
+                if root.tag.lower().find('rdf') != 1:
+                    #well, this is RDF after all...
+                    self.graph.parse(location=url, format='rdf')
+                    return
+                else:
+                    raise SetDefinitionError("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
             legacyset = LegacySetDefinition.parsexml(root)
             legacyset.rdf(self.graph, self.basens)
         else:
