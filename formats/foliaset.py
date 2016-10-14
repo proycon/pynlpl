@@ -52,10 +52,13 @@ class SetType: #legacy only
     CLOSED, OPEN, MIXED = range(3)
 
 class LegacyClassDefinition(object):
-    def __init__(self,id, label, subclasses=[]):
+    def __init__(self,id, label, subclasses=None):
         self.id = id
         self.label = label
-        self.subclasses = subclasses
+        if subclasses:
+            self.subclasses = subclasses
+        else:
+            self.subclasses = []
 
     @classmethod
     def parsexml(Class, node):
@@ -92,11 +95,13 @@ class LegacyClassDefinition(object):
             jsonnode['subclasses'].append(subclass.json())
         return jsonnode
 
-    def rdf(self,graph, basens,parentseturi, parentclass=None):
+    def rdf(self,graph, basens,parentseturi, parentclass=None, seqnr=None):
         graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.RDF.type, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#Class')))
         graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#id'), rdflib.term.Literal(self.id)))
         graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#label'), rdflib.term.Literal(self.label)))
         graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#memberOf'), parentseturi ))
+        if seqnr is not None:
+            graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#sequenceNumber'), rdflib.term.Literal(seqnr) ))
         if parentclass:
             graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#parentClass'), rdflib.term.URIRef(basens + '#' + parentclass) ))
 
@@ -104,12 +109,18 @@ class LegacyClassDefinition(object):
             subclass.rdf(graph,basens,parentseturi, self.id)
 
 class LegacySetDefinition(object):
-    def __init__(self, id, type, classes = [], subsets = [], label =None):
+    def __init__(self, id, type, classes = None, subsets = None, label =None):
         self.id = id
         self.type = type
         self.label = label
-        self.classes = classes
-        self.subsets = subsets
+        if classes:
+            self.classes = classes
+        else:
+            self.classes = []
+        if subsets:
+            self.subsets = subsets
+        else:
+            self.subsets = []
 
     @classmethod
     def parsexml(Class, node):
@@ -188,8 +199,8 @@ class LegacySetDefinition(object):
         if parenturi:
             graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#subsetOf'), parenturi))
 
-        for c in self.classes:
-            c.rdf(graph, basens, seturi)
+        for i, c in enumerate(self.classes):
+            c.rdf(graph, basens, seturi, None, i+1)
 
         for s in self.subsets:
             s.rdf(graph, basens, seturi)
@@ -303,6 +314,16 @@ class SetDefinition(object):
             return {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel) if row.setlabel else "", 'open': bool(row.setopen) }
         raise DeepValidationError("Unable to find main set (set_uri=" + str(set_uri)+"), this should not happen")
 
+    def orderedclasses(self, set_uri_or_id=None, nestedhierarchy=False):
+        """Higher-order generator function that yields class information in the right order, combines calls to :meth:`SetDefinition.classes` and :meth:`SetDefinition.classorder`"""
+        classes = self.classes(set_uri_or_id, nestedhierarchy)
+        for classid in self.classorder(classes):
+            yield classes[classid]
+
+    def __iter__(self):
+        """Alias for :meth:`SetDefinition.orderedclasses`"""
+        return self.orderedclasses()
+
     def classes(self, set_uri_or_id=None, nestedhierarchy=False):
         """Returns a dictionary of classes for the specified (sub)set (if None, default, the main set is selected)"""
         if set_uri_or_id and set_uri_or_id.startswith(('http://','https://')):
@@ -314,12 +335,14 @@ class SetDefinition(object):
 
         classes= {}
         uri2idmap = {}
-        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass WHERE { ?classuri rdf:type fsd:Class ; fsd:id ?classid; fsd:memberOf <" + str(set_uri) + "> . OPTIONAL { ?classuri fsd:label ?classlabel } OPTIONAL { ?classuri fsd:parentClass ?parentclass } }"):
+        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass ?seqnr  WHERE { ?classuri rdf:type fsd:Class ; fsd:id ?classid; fsd:memberOf <" + str(set_uri) + "> . OPTIONAL { ?classuri fsd:label ?classlabel } OPTIONAL { ?classuri fsd:parentClass ?parentclass } OPTIONAL { ?classuri fsd:sequenceNumber ?seqnr } }"):
             classinfo = {'uri': str(row.classuri), 'id': str(row.classid),'label': str(row.classlabel) if row.classlabel else "" }
             if nestedhierarchy:
                 uri2idmap[str(row.classuri)] = str(row.classid)
             if row.parentclass:
                 classinfo['parentclass'] =  str(row.parentclass) #uri
+            if row.seqnr:
+                classinfo['seqnr'] =  int(row.seqnr)
             classes[str(row.classid)] = classinfo
 
         if nestedhierarchy:
@@ -335,6 +358,13 @@ class SetDefinition(object):
             for key in removekeys:
                 del classes[key]
         return classes
+
+    def classorder(self,classes):
+        """Return a list of class IDs in order for presentational purposes: order is determined first and foremost by explicit ordering, else alphabetically by label or as a last resort by class ID"""
+        return [ classid for classid, classitem in sorted( ((classid, classitem) for classid, classitem in classes.items() if 'seqnr' in classitem) , key=lambda pair: pair[1]['seqnr'] )] + \
+               [ classid for classid, classitem in sorted( ((classid, classitem) for classid, classitem in classes.items() if 'seqnr' not in classitem) , key=lambda pair: pair[1]['label'] if 'label' in pair[1] else pair[1]['id']) ]
+
+
 
     def subsets(self, set_uri_or_id=None):
         if set_uri_or_id and set_uri_or_id.startswith(('http://', 'https://')):
@@ -356,7 +386,9 @@ class SetDefinition(object):
         else:
             setinfo['type'] = 'closed'
         data.update(setinfo)
-        data['classes'] = self.classes()
+        classes = self.classes()
+        data['classes'] = classes
+        data['classorder'] = self.classorder(classes)
         for subsetinfo in self.subsets():
             #backward compatibility, set type:
             if subsetinfo['open']:
@@ -364,5 +396,7 @@ class SetDefinition(object):
             else:
                 subsetinfo['type'] = 'closed'
             data['subsets'][subsetinfo['id']] = subsetinfo
-            data['subsets'][subsetinfo['id']]['classes'] = self.classes(subsetinfo['uri'])
+            classes = self.classes(subsetinfo['uri'])
+            data['subsets'][subsetinfo['id']]['classes'] = classes
+            data['subsets'][subsetinfo['id']]['classorder'] = self.classorder(classes)
         return data
