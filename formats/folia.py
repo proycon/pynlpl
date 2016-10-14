@@ -62,7 +62,7 @@ else:
     stdout = sys.stdout
 
 from pynlpl.common import u, isstring
-from pynlpl.formats.foliaset import SetDefinition
+from pynlpl.formats.foliaset import SetDefinition, DeepValidationError
 import pynlpl.algorithms
 
 
