@@ -1,0 +1,6 @@
+include README.rst
+include LICENSE
+include requirements.txt
+recursive-include pynlpl *.py
+include pynlpl/tests/test.sh
+include pynlpl/tests/evaluation_timbl/*
