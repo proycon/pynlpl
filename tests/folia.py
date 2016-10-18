@@ -36,7 +36,7 @@ import bz2
 import re
 
 
-FOLIARELEASE = "v1.3.0.52"
+FOLIARELEASE = "v1.3.2.52"
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
