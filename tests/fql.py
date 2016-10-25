@@ -340,6 +340,7 @@ class Test3Evaluation(unittest.TestCase):
         q = fql.Query(Qedittext4)
         results = q(self.doc)
         self.assertEqual(results[0].text(), "ter\nwijl")
+        self.assertEqual(results[0].xmlstring(), "<w xmlns=\"http://ilk.uvt.nl/folia\" xml:id=\"WR-P-E-J-0000000001.p.1.s.8.w.9\"><t>ter\nwijl</t><errordetection class=\"spelling\"/><pos class=\"VG(onder)\"/><lemma class=\"terweil\"/></w>")
 
     def test13_subfilter(self):
         q = fql.Query(Qhas)
