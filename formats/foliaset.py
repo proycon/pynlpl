@@ -262,10 +262,11 @@ class SetDefinition(object):
                 raise DeepValidationError("Unable to download " + url)
             finally:
                 f.close()
-            if data[0] == '@':
+            if data[0] in ('@',b'@',64):
                 #this is not gonna be valid XML, but looks like turtle/n3 RDF
                 self.graph.parse(location=url, format='text/turtle')
                 return
+            print("DEBUG ", repr(data[0]),file=sys.stderr)
             tree = xmltreefromstring(data)
             root = tree.getroot()
             if root.tag != '{' + NSFOLIA + '}set':
