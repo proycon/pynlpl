@@ -142,6 +142,8 @@ Qsuggest_insertion2 = "APPEND (AS CORRECTION OF \"http://raw.github.com/proycon/
 
 Qcomment = "ADD comment WITH text \"This is our university!\" FOR entity ID \"example.radboud.university.nijmegen.org\""
 
+Qfeat = "SELECT feat WHERE subset = \"wvorm\" FOR pos WHERE class = \"WW(pv,tgw,met-t)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.5\""
+
 
 class Test1UnparsedQuery(unittest.TestCase):
 
@@ -704,6 +706,14 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Comment)
         self.assertEqual(results[0].value, "This is our university!")
         self.assertEqual(results[0].parent.id, "example.radboud.university.nijmegen.org")
+
+    def test36_feature(self):
+        """Selecting a feature"""
+        q = fql.Query(Qfeat)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Feature)
+        self.assertEqual(results[0].subset, "wvorm")
+        self.assertEqual(results[0].cls, "pv")
 
 class Test4CQL(unittest.TestCase):
     def setUp(self):
