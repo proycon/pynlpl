@@ -1624,7 +1624,7 @@ class Action(object): #Action expression
 
                     isspan = issubclass(action.focus.Class, folia.AbstractSpanAnnotation)
 
-                    if not 'set' in action.assignments and action.focus.Class not in (folia.Description, folia.Comment):
+                    if not 'set' in action.assignments and action.focus.Class not in (folia.Description, folia.Comment, folia.Feature):
                         if action.focus.set and action.focus.set != "undefined":
                             action.assignments['set'] = action.focus.set
                         elif action.focus.Class.XMLTAG in query.defaultsets:
