@@ -35,8 +35,8 @@ MASK_LITERAL = 1
 MASK_EXPRESSION = 2
 MAXEXPANSION = 99
 
-FOLIAVERSION = '1.3.1'
-FQLVERSION = '0.3.1'
+FOLIAVERSION = '1.4.0'
+FQLVERSION = '0.3.2'
 
 class SyntaxError(Exception):
     pass
@@ -1315,7 +1315,7 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
 def getassignments(q, i, assignments,  focus=None):
     l = len(q)
     while i < l:
-        if q.kw(i, ('id','set','annotator','class','n')):
+        if q.kw(i, ('id','set','subset','annotator','class','n')):
             if q[i+1] == 'NONE':
                 assignments[q[i]] = None
             else:
