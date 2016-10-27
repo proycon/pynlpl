@@ -143,6 +143,8 @@ Qsuggest_insertion2 = "APPEND (AS CORRECTION OF \"http://raw.github.com/proycon/
 Qcomment = "ADD comment WITH text \"This is our university!\" FOR entity ID \"example.radboud.university.nijmegen.org\""
 
 Qfeat = "SELECT feat WHERE subset = \"wvorm\" FOR pos WHERE class = \"WW(pv,tgw,met-t)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.5\""
+Qfeat2 = "EDIT feat WHERE subset = \"wvorm\" WITH class \"inf\" FOR pos WHERE class = \"WW(pv,tgw,met-t)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.5\""
+Qfeat3 = "ADD feat WITH subset \"wvorm\" class \"inf\" FOR pos WHERE class = \"WW(inf,vrij,zonder)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.28\""
 
 
 class Test1UnparsedQuery(unittest.TestCase):
@@ -714,6 +716,22 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Feature)
         self.assertEqual(results[0].subset, "wvorm")
         self.assertEqual(results[0].cls, "pv")
+
+    def test36b_feature(self):
+        """Editing a feature"""
+        q = fql.Query(Qfeat2)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Feature)
+        self.assertEqual(results[0].subset, "wvorm")
+        self.assertEqual(results[0].cls, "inf")
+
+    def test36c_feature(self):
+        """Adding a feature"""
+        q = fql.Query(Qfeat3)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Feature)
+        self.assertEqual(results[0].subset, "wvorm")
+        self.assertEqual(results[0].cls, "inf")
 
 class Test4CQL(unittest.TestCase):
     def setUp(self):
