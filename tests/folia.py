@@ -267,7 +267,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( w.annotation(folia.PosAnnotation).cls, 'N(soort,ev,basis,onz,stan)' ) #cls is used everywhere instead of class, since class is a reserved keyword in python
         self.assertEqual( w.pos(),'N(soort,ev,basis,onz,stan)' ) #w.pos() is just a direct shortcut for getting the class
         self.assertEqual( w.annotation(folia.PosAnnotation).set, 'https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn' )
-        self.assertEqual( w.annotation(folia.PosAnnotation).annotator, 'tadpole' )
+        self.assertEqual( w.annotation(folia.PosAnnotation).annotator, 'frog' )
         self.assertEqual( w.annotation(folia.PosAnnotation).annotatortype, folia.AnnotatorType.AUTO )
 
 
@@ -1894,6 +1894,17 @@ class Test4Edit(unittest.TestCase):
         l.correct(original=self.doc['example.radboud.university.nijmegen.org'], new=folia.Entity(self.doc, *self.doc['example.radboud.university.nijmegen.org'].wrefs(), cls="loc",set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml") ,set='corrections',cls='wrongclass')
 
         self.assertTrue( xmlcheck(l.xmlstring(), '<entities xmlns="http://ilk.uvt.nl/folia"><correction xml:id="example.cell.correction.1" class="wrongclass"><new><entity class="loc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="Radboud" id="example.table.1.w.6"/><wref t="University" id="example.table.1.w.7"/><wref t="Nijmegen" id="example.table.1.w.8"/></entity></new><original auth="no"><entity xml:id="example.radboud.university.nijmegen.org" class="org" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="Radboud" id="example.table.1.w.6"/><wref t="University" id="example.table.1.w.7"/><wref t="Nijmegen" id="example.table.1.w.8"/><comment annotator="proycon">This is our university!</comment></entity></original></correction></entities>'))
+
+    def test013d_spanannot(self):
+        """Edit Check - Adding Span Annotation (entity, from sentence using add)"""
+        sentence = self.doc["WR-P-E-J-0000000001.p.1.s.4"]
+        word = self.doc["WR-P-E-J-0000000001.p.1.s.4.w.2"] #hoofdletter
+        word2 = self.doc["WR-P-E-J-0000000001.p.1.s.4.w.3"] #A
+        entity = sentence.add(folia.Entity, word, word2, cls="misc",set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml")
+
+        self.assertIsInstance(entity, folia.Entity)
+        self.assertTrue(xmlcheck(entity.parent.parent.xmlstring(),'<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.4"><t>De hoofdletter A wordt gebruikt voor het originele handschrift.</t><t class="original">De hoofdletter A wordt gebruikt voor het originele handschrift.</t><t class="translate">Uppercase A is used for the original.</t><part xml:id="WR-P-E-J-0000000001.p.1.s.4.part.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.1"><t offset="0">De</t><t class="original" offset="0">De</t><pos class="LID(bep,stan,rest)"/><lemma class="de"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.2"><t offset="3">hoofdletter</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="hoofdletter"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.3"><t>A</t><pos class="SPEC(symb)"/><lemma class="_"/></w></part><part xml:id="WR-P-E-J-0000000001.p.1.s.4.part.2"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.4"><t>wordt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="worden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.5"><t>gebruikt</t><pos class="WW(vd,vrij,zonder)"/><lemma class="gebruiken"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.6"><t>voor</t><pos class="VZ(init)"/><lemma class="voor"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.7"><t>het</t><pos class="LID(bep,stan,evon)"/><lemma class="het"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.8"><t>originele</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="origineel"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.9"><t>handschrift</t><pos class="N(soort,ev,basis,onz,stan)"/><lemma class="handschrift"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.10"><t>.</t><pos class="LET()"/><lemma class="."/></w></part><entities><entity class="misc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="hoofdletter" id="WR-P-E-J-0000000001.p.1.s.4.w.2"/><wref t="A" id="WR-P-E-J-0000000001.p.1.s.4.w.3"/></entity></entities></s>'))
+
 
     def test014_replace(self):
         """Edit Check - Replacing an annotation"""

@@ -1560,32 +1560,33 @@ class AbstractElement(object):
             :meth:`insert`
             :meth:`replace`
         """.format(generic_attribs=DOCSTRING_GENERIC_ATTRIBS)
-        addspanfromspanned = False
-        if isinstance(self,AbstractStructureElement):
-            if inspect.isclass(child):
-                if issubclass(child, AbstractSpanAnnotation):
-                    layerclass = ANNOTATIONTYPE2LAYERCLASS[child.ANNOTATIONTYPE]
-                    addspanfromspanned = True
-            elif isinstance(child, AbstractSpanAnnotation):
-                layerclass = ANNOTATIONTYPE2LAYERCLASS[child.ANNOTATIONTYPE]
-                addspanfromspanned = True
 
-        if not addspanfromspanned: #pylint: disable=too-many-nested-blocks
-            return self.append(child,*args,**kwargs)
-        else:
+        addspanfromspanned = False #add a span annotation element from that which is spanned (i.e. a Word, Morpheme)
+        addspanfromstructure = False #add a span annotation elements from a structural parent which holds the span layers? (e.g. a Sentence, Paragraph)
+        if (inspect.isclass(child) and issubclass(child, AbstractSpanAnnotation)) or (not inspect.isclass(child) and isinstance(child, AbstractSpanAnnotation)):
+            layerclass = ANNOTATIONTYPE2LAYERCLASS[child.ANNOTATIONTYPE]
+            if isinstance(self, (Word, Morpheme)):
+                addspanfromspanned = True
+            elif isinstance(self,AbstractStructureElement): #add a span
+                addspanfromstructure = True
+
+        if addspanfromspanned or addspanfromstructure:
+            #get the set
+            if 'set' in kwargs:
+                set = kwargs['set']
+            else:
+                try:
+                    set = self.doc.defaultset(layerclass)
+                except KeyError:
+                    raise Exception("No set defined when adding span annotation and none could be inferred")
+
+        if addspanfromspanned: #pylint: disable=too-many-nested-blocks
             #collect ancestors of the current element,
             allowedparents = [self] + list(self.ancestors(AbstractStructureElement))
             #find common ancestors of structure elements in the arguments, and check whether it has the required annotation layer, create one if necessary
             for e in commonancestors(AbstractStructureElement,  *[ x for x in args if isinstance(x, AbstractStructureElement)] ):
                 if e in allowedparents: #is the element in the list of allowed parents according to this element?
                     if AbstractAnnotationLayer in e.ACCEPTED_DATA or layerclass in e.ACCEPTED_DATA:
-                        if 'set' in kwargs:
-                            set = kwargs['set']
-                        else:
-                            try:
-                                set = self.doc.defaultset(layerclass)
-                            except KeyError:
-                                raise Exception("No set defined when adding span annotation and none could be inferred")
                         try:
                             layer = next(e.select(layerclass,set,True))
                         except StopIteration:
@@ -1593,6 +1594,16 @@ class AbstractElement(object):
                         return layer.append(child,*args,**kwargs)
 
             raise Exception("Unable to find suitable common ancestor to create annotation layer")
+        elif addspanfromstructure:
+            layer = None
+            for layer in self.layers(child.ANNOTATIONTYPE, set):
+                pass #last one (only one actually) should be available in outer context
+            if layer is None:
+                layer = self.append(layerclass)
+            return layer.append(child,*args,**kwargs)
+        else:
+            #normal behaviour, append
+            return self.append(child,*args,**kwargs)
 
 
 
