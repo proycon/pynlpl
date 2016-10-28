@@ -1673,6 +1673,12 @@ class Action(object): #Action expression
                         elif not any(x is target for x in constrainedtargetselection):
                             constrainedtargetselection.append(target)
 
+                    if focusselection and action.span: #process SPAN keyword (ADD .. SPAN .. FOR .. rather than ADD ... FOR SPAN ..)
+                        if not isspan: raise QueryError("Can only use SPAN with span annotation elements!")
+                        for focus in focusselection:
+                            spanset = next(action.span(query, contextselector, True, debug)) #there can be only one
+                            focus.setspan(*spanset)
+
                 if focusselection and action.subactions and not substitution:
                     for subaction in action.subactions:
                         #check if set is declared, if not, auto-declare
