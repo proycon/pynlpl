@@ -1069,12 +1069,12 @@ class Correction(object): #AS CORRECTION/SUGGESTION expression...
             inheritchildren = []
             if focus and not self.bare: #copy all data within
                 inheritchildren = list(focus.copychildren(query.doc, True))
-                if action.action == "EDIT" and 'respan' in action.extra:
+                if action.action == "EDIT" and action.span: #respan
                     #delete all word references from the copy first, we will add new ones
                     inheritchildren = [ c  for c in inheritchildren if not isinstance(c, folia.WordReference) ]
                     if not isinstance(focus, folia.AbstractSpanAnnotation): raise QueryError("Can only perform RESPAN on span annotation elements!")
                     contextselector = target if target else query.doc
-                    spanset = next(action.extra['respan'](query, contextselector, True, debug)) #there can be only one
+                    spanset = next(action.span(query, contextselector, True, debug)) #there can be only one
                     for w in spanset:
                         inheritchildren.append(w)
 
@@ -1377,8 +1377,7 @@ class Action(object): #Action expression
         self.form = None
         self.subactions = []
         self.nextaction = None
-        self.respan = []
-        self.extra = {}
+        self.span = None #encodes an extra SPAN/RESPAN action
 
 
     @staticmethod
@@ -1410,8 +1409,8 @@ class Action(object): #Action expression
         #we have enough to set up the action now
         action = Action(action, focus, assignments)
 
-        if action.action == "EDIT" and q.kw(i,"RESPAN"):
-            action.extra['respan'], i = Span.parse(q,i+1)
+        if action.action in ("EDIT","ADD", "APPEND","PREPEND") and q.kw(i,("RESPAN","SPAN")):
+            action.span, i = Span.parse(q,i+1)
 
         done = False
         while not done:
@@ -1578,9 +1577,9 @@ class Action(object): #Action expression
                                     else:
                                         if debug: print("[FQL EVALUATION DEBUG] Action - " + attr +  " = " + value + " on focus ", repr(focus),file=sys.stderr)
                                         setattr(focus, attr, value)
-                                if 'respan' in action.extra:
+                                if action.span is not None: #respan
                                     if not isinstance(focus, folia.AbstractSpanAnnotation): raise QueryError("Can only perform RESPAN on span annotation elements!")
-                                    spanset = next(action.extra['respan'](query, contextselector, True, debug)) #there can be only one
+                                    spanset = next(action.span(query, contextselector, True, debug)) #there can be only one
                                     focus.setspan(*spanset)
 
                                 query._touch(focus)
@@ -1623,8 +1622,8 @@ class Action(object): #Action expression
                         raise QueryError("Focus of action has no class!")
 
                     isspan = issubclass(action.focus.Class, folia.AbstractSpanAnnotation)
-
-                    if not 'set' in action.assignments and action.focus.Class not in (folia.Description, folia.Comment, folia.Feature):
+                    isspanrole = issubclass(action.focus.Class, folia.AbstractSpanRole)
+                    if 'set' not in action.assignments and action.focus.Class not in (folia.Description, folia.Comment, folia.Feature) and not isspanrole:
                         if action.focus.set and action.focus.set != "undefined":
                             action.assignments['set'] = action.focus.set
                         elif action.focus.Class.XMLTAG in query.defaultsets:
