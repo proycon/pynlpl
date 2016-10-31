@@ -597,11 +597,12 @@ class AbstractElement(object):
         isinstance(x, AbstractElement)
 
     Generic FoLiA attributes can be accessed on all instances derived from this class:
+
     * ``element.id``        (str) - The unique identifier of the element
     * ``element.set``       (str) - The set the element pertains to.
-    * ``element.cls``       (str) - The assigned class, i.e. the actual value of
-        the annotation, defined in the set.  Classes correspond with tagsets in this case of many annotation types.
-        Note that since *class* is already a reserved keyword in python, the library consistently uses ``cls`` everywhere.
+    * ``element.cls``       (str) - The assigned class, i.e. the actual value of \
+    the annotation, defined in the set.  Classes correspond with tagsets in this case of many annotation types. \
+    Note that since *class* is already a reserved keyword in python, the library consistently uses ``cls`` everywhere.
     * ``element.annotator`` (str) - The name or ID of the annotator who added/modified this element
     * ``element.annotatortype`` - The type of annotator, can be either ``folia.AnnotatorType.MANUAL`` or ``folia.AnnotatorType.AUTO``
     * ``element.confidence`` (float) - A confidence value expressing
@@ -2357,7 +2358,7 @@ class AbstractElement(object):
         """Internal class method used for turning an XML element into an instance of the Class.
 
         Args:
-            * ``node`' - XML Element
+            * ``node`` - XML Element
             * ``doc`` - Document
 
         Returns:
@@ -3191,6 +3192,7 @@ class TextContent(AbstractElement):
     on structure elements like :class:`Paragraph` and :class:`Sentence` are by definition untokenised. Only on :class:`Word`` level and deeper they are by definition tokenised.
 
     Text content elements can specify offset that refer to text at a higher parent level. Use the following keyword arguments:
+
         * ``ref=``: The instance to point to, this points to the element holding the text content element, not the text content element itself.
         * ``offset=``: The offset where this text is found, offsets start at 0
     """
@@ -3405,9 +3407,10 @@ class TextContent(AbstractElement):
 class PhonContent(AbstractElement):
     """Phonetic content element (``ph``), holds a phonetic representation to be associated with whatever element the phonetic content element is a child of.
 
-    Phonetic content elements behave much like text content elements
+    Phonetic content elements behave much like text content elements.
 
     Phonetic content elements can specify offset that refer to phonetic content at a higher parent level. Use the following keyword arguments:
+
         * ``ref=``: The instance to point to, this points to the element holding the text content element, not the text content element itself.
         * ``offset=``: The offset where this text is found, offsets start at 0
     """
@@ -4827,7 +4830,7 @@ class Correction(AbstractElement, AllowGenerateID):
         """Get suggestions for correction.
 
         Yields:
-            :class:`Suggestion` element that encapsulate the suggested annotations (if index is ``None`, default)
+            :class:`Suggestion` element that encapsulate the suggested annotations (if index is ``None``, default)
 
         Returns:
             a :class:`Suggestion` element that encapsulate the suggested annotations (if index is set)

@@ -8,7 +8,7 @@ This module contains classes and functions for text processing. It is imported a
 Tokenisation
 ------------------
 
-A very crude tokeniser is available in the form of the function ``pynlpl.textprocessors.crude_tokeniser(string)''. This will split punctuation characters from words and returns a list of tokens. It however has no regard for abbreviations and end-of-sentence detection, which is functionality a more sophisticated tokeniser can provide::
+A very crude tokeniser is available in the form of the function ``pynlpl.textprocessors.crude_tokeniser(string)``. This will split punctuation characters from words and returns a list of tokens. It however has no regard for abbreviations and end-of-sentence detection, which is functionality a more sophisticated tokeniser can provide::
 
 	tokens = pynlpl.textprocessors.crude_tokeniser("to be, or not to be.")
 	
