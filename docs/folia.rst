@@ -1127,7 +1127,7 @@ The following elements are relevant for alignments:
     :template: foliaelement.rst
 
     Alignment
-    AlignmentReference
+    AlignReference
 
 Descriptions, Metrics
 -------------------------
