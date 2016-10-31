@@ -18,11 +18,26 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import    
 
-import srilmcc
+try:
+    import srilmcc
+except ImportError:
+    import warnings
+    warnings.warn("srilmcc module is not compiled")
+    srilmcc = None
+
 from pynlpl.textprocessors import Windower
+
+
+class SRILMException(Exception):
+    """Base Exception for SRILM."""
+
 
 class SRILM:
     def __init__(self, filename, n):
+        if not srilmcc:
+            raise SRILMException(
+                "SRILM is not downloaded and compiled."
+                "Please follow the instructions in makesrilmcc")
         self.model = srilmcc.LanguageModel(filename, n)
         self.n = n
 
@@ -55,4 +70,3 @@ class SRILM:
                 raise KeyError
         else:
             raise Exception("Not an " + str(self.n) + "-gram")
-
