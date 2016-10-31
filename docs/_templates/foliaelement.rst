@@ -17,9 +17,11 @@
    {% for item in methods %}
       ~{{ name }}.{{ item }}
    {%- endfor %}
-    ~{{ name }}.__iter__
-    ~{{ name }}.__len__
-    ~{{ name }}.__str__
+    {% for private_method in ['__iter__', '__len__', '__str__'] %}
+    {% if private_method in members %}
+    ~{{ name }}.{{ private_method }}
+    {% endif %}
+    {% endfor %}
    {% endif %}
    {% endblock %}
 
@@ -39,9 +41,8 @@
    {% for m in methods %}
    .. automethod:: {{ m }}
    {% endfor %}
-   .. automethod::  __iter__
-   .. automethod::  __len__
-   .. automethod::  __str__
-
-
-
+   {% for private_method in ['__iter__', '__len__', '__str__'] %}
+   {% if private_method in members %}
+   .. automethod:: {{ private_method }}
+   {% endif %}
+   {% endfor %}
