@@ -1,0 +1,6 @@
+# Ignore .pyc files
+*.pyc
+# Ignore generated dirs
+build/*
+docs/_autosummary/*
+docs/build/*
