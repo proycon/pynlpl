@@ -42,8 +42,6 @@ class TimblOutput(object):
 
     def __iter__(self):
         # Note: distance parsing (+v+di) works only if distributions (+v+db) are also enabled!
-        
-        
         for line in self.stream:
             endfvec = None
             line = line.strip()
@@ -64,8 +62,8 @@ class TimblOutput(object):
                         #endfvec = segments.index("{")            
                     except ValueError:
                         endfvec = None
-                            
-                if endfvec > 2: #only for +v+db
+
+                if endfvec and endfvec > 2:  # only for +v+db
                     try:
                         enddistr = segments.index('}',endfvec)
                     except ValueError:
@@ -106,4 +104,3 @@ class TimblOutput(object):
             print("ERROR: pynlpl.input.timbl.TimblOutput --  Did not find class distribution for ", instance,file=stderr)
 
         return Distribution(dist)
-
