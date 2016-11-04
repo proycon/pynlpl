@@ -85,6 +85,7 @@ Qadd_span_returntarget = "ADD entity OF \"http://raw.github.com/proycon/folia/ma
 Qadd_span_returnancestortarget = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" RETURN ancestor-target"
 Qadd_span2 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" FOR ID \"WR-P-E-J-0000000001.p.1.s.4\""
 Qadd_span3 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" RESPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
+Qadd_span4 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" RESPAN NONE FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
 
 Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNATIVE WITH confidence 0.9)"
 
@@ -484,6 +485,15 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Word)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].text(), "A")
+
+    def test20f_add_span(self):
+        """Add span (using RESPAN NONE, immediately respanning)"""
+        q = fql.Query(Qadd_span4)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Entity)
+        self.assertEqual(results[0].cls, 'misc')
+        results = list(results[0].wrefs())
+        self.assertEqual(len(results), 0)
 
     def test21_edit_alt(self):
         """Add alternative token annotation"""
