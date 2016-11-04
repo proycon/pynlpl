@@ -84,6 +84,7 @@ Qadd_span = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefin
 Qadd_span_returntarget = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" RETURN target"
 Qadd_span_returnancestortarget = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" RETURN ancestor-target"
 Qadd_span2 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" FOR ID \"WR-P-E-J-0000000001.p.1.s.4\""
+Qadd_span3 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" RESPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
 
 Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNATIVE WITH confidence 0.9)"
 
@@ -461,7 +462,7 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Part )
 
     def test20d_add_span(self):
-        """Add span"""
+        """Add span (using SPAN instead of FOR SPAN)"""
         q = fql.Query(Qadd_span2)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Entity)
@@ -471,6 +472,18 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(results[0].text(), "hoofdletter")
         self.assertIsInstance(results[1], folia.Word)
         self.assertEqual(results[1].text(), "A")
+        self.assertEqual(len(results), 2)
+
+    def test20e_add_span(self):
+        """Add span (using RESPAN and FOR SPAN, immediately respanning)"""
+        q = fql.Query(Qadd_span3)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Entity)
+        self.assertEqual(results[0].cls, 'misc')
+        results = list(results[0].wrefs())
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].text(), "A")
 
     def test21_edit_alt(self):
         """Add alternative token annotation"""
