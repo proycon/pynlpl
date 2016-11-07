@@ -1591,7 +1591,11 @@ class AbstractElement(object):
                             layer = next(e.select(layerclass,set,True))
                         except StopIteration:
                             layer = e.append(layerclass)
-                        return layer.append(child,*args,**kwargs)
+                        if 'emptyspan' in kwargs and kwargs['emptyspan']:
+                            del kwargs['emptyspan']
+                            return layer.append(child,*[],**kwargs)
+                        else:
+                            return layer.append(child,*args,**kwargs)
 
             raise Exception("Unable to find suitable common ancestor to create annotation layer")
         elif addspanfromstructure:

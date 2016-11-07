@@ -87,6 +87,8 @@ Qadd_span2 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefi
 Qadd_span3 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" RESPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
 Qadd_span4 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" RESPAN NONE FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
 
+Qadd_span_subqueries = "ADD dependency OF alpino-set WITH class \"test\" RESPAN NONE (ADD dep SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.6) (ADD hd SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.7) FOR SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.6 & ID WR-P-E-J-0000000001.p.1.s.2.w.7 RETURN focus"
+
 Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNATIVE WITH confidence 0.9)"
 
 Qdeclare = "DECLARE correction OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH annotator \"me\" annotatortype \"manual\""
@@ -495,6 +497,7 @@ class Test3Evaluation(unittest.TestCase):
         results = list(results[0].wrefs())
         self.assertEqual(len(results), 0)
 
+
     def test21_edit_alt(self):
         """Add alternative token annotation"""
         q = fql.Query(Qalt)
@@ -768,6 +771,16 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Feature)
         self.assertEqual(results[0].subset, "wvorm")
         self.assertEqual(results[0].cls, "inf")
+
+    def test37_subqueries(self):
+        """Adding a complex span annotation with span roles, using subqueries"""
+        q = fql.Query(Qadd_span_subqueries)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Dependency)
+        self.assertEqual(results[0].cls, "test")
+        self.assertEqual(list(results[0].annotation(folia.Headspan).wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] ] )
+        self.assertEqual(list(results[0].annotation(folia.DependencyDependent).wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.2.w.6'] ] )
+        self.assertEqual(results[0].ancestor(folia.AbstractStructureElement).id,  'WR-P-E-J-0000000001.p.1.s.2')
 
 class Test4CQL(unittest.TestCase):
     def setUp(self):

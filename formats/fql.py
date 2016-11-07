@@ -558,6 +558,9 @@ class Span(object):
     def __init__(self, targets, intervals = []):
         self.targets = targets #Selector instances making up the span
 
+    def __len__(self):
+        return len(self.targets)
+
     @staticmethod
     def parse(q, i=0):
         targets = []
@@ -1652,6 +1655,8 @@ class Action(object): #Action expression
                             if isinstance(target, SpanSet):
                                 if action.action == "ADD" or action.action == "EDIT":
                                     if debug: print("[FQL EVALUATION DEBUG] Action - Applying " + action.action + " of " + action.focus.Class.__name__ + " to target spanset " + repr(target),file=sys.stderr)
+                                    if action.span is not None and len(action.span) == 0:
+                                        action.assignments['emptyspan'] = True
                                     focusselection.append( target[0].add(action.focus.Class, *target, **action.assignments) ) #handles span annotation too
                                     query._touch(focusselection[-1])
                             else:
