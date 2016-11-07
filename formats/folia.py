@@ -4115,7 +4115,7 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
         if not found:
             raise NoSuchAnnotation()
 
-    def _helper_wrefs(self, targets):
+    def _helper_wrefs(self, targets, recurse=True):
         """Internal helper function"""
         for c in self:
             if isinstance(c,Word) or isinstance(c,Morpheme) or isinstance(c, Phoneme):
@@ -4125,7 +4125,7 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
                     targets.append(self.doc[c.id]) #try to resolve
                 except KeyError:
                     targets.append(c) #add unresolved
-            elif isinstance(c, AbstractSpanAnnotation):
+            elif isinstance(c, AbstractSpanAnnotation) and recurse:
                 #recursion
                 c._helper_wrefs(targets) #pylint: disable=protected-access
             elif isinstance(c, Correction) and c.auth: #recurse into corrections
@@ -4136,14 +4136,14 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
                                 #recursion
                                 e2._helper_wrefs(targets) #pylint: disable=protected-access
 
-    def wrefs(self, index = None):
+    def wrefs(self, index = None, recurse=True):
         """Returns a list of word references, these can be Words but also Morphemes or Phonemes.
 
         Arguments:
             index (int or None): If set to an integer, will retrieve and return the n'th element (starting at 0) instead of returning the list of all
         """
         targets =[]
-        self._helper_wrefs(targets)
+        self._helper_wrefs(targets, recurse)
         if index is None:
             return targets
         else:
