@@ -4000,7 +4000,7 @@ class Feature(AbstractElement):
         elif 'subset' in kwargs:
             self.subset = kwargs['subset']
         else:
-            raise Exception("No subset specified for " + + self.__class__.__name__)
+            raise Exception("No subset specified for " + self.__class__.__name__)
         if 'cls' in kwargs:
             self.cls = kwargs['cls']
         elif 'class' in kwargs:
