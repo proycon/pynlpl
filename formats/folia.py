@@ -4020,7 +4020,7 @@ class Feature(AbstractElement):
         return makeelement(E,'{' + NSFOLIA + '}' + self.XMLTAG, **attribs)
 
     def json(self,attribs=None, recurse=True, ignorelist=False):
-        jsonnode= {'type': self.XMLTAG}
+        jsonnode= {'type': Feature.XMLTAG}
         jsonnode['subset'] = self.subset
         jsonnode['class'] = self.cls
         return jsonnode
