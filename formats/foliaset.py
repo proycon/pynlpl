@@ -283,7 +283,8 @@ class SetDefinition(object):
 
     def testclass(self,cls):
         """Test for the presence of the class, returns the full URI or raises an exception"""
-        for row in self.graph.query("SELECT ?c WHERE { ?c rdf:type fsd:Class ; fsd:id \"" + cls + "\"; fsd.memberOf <" + self.get_set_uri() + "> }"):
+        set_uri = self.get_set_uri()
+        for row in self.graph.query("SELECT ?c WHERE { ?c rdf:type skos:Concept ; skos:notation \"" + cls + "\". <" + str(set_uri) + "> skos:member ?c }"):
             return str(row.c)
         raise DeepValidationError("Not a valid class: " + cls)
 
@@ -292,7 +293,7 @@ class SetDefinition(object):
         subset_uri = self.get_set_uri(subset)
         if not subset_uri:
             raise DeepValidationError("Not a valid subset: " + subset)
-        for row in self.graph.query("SELECT ?c WHERE { ?c rdf:type fsd:Class ; fsd:id \"" + subclass + "\"; fsd.memberOf <" + subset_uri + "> }"):
+        for row in self.graph.query("SELECT ?c WHERE { ?c rdf:type skos:Concept ; skos:notation \"" + subclass + "\". <" + str(subset_uri) + "> skos:member ?c }"):
             return str(row.c)
         raise DeepValidationError("Not a valid class in subset " + subset + ": " + subclass)
 
@@ -300,18 +301,18 @@ class SetDefinition(object):
         if set_id in self.set_id_uri_cache:
             return self.set_id_uri_cache[set_id]
         if set_id:
-            for row in self.graph.query("SELECT ?s WHERE { ?s rdf:type fsd:Set ; fsd:id \"" + set_id + "\" }"):
+            for row in self.graph.query("SELECT ?s WHERE { ?s rdf:type skos:Collection ; skos:notation \"" + set_id + "\" }"):
                 self.set_id_uri_cache[set_id] = row.s
                 return row.s
         else:
-            for row in self.graph.query("SELECT ?s WHERE { ?s rdf:type fsd:Set . FILTER NOT EXISTS { ?s fsd:subsetOf ?y } }"):
+            for row in self.graph.query("SELECT ?s WHERE { ?s rdf:type skos:Collection . FILTER NOT EXISTS { ?s fsd:subsetOf ?y } }"):
                 self.set_id_uri_cache[set_id] = row.s
                 return row.s
 
     def mainset(self):
         """Returns information regarding the set"""
         set_uri = self.get_set_uri()
-        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type fsd:Set . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } FILTER NOT EXISTS { ?seturi fsd:subsetOf ?y } }"):
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type skos:Collection . OPTIONAL { ?seturi skos:notation ?setid } OPTIONAL { ?seturi skos:prefLabel ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } FILTER NOT EXISTS { ?seturi skos:member ?y . ?y rdf:type skos:Collection } }"):
             return {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel) if row.setlabel else "", 'open': bool(row.setopen) }
         raise DeepValidationError("Unable to find main set (set_uri=" + str(set_uri)+"), this should not happen")
 
@@ -336,7 +337,7 @@ class SetDefinition(object):
 
         classes= {}
         uri2idmap = {}
-        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass ?seqnr  WHERE { ?classuri rdf:type fsd:Class ; fsd:id ?classid; fsd:memberOf <" + str(set_uri) + "> . OPTIONAL { ?classuri fsd:label ?classlabel } OPTIONAL { ?classuri fsd:parentClass ?parentclass } OPTIONAL { ?classuri fsd:sequenceNumber ?seqnr } }"):
+        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass ?seqnr  WHERE { ?classuri rdf:type skos:Concept ; skos:notation ?classid; fsd:memberOf <" + str(set_uri) + "> . OPTIONAL { ?classuri skos:prefLabel ?classlabel } OPTIONAL { ?classuri skos:broader ?parentclass } OPTIONAL { ?classuri fsd:sequenceNumber ?seqnr } }"):
             classinfo = {'uri': str(row.classuri), 'id': str(row.classid),'label': str(row.classlabel) if row.classlabel else "" }
             if nestedhierarchy:
                 uri2idmap[str(row.classuri)] = str(row.classid)
@@ -375,7 +376,7 @@ class SetDefinition(object):
 
         assert set_uri is not None
 
-        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type fsd:Set ; fsd:subsetOf <" + str(set_uri) + "> . OPTIONAL { ?seturi fsd:id ?setid } OPTIONAL { ?seturi fsd:label ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } }"):
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type skos:Collection . <" + str(set_uri) + "> skos:member ?seturi . OPTIONAL { ?seturi skos:notation ?setid } OPTIONAL { ?seturi skos:prefLabel ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } }"):
             yield {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel) if row.setlabel else "", 'open': bool(row.setopen) }
 
     def json(self):
