@@ -271,8 +271,6 @@ class SetDefinition(object):
                 if self.verbose:
                     print("Loaded set " + url + " (" + str(len(self.graph)) + " triples)",file=sys.stderr)
                 return
-            if self.verbose:
-                print("Loaded legacy set " + url + " (" + str(len(self.graph)) + " triples)",file=sys.stderr)
             tree = xmltreefromstring(data)
             root = tree.getroot()
             if root.tag != '{' + NSFOLIA + '}set':
@@ -284,6 +282,8 @@ class SetDefinition(object):
                     raise SetDefinitionError("Not a FoLiA Set Definition! Unexpected root tag:"+ root.tag)
             legacyset = LegacySetDefinition.parsexml(root)
             legacyset.rdf(self.graph, self.basens)
+            if self.verbose:
+                print("Loaded legacy set " + url + " (" + str(len(self.graph)) + " triples)",file=sys.stderr)
         else:
             self.graph.parse(location=url, format=format)
             if self.verbose:
