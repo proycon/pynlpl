@@ -227,10 +227,11 @@ def xmltreefromstring(s):
             return ElementTree.parse(BytesIO(s), ElementTree.XMLParser()) #older lxml, may leak!!!!
 
 class SetDefinition(object):
-    def __init__(self, url, format=None, basens=""):
+    def __init__(self, url, format=None, basens="",verbose=False):
         self.graph = rdflib.Graph()
         self.basens = basens
         self.set_id_uri_cache = {}
+        self.verbose = verbose
         self.graph.bind( 'fsd', NSFOLIASETDEFINITION+'#', override=True)
         self.graph.bind( 'skos', NSSKOS+'#', override=True)
         if not format:
@@ -267,8 +268,11 @@ class SetDefinition(object):
             if data[0] in ('@',b'@',64):
                 #this is not gonna be valid XML, but looks like turtle/n3 RDF
                 self.graph.parse(location=url, format='text/turtle')
+                if self.verbose:
+                    print("Loaded set " + url + " (" + str(len(self.graph)) + " triples)",file=sys.stderr)
                 return
-            print("DEBUG ", repr(data[0]),file=sys.stderr)
+            if self.verbose:
+                print("Loaded legacy set " + url + " (" + str(len(self.graph)) + " triples)",file=sys.stderr)
             tree = xmltreefromstring(data)
             root = tree.getroot()
             if root.tag != '{' + NSFOLIA + '}set':
@@ -282,6 +286,8 @@ class SetDefinition(object):
             legacyset.rdf(self.graph, self.basens)
         else:
             self.graph.parse(location=url, format=format)
+            if self.verbose:
+                print("Loaded set " + url + " (" + str(len(self.graph)) + " triples)",file=sys.stderr)
 
     def testclass(self,cls):
         """Test for the presence of the class, returns the full URI or raises an exception"""

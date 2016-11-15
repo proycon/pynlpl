@@ -1351,6 +1351,8 @@ class AbstractElement(object):
             except KeyError:
                 if not self.doc.allowadhocsets:
                     raise DeepValidationError("Set definition for " + self.set + " not loaded!")
+            except DeepValidationError as e:
+                raise DeepValidationError( str(e) + " (in set " + self.set+")")
 
     def append(self, child, *args, **kwargs):
         """Append a child element.
@@ -4041,7 +4043,9 @@ class Feature(AbstractElement):
                 self.doc.setdefinitions[self.parent.set].testsubclass(self.parent.cls, self.subset, self.cls)
             except KeyError:
                 if not self.doc.allowadhocsets:
-                    raise DeepValidationError("Set definition for " + self.set + " not loaded!")
+                    raise DeepValidationError("Set definition for " + self.parent.set + " not loaded!")
+            except DeepValidationError as e:
+                raise DeepValidationError( str(e) + " (in set " + self.parent.set+")")
 
 
 class ValueFeature(Feature):
@@ -6032,6 +6036,11 @@ class Document(object):
         else:
             self.debug = False
 
+        if 'verbose' in kwargs:
+            self.verbose = kwargs['verbose']
+        else:
+            self.verbose = False
+
         if 'mode' in kwargs:
             self.mode = int(kwargs['mode'])
         else:
@@ -6476,7 +6485,7 @@ class Document(object):
                 if set and self.loadsetdefinitions and set not in self.setdefinitions:
                     if set[:7] == "http://" or set[:8] == "https://" or set[:6] == "ftp://":
                         try:
-                            self.setdefinitions[set] = SetDefinition(set) #will raise exception on error
+                            self.setdefinitions[set] = SetDefinition(set,verbose=self.verbose) #will raise exception on error
                         except DeepValidationError:
                             print("WARNING: Set " + set + " could not be downloaded, ignoring!",file=sys.stderr) #warning and ignore
 
