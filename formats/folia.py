@@ -4030,6 +4030,19 @@ class Feature(AbstractElement):
         E = ElementMaker(namespace="http://relaxng.org/ns/structure/1.0",nsmap={None:'http://relaxng.org/ns/structure/1.0' , 'folia': "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         return E.define( E.element(E.attribute(name='subset'), E.attribute(name='class'),name=cls.XMLTAG), name=cls.XMLTAG,ns=NSFOLIA)
 
+    def deepvalidation(self):
+        """Perform deep validation of this element.
+
+        Raises:
+            :class:`DeepValidationError`
+        """
+        if self.doc and self.doc.deepvalidation and self.parent.set and self.parent.set[0] != '_':
+            try:
+                self.doc.setdefinitions[self.parent.set].testsubclass(self.parent.cls, self.subset, self.cls)
+            except KeyError:
+                if not self.doc.allowadhocsets:
+                    raise DeepValidationError("Set definition for " + self.set + " not loaded!")
+
 
 class ValueFeature(Feature):
     """Value feature, to be used within :class:`Metric`"""
@@ -6050,9 +6063,11 @@ class Document(object):
 
         if 'deepvalidation' in kwargs:
             self.deepvalidation = bool(kwargs['deepvalidation'])
-            self.loadsetdefinitions = True
         else:
             self.deepvalidation = False
+
+        if self.deepvalidation:
+            self.loadsetdefinitions = True
 
         if 'allowadhocsets' in kwargs:
             self.allowadhocsets = bool(kwargs['allowadhocsets'])
