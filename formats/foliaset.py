@@ -339,7 +339,7 @@ class SetDefinition(object):
 
         classes= {}
         uri2idmap = {}
-        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass ?seqnr  WHERE { ?classuri rdf:type skos:Concept ; skos:notation ?classid; fsd:memberOf <" + str(set_uri) + "> . OPTIONAL { ?classuri skos:prefLabel ?classlabel } OPTIONAL { ?classuri skos:broader ?parentclass } OPTIONAL { ?classuri fsd:sequenceNumber ?seqnr } }"):
+        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass ?seqnr  WHERE { ?classuri rdf:type skos:Concept ; skos:notation ?classid. <" + str(set_uri) + "> skos:member ?classuri . OPTIONAL { ?classuri skos:prefLabel ?classlabel } OPTIONAL { ?classuri skos:broader ?parentclass } OPTIONAL { ?classuri fsd:sequenceNumber ?seqnr } }"):
             classinfo = {'uri': str(row.classuri), 'id': str(row.classid),'label': str(row.classlabel) if row.classlabel else "" }
             if nestedhierarchy:
                 uri2idmap[str(row.classuri)] = str(row.classid)
