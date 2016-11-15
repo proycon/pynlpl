@@ -41,6 +41,7 @@ NSFOLIA = "http://ilk.uvt.nl/folia"
 
 #foliaspec:setdefinitionnamespace:NSFOLIASETDEFINITION
 NSFOLIASETDEFINITION = "http://folia.science.ru.nl/setdefinition"
+NSSKOS = "http://www.w3.org/2004/02/skos/core"
 
 class DeepValidationError(Exception):
     pass
@@ -96,14 +97,14 @@ class LegacyClassDefinition(object):
         return jsonnode
 
     def rdf(self,graph, basens,parentseturi, parentclass=None, seqnr=None):
-        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.RDF.type, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#Class')))
-        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#id'), rdflib.term.Literal(self.id)))
-        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#label'), rdflib.term.Literal(self.label)))
-        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#memberOf'), parentseturi ))
+        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.RDF.type, rdflib.term.URIRef(NSSKOS + '#Concept')))
+        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSSKOS + '#notation'), rdflib.term.Literal(self.id)))
+        graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSSKOS + '#prefLabel'), rdflib.term.Literal(self.label)))
+        graph.add((parentseturi , rdflib.term.URIRef(NSSKOS + '#member'), rdflib.term.URIRef(basens + '#' + self.id)))
         if seqnr is not None:
             graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#sequenceNumber'), rdflib.term.Literal(seqnr) ))
         if parentclass:
-            graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#parentClass'), rdflib.term.URIRef(basens + '#' + parentclass) ))
+            graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSSKOS + '#broader'), rdflib.term.URIRef(basens + '#' + parentclass) ))
 
         for subclass in self.subclasses:
             subclass.rdf(graph,basens,parentseturi, self.id)
@@ -189,15 +190,15 @@ class LegacySetDefinition(object):
         else:
             seturi = rdflib.term.URIRef(basens + '#Subset.' + self.id)
 
-        graph.add((seturi, rdflib.RDF.type, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#Set')))
+        graph.add((seturi, rdflib.RDF.type, rdflib.term.URIRef(NSSKOS + '#Collection')))
         if self.id:
-            graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#id'), rdflib.term.Literal(self.id)))
+            graph.add((seturi, rdflib.term.URIRef(NSSKOS + '#notation'), rdflib.term.Literal(self.id)))
         if self.type == SetType.OPEN:
             graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#open'), rdflib.term.Literal(True)))
         if self.label:
-            graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#label'), rdflib.term.Literal(self.label)))
+            graph.add((seturi, rdflib.term.URIRef(NSSKOS + '#prefLabel'), rdflib.term.Literal(self.label)))
         if parenturi:
-            graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#subsetOf'), parenturi))
+            graph.add((parenturi, rdflib.term.URIRef(NSSKOS + '#member'), seturi))
 
         for i, c in enumerate(self.classes):
             c.rdf(graph, basens, seturi, None, i+1)
@@ -231,6 +232,7 @@ class SetDefinition(object):
         self.basens = basens
         self.set_id_uri_cache = {}
         self.graph.bind( 'fsd', NSFOLIASETDEFINITION+'#', override=True)
+        self.graph.bind( 'skos', NSSKOS+'#', override=True)
         if not format:
             #try to guess format from URL
             if url.endswith('.ttl'):
