@@ -1353,7 +1353,7 @@ class AbstractElement(object):
                     raise DeepValidationError("Set definition " + self.set + " for " + self.XMLTAG + " not loaded!")
             except DeepValidationError as e:
                 errormsg =  str(e) + " (in set " + self.set+" for " + self.XMLTAG
-                if self.parent.id:
+                if self.id:
                     errormsg += " with ID " + self.id
                 errormsg += ")"
                 raise DeepValidationError(errormsg)
