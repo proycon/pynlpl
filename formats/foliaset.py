@@ -307,7 +307,7 @@ class SetDefinition(object):
                 self.set_id_uri_cache[set_id] = row.s
                 return row.s
         else:
-            for row in self.graph.query("SELECT ?s WHERE { ?s rdf:type skos:Collection . FILTER NOT EXISTS { ?s fsd:subsetOf ?y } }"):
+            for row in self.graph.query("SELECT ?s WHERE { ?s rdf:type skos:Collection . FILTER NOT EXISTS { ?y rdf:type skos:Collection . ?y skos:member ?s } }"):
                 self.set_id_uri_cache[set_id] = row.s
                 return row.s
 
