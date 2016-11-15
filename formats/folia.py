@@ -1349,10 +1349,10 @@ class AbstractElement(object):
             try:
                 self.doc.setdefinitions[self.set].testclass(self.cls)
             except KeyError:
-                if not self.doc.allowadhocsets:
-                    raise DeepValidationError("Set definition for " + self.set + " not loaded!")
+                if self.cls and not self.doc.allowadhocsets:
+                    raise DeepValidationError("Set definition " + self.set + " for " + self.XMLTAG + " not loaded!")
             except DeepValidationError as e:
-                raise DeepValidationError( str(e) + " (in set " + self.set+")")
+                raise DeepValidationError( str(e) + " (in set " + self.set+" for " + self.XMLTAG + ")")
 
     def append(self, child, *args, **kwargs):
         """Append a child element.
@@ -3289,8 +3289,8 @@ class TextContent(AbstractElement):
             #finally, we made it!
             return True
 
-
-
+    def deepvalidation(self):
+        return True
 
 
     def __unicode__(self):
@@ -3499,6 +3499,8 @@ class PhonContent(AbstractElement):
             #finally, we made it!
             return True
 
+    def deepvalidation(self):
+        return True
 
 
     def __unicode__(self):
@@ -4041,11 +4043,11 @@ class Feature(AbstractElement):
         if self.doc and self.doc.deepvalidation and self.parent.set and self.parent.set[0] != '_':
             try:
                 self.doc.setdefinitions[self.parent.set].testsubclass(self.parent.cls, self.subset, self.cls)
-            except KeyError:
-                if not self.doc.allowadhocsets:
-                    raise DeepValidationError("Set definition for " + self.parent.set + " not loaded!")
+            except KeyError as e:
+                if self.parent.cls and not self.doc.allowadhocsets:
+                    raise DeepValidationError("Set definition " + self.parent.set + " for " + self.parent.XMLTAG + " not loaded (feature validation failed)!")
             except DeepValidationError as e:
-                raise DeepValidationError( str(e) + " (in set " + self.parent.set+")")
+                raise DeepValidationError( str(e) + " (in set " + self.parent.set+" for " + self.parent.XMLTAG + ")")
 
 
 class ValueFeature(Feature):

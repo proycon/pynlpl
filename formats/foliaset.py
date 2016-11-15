@@ -230,6 +230,8 @@ class SetDefinition(object):
     def __init__(self, url, format=None, basens="",verbose=False):
         self.graph = rdflib.Graph()
         self.basens = basens
+        self.mainsetcache = {}
+        self.subsetcache = {}
         self.set_id_uri_cache = {}
         self.verbose = verbose
         self.graph.bind( 'fsd', NSFOLIASETDEFINITION+'#', override=True)
@@ -291,19 +293,31 @@ class SetDefinition(object):
 
     def testclass(self,cls):
         """Test for the presence of the class, returns the full URI or raises an exception"""
-        set_uri = self.get_set_uri()
-        for row in self.graph.query("SELECT ?c WHERE { ?c rdf:type skos:Concept ; skos:notation \"" + cls + "\". <" + str(set_uri) + "> skos:member ?c }"):
-            return str(row.c)
-        raise DeepValidationError("Not a valid class: " + cls)
+        mainsetinfo = self.mainset()
+        if mainsetinfo['open']:
+            return cls #everything is okay
+        elif mainsetinfo['empty']:
+            if cls:
+                raise DeepValidationError("Expected an empty class, got \"" + cls + "\"")
+        else:
+            #closed set
+            set_uri = mainsetinfo['uri']
+            for row in self.graph.query("SELECT ?c WHERE { ?c rdf:type skos:Concept ; skos:notation \"" + cls + "\". <" + str(set_uri) + "> skos:member ?c }"):
+                return str(row.c)
+            raise DeepValidationError("Not a valid class: " + cls)
 
     def testsubclass(self, cls, subset, subclass):
         """Test for the presence of a class in a subset (used with features), returns the full URI or raises an exception"""
-        subset_uri = self.get_set_uri(subset)
-        if not subset_uri:
-            raise DeepValidationError("Not a valid subset: " + subset)
-        for row in self.graph.query("SELECT ?c WHERE { ?c rdf:type skos:Concept ; skos:notation \"" + subclass + "\". <" + str(subset_uri) + "> skos:member ?c }"):
-            return str(row.c)
-        raise DeepValidationError("Not a valid class in subset " + subset + ": " + subclass)
+        subsetinfo = self.subset(subset)
+        if subsetinfo['open']:
+            return subclass #everything is okay
+        else:
+            subset_uri = subsetinfo['uri']
+            if not subset_uri:
+                raise DeepValidationError("Not a valid subset: " + subset)
+            for row in self.graph.query("SELECT ?c WHERE { ?c rdf:type skos:Concept ; skos:notation \"" + subclass + "\". <" + str(subset_uri) + "> skos:member ?c }"):
+                return str(row.c)
+            raise DeepValidationError("Not a valid class in subset " + subset + ": " + subclass)
 
     def get_set_uri(self, set_id=None):
         if set_id in self.set_id_uri_cache:
@@ -312,16 +326,31 @@ class SetDefinition(object):
             for row in self.graph.query("SELECT ?s WHERE { ?s rdf:type skos:Collection ; skos:notation \"" + set_id + "\" }"):
                 self.set_id_uri_cache[set_id] = row.s
                 return row.s
+            raise DeepValidationError("No such set: " + str(set_id))
         else:
             for row in self.graph.query("SELECT ?s WHERE { ?s rdf:type skos:Collection . FILTER NOT EXISTS { ?y rdf:type skos:Collection . ?y skos:member ?s } }"):
                 self.set_id_uri_cache[set_id] = row.s
                 return row.s
+            raise DeepValidationError("Main set not found")
 
     def mainset(self):
         """Returns information regarding the set"""
+        if self.mainsetcache:
+            return self.mainsetcache
         set_uri = self.get_set_uri()
-        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type skos:Collection . OPTIONAL { ?seturi skos:notation ?setid } OPTIONAL { ?seturi skos:prefLabel ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } FILTER NOT EXISTS { ?y skos:member ?seturi . ?y rdf:type skos:Collection } }"):
-            return {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel) if row.setlabel else "", 'open': bool(row.setopen) }
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen ?setempty WHERE { ?seturi rdf:type skos:Collection . OPTIONAL { ?seturi skos:notation ?setid } OPTIONAL { ?seturi skos:prefLabel ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } OPTIONAL { ?seturi fsd:empty ?setempty } FILTER NOT EXISTS { ?y skos:member ?seturi . ?y rdf:type skos:Collection } }"):
+            self.mainsetcache = {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel) if row.setlabel else "", 'open': bool(row.setopen), 'empty': bool(row.setempty) }
+            return self.mainsetcache
+        raise DeepValidationError("Unable to find main set (set_uri=" + str(set_uri)+"), this should not happen")
+
+    def subset(self, subset_id):
+        """Returns information regarding the set"""
+        if subset_id in self.subsetcache:
+            return self.subsetcache[subset_id]
+        set_uri = self.get_set_uri(subset_id)
+        for row in self.graph.query("SELECT ?seturi ?setid ?setlabel ?setopen WHERE { ?seturi rdf:type skos:Collection . OPTIONAL { ?seturi skos:notation ?setid } OPTIONAL { ?seturi skos:prefLabel ?setlabel } OPTIONAL { ?seturi fsd:open ?setopen } }"):
+            self.subsetcache[str(row.setid)] = {'uri': str(row.seturi), 'id': str(row.setid), 'label': str(row.setlabel) if row.setlabel else "", 'open': bool(row.setopen) }
+            return self.subsetcache[str(row.setid)]
         raise DeepValidationError("Unable to find main set (set_uri=" + str(set_uri)+"), this should not happen")
 
     def orderedclasses(self, set_uri_or_id=None, nestedhierarchy=False):
