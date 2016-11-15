@@ -1352,7 +1352,11 @@ class AbstractElement(object):
                 if self.cls and not self.doc.allowadhocsets:
                     raise DeepValidationError("Set definition " + self.set + " for " + self.XMLTAG + " not loaded!")
             except DeepValidationError as e:
-                raise DeepValidationError( str(e) + " (in set " + self.set+" for " + self.XMLTAG + ")")
+                errormsg =  str(e) + " (in set " + self.set+" for " + self.XMLTAG
+                if self.parent.id:
+                    errormsg += " with ID " + self.id
+                errormsg += ")"
+                raise DeepValidationError(errormsg)
 
     def append(self, child, *args, **kwargs):
         """Append a child element.
@@ -4047,7 +4051,11 @@ class Feature(AbstractElement):
                 if self.parent.cls and not self.doc.allowadhocsets:
                     raise DeepValidationError("Set definition " + self.parent.set + " for " + self.parent.XMLTAG + " not loaded (feature validation failed)!")
             except DeepValidationError as e:
-                raise DeepValidationError( str(e) + " (in set " + self.parent.set+" for " + self.parent.XMLTAG + ")")
+                errormsg =  str(e) + " (in set " + self.parent.set+" for " + self.parent.XMLTAG
+                if self.parent.id:
+                    errormsg += " with ID " + self.parent.id
+                errormsg +=  ")"
+                raise DeepValidationError(errormsg)
 
 
 class ValueFeature(Feature):
@@ -4319,6 +4327,9 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
         extraattribs.append(E.optional(E.attribute(E.text(), name='set')) )
         return AbstractElement.relaxng(includechildren, extraattribs, extraelements, cls)
 
+    def deepvalidation(self):
+        return True
+
 # class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
     # """Annotation layers for Subtoken Annotation are derived from this abstract base class"""
     # OPTIONAL_ATTRIBS = ()
@@ -4340,6 +4351,9 @@ class AbstractCorrectionChild(AbstractElement):
     def generate_id(self, cls):
         #Delegate ID generation to parent
         return self.parent.generate_id(cls)
+
+    def deepvalidation(self):
+        return True
 
 class Reference(AbstractStructureElement):
     """A structural element that denotes a reference, internal or external. Examples are references to footnotes, bibliographies, hyperlinks."""
@@ -4936,13 +4950,16 @@ class Alternative(AbstractElement, AllowTokenAnnotation, AllowGenerateID):
     pos tag alternative is tied to a particular lemma.
     """
 
-    pass
+    def deepvalidation(self):
+        return True
 
 
 
 class AlternativeLayers(AbstractElement):
     """Element grouping alternative subtoken annotation(s). Multiple altlayers elements may occur, each denoting a different alternative. Elements grouped inside an alternative block are considered dependent."""
-    pass
+
+    def deepvalidation(self):
+        return True
 
 
 
