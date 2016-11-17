@@ -150,6 +150,7 @@ Qcomment = "ADD comment WITH text \"This is our university!\" FOR entity ID \"ex
 Qfeat = "SELECT feat WHERE subset = \"wvorm\" FOR pos WHERE class = \"WW(pv,tgw,met-t)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.5\""
 Qfeat2 = "EDIT feat WHERE subset = \"wvorm\" WITH class \"inf\" FOR pos WHERE class = \"WW(pv,tgw,met-t)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.5\""
 Qfeat3 = "ADD feat WITH subset \"wvorm\" class \"inf\" FOR pos WHERE class = \"WW(inf,vrij,zonder)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.28\""
+Qfeat4 = "EDIT feat WHERE subset = \"strength\" AND class = \"strong\"  WITH class \"verystrong\"  FOR ID \"WR-P-E-J-0000000001.text.sentiment.1\""
 
 
 class Test1UnparsedQuery(unittest.TestCase):
@@ -771,6 +772,14 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Feature)
         self.assertEqual(results[0].subset, "wvorm")
         self.assertEqual(results[0].cls, "inf")
+
+    def test36d_feature(self):
+        """Editing a feature that has a predefined subset"""
+        q = fql.Query(Qfeat4)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Feature)
+        self.assertEqual(results[0].subset, "strength")
+        self.assertEqual(results[0].cls, "verystrong")
 
     def test37_subqueries(self):
         """Adding a complex span annotation with span roles, using subqueries"""

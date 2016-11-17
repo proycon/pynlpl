@@ -465,6 +465,7 @@ class Selector(object):
                             if debug: print("[FQL EVALUATION DEBUG] Select - Yielding (by ID) ", repr(candidate),file=sys.stderr)
                             yield candidate, None
                     except KeyError:
+                        if debug: print("[FQL EVALUATION DEBUG] Select - Selecting by ID failed for ID " + selector.id,file=sys.stderr)
                         pass #silently ignore ID mismatches
                 elif selector.Class == "ALL":
                     for candidate in e:
@@ -869,7 +870,7 @@ class Target(object): #FOR/IN... expression
                                     if debug: print("[FQL EVALUATION DEBUG] Target - Matched end! Breaking after yielding...",e, file=sys.stderr)
                                     started = False
                                     dobreak = True
-                        if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",e, file=sys.stderr)
+                        if debug: print("[FQL EVALUATION DEBUG] Target - Yielding  ",repr(e), file=sys.stderr)
                         yield e
                         if dobreak and not self.repeat:
                             break
