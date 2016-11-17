@@ -50,7 +50,7 @@ class SetDefinitionError(DeepValidationError):
     pass
 
 class SetType: #legacy only
-    CLOSED, OPEN, MIXED, EMPTY = range(3)
+    CLOSED, OPEN, MIXED, EMPTY = range(4)
 
 class LegacyClassDefinition(object):
     def __init__(self,id, label, subclasses=None):
