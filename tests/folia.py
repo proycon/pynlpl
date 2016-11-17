@@ -2485,14 +2485,10 @@ class Test8Validation(unittest.TestCase):
         doc = folia.Document(file=os.path.join(TMPDIR,'foliatest.xml'), loadsetdefinitions=True)
         assert isinstance( doc.setdefinitions["http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"], folia.SetDefinition)
 
-      def test003_deepvalidation(self):
+class Test9Validation(unittest.TestCase):
+      def test001_deepvalidation(self):
         """Validation - Deep Validation"""
-        try:
-            doc = folia.Document(file=os.path.join(TMPDIR,'foliatest.xml'), deepvalidation=True, allowadhocsets=True)
-            assert isinstance( doc.setdefinitions["http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"], folia.SetDefinition)
-        except NotImplementedError:
-            print("Deep validation not implemented yet! (not failing over this)",file=sys.stderr)
-            return
+        doc = folia.Document(file=os.path.join(FOLIAPATH,'/test/example.deep.xml'), deepvalidation=True, allowadhocsets=True)
 
 
 f = io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8')
