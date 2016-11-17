@@ -50,7 +50,7 @@ class SetDefinitionError(DeepValidationError):
     pass
 
 class SetType: #legacy only
-    CLOSED, OPEN, MIXED = range(3)
+    CLOSED, OPEN, MIXED, EMPTY = range(3)
 
 class LegacyClassDefinition(object):
     def __init__(self,id, label, subclasses=None):
@@ -137,10 +137,12 @@ class LegacySetDefinition(object):
                 type = SetType.CLOSED
             elif node.attrib['type'] == 'mixed':
                 type = SetType.MIXED
+            elif node.attrib['type'] == 'empty':
+                type = SetType.EMPTY
             else:
                 raise Exception("Invalid set type: ", type)
         else:
-            type = SetType.MIXED
+            type = SetType.CLOSED
 
         if 'label' in node.attrib:
             label = node.attrib['label']
@@ -171,6 +173,8 @@ class LegacySetDefinition(object):
             jsonnode['type'] = 'closed'
         elif self.type == SetType.MIXED:
             jsonnode['type'] = 'mixed'
+        elif self.type == SetType.EMPTY:
+            jsonnode['type'] = 'empty'
         jsonnode['subsets'] = {}
         for subset in self.subsets:
             jsonnode['subsets'][subset.id] = subset.json()
@@ -195,6 +199,8 @@ class LegacySetDefinition(object):
             graph.add((seturi, rdflib.term.URIRef(NSSKOS + '#notation'), rdflib.term.Literal(self.id)))
         if self.type == SetType.OPEN:
             graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#open'), rdflib.term.Literal(True)))
+        elif self.type == SetType.EMPTY:
+            graph.add((seturi, rdflib.term.URIRef(NSFOLIASETDEFINITION + '#empty'), rdflib.term.Literal(True)))
         if self.label:
             graph.add((seturi, rdflib.term.URIRef(NSSKOS + '#prefLabel'), rdflib.term.Literal(self.label)))
         if parenturi:
