@@ -3914,7 +3914,7 @@ class Word(AbstractStructureElement, AllowCorrections):
         if not attribs: attribs = {}
         if not self.space:
             attribs['space'] = 'no'
-        return super(Word,self).json(attribs, recurse)
+        return super(Word,self).json(attribs, recurse,ignorelist)
 
     @classmethod
     def relaxng(cls, includechildren=True,extraattribs = None, extraelements=None):
