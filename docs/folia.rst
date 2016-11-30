@@ -962,7 +962,7 @@ uncover these markup elements when present. The following markup types exists:
 Features
 -------------
 
-Features allow a second-order annotation by adding the abilities to assign
+Features allow a second-order annotation by adding the ability to assign
 properties and values to any of the existing annotation elements. They follow
 the set/class paradigm by adding the notion of a subset and class relative to
 this subset. The :meth:`AbstractElement.feat` method provides a shortcut that can be used on any
