@@ -974,7 +974,7 @@ features::
     if pos.cls = "n":
         if pos.feat('number') == 'plural':
             print("We have a plural noun!")
-        elif pos.feat('number') == 'plural':
+        elif pos.feat('number') == 'singular':
             print("We have a singular noun!")
 
 The :meth:`AbstractElement.feat` method will return an exception when the feature does not exist.
