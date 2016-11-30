@@ -224,8 +224,8 @@ class Filter(object): #WHERE ....
                 operator = q[i+1]
                 if q[i] == "class":
                     v = lambda x,y='cls': getattr(x,y)
-                elif q[i] in ("text","value"):
-                    v = lambda x,y='text': getattr(x,'value') if isinstance(x, (folia.Description, folia.Comment, folia.Content)) else getattr(x,'text')()
+                elif q[i] in ("text","value","phon"):
+                    v = lambda x,y='text': getattr(x,'value') if isinstance(x, (folia.Description, folia.Comment, folia.Content)) else getattr(x,'phon') if isinstance(x,folia.PhonContent) else getattr(x,'text')()
                 else:
                     v = lambda x,y=q[i]: getattr(x,y)
                 if q[i] == 'confidence':
@@ -1354,6 +1354,8 @@ def getassignments(q, i, assignments,  focus=None):
         elif q.kw(i,'text'):
             if not focus is None and focus.Class in (folia.TextContent, folia.Description, folia.Comment):
                 key = 'value'
+            if not focus is None and focus.Class is folia.PhonContent:
+                key = 'phon'
             else:
                 key = 'text'
             assignments[key] = q[i+1]
@@ -1575,10 +1577,13 @@ class Action(object): #Action expression
                             if action.action == "EDIT":
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Applying EDIT to focus ", repr(focus),file=sys.stderr)
                                 for attr, value in action.assignments.items():
-                                    if attr in ("text","value"):
+                                    if attr in ("text","value","phon"):
                                         if isinstance(focus, (folia.Description, folia.Comment, folia.Content)):
                                             if debug: print("[FQL EVALUATION DEBUG] Action - setting value ("+ value+ ") on focus ", repr(focus),file=sys.stderr)
                                             focus.value = value
+                                        elif isinstance(focus, (folia.PhonContent)):
+                                            if debug: print("[FQL EVALUATION DEBUG] Action - setphon("+ value+ ") on focus ", repr(focus),file=sys.stderr)
+                                            focus.setphon(value)
                                         else:
                                             if debug: print("[FQL EVALUATION DEBUG] Action - settext("+ value+ ") on focus ", repr(focus),file=sys.stderr)
                                             focus.settext(value)
