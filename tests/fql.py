@@ -89,6 +89,8 @@ Qadd_span4 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefi
 
 Qadd_span_subqueries = "ADD dependency OF alpino-set WITH class \"test\" RESPAN NONE (ADD dep SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.6) (ADD hd SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.7) FOR SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.6 & ID WR-P-E-J-0000000001.p.1.s.2.w.7 RETURN focus"
 
+Qadd_nested_span = "ADD su OF \"syntax-set\" WITH class \"np\" SPAN ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\" & ID \"WR-P-E-J-0000000001.p.1.s.1.w.5\" FOR ID \"WR-P-E-J-0000000001.p.1.s.1.su.0\""
+
 Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNATIVE WITH confidence 0.9)"
 
 Qdeclare = "DECLARE correction OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH annotator \"me\" annotatortype \"manual\""
@@ -790,6 +792,16 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(list(results[0].annotation(folia.Headspan).wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] ] )
         self.assertEqual(list(results[0].annotation(folia.DependencyDependent).wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.2.w.6'] ] )
         self.assertEqual(results[0].ancestor(folia.AbstractStructureElement).id,  'WR-P-E-J-0000000001.p.1.s.2')
+
+    def test38_nested_span(self):
+        """Adding a nested span"""
+        q = fql.Query(Qadd_nested_span)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.SyntacticUnit)
+        self.assertIsInstance(results[0].parent, folia.SyntacticUnit)
+        self.assertEqual(results[0].parent.id, "WR-P-E-J-0000000001.p.1.s.1.su.0")
+        self.assertEqual(list(results[0].wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
+
 
 class Test4CQL(unittest.TestCase):
     def setUp(self):
