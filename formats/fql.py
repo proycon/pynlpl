@@ -1354,7 +1354,7 @@ def getassignments(q, i, assignments,  focus=None):
         elif q.kw(i,('text','value','phon')):
             if not focus is None and focus.Class in (folia.TextContent, folia.Description, folia.Comment):
                 key = 'value'
-            if not focus is None and focus.Class is folia.PhonContent:
+            elif not focus is None and focus.Class is folia.PhonContent:
                 key = 'phon'
             else:
                 key = 'text'
