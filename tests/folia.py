@@ -1906,6 +1906,19 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue(xmlcheck(entity.parent.parent.xmlstring(),'<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.4"><t>De hoofdletter A wordt gebruikt voor het originele handschrift.</t><t class="original">De hoofdletter A wordt gebruikt voor het originele handschrift.</t><t class="translate">Uppercase A is used for the original.</t><part xml:id="WR-P-E-J-0000000001.p.1.s.4.part.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.1"><t offset="0">De</t><t class="original" offset="0">De</t><pos class="LID(bep,stan,rest)"/><lemma class="de"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.2"><t offset="3">hoofdletter</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="hoofdletter"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.3"><t>A</t><pos class="SPEC(symb)"/><lemma class="_"/></w></part><part xml:id="WR-P-E-J-0000000001.p.1.s.4.part.2"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.4"><t>wordt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="worden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.5"><t>gebruikt</t><pos class="WW(vd,vrij,zonder)"/><lemma class="gebruiken"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.6"><t>voor</t><pos class="VZ(init)"/><lemma class="voor"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.7"><t>het</t><pos class="LID(bep,stan,evon)"/><lemma class="het"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.8"><t>originele</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="origineel"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.9"><t>handschrift</t><pos class="N(soort,ev,basis,onz,stan)"/><lemma class="handschrift"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.10"><t>.</t><pos class="LET()"/><lemma class="."/></w></part><entities><entity class="misc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="hoofdletter" id="WR-P-E-J-0000000001.p.1.s.4.w.2"/><wref t="A" id="WR-P-E-J-0000000001.p.1.s.4.w.3"/></entity></entities></s>'))
 
 
+    def test013e_spanannot(self):
+        """Edit Check - Adding nested Span Annotation"""
+        word = self.doc["WR-P-E-J-0000000001.p.1.s.1.w.7"] #stamboom
+        for su in word.findspans(folia.SyntacticUnit):
+            if su.cls == 'pp':
+                parentspan = su
+        self.assertIsInstance(parentspan, folia.SyntacticUnit)
+        self.assertEqual(parentspan.wrefs(recurse=False) , [self.doc["WR-P-E-J-0000000001.p.1.s.1.w.6"],self.doc["WR-P-E-J-0000000001.p.1.s.1.w.7"]]) #prior to adding
+        newspan = parentspan.add(folia.SyntacticUnit, word, cls='np')
+        self.assertEqual(parentspan.wrefs(recurse=False) , [self.doc["WR-P-E-J-0000000001.p.1.s.1.w.6"]]) #after adding, parent span wref gone (moved to child)
+        self.assertEqual(parentspan.wrefs(recurse=True) , [self.doc["WR-P-E-J-0000000001.p.1.s.1.w.6"],self.doc["WR-P-E-J-0000000001.p.1.s.1.w.7"]]) #result is still the same with recursion
+        self.assertEqual(newspan.wrefs() , [self.doc["WR-P-E-J-0000000001.p.1.s.1.w.7"]])
+
     def test014_replace(self):
         """Edit Check - Replacing an annotation"""
         word = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.14']
