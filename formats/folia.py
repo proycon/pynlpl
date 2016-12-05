@@ -4202,6 +4202,21 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
             else:
                 yield c.copy(newdoc,idsuffix)
 
+    def postappend(self):
+        super(AbstractSpanAnnotation,self).postappend()
+
+        #If a span annotation element with wrefs x y z is added in the scope of parent span annotation element with wrefs u v w x y z, then x y z is removed from the parent span (no duplication, implicit through recursion)
+        e = self.parent
+        directwrefs = None #will be populated on first iteration
+        while isinstance(e, AbstractSpanAnnotation):
+            if directwrefs is None:
+                directwrefs = self.wrefs(recurse=False)
+            for wref in directwrefs:
+                try:
+                    e.data.remove(wref)
+                except ValueError:
+                    pass
+            e = e.parent
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
