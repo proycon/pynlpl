@@ -30,9 +30,11 @@ from lxml import etree as ElementTree
 if sys.version < '3':
     from StringIO import StringIO #pylint: disable=import-error,wrong-import-order
     from urllib import urlopen #pylint: disable=no-name-in-module,wrong-import-order
+    from urllib2 import HTTPError
 else:
     from io import StringIO,  BytesIO #pylint: disable=wrong-import-order,ungrouped-imports
     from urllib.request import urlopen #pylint: disable=E0611,wrong-import-order,ungrouped-imports
+    from urllib.error import HTTPError
 
 
 #foliaspec:namespace:NSFOLIA
@@ -293,7 +295,10 @@ class SetDefinition(object):
             if self.verbose:
                 print("Loaded legacy set " + url + " (" + str(len(self.graph)) + " triples)",file=sys.stderr)
         else:
-            self.graph.parse(location=url, format=format)
+            try:
+                self.graph.parse(location=url, format=format)
+            except HTTPError:
+                raise DeepValidationError("Unable to download " + url)
             if self.verbose:
                 print("Loaded set " + url + " (" + str(len(self.graph)) + " triples)",file=sys.stderr)
 
