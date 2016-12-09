@@ -36,7 +36,7 @@ import bz2
 import re
 
 
-FOLIARELEASE = "v1.3.2.52"
+FOLIARELEASE = "v1.4.0.53"
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
@@ -2501,7 +2501,7 @@ class Test8Validation(unittest.TestCase):
 class Test9Validation(unittest.TestCase):
       def test001_deepvalidation(self):
         """Validation - Deep Validation"""
-        doc = folia.Document(file=os.path.join(FOLIAPATH,'/test/example.deep.xml'), deepvalidation=True, allowadhocsets=True)
+        doc = folia.Document(file=os.path.join(FOLIAPATH,'test/example.deep.xml'), deepvalidation=True, allowadhocsets=True)
 
 
 f = io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8')
