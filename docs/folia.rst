@@ -269,7 +269,7 @@ argument::
     for ancestor in element.ancestors(folia.Division):
         print(type(ancestor))
 
-If only a single ancestor is desired, use the :meth:`AbstractElement.ancestor``
+If only a single ancestor is desired, use the :meth:`AbstractElement.ancestor`
 method instead, unlike the generator version :meth:`AbstractElement.ancestors`,
 it will raise a :class:`NoSuchAnnotation` exception if the ancestor was not
 found::
@@ -457,12 +457,12 @@ conventional::
                 print(word, end="")  #print without newline
             print()   #print newline
 
-The :meth:`AbstractSpanAnnotation.wrefs()`` method, available on all span annotation elements, will return
+The :meth:`AbstractSpanAnnotation.wrefs` method, available on all span annotation elements, will return
 a list of all words (as well as morphemes and phonemes) over which a span
 annotation element spans.
 
 This first way is rather verbose. The second way of accessing span annotation
-takes another approach, using the :meth:`Word.findspans()`` method available on :class:`Word` instances.
+takes another approach, using the :meth:`Word.findspans` method available on :class:`Word` instances.
 Here we start from a word and seek span annotations in which that word occurs.
 Assume we have a ``word`` and want to find chunks it occurs in::
 
@@ -563,7 +563,7 @@ Declarations
 ---------------------
 
 Whenever you add a new **type** of annotation, or a different set, to a FoLiA document, you have to
-first declare it. This is done using the :meth:`Document.declare`` method. It takes as
+first declare it. This is done using the :meth:`Document.declare` method. It takes as
 arguments the annotation type, the set, and you can optionally pass keyword
 arguments to ``annotator=`` and ``annotatortype=`` to set defaults.
 
@@ -743,12 +743,12 @@ and then add a syntax parse, consisting of nested elements::
     )
     
 
-.. note:: The lower-level :meth:`AbstractElement.append`` method would have had the same effect in the above syntax tree sample.
+.. note:: The lower-level :meth:`AbstractElement.append` method would have had the same effect in the above syntax tree sample.
 
 Deleting annotations
 ----------------------
 
-Any element can be deleted by calling the :meth:`AbstractElement.remove`` method on its parent. Suppose we want to delete ``word``::
+Any element can be deleted by calling the :meth:`AbstractElement.remove` method on its parent. Suppose we want to delete ``word``::
 
     word.parent.remove(word)
 
@@ -911,7 +911,7 @@ We have just covered the **SELECT** keyword, FQL has other keywords for manipula
 Streaming Reader
 -------------------
 
-Throughout this tutorial you have seen the :class:`Document`` class as a means
+Throughout this tutorial you have seen the :class:`Document` class as a means
 of reading FoLiA documents. This class always loads the entire document in
 memory, which can be a considerable resource demand. The following class
 provides an alternative to loading FoLiA documents:
@@ -1079,7 +1079,7 @@ return ``None``::
 
 Corrections themselves carry a class too, indicating the type of correction (defined by the set used and not by FoLiA).
 
-Besides :meth:`Correction.original``, corrections distinguish three other types, :meth:`Correction.new`` (the corrected version), :meth:`Correction.current`` (the current uncorrected version) and :meth:`Correction.suggestions` (a suggestion for correction), the former two and latter two usually form pairs, ``current()`` and ``new()`` can never be used together. Of ``suggestions(index)`` there may be multiple, hence the index argument. These return, respectively, instances of :class:`Original`, :class:`folia.New`, :class:`folia.Current` and :class:`folia.Suggestion`.
+Besides :meth:`Correction.original`, corrections distinguish three other types, :meth:`Correction.new` (the corrected version), :meth:`Correction.current` (the current uncorrected version) and :meth:`Correction.suggestions` (a suggestion for correction), the former two and latter two usually form pairs, ``current()`` and ``new()`` can never be used together. Of ``suggestions(index)`` there may be multiple, hence the index argument. These return, respectively, instances of :class:`Original`, :class:`folia.New`, :class:`folia.Current` and :class:`folia.Suggestion`.
 
 Adding a correction can be done explicitly::
 
