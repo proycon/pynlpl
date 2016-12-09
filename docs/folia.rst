@@ -1144,3 +1144,16 @@ respectively, with the following element classes:
 
     Description
     Metric
+
+Metadata
+===========================
+
+FoLiA can be used with a variety of more advanced metadata schemes (e.g. Dublin Core,
+CMDI). If this is too much, you can use its own simple *native* metadata
+facility, a simple key value store . After instantiation of a :class:`Document`, the metadata can be
+accessed through the ``metadata`` attribute, which behaves like a Python
+dictionary::
+
+    doc = folia.Document(file="/path/to/document.xml")
+    doc.metadata['language'] = "en"
+
