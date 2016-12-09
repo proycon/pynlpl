@@ -36,7 +36,7 @@ MASK_EXPRESSION = 2
 MAXEXPANSION = 99
 
 FOLIAVERSION = '1.4.0'
-FQLVERSION = '0.3.2'
+FQLVERSION = '0.4.0'
 
 class SyntaxError(Exception):
     pass
