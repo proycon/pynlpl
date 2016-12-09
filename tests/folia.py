@@ -36,7 +36,7 @@ import bz2
 import re
 
 
-FOLIARELEASE = "v1.3.2.52"
+FOLIARELEASE = "v1.4.0.53"
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
@@ -266,8 +266,8 @@ class Test2Sanity(unittest.TestCase):
 
         self.assertEqual( w.annotation(folia.PosAnnotation).cls, 'N(soort,ev,basis,onz,stan)' ) #cls is used everywhere instead of class, since class is a reserved keyword in python
         self.assertEqual( w.pos(),'N(soort,ev,basis,onz,stan)' ) #w.pos() is just a direct shortcut for getting the class
-        self.assertEqual( w.annotation(folia.PosAnnotation).set, 'cgn-combinedtags' )
-        self.assertEqual( w.annotation(folia.PosAnnotation).annotator, 'tadpole' )
+        self.assertEqual( w.annotation(folia.PosAnnotation).set, 'https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn' )
+        self.assertEqual( w.annotation(folia.PosAnnotation).annotator, 'frog' )
         self.assertEqual( w.annotation(folia.PosAnnotation).annotatortype, folia.AnnotatorType.AUTO )
 
 
@@ -366,9 +366,9 @@ class Test2Sanity(unittest.TestCase):
         """Sanity Check - Subtoken annotation (part of speech)"""
         w= self.doc['WR-P-E-J-0000000001.p.1.s.2.w.5']
         p = w.annotation(folia.PosAnnotation)
-        self.assertEqual( p.feat('role'), 'pv' )
-        self.assertEqual( p.feat('tense'), 'tgw' )
-        self.assertEqual( p.feat('form'), 'met-t' )
+        self.assertEqual( p.feat('wvorm'), 'pv' )
+        self.assertEqual( p.feat('pvtijd'), 'tgw' )
+        self.assertEqual( p.feat('pvagr'), 'met-t' )
 
     def test019_alignment(self):
         """Sanity Check - Alignment in same document"""
@@ -1618,7 +1618,7 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )
 
-        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma set="adhoclemma" class="NAAM" datetime="1982-12-15T19:00:01" annotatortype="auto" annotator="testscript"/></w>') )
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma set="adhoclemma" class="NAAM" datetime="1982-12-15T19:00:01" annotatortype="auto" annotator="testscript"/></w>') )
 
     def test002b_addannotation(self):
         """Edit Check - Adding a token annotation (pos, lemma) (instances generated on the fly)"""
@@ -1642,7 +1642,7 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )
 
-        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma class="NAAM" set="adhoclemma" annotatortype="auto" annotator="testscript"/></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma class="NAAM" set="adhoclemma" annotatortype="auto" annotator="testscript"/></w>'))
 
     def test002c_addannotation(self):
         """Edit Check - Adding a token annotation (pos, lemma) (using add instead of append)"""
@@ -1666,7 +1666,7 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( isinstance(l, folia.LemmaAnnotation) )
         self.assertEqual( l.cls, 'NAAM' )
 
-        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="cgn-combinedtags"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma set="adhoclemma" class="NAAM" datetime="1982-12-15T19:00:01" annotatortype="auto" annotator="testscript"/></w>') )
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)" set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn"/><lemma class="naam" set="lemmas-nl"/><pos class="NOUN" set="adhocpos" annotatortype="auto" annotator="testscript"/><lemma set="adhoclemma" class="NAAM" datetime="1982-12-15T19:00:01" annotatortype="auto" annotator="testscript"/></w>') )
 
     def test004_addinvalidannotation(self):
         """Edit Check - Adding a token default-set annotation that clashes with the existing one"""
@@ -1894,6 +1894,30 @@ class Test4Edit(unittest.TestCase):
         l.correct(original=self.doc['example.radboud.university.nijmegen.org'], new=folia.Entity(self.doc, *self.doc['example.radboud.university.nijmegen.org'].wrefs(), cls="loc",set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml") ,set='corrections',cls='wrongclass')
 
         self.assertTrue( xmlcheck(l.xmlstring(), '<entities xmlns="http://ilk.uvt.nl/folia"><correction xml:id="example.cell.correction.1" class="wrongclass"><new><entity class="loc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="Radboud" id="example.table.1.w.6"/><wref t="University" id="example.table.1.w.7"/><wref t="Nijmegen" id="example.table.1.w.8"/></entity></new><original auth="no"><entity xml:id="example.radboud.university.nijmegen.org" class="org" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="Radboud" id="example.table.1.w.6"/><wref t="University" id="example.table.1.w.7"/><wref t="Nijmegen" id="example.table.1.w.8"/><comment annotator="proycon">This is our university!</comment></entity></original></correction></entities>'))
+
+    def test013d_spanannot(self):
+        """Edit Check - Adding Span Annotation (entity, from sentence using add)"""
+        sentence = self.doc["WR-P-E-J-0000000001.p.1.s.4"]
+        word = self.doc["WR-P-E-J-0000000001.p.1.s.4.w.2"] #hoofdletter
+        word2 = self.doc["WR-P-E-J-0000000001.p.1.s.4.w.3"] #A
+        entity = sentence.add(folia.Entity, word, word2, cls="misc",set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml")
+
+        self.assertIsInstance(entity, folia.Entity)
+        self.assertTrue(xmlcheck(entity.parent.parent.xmlstring(),'<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.4"><t>De hoofdletter A wordt gebruikt voor het originele handschrift.</t><t class="original">De hoofdletter A wordt gebruikt voor het originele handschrift.</t><t class="translate">Uppercase A is used for the original.</t><part xml:id="WR-P-E-J-0000000001.p.1.s.4.part.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.1"><t offset="0">De</t><t class="original" offset="0">De</t><pos class="LID(bep,stan,rest)"/><lemma class="de"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.2"><t offset="3">hoofdletter</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="hoofdletter"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.3"><t>A</t><pos class="SPEC(symb)"/><lemma class="_"/></w></part><part xml:id="WR-P-E-J-0000000001.p.1.s.4.part.2"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.4"><t>wordt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="worden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.5"><t>gebruikt</t><pos class="WW(vd,vrij,zonder)"/><lemma class="gebruiken"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.6"><t>voor</t><pos class="VZ(init)"/><lemma class="voor"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.7"><t>het</t><pos class="LID(bep,stan,evon)"/><lemma class="het"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.8"><t>originele</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="origineel"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.9"><t>handschrift</t><pos class="N(soort,ev,basis,onz,stan)"/><lemma class="handschrift"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.10"><t>.</t><pos class="LET()"/><lemma class="."/></w></part><entities><entity class="misc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="hoofdletter" id="WR-P-E-J-0000000001.p.1.s.4.w.2"/><wref t="A" id="WR-P-E-J-0000000001.p.1.s.4.w.3"/></entity></entities></s>'))
+
+
+    def test013e_spanannot(self):
+        """Edit Check - Adding nested Span Annotation"""
+        word = self.doc["WR-P-E-J-0000000001.p.1.s.1.w.7"] #stamboom
+        for su in word.findspans(folia.SyntacticUnit):
+            if su.cls == 'pp':
+                parentspan = su
+        self.assertIsInstance(parentspan, folia.SyntacticUnit)
+        self.assertEqual(parentspan.wrefs(recurse=False) , [self.doc["WR-P-E-J-0000000001.p.1.s.1.w.6"],self.doc["WR-P-E-J-0000000001.p.1.s.1.w.7"]]) #prior to adding
+        newspan = parentspan.add(folia.SyntacticUnit, word, cls='np')
+        self.assertEqual(parentspan.wrefs(recurse=False) , [self.doc["WR-P-E-J-0000000001.p.1.s.1.w.6"]]) #after adding, parent span wref gone (moved to child)
+        self.assertEqual(parentspan.wrefs(recurse=True) , [self.doc["WR-P-E-J-0000000001.p.1.s.1.w.6"],self.doc["WR-P-E-J-0000000001.p.1.s.1.w.7"]]) #result is still the same with recursion
+        self.assertEqual(newspan.wrefs() , [self.doc["WR-P-E-J-0000000001.p.1.s.1.w.7"]])
 
     def test014_replace(self):
         """Edit Check - Replacing an annotation"""
@@ -2474,14 +2498,10 @@ class Test8Validation(unittest.TestCase):
         doc = folia.Document(file=os.path.join(TMPDIR,'foliatest.xml'), loadsetdefinitions=True)
         assert isinstance( doc.setdefinitions["http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"], folia.SetDefinition)
 
-      def test003_deepvalidation(self):
+class Test9Validation(unittest.TestCase):
+      def test001_deepvalidation(self):
         """Validation - Deep Validation"""
-        try:
-            doc = folia.Document(file=os.path.join(TMPDIR,'foliatest.xml'), deepvalidation=True, allowadhocsets=True)
-            assert isinstance( doc.setdefinitions["http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"], folia.SetDefinition)
-        except NotImplementedError:
-            print("Deep validation not implemented yet! (not failing over this)",file=sys.stderr)
-            return
+        doc = folia.Document(file=os.path.join(FOLIAPATH,'test/example.deep.xml'), deepvalidation=True, allowadhocsets=True)
 
 
 f = io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8')

@@ -83,6 +83,13 @@ Qselect_span2_returntarget = "SELECT entity OF \"http://raw.github.com/proycon/f
 Qadd_span = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
 Qadd_span_returntarget = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" RETURN target"
 Qadd_span_returnancestortarget = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" RETURN ancestor-target"
+Qadd_span2 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" FOR ID \"WR-P-E-J-0000000001.p.1.s.4\""
+Qadd_span3 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" RESPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\" FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
+Qadd_span4 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml\" WITH class \"misc\" RESPAN NONE FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.4.w.2\" & ID \"WR-P-E-J-0000000001.p.1.s.4.w.3\""
+
+Qadd_span_subqueries = "ADD dependency OF alpino-set WITH class \"test\" RESPAN NONE (ADD dep SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.6) (ADD hd SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.7) FOR SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.6 & ID WR-P-E-J-0000000001.p.1.s.2.w.7 RETURN focus"
+
+Qadd_nested_span = "ADD su OF \"syntax-set\" WITH class \"np\" SPAN ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\" & ID \"WR-P-E-J-0000000001.p.1.s.1.w.5\" FOR ID \"WR-P-E-J-0000000001.p.1.s.1.su.0\""
 
 Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNATIVE WITH confidence 0.9)"
 
@@ -141,6 +148,11 @@ Qsuggest_insertion = "PREPEND (AS CORRECTION OF \"http://raw.github.com/proycon/
 Qsuggest_insertion2 = "APPEND (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"insertion\" SUGGESTION (ADD w WITH text \"heel\")) FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.3\""
 
 Qcomment = "ADD comment WITH text \"This is our university!\" FOR entity ID \"example.radboud.university.nijmegen.org\""
+
+Qfeat = "SELECT feat WHERE subset = \"wvorm\" FOR pos WHERE class = \"WW(pv,tgw,met-t)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.5\""
+Qfeat2 = "EDIT feat WHERE subset = \"wvorm\" WITH class \"inf\" FOR pos WHERE class = \"WW(pv,tgw,met-t)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.5\""
+Qfeat3 = "ADD feat WITH subset \"wvorm\" class \"inf\" FOR pos WHERE class = \"WW(inf,vrij,zonder)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.28\""
+Qfeat4 = "EDIT feat WHERE subset = \"strength\" AND class = \"strong\"  WITH class \"verystrong\"  FOR ID \"WR-P-E-J-0000000001.text.sentiment.1\""
 
 
 class Test1UnparsedQuery(unittest.TestCase):
@@ -455,6 +467,40 @@ class Test3Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Part )
 
+    def test20d_add_span(self):
+        """Add span (using SPAN instead of FOR SPAN)"""
+        q = fql.Query(Qadd_span2)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Entity)
+        self.assertEqual(results[0].cls, 'misc')
+        results = list(results[0].wrefs())
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertEqual(results[0].text(), "hoofdletter")
+        self.assertIsInstance(results[1], folia.Word)
+        self.assertEqual(results[1].text(), "A")
+        self.assertEqual(len(results), 2)
+
+    def test20e_add_span(self):
+        """Add span (using RESPAN and FOR SPAN, immediately respanning)"""
+        q = fql.Query(Qadd_span3)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Entity)
+        self.assertEqual(results[0].cls, 'misc')
+        results = list(results[0].wrefs())
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].text(), "A")
+
+    def test20f_add_span(self):
+        """Add span (using RESPAN NONE, immediately respanning)"""
+        q = fql.Query(Qadd_span4)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Entity)
+        self.assertEqual(results[0].cls, 'misc')
+        results = list(results[0].wrefs())
+        self.assertEqual(len(results), 0)
+
+
     def test21_edit_alt(self):
         """Add alternative token annotation"""
         q = fql.Query(Qalt)
@@ -704,6 +750,58 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Comment)
         self.assertEqual(results[0].value, "This is our university!")
         self.assertEqual(results[0].parent.id, "example.radboud.university.nijmegen.org")
+
+    def test36_feature(self):
+        """Selecting a feature"""
+        q = fql.Query(Qfeat)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Feature)
+        self.assertEqual(results[0].subset, "wvorm")
+        self.assertEqual(results[0].cls, "pv")
+
+    def test36b_feature(self):
+        """Editing a feature"""
+        q = fql.Query(Qfeat2)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Feature)
+        self.assertEqual(results[0].subset, "wvorm")
+        self.assertEqual(results[0].cls, "inf")
+
+    def test36c_feature(self):
+        """Adding a feature"""
+        q = fql.Query(Qfeat3)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Feature)
+        self.assertEqual(results[0].subset, "wvorm")
+        self.assertEqual(results[0].cls, "inf")
+
+    def test36d_feature(self):
+        """Editing a feature that has a predefined subset"""
+        q = fql.Query(Qfeat4)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Feature)
+        self.assertEqual(results[0].subset, "strength")
+        self.assertEqual(results[0].cls, "verystrong")
+
+    def test37_subqueries(self):
+        """Adding a complex span annotation with span roles, using subqueries"""
+        q = fql.Query(Qadd_span_subqueries)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Dependency)
+        self.assertEqual(results[0].cls, "test")
+        self.assertEqual(list(results[0].annotation(folia.Headspan).wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.2.w.7'] ] )
+        self.assertEqual(list(results[0].annotation(folia.DependencyDependent).wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.2.w.6'] ] )
+        self.assertEqual(results[0].ancestor(folia.AbstractStructureElement).id,  'WR-P-E-J-0000000001.p.1.s.2')
+
+    def test38_nested_span(self):
+        """Adding a nested span"""
+        q = fql.Query(Qadd_nested_span)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.SyntacticUnit)
+        self.assertIsInstance(results[0].parent, folia.SyntacticUnit)
+        self.assertEqual(results[0].parent.id, "WR-P-E-J-0000000001.p.1.s.1.su.0")
+        self.assertEqual(list(results[0].wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
+
 
 class Test4CQL(unittest.TestCase):
     def setUp(self):

@@ -962,7 +962,7 @@ uncover these markup elements when present. The following markup types exists:
 Features
 -------------
 
-Features allow a second-order annotation by adding the abilities to assign
+Features allow a second-order annotation by adding the ability to assign
 properties and values to any of the existing annotation elements. They follow
 the set/class paradigm by adding the notion of a subset and class relative to
 this subset. The :meth:`AbstractElement.feat` method provides a shortcut that can be used on any
@@ -974,7 +974,7 @@ features::
     if pos.cls = "n":
         if pos.feat('number') == 'plural':
             print("We have a plural noun!")
-        elif pos.feat('number') == 'plural':
+        elif pos.feat('number') == 'singular':
             print("We have a singular noun!")
 
 The :meth:`AbstractElement.feat` method will return an exception when the feature does not exist.
