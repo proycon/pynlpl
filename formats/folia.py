@@ -7569,7 +7569,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.4.0 on 2016-10-25 15:25:00, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.4.0 on 2016-12-09 14:31:07, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7949,6 +7949,7 @@ Dependency.REQUIRED_DATA = (DependencyDependent, Headspan,)
 Dependency.XMLTAG = "dependency"
 #------ DependencyDependent -------
 DependencyDependent.LABEL = "Dependent"
+DependencyDependent.OCCURRENCES = 1
 DependencyDependent.XMLTAG = "dep"
 #------ Description -------
 Description.LABEL = "Description"
@@ -7958,6 +7959,7 @@ Description.XMLTAG = "desc"
 #------ Division -------
 Division.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Division, Entry, Event, Example, Feature, Figure, ForeignData, Gap, Head, Linebreak, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, Table, TextContent, Utterance, Whitespace,)
 Division.ANNOTATIONTYPE = AnnotationType.DIVISION
+Division.LABEL = "Division"
 Division.TEXTDELIMITER = "\n\n\n"
 Division.XMLTAG = "div"
 #------ DomainAnnotation -------
@@ -8039,6 +8041,7 @@ HeadFeature.SUBSET = "head"
 HeadFeature.XMLTAG = None
 #------ Headspan -------
 Headspan.LABEL = "Head"
+Headspan.OCCURRENCES = 1
 Headspan.XMLTAG = "hd"
 #------ Label -------
 Label.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, ForeignData, Metric, Part, PhonContent, Reference, String, TextContent, Word,)
@@ -8172,6 +8175,7 @@ Reference.TEXTDELIMITER = None
 Reference.XMLTAG = "ref"
 #------ Relation -------
 Relation.LABEL = "Relation"
+Relation.OCCURRENCES = 1
 Relation.XMLTAG = "relation"
 #------ Row -------
 Row.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Cell, Comment, Correction, Description, Feature, ForeignData, Metric, Part,)
@@ -8213,6 +8217,7 @@ SentimentLayer.PRIMARYELEMENT = False
 SentimentLayer.XMLTAG = "sentiments"
 #------ Source -------
 Source.LABEL = "Source"
+Source.OCCURRENCES = 1
 Source.XMLTAG = "source"
 #------ Speech -------
 Speech.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Division, Entry, Event, Example, External, Feature, ForeignData, Gap, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, String, TextContent, Utterance, Word,)
@@ -8275,6 +8280,7 @@ TableHead.LABEL = "Table Header"
 TableHead.XMLTAG = "tablehead"
 #------ Target -------
 Target.LABEL = "Target"
+Target.OCCURRENCES = 1
 Target.XMLTAG = "target"
 #------ Term -------
 Term.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Event, Feature, Figure, ForeignData, Gap, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Word,)
