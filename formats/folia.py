@@ -111,9 +111,9 @@ class Mode:
     XPATH = 1 #The full XML structure will be loaded into memory, but conversion to FoLiA objects occurs only upon querying. The full power of XPath is available.
 
 class AnnotatorType:
-    UNSET = 0
-    AUTO = 1
-    MANUAL = 2
+    UNSET = None
+    AUTO = "auto"
+    MANUAL = "manual"
 
 
 #foliaspec:attributes
