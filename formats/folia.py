@@ -2135,6 +2135,7 @@ class AbstractElement(object):
                 returnnext = False
                 for e in order(parent):
                     if e is child:
+                        #we found the current item, next item will be the one to return
                         returnnext = True
                     elif returnnext and e.auth and not isinstance(e,AbstractAnnotationLayer) and (not structural or (structural and (not isinstance(e,(AbstractTokenAnnotation,TextContent)) ) )):
                         if structural and isinstance(e,Correction):
@@ -2159,7 +2160,7 @@ class AbstractElement(object):
 
             #generational iteration
             child = parent
-            if scope is not None and child in scope:
+            if scope is not None and child.__class__ in scope:
                 #you shall not pass!
                 break
             parent = parent.parent
