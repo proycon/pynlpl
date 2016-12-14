@@ -814,8 +814,12 @@ class Test3Evaluation(unittest.TestCase):
 
     def test39b_edit_spanrole(self):
         """Editing a spanrole (with ID)"""
+        #ID does not exist yet, we add it first:
         q = fql.Query("SELECT hd FOR ID \"WR-P-E-J-0000000001.p.1.s.1.dep.2\"")
-        q(self.doc)[0].id = "test"
+        hd = q(self.doc)[0]
+        hd.id = "test"
+        self.doc.index["test"] = hd
+        #now the actual test:
         q = fql.Query(Qedit_spanrole_id)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Dependency)

@@ -463,7 +463,7 @@ class Selector(object):
                         selector.Class = candidate.__class__
                         if not selector.filter or  selector.filter(query,candidate, debug):
                             if debug: print("[FQL EVALUATION DEBUG] Select - Yielding (by ID) ", repr(candidate),file=sys.stderr)
-                            yield candidate, None
+                            yield candidate, e
                     except KeyError:
                         if debug: print("[FQL EVALUATION DEBUG] Select - Selecting by ID failed for ID " + selector.id,file=sys.stderr)
                         pass #silently ignore ID mismatches
