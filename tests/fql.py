@@ -89,6 +89,7 @@ Qadd_span4 = "ADD entity OF \"http://raw.github.com/proycon/folia/master/setdefi
 
 Qadd_span_subqueries = "ADD dependency OF alpino-set WITH class \"test\" RESPAN NONE (ADD dep SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.6) (ADD hd SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.7) FOR SPAN ID WR-P-E-J-0000000001.p.1.s.2.w.6 & ID WR-P-E-J-0000000001.p.1.s.2.w.7 RETURN focus"
 Qedit_spanrole = "EDIT hd SPAN ID \"WR-P-E-J-0000000001.p.1.s.1.w.3\" & ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\" & ID \"WR-P-E-J-0000000001.p.1.s.1.w.5\" FOR dependency ID \"WR-P-E-J-0000000001.p.1.s.1.dep.2\" RETURN target"
+Qedit_spanrole_id = "EDIT hd ID \"test\" SPAN ID \"WR-P-E-J-0000000001.p.1.s.1.w.3\" & ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\" & ID \"WR-P-E-J-0000000001.p.1.s.1.w.5\" FOR dependency ID \"WR-P-E-J-0000000001.p.1.s.1.dep.2\" RETURN target"
 
 Qadd_nested_span = "ADD su OF \"syntax-set\" WITH class \"np\" SPAN ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\" & ID \"WR-P-E-J-0000000001.p.1.s.1.w.5\" FOR ID \"WR-P-E-J-0000000001.p.1.s.1.su.0\""
 
@@ -806,6 +807,16 @@ class Test3Evaluation(unittest.TestCase):
     def test39_edit_spanrole(self):
         """Editing a spanrole"""
         q = fql.Query(Qedit_spanrole)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Dependency)
+        self.assertEqual(list(results[0].annotation(folia.Headspan).wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.3'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
+        self.assertEqual(results[0].ancestor(folia.AbstractStructureElement).id,  'WR-P-E-J-0000000001.p.1.s.1')
+
+    def test39b_edit_spanrole(self):
+        """Editing a spanrole (with ID)"""
+        q = fql.Query("SELECT hd FOR ID \"WR-P-E-J-0000000001.p.1.s.1.dep.2\"")
+        q(self.doc)[0].id = "test"
+        q = fql.Query(Qedit_spanrole_id)
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Dependency)
         self.assertEqual(list(results[0].annotation(folia.Headspan).wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.3'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
