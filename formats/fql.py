@@ -1843,12 +1843,16 @@ class Query(object):
             i += 2
 
             defaults = {}
+            decset = None
             if q.kw(i,"OF") and q[i+1]:
                 i += 1
                 decset = q[i]
                 i += 1
                 if q.kw(i,"WITH"):
                     i = getassignments(q,i+1,defaults)
+
+            if not decset:
+                raise SyntaxError("DECLARE statement must state a set")
 
             self.declarations.append( (Class, decset, defaults)  )
 
