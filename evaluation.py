@@ -43,7 +43,6 @@ import copy
 import datetime
 import os.path
 
-
 def auc(x, y, reorder=False): #from sklearn, http://scikit-learn.org, licensed under BSD License
     """Compute Area Under the Curve (AUC) using the trapezoidal rule
 
@@ -106,6 +105,19 @@ def auc(x, y, reorder=False): #from sklearn, http://scikit-learn.org, licensed u
 
     area = np.sum(h * (y[1:] + y[:-1])) / 2.0
     return area
+
+
+def mae(absolute_error_values):
+    if np is None:
+        return sum(absolute_error_values) / len(absolute_error_values)
+    else:
+        return np.mean(absolute_error_values)
+
+def rmse(squared_error_values):
+    if np is None:
+        return math.sqrt(sum(squared_error_values)/len(squared_error_values))
+    else:
+        return math.sqrt(np.mean(squared_error_values))
 
 
 class ProcessFailed(Exception):
@@ -390,23 +402,25 @@ class OrdinalEvaluation(ClassEvaluation):
     def compute(self):
         assert not False in [type(cls) == int for cls in self.classes]
         ClassEvaluation.compute(self)
-        self.absolute_error = [abs(goal-observation) for goal, observation in self]
-        self.squared_error = [ae**2 for ae in self.absolute_error]
+        self.error = defaultdict(list)
+        self.squared_error = defaultdict(list)
+        for goal, observation in self:
+            self.error[observation].append(abs(goal-observation))
+            self.squared_error[observation].append(abs(goal-observation)**2)
 
-    def mae(self):
+    def mae(self, cls=None):
         if not self.computed: self.compute()
-        if np is None:
-            return sum(self.absolute_error) / len(self.absolute_error)
+        if cls:
+            return mae(self.error[cls])
         else:
-            return np.mean(self.absolute_error)
-
-    def rmse(self):
+            return mae(sum([self.error[x] for x in set(self.goals)], []))
+             
+    def rmse(self, cls=None):
         if not self.computed: self.compute()
-        if np is None:
-            return math.sqrt(sum(self.squared_error)/len(self.squared_error))
+        if cls:
+            return rmse(self.squared_error[cls])
         else:
-            return math.sqrt(np.mean(self.squared_error))
-
+            return rmse(sum([self.squared_error[x] for x in set(self.goals)], []))
 
 class AbstractExperiment(object):
 

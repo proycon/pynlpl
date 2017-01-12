@@ -22,7 +22,7 @@ import os
 import unittest
 import random
 
-from pynlpl.evaluation import AbstractExperiment, WPSParamSearch, ExperimentPool, ClassEvaluation
+from pynlpl.evaluation import AbstractExperiment, WPSParamSearch, ExperimentPool, ClassEvaluation, OrdinalEvaluation
 
 class ParamExperiment(AbstractExperiment):
     def defaultparameters(self):
@@ -81,7 +81,18 @@ class ClassEvaluationTest2(unittest.TestCase):
         print()
         print(e)
         print(e.confusionmatrix())
-    
+
+class OrdinalEvaluationTest(unittest.TestCase):
+    def setUp(self):
+        self.goals = [1,2,3,4,3,2]
+        self.observations = [4,1,3,4,2,2]
+
+    def test001(self):
+        oe = OrdinalEvaluation(self.goals,self.observations)
+        print(oe.mae())
+        print(oe.mae(2))
+        print(oe.rmse())
+        print(oe.rmse(4))
     
 class ClassEvaluationTest(unittest.TestCase):
     def setUp(self):
