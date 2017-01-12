@@ -387,7 +387,7 @@ class OrdinalEvaluation(ClassEvaluation):
     def __init__(self,  goals = [], observations = [], missing = {}, encoding ='utf-8'):
         ClassEvaluation.__init__(self,goals,observations,missing,encoding='utf-8')
 
-    def compute(self): 
+    def compute(self):
         assert not False in [type(cls) == int for cls in self.classes]
         ClassEvaluation.compute(self)
         self.absolute_error = [abs(goal-observation) for goal, observation in self]
@@ -395,12 +395,18 @@ class OrdinalEvaluation(ClassEvaluation):
 
     def mae(self):
         if not self.computed: self.compute()
-        return np.mean(self.absolute_error)
+        if np is None:
+            return sum(self.absolute_error) / len(self.absolute_error)
+        else:
+            return np.mean(self.absolute_error)
 
     def rmse(self):
         if not self.computed: self.compute()
-        return math.sqrt(np.mean(self.squared_error))
-    
+        if np is None:
+            return math.sqrt(sum(self.squared_error)/len(self.squared_error))
+        else:
+            return math.sqrt(np.mean(self.squared_error))
+
 
 class AbstractExperiment(object):
 
