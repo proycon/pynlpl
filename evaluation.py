@@ -38,6 +38,7 @@ import subprocess
 import itertools
 import time
 import random
+import math
 import copy
 import datetime
 import os.path
@@ -380,6 +381,26 @@ class ClassEvaluation(object):
     def __unicode__(self): #Python 2.x
         return str(self)
 
+
+class OrdinalEvaluation(ClassEvaluation):
+
+    def __init__(self,  goals = [], observations = [], missing = {}, encoding ='utf-8'):
+        ClassEvaluation.__init__(self,goals,observations,missing,encoding='utf-8')
+
+    def compute(self): 
+        assert not False in [type(cls) == int for cls in self.classes]
+        ClassEvaluation.compute(self)
+        self.absolute_error = [abs(goal-observation) for goal, observation in self]
+        self.squared_error = [ae**2 for ae in self.absolute_error]
+
+    def mae(self):
+        if not self.computed: self.compute()
+        return np.mean(self.absolute_error)
+
+    def rmse(self):
+        if not self.computed: self.compute()
+        return math.sqrt(np.mean(self.squared_error))
+    
 
 class AbstractExperiment(object):
 
