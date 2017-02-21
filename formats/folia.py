@@ -6653,7 +6653,7 @@ class Document(object):
             self.annotations.append( (annotationtype,set) )
             if set and self.loadsetdefinitions and not set in self.setdefinitions:
                 if set[:7] == "http://" or set[:8] == "https://" or set[:6] == "ftp://":
-                    self.setdefinitions[set] = loadsetdefinition(set) #will raise exception on error
+                    self.setdefinitions[set] = SetDefinition(set,verbose=self.verbose) #will raise exception on error
         if not annotationtype in self.annotationdefaults:
             self.annotationdefaults[annotationtype] = {}
         self.annotationdefaults[annotationtype][set] = kwargs
