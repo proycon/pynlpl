@@ -1216,7 +1216,7 @@ class Test2Sanity(unittest.TestCase):
 
 
     def test102i_declarations(self):
-        """Sanity Check - Declarations - miscellanious trouble"""
+        """Sanity Check - Declarations - miscellaneous trouble"""
         xml = """<?xml version="1.0"?>\n
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
