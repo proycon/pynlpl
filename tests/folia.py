@@ -1324,6 +1324,19 @@ class Test2Sanity(unittest.TestCase):
 
         self.assertEqual( next(doc["example.text.1"].select(folia.Gap)).datetime ,  folia.parse_datetime('2011-12-15T19:00') )
 
+    def test102m_declarations(self):
+        """Sanity Check - Declarations - Adding a declaration of a FoLiA v1.4 RDF Set Definition."""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml)
+        doc.declare(folia.AnnotationType.ENTITY, "https://github.com/proycon/folia/blob/master/setdefinitions/namedentities.foliaset.ttl", annotator='proycon' )
 
 
 
