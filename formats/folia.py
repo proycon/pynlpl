@@ -72,7 +72,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 #The FoLiA version
 FOLIAVERSION = "1.4.0"
 
-LIBVERSION = FOLIAVERSION + '.84' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.85' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
