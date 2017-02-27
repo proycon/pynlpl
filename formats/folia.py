@@ -7564,8 +7564,13 @@ def validate(filename,schema=None,deep=False):
     if not schema:
         schema = ElementTree.RelaxNG(relaxng())
 
+    try:
+        schema.assertValid(doc) #will raise exceptions
+    except Exception as e:
+        for error in schema.error_log:
+            print("Error on line " + str(error.line) + ": " + error.message, file=sys.stderr)
+        raise e
 
-    schema.assertValid(doc) #will raise exceptions
 
     if deep:
         doc = Document(tree=doc, deepvalidation=True)
