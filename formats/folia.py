@@ -72,7 +72,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 #The FoLiA version
 FOLIAVERSION = "1.4.0"
 
-LIBVERSION = FOLIAVERSION + '.85' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.86' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -7532,7 +7532,7 @@ def isncname(name):
     #not entirely according to specs http://www.w3.org/TR/REC-xml/#NT-Name , but simplified:
     for i, c in enumerate(name):
         if i == 0:
-            if not c.isalpha():
+            if not c.isalpha() and c != '_':
                 raise ValueError('Invalid XML NCName identifier: ' + name + ' (at position ' + str(i+1)+')')
         else:
             if not c.isalnum() and not (c in ['-','_','.']):
