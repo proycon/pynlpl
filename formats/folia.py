@@ -1264,15 +1264,10 @@ class AbstractElement(object):
         if not Class in parent.ACCEPTED_DATA:
             #Class is not in accepted data, but perhaps any of its ancestors is?
             found = False
-            c = Class
-            try:
-                while c.__base__:
-                    if c.__base__ in parent.ACCEPTED_DATA:
-                        found = True
-                        break
-                    c = c.__base__
-            except Exception:
-                pass
+            for c in Class.__mro__: #iterate over all base/super methods (automatically recurses)
+                if c is not Class and c in parent.ACCEPTED_DATA:
+                    found = True
+                    break
             if not found:
                 if raiseexceptions:
                     if parent.id:
