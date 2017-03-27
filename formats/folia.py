@@ -72,7 +72,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 #The FoLiA version
 FOLIAVERSION = "1.4.0"
 
-LIBVERSION = FOLIAVERSION + '.86' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.87' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -164,6 +164,9 @@ class UnresolvableTextContent(Exception):
     pass
 
 class MalformedXMLError(Exception):
+    pass
+
+class ParseError(Exception):
     pass
 
 class ModeError(Exception):
@@ -2407,7 +2410,10 @@ class AbstractElement(object):
             if not isinstance(subnode, ElementTree._Comment): #pylint: disable=protected-access
                 if subnode.tag.startswith('{' + NSFOLIA + '}'):
                     if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:],file=stderr)
-                    e = doc.parsexml(subnode, Class)
+                    try:
+                        e = doc.parsexml(subnode, Class)
+                    except Exception as e:
+                        raise ParseError("FoLiA exception in handling of <" + subnode.tag[len(NSFOLIA)+2:] + "> @ line " + str(subnode.sourceline) + ": [" + e.__class__.__name__ + "] " + str(e)) #Python 3 will preserve full original traceback, Python 2 does not
                     if e is not None:
                         args.append(e)
                     if (Class.TEXTCONTAINER or Class.PHONCONTAINER) and subnode.tail:
