@@ -2407,6 +2407,8 @@ class AbstractElement(object):
                     if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:],file=stderr)
                     try:
                         e = doc.parsexml(subnode, Class)
+                    except ParseError as e:
+                        raise #just re-raise deepest parseError
                     except Exception as e:
                         raise ParseError("FoLiA exception in handling of <" + subnode.tag[len(NSFOLIA)+2:] + "> @ line " + str(subnode.sourceline) + ": [" + e.__class__.__name__ + "] " + str(e)) #Python 3 will preserve full original traceback, Python 2 does not
                     if e is not None:
