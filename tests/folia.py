@@ -618,10 +618,10 @@ class Test2Sanity(unittest.TestCase):
         s = self.doc['sandbox.3.head']
         t = s.textcontent()
         self.assertEqual( len(t), 3)
-        self.assertEqual( t.text(), "De FoLiA developers zijn:")
+        self.assertEqual( t.text(), "De \nFoLiA developers zijn:")
         self.assertEqual( t[0], "De ")
         self.assertTrue( isinstance(t[1], folia.TextMarkupString) )
-        self.assertEqual( t[1].text(), "FoLiA developers")
+        self.assertEqual( t[1].text(), "\nFoLiA developers")
         self.assertEqual( t[2], " zijn:")
 
 
@@ -825,7 +825,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( t.count(folia.TextMarkupString), 1)
 
         st = next(t.select(folia.TextMarkupString))
-        self.assertEqual( st.text(), "FoLiA developers" ) #testing value (full text value)
+        self.assertEqual( st.text(), "\nFoLiA developers" ) #testing value (full text value)
 
         self.assertEqual( st.resolve(), self.doc['sandbox.3.str']) #testing resolving references
 
@@ -837,7 +837,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( st[0], self.doc['sandbox.3.str.bold'])
 
         #testing TextMarkup.text()
-        self.assertEqual( st[0].text(), 'FoLiA' )
+        self.assertEqual( st[0].text(), '\nFoLiA' )
 
         #resolving returns self if it's not a reference
         self.assertEqual( self.doc['sandbox.3.str.bold'].resolve(), self.doc['sandbox.3.str.bold'])
