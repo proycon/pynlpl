@@ -1072,7 +1072,9 @@ class Test2Sanity(unittest.TestCase):
     <gap class="X" set="extended-gap-set" />
   </text>
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
-        self.assertRaises( ValueError,  folia.Document, string=xml)
+        with self.assertRaises( folia.ParseError) as cm:
+            folia.Document(string=xml)
+        self.assertEqual(cm.exception.cause.__class__, ValueError)
 
 
     def test102c_declarations(self):
@@ -1109,7 +1111,9 @@ class Test2Sanity(unittest.TestCase):
     <gap class="Y" />
   </text>
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
-        self.assertRaises(ValueError,  folia.Document, string=xml )
+        with self.assertRaises( folia.ParseError) as cm:
+            folia.Document(string=xml)
+        self.assertEqual(cm.exception.cause.__class__, ValueError)
 
 
 
@@ -1130,7 +1134,9 @@ class Test2Sanity(unittest.TestCase):
     <gap class="Y" set="gip-set"/>
   </text>
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
-        self.assertRaises(ValueError,  folia.Document, string=xml )
+        with self.assertRaises( folia.ParseError) as cm:
+            folia.Document(string=xml)
+        self.assertEqual(cm.exception.cause.__class__, ValueError)
 
     def test102d3_declarations(self):
         """Sanity Check - Declarations - Ignore Duplicates"""
@@ -1164,7 +1170,9 @@ class Test2Sanity(unittest.TestCase):
     <gap class="X" set="extended-gap-set" />
   </text>
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
-        self.assertRaises( ValueError,  folia.Document, string=xml)
+        with self.assertRaises( folia.ParseError) as cm:
+            folia.Document(string=xml)
+        self.assertEqual(cm.exception.cause.__class__, ValueError)
 
     def test102f_declarations(self):
         """Sanity Check - Declarations - Declaration not needed"""
