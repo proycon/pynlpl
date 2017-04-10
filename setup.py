@@ -8,24 +8,6 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-if os.path.dirname(__file__) != "":
-    os.chdir(os.path.dirname(__file__))
-if not os.path.exists('pynlpl'):
-    print("Preparing build",file=sys.stderr)
-    if os.path.exists('build'):
-        os.system('rm -Rf build')
-    os.mkdir('build')
-    os.chdir('build')
-    if not os.path.exists('pynlpl'): os.mkdir('pynlpl')
-    os.system('cp -Rpf ../* pynlpl/ 2> /dev/null')
-    os.system('mv -f pynlpl/setup.py pynlpl/setup.cfg .')
-    os.system('cp -f pynlpl/README.rst .')
-    os.system('cp -f pynlpl/LICENSE .')
-    os.system('cp -f pynlpl/MANIFEST.in .')
-
-    #Do not include unfininished WIP modules:
-    os.system('rm -f pynlpl/formats/colibri.py pynlpl/formats/alpino.py pynlpl/foliaprocessing.py pynlpl/grammar.py')
-
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
@@ -41,7 +23,7 @@ if sys.version > '3':
 
 setup(
     name = "PyNLPl",
-    version = "1.1.8", #edit version in __init__.py as well and ensure tests/folia.py FOLIARELEASE points to the right version!
+    version = "1.1.9", #edit version in __init__.py as well and ensure tests/folia.py FOLIARELEASE points to the right version!
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
     description = ("PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl contains modules for basic tasks, clients for interfacting with server, and modules for parsing several file formats common in NLP, most notably FoLiA."),
