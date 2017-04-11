@@ -38,7 +38,9 @@ import re
 
 FOLIARELEASE = "v1.4.1.54"
 
-if os.path.exists('../../FoLiA'):
+if os.path.exists('../../../FoLiA'):
+    FOLIAPATH = '../../../FoLiA/'
+elif os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'
 elif os.path.exists('../FoLiA'):
     FOLIAPATH = '../FoLiA/'
