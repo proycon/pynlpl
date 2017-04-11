@@ -788,7 +788,8 @@ class AbstractElement(object):
             delimiter = ""
             s = ""
             for e in self:
-                if e.PRINTABLE and not isinstance(e, TextContent) and not isinstance(e, String):
+                #was: e.PRINTABLE and not isinstance(e, TextContent) and not isinstance(e, String):
+                if isinstance(e, (AbstractStructureElement, Correction, AbstractSpanAnnotation)):   #AbstractSpanAnnotation is needed when requesting text() on nested span annotations
                     try:
                         s += e.text(cls,retaintokenisation, delimiter,False,correctionhandling)
 
