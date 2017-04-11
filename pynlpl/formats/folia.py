@@ -788,7 +788,7 @@ class AbstractElement(object):
             delimiter = ""
             s = ""
             for e in self:
-                if e.PRINTABLE and not isinstance(e, TextContent) and not isinstance(e, String):
+                if isinstance(e, AbstractStructureElement) or isinstance(e, Correction):  #was: e.PRINTABLE and not isinstance(e, TextContent) and not isinstance(e, String):
                     try:
                         s += e.text(cls,retaintokenisation, delimiter,False,correctionhandling)
 
