@@ -65,6 +65,7 @@ global installations.
 
 This software may also be found in the certain Linux distributions, such as
 the latest versions as Debian/Ubuntu, as ``python-pynlpl`` and ``python3-pynlpl``.
+PyNLPL is also included in our `LaMachine <http://proycon.github.io/LaMachine>`_ distribution.
 
 Documentation
 --------------------
