@@ -36,7 +36,8 @@ import bz2
 import re
 
 
-FOLIARELEASE = "v1.4.1.54"
+#FOLIARELEASE = "v1.4.1.54"
+FOLIARELEASE = None #development version, do *NOT* release if this is set!
 
 if os.path.exists('../../../FoLiA'):
     FOLIAPATH = '../../../FoLiA/'
@@ -47,7 +48,10 @@ elif os.path.exists('../FoLiA'):
 else:
     FOLIAPATH = 'FoLiA'
     print("Downloading FoLiA",file=sys.stderr)
-    os.system("git clone https://github.com/proycon/folia.git FoLiA && cd FoLiA && git checkout tags/" + FOLIARELEASE + ' && cd ..')
+    if FOLIARELEASE:
+        os.system("git clone https://github.com/proycon/folia.git FoLiA && cd FoLiA && git checkout tags/" + FOLIARELEASE + ' && cd ..')
+    else:
+        os.system("git clone https://github.com/proycon/folia.git FoLiA")
 
 if 'TMPDIR' in os.environ:
     TMPDIR = os.environ['TMPDIR']
