@@ -35,7 +35,7 @@ The following modules are available:
   documents in `FoLiA <http://proycon.github.io/folia>`_ format (Format for Linguistic Annotation).
 - ``pynlpl.formats.fql`` - Extensive library for the FoLiA Query Language (FQL),
   built on top of ``pynlpl.formats.folia``. FQL is currently documented `here
-  <https://github.com/proycon/foliadocserve>`__. 
+  <https://github.com/proycon/foliadocserve>`__.
 - ``pynlpl.formats.cql`` - Parser for the Corpus Query Language (CQL), as also used by
   Corpus Workbench and Sketch Engine. Contains a convertor to FQL.
 - ``pynlpl.formats.giza`` - Module for reading GIZA++ word alignment data
@@ -50,8 +50,24 @@ The following modules are available:
   beam-search, hill climbing, A star, various variants of each)
 - ``pynlpl.statistics`` - Frequency lists, Levenshtein, common statistics and
   information theory functions
-- ``pynlpl.textprocessors`` - Simple tokeniser, n-gram extraction 
+- ``pynlpl.textprocessors`` - Simple tokeniser, n-gram extraction
 
+Installation
+--------------------
+
+Download and install the latest stable version directly from the Python Package
+Index with ``pip install pynlpl`` (or ``pip3`` for Python 3 on most
+systems). For global installations prepend ``sudo``.
+
+Alternatively, clone this repository and run ``python setup.py install`` (or
+``python3 setup.py install`` for Python 3 on most system. Prepend ``sudo`` for
+global installations.
+
+This software may also be found in the certain Linux distributions, such as
+the latest versions as Debian/Ubuntu, as ``python-pynlpl`` and ``python3-pynlpl``.
+
+Documentation
+--------------------
 
 API Documentation can be found `here <http://pynlpl.readthedocs.io/en/latest/>`__.
 
