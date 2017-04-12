@@ -3535,11 +3535,14 @@ class PhonContent(AbstractElement):
     #append is implemented, the default suffices
 
     def postappend(self):
-        """(Method for internal usage, see ``AbstractElement.postappend()``)"""
-        if isinstance(self.parent, Original):
-            if self.cls == 'current': self.cls = 'original' #pylint: disable=attribute-defined-outside-init
-
-        super(PhonContent, self).postappend()
+        super(PhonContent,self).postappend()
+        found = set()
+        for c in self.parent:
+            if isinstance(c,PhonContent):
+                if c.cls in found:
+                    raise DuplicateAnnotationError("Can not add multiple text content elements with the same class (" + c.cls + ") to the same structural element!")
+                else:
+                    found.add(c.cls)
 
 
     def finddefaultreference(self):
