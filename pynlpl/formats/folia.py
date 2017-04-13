@@ -149,6 +149,10 @@ class NoSuchPhon(Exception):
     """Exception raised when the requested type of phonetic content does not exist for the selected element"""
     pass
 
+class InconsistentText(Exception):
+    """Exception raised when the the text of a structural element is inconsistent with text on deeper levels"""
+    pass
+
 class DuplicateAnnotationError(Exception):
     pass
 
@@ -739,6 +743,21 @@ class AbstractElement(object):
     def stricttext(self, cls='current'):
         """Alias for :meth:`text` with ``strict=True``"""
         return self.text(cls,strict=True)
+
+    def textvalidation(self, warnonly=True): #warnonly will change at some point in the future to be stricter
+        valid = True
+        for cls in self.doc.textclasses:
+            if self.hastext(cls, strict=True):
+                stricttext = self.text(cls,retaintokenisation=False,strict=True)
+                deeptext = self.text(cls,retaintokenisation=False,strict=False)
+                if stricttext != deeptext:
+                    valid = False
+                    msg = "Text for " + self.__class__.__name__ + ", ID " + str(self.id) + " is inconsistent: expected: " + deeptext
+                    if warnonly:
+                        print("TEXT VALIDATION ERROR: " + msg,file=sys.stderr)
+                    else:
+                        raise InconsistentText(msg)
+        return valid
 
     def toktext(self,cls='current'):
         """Alias for :meth:`text` with ``retaintokenisation=True``"""
@@ -2996,6 +3015,11 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
         self._setmaxid(e)
         return e
 
+
+    def postappend(self):
+        super(AbstractStructureElement,self).postappend()
+        if self.doc and self.doc.textvalidation:
+            self.doc.textvalidationerrors += int(not self.textvalidation())
 
     def words(self, index = None):
         """Returns a generator of Word elements found (recursively) under this element.
@@ -6042,6 +6066,7 @@ class Document(object):
             setdefinition (dict):  A dictionary of set definitions, the key corresponds to the set name, the value is a SetDefinition instance
             loadsetdefinitions (bool):  download and load set definitions (default: False)
             deepvalidation (bool): Do deep validation of the document (default: False), implies ``loadsetdefinitions``
+            textvalidation (bool): Do validation of text consistency (default: False)``
             preparsexmlcallback (function):  Callback for a function taking one argument (``node``, an lxml node). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort parsing this element (and all its children)
             parsexmlcallback (function):  Callback for a function taking one argument (``element``, a FoLiA element). Will be called whenever an XML element is parsed into FoLiA. The function should return an instance inherited from folia.AbstractElement, or None to abort adding this element (and all its children)
             debug (bool): Boolean to enable/disable debug
@@ -6130,6 +6155,13 @@ class Document(object):
 
         if self.deepvalidation:
             self.loadsetdefinitions = True
+
+
+        if 'textvalidation' in kwargs:
+            self.textvalidation = bool(kwargs['textvalidation'])
+        else:
+            self.textvalidation = False
+        self.textvalidationerrors = 0 #will count the number of text validation errors
 
         if 'allowadhocsets' in kwargs:
             self.allowadhocsets = bool(kwargs['allowadhocsets'])
