@@ -149,6 +149,10 @@ class NoSuchPhon(Exception):
     """Exception raised when the requested type of phonetic content does not exist for the selected element"""
     pass
 
+class InconsistentText(Exception):
+    """Exception raised when the text on a higher level does not corresponds with text on a deeper level, including offset information"""
+    pass
+
 class DuplicateAnnotationError(Exception):
     pass
 
@@ -588,6 +592,97 @@ def commonancestors(Class, *args):
     if commonancestors:
         for commonancestor in commonancestors:
             yield commonancestor
+
+def gettextsequence(element, cls, validationonly=False, debug=False):
+    """Auxiliary generator function used in text validation/reconstruction: gets all the text for a specific element as a sequence of (str,element) tuples, with element being the element that produced the text (or None for delimiters)"""
+    assert element.PRINTABLE
+    if debug: print(" Getting text for ", repr(element),file=sys.stderr)
+    if element.TEXTCONTAINER:
+        if debug: print("  Found textcontainer ", repr(element), "in", repr(element.ancestor(AbstractStructureElement)),file=sys.stderr)
+
+        if isinstance(element,TextContent) and element.cls != cls:
+            if debug: print("  Class mismatch", element.cls,"vs",cls,file=sys.stderr)
+            raise StopIteration
+
+        for e in element:
+            if isinstance(e, str):
+                if debug: print("  Found: ", e,file=sys.stderr)
+                yield e, element
+            else: #markup (don't recurse)
+                if debug: print("  Found markup: ", repr(e),file=sys.stderr)
+                yield e, element
+                yield e.gettextdelimiter(), None
+
+        yield None,None #Signals a break after this, if we have text content we needn't delve deeper
+    else:
+        #Do we have a text content?
+        foundtext = False
+
+        if not validationonly:
+            if debug: print(" Looking for text in ", repr(element),file=sys.stderr)
+            for e in element:
+                if isinstance(e, TextContent) and e.cls == cls:
+                    foundtext = True
+                    if debug: print(" Found textcontent",file=sys.stderr)
+                    for x in gettextsequence(e, cls, validationonly, debug):
+                        yield x
+                elif isinstance(e, Correction):
+                    foundtextincorrection =False
+                    try:
+                        if e.hasnew() and e.new().textcontent(cls):
+                            foundtextincorrection = True
+                            if debug: print(" Found text in correction/new",file=sys.stderr)
+                            for x in gettextsequence(e.new().textcontent(cls), cls, validationonly, debug):
+                                yield x
+                    except NoSuchText:
+                        pass
+                    except NoSuchAnnotation:
+                        pass
+                    if not foundtextincorrection:
+                        try:
+                            if e.hascurrent() and e.current().textcontent(cls):
+                                foundtextincorrection = True
+                                if debug: print(" Found text in correction/current",file=sys.stderr)
+                                for x in gettextsequence(e.current().textcontent(cls), cls, validationonly, debug):
+                                    yield x
+                        except NoSuchText:
+                            pass
+                        except NoSuchAnnotation:
+                            pass
+                    if not foundtextincorrection:
+                        try:
+                            if e.hasoriginal() and e.original().textcontent(cls):
+                                foundtextincorrection = True
+                                if debug: print(" Found text in correction/original",file=sys.stderr)
+                                for x in gettextsequence(e.current().textcontent(cls), cls, debug):
+                                    yield x
+                        except NoSuchText:
+                            pass
+                        except NoSuchAnnotation:
+                            pass
+                    foundtext = foundtext or foundtextincorrection
+
+        if not foundtext:
+            if debug: print(" Looking for text in children of ", repr(element),file=sys.stderr)
+            for e in element:
+                if e.PRINTABLE and not isinstance(e, String):
+                    for x in gettextsequence(e, cls, validationonly, debug):
+                        foundtext = True
+                        if x[0] is None:
+                            if debug: print(" (Text found, no need to delve deeper)", repr(element),file=sys.stderr)
+                            break
+                        yield x
+                    #if abort:
+                    #    print(" Abort signal received, not processing further elements in ", repr(element),file=sys.stderr)
+                    #    break
+                if foundtext:
+                    delimiter = e.gettextdelimiter()
+                    if debug: print(" Got delimiter " + repr(delimiter) + " from " + repr(element), file=sys.stderr)
+                    yield e.gettextdelimiter(), None
+                elif isinstance(e, AbstractStructureElement) and not isinstance(e, Linebreak) and not isinstance(e, Whitespace):
+                    raise NoSuchText("No text was found in the scope of the structure element")
+
+
 
 class AbstractElement(object):
     """Abstract base class from which all FoLiA elements are derived.
@@ -2372,6 +2467,95 @@ class AbstractElement(object):
             return E.define( E.element(E.text(), *(preamble + attribs), **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
         else:
             return E.define( E.element(*(preamble + attribs), **{'name': cls.XMLTAG}), name=cls.XMLTAG, ns=NSFOLIA)
+
+    def autosettext(self, cls='current', offsets=True, forceoffsetref=False, validationonly=False, debug=False):
+        """Automatically sets the text on an element based on the text of deeper elements. Used for text validation/reconstruction. Also sets or validates offset information on deeper elements.
+
+        Parameters:
+            cls (str): The class of the text content to process, defaults to ``current``.
+            offsets (bool): Set (or check) offset information (default True)
+            forceoffsetref (bool): Force deeper offsets to explicitly refer to the elements under consideration (default False)
+            validationonly (bool): Only validate, do not actually set text or offsets (default False)
+        """
+        assert self.PRINTABLE
+
+        if validationonly and not self.hastext(strict=True):
+            #nothing to do
+            return None
+
+        if debug: print("In autosettext for  ", repr(self),file=sys.stderr)
+
+        #get the raw text sequence
+        try:
+            textsequence = list(gettextsequence(self,cls,validationonly, debug))
+        except NoSuchText:
+            return None
+
+        if debug: print("Raw text:  ", textsequence,file=sys.stderr)
+
+        if textsequence:
+            newtextsequence = []
+            offset = 0
+            prevsrc = None
+            for i, (e, src) in enumerate(textsequence):
+                if e: #filter out empty strings
+                    if isinstance(e,str):
+                        length = len(e)
+
+                        #only whitespace from here on?
+                        if not e.strip():
+                            onlywhitespace = True
+                            for x,y in textsequence[i+1:]:
+                                if y is not None:
+                                    onlywhitespace = False
+                            if onlywhitespace:
+                                break
+                    elif isinstance(e, AbstractTextMarkup):
+                        e = e.copy(idsuffix=True)
+                        length = len(e.text())
+
+                    if src and offsets and src is not prevsrc:
+                        ancestors = list(src.ancestors(AbstractStructureElement))
+                        if len(ancestors) >= 2 and ancestors[1] is self:
+                            if debug: print("Setting offset for text in  " + repr(ancestors[0]) + " to " + str(offset) + ", reference " + repr(self) ,file=sys.stderr)
+                            if validationonly:
+                                if src.offset is not None and src.offset != offset:
+                                    raise InconsistentText("Text for element " + src.__class__.__name__ + ", ID " + str(src.id) + " has wrong offset, got " + str(src.offset) + ", expected " + str(offset))
+                            else:
+                                src.offset = offset
+                        elif forceoffsetref:
+                            if validationonly:
+                                if src.offset is not None and src.offset != offset:
+                                    raise InconsistentText("Text for element " + src.__class__.__name__ + ", ID " + str(src.id) + " has wrong offset, got " + str(src.offset) + ", expected " + str(offset))
+                            else:
+                                src.offset = offset
+                                src.ref = self
+                        prevsrc = src
+
+                    newtextsequence.append(e)
+                    offset += length
+
+            if newtextsequence:
+                if validationonly:
+                    if debug: print("Text for " + repr(self) + " should be:" , newtextsequence, file=sys.stderr)
+                    reconstructedtext = TextContent(self.doc, *newtextsequence, cls=cls).text()
+                    if reconstructedtext != self.text(cls,strict=True):
+                        raise InconsistentText("Text for element " + self.__class__.__name__ + ", ID " + str(self.id) + " is not consistent with text on deeper layers, expected: " + reconstructedtext)
+                    return reconstructedtext #returns TextContent but not appended
+                else:
+                    if debug: print("Setting text for " + repr(self) + ":" , newtextsequence, file=sys.stderr)
+                    return self.replace(TextContent, *newtextsequence, cls=cls) #appends if new
+
+    def textvalidation(self, debug=False):
+        if not isinstance(self, AbstractSpanAnnotation): #prevent infinite recursion into wrefs
+            for e in self:
+                if isinstance(e, AbstractElement):
+                    if debug: print("[textvalidation] Recursing into ", repr(e),file=sys.stderr)
+                    e.textvalidation(debug=debug)
+            if self.PRINTABLE and isinstance(self, AbstractStructureElement):
+                for cls in self.doc.textclasses:
+                    if self.hastext(cls, strict=True):
+                        self.autosettext(cls, validationonly=True, debug=debug)
 
     @classmethod
     def parsexml(Class, node, doc, **kwargs): #pylint: disable=bad-classmethod-argument
@@ -7131,14 +7315,10 @@ class Document(object):
                 return False
         return True
 
-
-
-
-
-
-
-
-
+    def textvalidation(self,debug=False):
+        """Perform text validation (checks consistency of text elements and offsets)"""
+        for e in self.data:
+            e.textvalidation(debug=debug)
 
 
 #==============================================================================
@@ -7589,6 +7769,8 @@ def validate(filename,schema=None,deep=False):
 
     if deep:
         doc = Document(tree=doc, deepvalidation=True)
+
+
 
 #================================= FOLIA SPECIFICATION ==========================================================
 
