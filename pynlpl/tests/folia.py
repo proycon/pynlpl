@@ -18,7 +18,6 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 
-from pynlpl.common import u, isstring
 import sys
 import os
 import unittest
@@ -26,6 +25,10 @@ import io
 import gzip
 import bz2
 import re
+from datetime import datetime
+import lxml.objectify
+from pynlpl.common import u, isstring
+from pynlpl.formats import folia
 if sys.version < '3':
     from codecs import getwriter
     stderr = getwriter('utf-8')(sys.stderr)
@@ -60,9 +63,6 @@ if sys.version < '3':
     from StringIO import StringIO
 else:
     from io import StringIO, BytesIO
-from datetime import datetime
-import lxml.objectify
-from pynlpl.formats import folia
 if folia.LXE:
     from lxml import etree as ElementTree
 else:
@@ -99,7 +99,6 @@ class Test1Read(unittest.TestCase):
 
     def test1_readfromfile(self):
         """Reading from file"""
-        global FOLIAEXAMPLE
         #write example to file
         f = io.open(os.path.join(TMPDIR,'foliatest.xml'),'w',encoding='utf-8')
         f.write(FOLIAEXAMPLE)
@@ -114,7 +113,6 @@ class Test1Read(unittest.TestCase):
 
     def test1a_readfromfile(self):
         """Reading from GZ file"""
-        global FOLIAEXAMPLE
         #write example to file
         f = gzip.GzipFile(os.path.join(TMPDIR,'foliatest.xml.gz'),'w')
         f.write(FOLIAEXAMPLE.encode('utf-8'))
@@ -130,7 +128,6 @@ class Test1Read(unittest.TestCase):
 
     def test1b_readfromfile(self):
         """Reading from BZ2 file"""
-        global FOLIAEXAMPLE
         #write example to file
         f = bz2.BZ2File(os.path.join(TMPDIR,'foliatest.xml.bz2'),'w')
         f.write(FOLIAEXAMPLE.encode('utf-8'))
@@ -146,19 +143,16 @@ class Test1Read(unittest.TestCase):
 
     def test2_readfromstring(self):
         """Reading from string (unicode)"""
-        global FOLIAEXAMPLE
         doc = folia.Document(string=FOLIAEXAMPLE)
         self.assertTrue(isinstance(doc,folia.Document))
 
-    def test2_readfromstring(self):
+    def test2b_readfromstring(self):
         """Reading from string (bytes)"""
-        global FOLIAEXAMPLE
         doc = folia.Document(string=FOLIAEXAMPLE.encode('utf-8'))
         self.assertTrue(isinstance(doc,folia.Document))
 
     def test3_readfromstring(self):
         """Reading from pre-parsed XML tree (as unicode(Py2)/str(Py3) obj)"""
-        global FOLIAEXAMPLE
         if sys.version < '3':
             doc = folia.Document(tree=ElementTree.parse(StringIO(FOLIAEXAMPLE.encode('utf-8'))))
         else:
@@ -168,7 +162,6 @@ class Test1Read(unittest.TestCase):
 
     def test4_readdcoi(self):
         """Reading D-Coi file"""
-        global DCOIEXAMPLE
         doc = folia.Document(string=DCOIEXAMPLE)
         #doc = folia.Document(tree=lxml.etree.parse(StringIO(DCOIEXAMPLE.encode('iso-8859-15'))))
         self.assertTrue(isinstance(doc,folia.Document))
@@ -209,7 +202,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( w.text() , "Stemma" )
         self.assertEqual( str(w) , "Stemma" ) #should be unicode object also in Py2!
         if sys.version < '3':
-            self.assertEqual( unicode(w) , "Stemma" )
+            self.assertEqual( unicode(w) , "Stemma" ) #pylint: disable=undefined-variable
 
 
     def test005_last_word(self):
@@ -1191,7 +1184,7 @@ class Test2Sanity(unittest.TestCase):
     <gap />
   </text>
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
-        doc = folia.Document(string=xml)
+        folia.Document(string=xml)
 
 
     def test102g_declarations(self):
@@ -1521,7 +1514,6 @@ class Test2Sanity(unittest.TestCase):
 class Test4Edit(unittest.TestCase):
 
     def setUp(self):
-        global FOLIAEXAMPLE
         self.doc = folia.Document(string=FOLIAEXAMPLE)
 
     def test001_addsentence(self):
@@ -1587,7 +1579,7 @@ class Test4Edit(unittest.TestCase):
         s.append(folia.Word,'een')
         s.append(folia.Word,'nieuwe')
         w = s.append(folia.Word,'zin')
-        w2 = s.append(folia.Word,'.',cls='PUNCTUATION')
+        s.append(folia.Word,'.',cls='PUNCTUATION')
 
         self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.9')
         self.assertEqual( len(list(s.words())), 6 ) #number of words in sentence
@@ -1616,7 +1608,7 @@ class Test4Edit(unittest.TestCase):
         s.add(folia.Word,'een')
         s.add(folia.Word,'nieuwe')
         w = s.add(folia.Word,'zin')
-        w2 = s.add(folia.Word,'.',cls='PUNCTUATION')
+        s.add(folia.Word,'.',cls='PUNCTUATION')
 
         self.assertEqual( len(list(s.words())), 6 ) #number of words in sentence
         self.assertEqual( w.text(), 'zin' ) #text check
@@ -1718,7 +1710,7 @@ class Test4Edit(unittest.TestCase):
         #reobtaining it:
         alt = list(w.alternatives()) #all alternatives
 
-        set = self.doc.defaultset(folia.AnnotationType.POS)
+        set = self.doc.defaultset(folia.AnnotationType.POS) #pylint: disable=redefined-builtin
 
         alt2 = list(w.alternatives(folia.PosAnnotation, set))
 
@@ -2217,7 +2209,6 @@ class Test5Correction(unittest.TestCase):
 
     def test005_reusecorrection(self):
         """Correction - Re-using a correction with only suggestions"""
-        global FOLIAEXAMPLE
         self.doc = folia.Document(string=FOLIAEXAMPLE)
 
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
@@ -2275,7 +2266,6 @@ class Test5Correction(unittest.TestCase):
 
 class Test6Query(unittest.TestCase):
     def setUp(self):
-        global FOLIAEXAMPLE
         self.doc = folia.Document(string=FOLIAEXAMPLE)
 
     def test001_findwords_simple(self):
@@ -2432,7 +2422,7 @@ class Test9Reader(unittest.TestCase):
     def test000_worditer(self):
         """Stream reader - Iterating over words"""
         count = 0
-        for word in self.reader:
+        for _ in self.reader:
             count += 1
         self.assertEqual(count, 192)
 
@@ -2524,12 +2514,11 @@ class Test8Validation(unittest.TestCase):
 class Test9Validation(unittest.TestCase):
     def test001_deepvalidation(self):
         """Validation - Deep Validation"""
-        doc = folia.Document(file=os.path.join(FOLIAPATH,'test/example.deep.xml'), deepvalidation=True, allowadhocsets=True)
+        folia.Document(file=os.path.join(FOLIAPATH,'test/example.deep.xml'), deepvalidation=True, allowadhocsets=True)
 
 
-f = io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8')
-FOLIAEXAMPLE = f.read()
-f.close()
+with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
+    FOLIAEXAMPLE = foliaexample_f.read()
 
 #We cheat, by setting the generator and version attributes to match the library, so xmldiff doesn't complain when we compare against this reference
 FOLIAEXAMPLE = re.sub(r' version="[^"]*" generator="[^"]*"', ' version="' + folia.FOLIAVERSION + '" generator="pynlpl.formats.folia-v' + folia.LIBVERSION + '"', FOLIAEXAMPLE, re.MULTILINE)
