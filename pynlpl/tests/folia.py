@@ -17,16 +17,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
-from pynlpl.common import u, isstring
-import sys
-if sys.version < '3':
-    from codecs import getwriter
-    stderr = getwriter('utf-8')(sys.stderr)
-    stdout = getwriter('utf-8')(sys.stdout)
-else:
-    stderr = sys.stderr
-    stdout = sys.stdout
 
+from pynlpl.common import u, isstring
 import sys
 import os
 import unittest
@@ -34,7 +26,13 @@ import io
 import gzip
 import bz2
 import re
-
+if sys.version < '3':
+    from codecs import getwriter
+    stderr = getwriter('utf-8')(sys.stderr)
+    stdout = getwriter('utf-8')(sys.stdout)
+else:
+    stderr = sys.stderr
+    stdout = sys.stdout
 
 #FOLIARELEASE = "v1.4.1.54"
 FOLIARELEASE = None #development version, do *NOT* release if this is set!
@@ -2067,217 +2065,211 @@ class Test4Edit(unittest.TestCase):
     #    self.assertEqual( w.text(), 'stippellijn')
 
 class Test4Create(unittest.TestCase):
-        def test001_create(self):
-            """Creating a FoLiA Document from scratch"""
-            self.doc = folia.Document(id='example')
-            self.doc.declare(folia.AnnotationType.TOKEN, 'adhocset',annotator='proycon')
+    def test001_create(self):
+        """Creating a FoLiA Document from scratch"""
+        self.doc = folia.Document(id='example')
+        self.doc.declare(folia.AnnotationType.TOKEN, 'adhocset',annotator='proycon')
 
-            self.assertEqual(self.doc.defaultset(folia.AnnotationType.TOKEN), 'adhocset')
-            self.assertEqual(self.doc.defaultannotator(folia.AnnotationType.TOKEN, 'adhocset'), 'proycon')
+        self.assertEqual(self.doc.defaultset(folia.AnnotationType.TOKEN), 'adhocset')
+        self.assertEqual(self.doc.defaultannotator(folia.AnnotationType.TOKEN, 'adhocset'), 'proycon')
 
-            text = folia.Text(self.doc, id=self.doc.id + '.text.1')
-            self.doc.append( text )
+        text = folia.Text(self.doc, id=self.doc.id + '.text.1')
+        self.doc.append( text )
 
-            text.append(
-                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="online"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
-                ]
-                )
-            )
+        text.append(
+            folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="online"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
+            ])
+        )
 
-            self.assertEqual( len(self.doc.index[self.doc.id + '.s.1']), 5)
+        self.assertEqual( len(self.doc.index[self.doc.id + '.s.1']), 5)
 
 class Test5Correction(unittest.TestCase):
-        def setUp(self):
-            self.doc = folia.Document(id='example')
-            self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')
-            self.text = folia.Text(self.doc, id=self.doc.id + '.text.1')
-            self.doc.append( self.text )
+    def setUp(self):
+        self.doc = folia.Document(id='example')
+        self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')
+        self.text = folia.Text(self.doc, id=self.doc.id + '.text.1')
+        self.doc.append( self.text )
 
 
-        def test001_splitcorrection(self):
-            """Correction - Split correction"""
+    def test001_splitcorrection(self):
+        """Correction - Split correction"""
 
-            self.text.append(
-                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="online"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
-                ]
-                )
-            )
-
-
-            w = self.doc.index[self.doc.id + '.s.1.w.4']
-
-            w.split( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
-
-            s = self.doc.index[self.doc.id + '.s.1']
-            self.assertEqual( s.words(-3).text(), 'on' )
-            self.assertEqual( s.words(-2).text(), 'line' )
-            self.assertEqual( s.text(), 'De site staat on line .' )
-            self.assertEqual( len(list(s.words())), 6 )
-            self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4a"><t>on</t></w><w xml:id="example.s.1.w.4b"><t>line</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>online</t></w></original></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
+        self.text.append(
+            folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="online"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
+            ])
+        )
 
 
-        def test001_splitcorrection2(self):
-            """Correction - Split suggestion"""
+        w = self.doc.index[self.doc.id + '.s.1.w.4']
 
-            self.text.append(
-                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="online"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
-                ]
-                )
-            )
+        w.split( folia.Word(self.doc, id=self.doc.id + '.s.1.w.4a', text="on"), folia.Word(self.doc, id=self.doc.id + '.s.1.w.4b', text="line") )
+
+        s = self.doc.index[self.doc.id + '.s.1']
+        self.assertEqual( s.words(-3).text(), 'on' )
+        self.assertEqual( s.words(-2).text(), 'line' )
+        self.assertEqual( s.text(), 'De site staat on line .' )
+        self.assertEqual( len(list(s.words())), 6 )
+        self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4a"><t>on</t></w><w xml:id="example.s.1.w.4b"><t>line</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>online</t></w></original></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
 
 
-            w = self.doc.index[self.doc.id + '.s.1.w.4']
+    def test001_splitcorrection2(self):
+        """Correction - Split suggestion"""
 
-            s = self.doc.index[self.doc.id + '.s.1']
-            w.split( folia.Word(self.doc, generate_id_in=s, text="on"), folia.Word(self.doc, generate_id_in=s, text="line"), suggest=True )
-
-            self.assertEqual( len(list(s.words())), 5 )
-            self.assertEqual( s.words(-2).text(), 'online' )
-            self.assertEqual( s.text(), 'De site staat online .' )
-
-            self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><current><w xml:id="example.s.1.w.4"><t>online</t></w></current><suggestion auth="no"><w xml:id="example.s.1.w.6"><t>on</t></w><w xml:id="example.s.1.w.7"><t>line</t></w></suggestion></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
-
-
-        def test002_mergecorrection(self):
-            """Correction - Merge corrections"""
-            self.text.append(
-                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="on"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text="line"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
-                ]
-                )
-            )
-
-            s = self.doc.index[self.doc.id + '.s.1']
+        self.text.append(
+            folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="online"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
+            ])
+        )
 
 
-            s.mergewords( folia.Word(self.doc, 'online', id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.4'], self.doc.index[self.doc.id + '.s.1.w.5'] )
+        w = self.doc.index[self.doc.id + '.s.1.w.4']
 
-            self.assertEqual( len(list(s.words())), 5 )
-            self.assertEqual( s.text(), 'De site staat online .')
+        s = self.doc.index[self.doc.id + '.s.1']
+        w.split( folia.Word(self.doc, generate_id_in=s, text="on"), folia.Word(self.doc, generate_id_in=s, text="line"), suggest=True )
 
-            #incorrection() test, check if newly added word correctly reports being part of a correction
-            w = self.doc.index[self.doc.id + '.s.1.w.4-5']
-            self.assertTrue( isinstance(w.incorrection(), folia.Correction) ) #incorrection return the correction the word is part of, or None if not part of a correction,
+        self.assertEqual( len(list(s.words())), 5 )
+        self.assertEqual( s.words(-2).text(), 'online' )
+        self.assertEqual( s.text(), 'De site staat online .' )
+
+        self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><current><w xml:id="example.s.1.w.4"><t>online</t></w></current><suggestion auth="no"><w xml:id="example.s.1.w.6"><t>on</t></w><w xml:id="example.s.1.w.7"><t>line</t></w></suggestion></correction><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
 
 
-            self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4-5"><t>online</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w></original></correction><w xml:id="example.s.1.w.6"><t>.</t></w></s>'))
+    def test002_mergecorrection(self):
+        """Correction - Merge corrections"""
+        self.text.append(
+            folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="on"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text="line"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
+            ])
+        )
+
+        s = self.doc.index[self.doc.id + '.s.1']
 
 
-        def test003_deletecorrection(self):
-            """Correction - Deletion"""
+        s.mergewords( folia.Word(self.doc, 'online', id=self.doc.id + '.s.1.w.4-5') , self.doc.index[self.doc.id + '.s.1.w.4'], self.doc.index[self.doc.id + '.s.1.w.5'] )
 
-            self.text.append(
-                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="Ik"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="zie"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="een"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="groot"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text="huis"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
-                ]
-                )
-            )
-            s = self.doc.index[self.doc.id + '.s.1']
-            s.deleteword(self.doc.index[self.doc.id + '.s.1.w.4'])
-            self.assertEqual( len(list(s.words())), 5 )
-            self.assertEqual( s.text(), 'Ik zie een huis .')
+        self.assertEqual( len(list(s.words())), 5 )
+        self.assertEqual( s.text(), 'De site staat online .')
 
-            self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new/><original auth="no"><w xml:id="example.s.1.w.4"><t>groot</t></w></original></correction><w xml:id="example.s.1.w.5"><t>huis</t></w><w xml:id="example.s.1.w.6"><t>.</t></w></s>') )
+        #incorrection() test, check if newly added word correctly reports being part of a correction
+        w = self.doc.index[self.doc.id + '.s.1.w.4-5']
+        self.assertTrue( isinstance(w.incorrection(), folia.Correction) ) #incorrection return the correction the word is part of, or None if not part of a correction,
 
-        def test004_insertcorrection(self):
-            """Correction - Insert"""
-            self.text.append(
-                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="Ik"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="zie"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="een"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="huis"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
-                ]
-                )
-            )
-            s = self.doc.index[self.doc.id + '.s.1']
-            s.insertword( folia.Word(self.doc, id=self.doc.id+'.s.1.w.3b',text='groot'),  self.doc.index[self.doc.id + '.s.1.w.3'])
-            self.assertEqual( len(list(s.words())), 6 )
 
-            self.assertEqual( s.text(), 'Ik zie een groot huis .')
-            self.assertTrue( xmlcheck( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.3b"><t>groot</t></w></new></correction><w xml:id="example.s.1.w.4"><t>huis</t></w><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
+        self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.4-5"><t>online</t></w></new><original auth="no"><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w></original></correction><w xml:id="example.s.1.w.6"><t>.</t></w></s>'))
 
-        def test005_reusecorrection(self):
-            """Correction - Re-using a correction with only suggestions"""
-            global FOLIAEXAMPLE
-            self.doc = folia.Document(string=FOLIAEXAMPLE)
 
-            w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
-            w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
-            c = w.annotation(folia.Correction)
+    def test003_deletecorrection(self):
+        """Correction - Deletion"""
 
-            self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
-            self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
-            self.assertEqual( w.text(), 'stippelijn')
+        self.text.append(
+            folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="Ik"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="zie"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="een"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="groot"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text="huis"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
+            ])
+        )
+        s = self.doc.index[self.doc.id + '.s.1']
+        s.deleteword(self.doc.index[self.doc.id + '.s.1.w.4'])
+        self.assertEqual( len(list(s.words())), 5 )
+        self.assertEqual( s.text(), 'Ik zie een huis .')
 
-            w.correct(new='stippellijn',set='corrections',cls='spelling',annotator='John Doe', annotatortype=folia.AnnotatorType.MANUAL,reuse=c.id)
+        self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new/><original auth="no"><w xml:id="example.s.1.w.4"><t>groot</t></w></original></correction><w xml:id="example.s.1.w.5"><t>huis</t></w><w xml:id="example.s.1.w.6"><t>.</t></w></s>') )
 
-            self.assertEqual( w.text(), 'stippellijn')
-            self.assertEqual( len(list(w.annotations(folia.Correction))), 1 )
-            self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
-            self.assertEqual( w.annotation(folia.Correction).suggestions(0).annotator , 'testscript' )
-            self.assertEqual( w.annotation(folia.Correction).suggestions(0).annotatortype , folia.AnnotatorType.AUTO)
-            self.assertEqual( w.annotation(folia.Correction).new(0).text() , 'stippellijn' )
-            self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
-            self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
+    def test004_insertcorrection(self):
+        """Correction - Insert"""
+        self.text.append(
+            folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="Ik"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="zie"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="een"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="huis"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text=".")
+            ])
+        )
+        s = self.doc.index[self.doc.id + '.s.1']
+        s.insertword( folia.Word(self.doc, id=self.doc.id+'.s.1.w.3b',text='groot'),  self.doc.index[self.doc.id + '.s.1.w.3'])
+        self.assertEqual( len(list(s.words())), 6 )
 
-            self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" auth="no" annotatortype="auto"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
+        self.assertEqual( s.text(), 'Ik zie een groot huis .')
+        self.assertTrue( xmlcheck( s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>Ik</t></w><w xml:id="example.s.1.w.2"><t>zie</t></w><w xml:id="example.s.1.w.3"><t>een</t></w><correction xml:id="example.s.1.correction.1"><new><w xml:id="example.s.1.w.3b"><t>groot</t></w></new></correction><w xml:id="example.s.1.w.4"><t>huis</t></w><w xml:id="example.s.1.w.5"><t>.</t></w></s>'))
 
-        def test006_deletionsuggestion(self):
-            """Correction - Suggestion for deletion with parent merge suggestion"""
-            self.text.append(
-                folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="on"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text="line"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
-                ]),
-            )
-            self.text.append(
-                folia.Sentence(self.doc,id=self.doc.id + '.s.2', contents=[
-                    folia.Word(self.doc,id=self.doc.id + '.s.2.w.1', text="sinds"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.2.w.2', text="vorige"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.2.w.3', text="week"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.2.w.4', text="zondag"),
-                    folia.Word(self.doc,id=self.doc.id + '.s.2.w.6', text=".")
-                ])
-            )
+    def test005_reusecorrection(self):
+        """Correction - Re-using a correction with only suggestions"""
+        global FOLIAEXAMPLE
+        self.doc = folia.Document(string=FOLIAEXAMPLE)
 
-            s = self.doc.index[self.doc.id + '.s.1']
-            s2 = self.doc.index[self.doc.id + '.s.2']
-            w = self.doc.index[self.doc.id + '.s.1.w.6']
-            s.remove(w)
-            s.append( folia.Correction(self.doc, folia.Current(self.doc, w), folia.Suggestion(self.doc, merge=s2.id)) )
+        w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
+        w.correct(suggestion='stippellijn', set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
+        c = w.annotation(folia.Correction)
 
-            self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w><correction><current><w xml:id="example.s.1.w.6"><t>.</t></w></current><suggestion merge="example.s.2" auth="no"/></correction></s>'))
+        self.assertTrue( isinstance(w.annotation(folia.Correction), folia.Correction) )
+        self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
+        self.assertEqual( w.text(), 'stippelijn')
+
+        w.correct(new='stippellijn',set='corrections',cls='spelling',annotator='John Doe', annotatortype=folia.AnnotatorType.MANUAL,reuse=c.id)
+
+        self.assertEqual( w.text(), 'stippellijn')
+        self.assertEqual( len(list(w.annotations(folia.Correction))), 1 )
+        self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
+        self.assertEqual( w.annotation(folia.Correction).suggestions(0).annotator , 'testscript' )
+        self.assertEqual( w.annotation(folia.Correction).suggestions(0).annotatortype , folia.AnnotatorType.AUTO)
+        self.assertEqual( w.annotation(folia.Correction).new(0).text() , 'stippellijn' )
+        self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
+        self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
+
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" auth="no" annotatortype="auto"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
+
+    def test006_deletionsuggestion(self):
+        """Correction - Suggestion for deletion with parent merge suggestion"""
+        self.text.append(
+            folia.Sentence(self.doc,id=self.doc.id + '.s.1', contents=[
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.1', text="De"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.2', text="site"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.3', text="staat"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.4', text="on"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.5', text="line"),
+                folia.Word(self.doc,id=self.doc.id + '.s.1.w.6', text=".")
+            ]),
+        )
+        self.text.append(
+            folia.Sentence(self.doc,id=self.doc.id + '.s.2', contents=[
+                folia.Word(self.doc,id=self.doc.id + '.s.2.w.1', text="sinds"),
+                folia.Word(self.doc,id=self.doc.id + '.s.2.w.2', text="vorige"),
+                folia.Word(self.doc,id=self.doc.id + '.s.2.w.3', text="week"),
+                folia.Word(self.doc,id=self.doc.id + '.s.2.w.4', text="zondag"),
+                folia.Word(self.doc,id=self.doc.id + '.s.2.w.6', text=".")
+            ])
+        )
+
+        s = self.doc.index[self.doc.id + '.s.1']
+        s2 = self.doc.index[self.doc.id + '.s.2']
+        w = self.doc.index[self.doc.id + '.s.1.w.6']
+        s.remove(w)
+        s.append( folia.Correction(self.doc, folia.Current(self.doc, w), folia.Suggestion(self.doc, merge=s2.id)) )
+
+        self.assertTrue( xmlcheck(s.xmlstring(),  '<s xmlns="http://ilk.uvt.nl/folia" xml:id="example.s.1"><w xml:id="example.s.1.w.1"><t>De</t></w><w xml:id="example.s.1.w.2"><t>site</t></w><w xml:id="example.s.1.w.3"><t>staat</t></w><w xml:id="example.s.1.w.4"><t>on</t></w><w xml:id="example.s.1.w.5"><t>line</t></w><correction><current><w xml:id="example.s.1.w.6"><t>.</t></w></current><suggestion merge="example.s.2" auth="no"/></correction></s>'))
 
 
 
@@ -2347,8 +2339,7 @@ class Test6Query(unittest.TestCase):
                 folia.Word(doc,id=doc.id + '.s.1.w.5', text="b"),
                 folia.Word(doc,id=doc.id + '.s.1.w.6', text="a"),
                 folia.Word(doc,id=doc.id + '.s.1.w.7', text="a"),
-            ]
-            )
+            ])
         )
         doc.append(text)
 
@@ -2419,8 +2410,7 @@ class Test6Query(unittest.TestCase):
                 folia.Word(doc,id=doc.id + '.s.1.w.5', text="a"),
                 folia.Word(doc,id=doc.id + '.s.1.w.6', text="b"),
                 folia.Word(doc,id=doc.id + '.s.1.w.7', text="c"),
-            ]
-            )
+            ])
         )
         doc.append(text)
 
@@ -2518,21 +2508,21 @@ class Test7XpathQuery(unittest.TestCase):
 
 
 class Test8Validation(unittest.TestCase):
-      def test000_relaxng(self):
+    def test000_relaxng(self):
         """Validation - RelaxNG schema generation"""
         folia.relaxng()
 
-      def test001_shallowvalidation(self):
+    def test001_shallowvalidation(self):
         """Validation - Shallow validation against automatically generated RelaxNG schema"""
         folia.validate(os.path.join(TMPDIR,'foliasavetest.xml'))
 
-      def test002_loadsetdefinitions(self):
+    def test002_loadsetdefinitions(self):
         """Validation - Loading of set definitions"""
         doc = folia.Document(file=os.path.join(TMPDIR,'foliatest.xml'), loadsetdefinitions=True)
         assert isinstance( doc.setdefinitions["http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"], folia.SetDefinition)
 
 class Test9Validation(unittest.TestCase):
-      def test001_deepvalidation(self):
+    def test001_deepvalidation(self):
         """Validation - Deep Validation"""
         doc = folia.Document(file=os.path.join(FOLIAPATH,'test/example.deep.xml'), deepvalidation=True, allowadhocsets=True)
 
