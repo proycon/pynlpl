@@ -1995,15 +1995,16 @@ class Test4Edit(unittest.TestCase):
         """Edit Check - Altering sentence text (untokenised by definition)"""
         s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
 
-        self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom .') #text is obtained from children, since there is no direct text associated
+        self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom.') #text is obtained from children, since there is no direct text associated
 
         self.assertFalse(s.hastext()) #no text DIRECTLY associated with the sentence
 
-        #associating text directly with the sentence: de-tokenised by definition!
+        #associating text directly with the sentence (should be in agreement with text from children)
         s.settext('Stemma is een ander woord voor stamboom.')
         self.assertTrue(s.hastext())
-        self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom .') #text still obtained from children rather than directly associated text!!
-        self.assertEqual(s.stricttext(), 'Stemma is een ander woord voor stamboom.')
+        self.assertEqual(s.text(), 'Stemma is een ander woord voor stamboom.') #text still obtained from children rather than directly associated text!!
+        self.assertEqual(s.stricttext(), 'Stemma is een ander woord voor stamboom.') #text obtained directly
+
 
     def test018b_sentencetext(self):
         """Edit Check - Altering sentence text (untokenised by definition)"""
