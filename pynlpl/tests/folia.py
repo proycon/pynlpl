@@ -221,7 +221,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertTrue( isinstance(s, folia.Sentence) )
         self.assertEqual( s.id, 'WR-P-E-J-0000000001.p.1.s.1' )
         self.assertFalse( s.hastext() )
-        self.assertEqual( str(s), "Stemma is een ander woord voor stamboom ." )
+        self.assertEqual( str(s), "Stemma is een ander woord voor stamboom." )
 
     def test006b_sentencetest(self):
         """Sanity check - Sentence text (including retaining tokenisation)"""
@@ -863,7 +863,7 @@ class Test2Sanity(unittest.TestCase):
         """Sanity Check - Text serialisation test with linebreaks and whitespaces"""
         p = self.doc['WR-P-E-J-0000000001.p.1'] #this is a bit of a malformed paragraph due to the explicit whitespace and linebreaks in it, but makes for a nice test:
         self.maxDiff = 3000
-        self.assertEqual( p.text(), "Stemma is een ander woord voor stamboom . In de historische wetenschap wordt zo'n stamboom , onder de naam stemma codicum ( handschriftelijke genealogie ) , gebruikt om de verwantschap tussen handschriften weer te geven . \n\nWerkwijze\n\nHiervoor worden de handschriften genummerd en gedateerd zodat ze op de juiste plaats van hun afstammingsgeschiedenis geplaatst kunnen worden . De hoofdletter A wordt gebruikt voor het originele handschrift. De andere handschriften krijgen ook een letter die verband kan houden met hun plaats van oorsprong óf plaats van bewaring. Verdwenen handschriften waarvan men toch vermoedt dat ze ooit bestaan hebben worden ook in het stemma opgenomen en worden weergegeven door de laatste letters van het alfabet en worden tussen vierkante haken geplaatst.\nTenslotte gaat men de verwantschap tussen de handschriften aanduiden . Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .")
+        self.assertEqual( p.text(), "Stemma is een ander woord voor stamboom. In de historische wetenschap wordt zo'n stamboom , onder de naam stemma codicum ( handschriftelijke genealogie ) , gebruikt om de verwantschap tussen handschriften weer te geven . \n\nWerkwijze\n\nHiervoor worden de handschriften genummerd en gedateerd zodat ze op de juiste plaats van hun afstammingsgeschiedenis geplaatst kunnen worden . De hoofdletter A wordt gebruikt voor het originele handschrift. De andere handschriften krijgen ook een letter die verband kan houden met hun plaats van oorsprong óf plaats van bewaring. Verdwenen handschriften waarvan men toch vermoedt dat ze ooit bestaan hebben worden ook in het stemma opgenomen en worden weergegeven door de laatste letters van het alfabet en worden tussen vierkante haken geplaatst.\nTenslotte gaat men de verwantschap tussen de handschriften aanduiden . Een volle lijn duidt op een verwantschap , terweil een stippelijn op een onzekere verwantschap duidt .")
 
 
     def test046b_text(self):
