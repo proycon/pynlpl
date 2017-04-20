@@ -1973,6 +1973,7 @@ class Test4Edit(unittest.TestCase):
         """Edit Check - Altering word text"""
 
         #Important note: directly altering text is usually bad practise, you'll want to use proper corrections instead.
+        #this may also lead to inconsistencies if there is redundant text on higher levels
         w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.9']
         self.assertEqual(w.text(), 'terweil')
 
@@ -1983,6 +1984,7 @@ class Test4Edit(unittest.TestCase):
         """Edit Check - Altering word text with reserved symbols"""
 
         #Important note: directly altering text is usually bad practise, you'll want to use proper corrections instead.
+        #This test just serves to test reserved symbols
         w = self.doc['WR-P-E-J-0000000001.p.1.s.8.w.9']
 
         w.settext('1 & 1 > 0')
