@@ -2,7 +2,13 @@
 branches:
     only:
         - master
-
+notifications:
+  irc:
+    channels:
+      - "irc.uvt.nl#gitlama"
+    template:
+      - "%{repository_slug}#%{build_number} %{message} --> %{build_url}"
+    skip_join: true
 language: python
 python:
     - "2.7"
