@@ -6465,10 +6465,10 @@ class Document(object):
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
 
-        if self.version:
-            attribs['version'] = self.version
-        else:
-            attribs['version'] = FOLIAVERSION
+        #if self.version:
+        #    attribs['version'] = self.version
+        #else:
+        attribs['version'] = FOLIAVERSION
 
         attribs['generator'] = 'pynlpl.formats.folia-v' + LIBVERSION
 
