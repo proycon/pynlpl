@@ -2264,28 +2264,28 @@ class AbstractElement(object):
 
         attribs = [ ]
         if cls.REQUIRED_ATTRIBS and Attrib.ID in cls.REQUIRED_ATTRIBS:
-            attribs.append( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") )
+            attribs.append( E.attribute(E.data(type='ID',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),name='id', ns="http://www.w3.org/XML/1998/namespace") )
         elif Attrib.ID in cls.OPTIONAL_ATTRIBS:
-            attribs.append( E.optional( E.attribute(name='id', ns="http://www.w3.org/XML/1998/namespace") ) )
+            attribs.append( E.optional( E.attribute(E.data(type='ID',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='id', ns="http://www.w3.org/XML/1998/namespace") ) )
         if Attrib.CLASS in cls.REQUIRED_ATTRIBS:
             #Set is a tough one, we can't require it as it may be defined in the declaration: we make it optional and need schematron to resolve this later
-            attribs.append( E.attribute(name='class') )
-            attribs.append( E.optional( E.attribute( name='set' ) ) )
+            attribs.append( E.attribute(E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),name='class') )
+            attribs.append( E.optional( E.attribute( E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),name='set' ) ) )
         elif Attrib.CLASS in cls.OPTIONAL_ATTRIBS:
-            attribs.append( E.optional( E.attribute(name='class') ) )
-            attribs.append( E.optional( E.attribute( name='set' ) ) )
+            attribs.append( E.optional( E.attribute(E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),name='class') ) )
+            attribs.append( E.optional( E.attribute(E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='set' ) ) )
         if Attrib.ANNOTATOR in cls.REQUIRED_ATTRIBS or Attrib.ANNOTATOR in cls.OPTIONAL_ATTRIBS:
             #Similarly tough
-            attribs.append( E.optional( E.attribute(name='annotator') ) )
+            attribs.append( E.optional( E.attribute(E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='annotator') ) )
             attribs.append( E.optional( E.attribute(name='annotatortype') ) )
         if Attrib.CONFIDENCE in cls.REQUIRED_ATTRIBS:
             attribs.append(  E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') )
         elif Attrib.CONFIDENCE in cls.OPTIONAL_ATTRIBS:
             attribs.append(  E.optional( E.attribute(E.data(type='double',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='confidence') ) )
         if Attrib.N in cls.REQUIRED_ATTRIBS:
-            attribs.append( E.attribute( name='n') )
+            attribs.append( E.attribute( E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),name='n') )
         elif Attrib.N in cls.OPTIONAL_ATTRIBS:
-            attribs.append( E.optional( E.attribute( name='n') ) )
+            attribs.append( E.optional( E.attribute( E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),name='n') ) )
         if Attrib.DATETIME in cls.REQUIRED_ATTRIBS:
             attribs.append( E.attribute(E.data(type='dateTime',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='datetime') )
         elif Attrib.DATETIME in cls.OPTIONAL_ATTRIBS:
@@ -2299,13 +2299,13 @@ class AbstractElement(object):
         elif Attrib.ENDTIME in cls.OPTIONAL_ATTRIBS:
             attribs.append( E.optional( E.attribute(name='endtime') ) )
         if Attrib.SRC in cls.REQUIRED_ATTRIBS:
-            attribs.append(E.attribute(name='src') )
+            attribs.append(E.attribute(E.data(type='anyURI',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),name='src') )
         elif Attrib.SRC in cls.OPTIONAL_ATTRIBS:
-            attribs.append( E.optional( E.attribute(name='src') ) )
+            attribs.append( E.optional( E.attribute(E.data(type='anyURI',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),name='src') ) )
         if Attrib.SPEAKER in cls.REQUIRED_ATTRIBS:
-            attribs.append(E.attribute(name='speaker') )
+            attribs.append(E.attribute(E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='speaker') )
         elif Attrib.SPEAKER in cls.OPTIONAL_ATTRIBS:
-            attribs.append( E.optional( E.attribute(name='speaker') ) )
+            attribs.append( E.optional( E.attribute(E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),name='speaker') ) )
         if cls.XLINK:
             attribs += [ #loose interpretation of specs, not checking whether xlink combinations are valid
                     E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ),
