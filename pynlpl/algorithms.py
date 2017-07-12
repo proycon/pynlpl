@@ -43,7 +43,7 @@ def consecutivegaps(n, leftmargin = 0, rightmargin = 0):
         begin += 1
 
 def possiblesplits(n, minsplits=2, maxsplits=0):
-    """Returns lists of (index,length) tuples, representing all possible splits of a sequence of length n"""
+    """Returns lists of (index,length) tuples, representing all possible splits of a sequence of length n."""
     if not maxsplits: maxsplits = n
     for nrsplits in range(minsplits,maxsplits + 1):
         for split in sum_to_n(n,nrsplits):
