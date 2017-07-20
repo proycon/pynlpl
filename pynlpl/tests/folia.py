@@ -621,6 +621,17 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( t[1].text(), "\nFoLiA developers")
         self.assertEqual( t[2], " zijn:")
 
+    def test030c_textclassattrib(self):
+        """Sanity check - Text class attribute"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.4.w.5']
+        self.assertEqual( w.annotation(folia.PosAnnotation).textclass , 'original')
+        self.assertEqual( w.annotation(folia.LemmaAnnotation).textclass , 'original')
+
+    def test030d_textclassattrib_default(self):
+        """Sanity check - Text class attribute (default)"""
+        w = self.doc['WR-P-E-J-0000000001.p.1.s.4.w.4']
+        self.assertEqual( w.annotation(folia.PosAnnotation).textclass , 'current')
+        self.assertEqual( w.annotation(folia.LemmaAnnotation).textclass , 'current')
 
     def test031_sense(self):
         """Sanity Check - Lexical Semantic Sense Annotation"""
