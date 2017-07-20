@@ -70,7 +70,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 
 #foliaspec:version:FOLIAVERSION
 #The FoLiA version
-FOLIAVERSION = "1.4.2"
+FOLIAVERSION = "1.4.3"
 
 LIBVERSION = FOLIAVERSION + '.87' #== FoLiA version + library revision
 
@@ -98,6 +98,7 @@ DOCSTRING_GENERIC_ATTRIBS = """    id (str): An ID for the element. IDs must be 
     speaker (str): Speech annotation attribute: a name or ID of the speaker. This is a generic FoLiA attribute.
     begintime (str): Speech annotation attribute: the time (in ``hh:mm:ss.mmm`` format, relative to the media file in ``src``) when the audio that this element describes starts. This is a generic FoLiA attribute.
     endtime (str): Speech annotation attribute: the time (in ``hh:mm:ss.mmm`` format, relative to the media file in ``src``) when the audio that this element describes starts. This is a generic FoLiA attribute.
+    textclass (str): Refers to the textclass from which this annotation is derived (defaults to "current")>. This is a generic FoLiA attribute.
     contents (list): Alternative for ``*args``, exists for purely syntactic reasons.
 """
 
@@ -119,7 +120,7 @@ class AnnotatorType:
 #foliaspec:attributes
 #Defines all common FoLiA attributes (as part of the Attrib enumeration)
 class Attrib:
-    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, BEGINTIME, ENDTIME, SRC, SPEAKER = range(10)
+    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, BEGINTIME, ENDTIME, SRC, SPEAKER, TEXTCLASS = range(11)
 
 #foliaspec:annotationtype
 #Defines all annotation types (as part of the AnnotationType enumeration)
@@ -431,6 +432,15 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             object.setphon(kwargs['phon'])
         del kwargs['phon']
 
+    if 'textclass' in kwargs:
+        if not Attrib.TEXTCLASS in supported:
+            raise ValueError("Textclass is not supported for " + object.__class__.__name__)
+        object.textclass = kwargs['textclass']
+        del kwargs['textclass']
+    else:
+        if Attrib.TEXTCLASS in supported:
+            object.textclass = "current"
+
     if object.XLINK:
         if 'href' in kwargs:
             object.href =kwargs['href']
@@ -676,7 +686,7 @@ class AbstractElement(object):
     def __getattr__(self, attr):
         """Internal method"""
         #overriding getattr so we can get defaults here rather than needing a copy on each element, saves memory
-        if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','speaker','begintime','endtime','xlinktype','xlinktitle','xlinklabel','xlinkrole','xlinkshow','label'):
+        if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','speaker','begintime','endtime','xlinktype','xlinktitle','xlinklabel','xlinkrole','xlinkshow','label', 'textclass'):
             return None
         else:
             return super(AbstractElement, self).__getattribute__(attr)
@@ -1836,6 +1846,9 @@ class AbstractElement(object):
             if self.endtime:
                 attribs['{' + NSFOLIA + '}endtime'] = "%02d:%02d:%02d.%03d" % self.endtime
 
+        if '{' + NSFOLIA + '}textclass' not in attribs: #do not override if caller already set it
+            if self.textclass and self.textclass != "current":
+                attribs['{' + NSFOLIA + '}textclass'] = self.textclass
 
         if self.XLINK:
             if self.href:
@@ -2306,6 +2319,10 @@ class AbstractElement(object):
             attribs.append(E.attribute(E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'), name='speaker') )
         elif Attrib.SPEAKER in cls.OPTIONAL_ATTRIBS:
             attribs.append( E.optional( E.attribute(E.data(type='string',datatypeLibrary='http://www.w3.org/2001/XMLSchema-datatypes'),name='speaker') ) )
+        if Attrib.TEXTCLASS in cls.REQUIRED_ATTRIBS:
+            attribs.append(E.attribute(name='textclass') )
+        elif Attrib.TEXTCLASS in cls.OPTIONAL_ATTRIBS:
+            attribs.append( E.optional( E.attribute(name='textclass') ) )
         if cls.XLINK:
             attribs += [ #loose interpretation of specs, not checking whether xlink combinations are valid
                     E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ),
@@ -7625,7 +7642,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.4.2 on 2017-07-12 12:07:08, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.4.3 on 2017-07-20 16:30:40, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
