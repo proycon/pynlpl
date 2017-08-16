@@ -1721,7 +1721,7 @@ class Test4Edit(unittest.TestCase):
         #reobtaining it:
         alt = list(w.alternatives()) #all alternatives
 
-        set = self.doc.defaultset(folia.AnnotationType.POS) #pylint: disable=redefined-builtin
+        set = "https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" #pylint: disable=redefined-builtin
 
         alt2 = list(w.alternatives(folia.PosAnnotation, set))
 
