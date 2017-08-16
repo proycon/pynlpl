@@ -6755,6 +6755,8 @@ class Document(object):
         """
 
         if inspect.isclass(annotationtype) or isinstance(annotationtype,AbstractElement): annotationtype = annotationtype.ANNOTATIONTYPE
+        if len(self.annotationdefaults[annotationtype]) != 1:
+            raise NoDefaultError
         try:
             return list(self.annotationdefaults[annotationtype].keys())[0]
         except KeyError:
