@@ -554,7 +554,7 @@ class Test2Sanity(unittest.TestCase):
         pos = w.annotation(folia.PosAnnotation)
         self.assertEqual( pos.datetime, datetime(2011, 7, 20, 19, 0, 1) )
 
-        self.assertTrue( xmlcheck(pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/>') )
+        self.assertTrue( xmlcheck(pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/>') )
 
     def test028_wordparents(self):
         """Sanity Check - Finding parents of word"""
@@ -1710,13 +1710,13 @@ class Test4Edit(unittest.TestCase):
 
         #add a pos annotation without specifying a set (should take default set), but this will clash with existing tag!
 
-        self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.PosAnnotation(self.doc,  cls='N', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO) )
+        self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.PosAnnotation(self.doc,  cls='N', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO, set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" ) )
         self.assertRaises( folia.DuplicateAnnotationError, w.append, folia.LemmaAnnotation(self.doc, cls='naam', annotator='testscript', annotatortype=folia.AnnotatorType.AUTO ) )
 
     def test005_addalternative(self):
         """Edit Check - Adding an alternative token annotation"""
         w = self.doc['WR-P-E-J-0000000001.p.1.s.2.w.11']
-        w.append( folia.Alternative(self.doc, generate_id_in=w, contents=folia.PosAnnotation(self.doc, cls='V')))
+        w.append( folia.Alternative(self.doc, generate_id_in=w, contents=folia.PosAnnotation(self.doc, cls='V', set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" )))
 
         #reobtaining it:
         alt = list(w.alternatives()) #all alternatives
@@ -1730,7 +1730,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( len(alt2),1 )
         self.assertTrue( isinstance(alt[0].annotation(folia.PosAnnotation, set), folia.PosAnnotation) )
 
-        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="naam"/><alt xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11.alt.1" auth="no"><pos class="V"/></alt></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11"><t>naam</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="N(soort,ev,basis,zijd,stan)"/><lemma class="naam"/><alt xml:id="WR-P-E-J-0000000001.p.1.s.2.w.11.alt.1" auth="no"><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="V"/></alt></w>'))
 
 
     def test006_addcorrection(self):
@@ -1742,7 +1742,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).new(0).text() ,'stippellijn' )
         self.assertEqual( w.text(), 'stippellijn')
 
-        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
 
     def test006b_addcorrection(self):
         """Edit Check - Correcting Text (2)"""
@@ -1753,19 +1753,19 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).new(0).text() ,'stippellijn' )
         self.assertEqual( w.text(), 'stippellijn')
 
-        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
 
     def test007_addcorrection2(self):
         """Edit Check - Correcting a Token Annotation element"""
         w = self.doc.index['WR-P-E-J-0000000001.p.1.s.8.w.11'] #stippelijn
         oldpos = w.annotation(folia.PosAnnotation)
-        newpos = folia.PosAnnotation(self.doc, cls='N(soort,ev,basis,zijd,stan)')
+        newpos = folia.PosAnnotation(self.doc, cls='N(soort,ev,basis,zijd,stan)', set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" )
         w.correct(original=oldpos,new=newpos, set='corrections',cls='spelling',annotator='testscript', annotatortype=folia.AnnotatorType.AUTO)
 
         self.assertEqual( w.annotation(folia.Correction).original(0) ,oldpos )
         self.assertEqual( w.annotation(folia.Correction).new(0),newpos )
 
-        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><pos class="N(soort,ev,basis,zijd,stan)"/></new><original auth="no"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/></original></correction><lemma class="stippelijn"/></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><new><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="N(soort,ev,basis,zijd,stan)"/></new><original auth="no"><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="FOUTN(soort,ev,basis,zijd,stan)"/></original></correction><lemma class="stippelijn"/></w>'))
 
     def test008_addsuggestion(self):
         """Edit Check - Suggesting a text correction"""
@@ -1776,7 +1776,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).suggestions(0).text() , 'stippellijn' )
         self.assertEqual( w.text(), 'stippelijn')
 
-        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><suggestion auth="no"><t>stippellijn</t></suggestion></correction></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotatortype="auto" annotator="testscript"><suggestion auth="no"><t>stippellijn</t></suggestion></correction></w>'))
 
     def test009a_idclash(self):
         """Edit Check - Checking for exception on adding a duplicate ID"""
@@ -1811,7 +1811,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( pos.parent, w)
         self.assertEqual( pos.doc, w.doc)
 
-        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><pos class="N" set="fakecgn"/></w>'))
 
     def test011_subtokenannot(self):
         """Edit Check - Adding morphemes"""
@@ -1832,7 +1832,7 @@ class Test4Edit(unittest.TestCase):
 
 
 
-        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme function="lexical" class="stem"><t offset="0">handschrift</t><lemma class="handschrift"/></morpheme><morpheme function="inflexional" class="suffix"><t offset="11">en</t></morpheme></morphology></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.5.w.3"><t>handschriften</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="N(soort,mv,basis)"/><lemma class="handschrift"/><morphology><morpheme function="lexical" class="stem"><t offset="0">handschrift</t><lemma class="handschrift"/></morpheme><morpheme function="inflexional" class="suffix"><t offset="11">en</t></morpheme></morphology></w>'))
 
     def test012_alignment(self):
         """Edit Check - Adding Alignment"""
@@ -1845,7 +1845,7 @@ class Test4Edit(unittest.TestCase):
         self.assertEqual( next(a.resolve()), self.doc['WR-P-E-J-0000000001.p.1.s.6.w.1'] )
         self.assertEqual( list(a.resolve())[1], self.doc['WR-P-E-J-0000000001.p.1.s.6.w.2'] )
 
-        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.6.w.8"><t>ze</t><pos class="VNW(pers,pron,stan,red,3,mv)"/><lemma class="ze"/><alignment class="coreference"><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.1"/><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.2"/></alignment></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(),'<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.6.w.8"><t>ze</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="VNW(pers,pron,stan,red,3,mv)"/><lemma class="ze"/><alignment class="coreference"><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.1"/><aref type="w" id="WR-P-E-J-0000000001.p.1.s.6.w.2"/></alignment></w>'))
 
 
 
@@ -1888,7 +1888,7 @@ class Test4Edit(unittest.TestCase):
         entity = word.add(folia.Entity, word, word2, cls="misc",set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml")
 
         self.assertIsInstance(entity, folia.Entity)
-        self.assertTrue(xmlcheck(entity.parent.parent.xmlstring(),'<part xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.4.part.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.1"><t offset="0">De</t><t class="original" offset="0">De</t><pos class="LID(bep,stan,rest)"/><lemma class="de"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.2"><t offset="3">hoofdletter</t><t class="original" offset="3">hoofdletter</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="hoofdletter"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.3"><t>A</t><t class="original">A</t><pos class="SPEC(symb)"/><lemma class="_"/></w><entities><entity class="misc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="hoofdletter" id="WR-P-E-J-0000000001.p.1.s.4.w.2"/><wref t="A" id="WR-P-E-J-0000000001.p.1.s.4.w.3"/></entity></entities></part>'))
+        self.assertTrue(xmlcheck(entity.parent.parent.xmlstring(),'<part xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.4.part.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.1"><t offset="0">De</t><t class="original" offset="0">De</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="LID(bep,stan,rest)"/><lemma class="de"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.2"><t offset="3">hoofdletter</t><t class="original" offset="3">hoofdletter</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="N(soort,ev,basis,zijd,stan)"/><lemma class="hoofdletter"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.3"><t>A</t><t class="original">A</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="SPEC(symb)"/><lemma class="_"/></w><entities><entity class="misc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="hoofdletter" id="WR-P-E-J-0000000001.p.1.s.4.w.2"/><wref t="A" id="WR-P-E-J-0000000001.p.1.s.4.w.3"/></entity></entities></part>'))
 
     def test013b_spanannot(self):
         """Edit Check - Adding nested Span Annotatation (add as append)"""
@@ -1938,7 +1938,7 @@ class Test4Edit(unittest.TestCase):
         entity = sentence.add(folia.Entity, word, word2, cls="misc",set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml")
 
         self.assertIsInstance(entity, folia.Entity)
-        self.assertTrue(xmlcheck(entity.parent.parent.xmlstring(),'<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.4"><t>De hoofdletter A wordt gebruikt voor het originele handschrift.</t><t class="original">De hoofdletter A wordt gebruikt voor het originele handschrift.</t><t class="translate">Uppercase A is used for the original.</t><part xml:id="WR-P-E-J-0000000001.p.1.s.4.part.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.1"><t offset="0">De</t><t class="original" offset="0">De</t><pos class="LID(bep,stan,rest)"/><lemma class="de"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.2"><t offset="3">hoofdletter</t><t class="original" offset="3">hoofdletter</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="hoofdletter"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.3"><t>A</t><t class="original">A</t><pos class="SPEC(symb)"/><lemma class="_"/></w></part><part xml:id="WR-P-E-J-0000000001.p.1.s.4.part.2"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.4"><t>wordt</t><t class="original">wordt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="worden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.5"><t>gebruikt</t><t class="original">gebruikt</t><pos class="WW(vd,vrij,zonder)" textclass="original"/><lemma class="gebruiken" textclass="original"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.6"><t>voor</t><t class="original">voor</t><pos class="VZ(init)"/><lemma class="voor"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.7"><t>het</t><t class="original">het</t><pos class="LID(bep,stan,evon)"/><lemma class="het"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.8"><t>originele</t><t class="original">originele</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="origineel"/></w><w space="no" xml:id="WR-P-E-J-0000000001.p.1.s.4.w.9"><t>handschrift</t><t class="original">handschrift</t><pos class="N(soort,ev,basis,onz,stan)"/><lemma class="handschrift"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.10"><t>.</t><t class="original">.</t><pos class="LET()"/><lemma class="."/></w></part><entities><entity class="misc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="hoofdletter" id="WR-P-E-J-0000000001.p.1.s.4.w.2"/><wref t="A" id="WR-P-E-J-0000000001.p.1.s.4.w.3"/></entity></entities></s>'))
+        self.assertTrue(xmlcheck(entity.parent.parent.xmlstring(),'<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.4"><t>De hoofdletter A wordt gebruikt voor het originele handschrift.</t><t class="original">De hoofdletter A wordt gebruikt voor het originele handschrift.</t><t class="translate">Uppercase A is used for the original.</t><part xml:id="WR-P-E-J-0000000001.p.1.s.4.part.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.1"><t offset="0">De</t><t class="original" offset="0">De</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="LID(bep,stan,rest)"/><lemma class="de"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.2"><t offset="3">hoofdletter</t><t class="original" offset="3">hoofdletter</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="N(soort,ev,basis,zijd,stan)"/><lemma class="hoofdletter"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.3"><t>A</t><t class="original">A</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="SPEC(symb)"/><lemma class="_"/></w></part><part xml:id="WR-P-E-J-0000000001.p.1.s.4.part.2"><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.4"><t>wordt</t><t class="original">wordt</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="WW(pv,tgw,met-t)"/><lemma class="worden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.5"><t>gebruikt</t><t class="original">gebruikt</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="WW(vd,vrij,zonder)" textclass="original"/><lemma class="gebruiken" textclass="original"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.6"><t>voor</t><t class="original">voor</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="VZ(init)"/><lemma class="voor"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.7"><t>het</t><t class="original">het</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="LID(bep,stan,evon)"/><lemma class="het"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.8"><t>originele</t><t class="original">originele</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="ADJ(prenom,basis,met-e,stan)"/><lemma class="origineel"/></w><w space="no" xml:id="WR-P-E-J-0000000001.p.1.s.4.w.9"><t>handschrift</t><t class="original">handschrift</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="N(soort,ev,basis,onz,stan)"/><lemma class="handschrift"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.4.w.10"><t>.</t><t class="original">.</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="LET()"/><lemma class="."/></w></part><entities><entity class="misc" set="http://raw.github.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml"><wref t="hoofdletter" id="WR-P-E-J-0000000001.p.1.s.4.w.2"/><wref t="A" id="WR-P-E-J-0000000001.p.1.s.4.w.3"/></entity></entities></s>'))
 
     def test013e_spanannot(self):
         """Edit Check - Adding nested Span Annotation"""
@@ -1956,12 +1956,12 @@ class Test4Edit(unittest.TestCase):
     def test014_replace(self):
         """Edit Check - Replacing an annotation"""
         word = self.doc['WR-P-E-J-0000000001.p.1.s.3.w.14']
-        word.replace(folia.PosAnnotation(self.doc, cls='BOGUS') )
+        word.replace(folia.PosAnnotation(self.doc, cls='BOGUS', set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" ) )
 
         self.assertEqual( len(list(word.annotations(folia.PosAnnotation))), 1)
         self.assertEqual( word.annotation(folia.PosAnnotation).cls, 'BOGUS')
 
-        self.assertTrue( xmlcheck(word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/><pos class="BOGUS"/></w>'))
+        self.assertTrue( xmlcheck(word.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.3.w.14"><t>plaats</t><lemma class="plaats"/><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="BOGUS"/></w>'))
 
     def test015_remove(self):
         """Edit Check - Removing an annotation"""
@@ -1978,7 +1978,7 @@ class Test4Edit(unittest.TestCase):
         pos = w.annotation(folia.PosAnnotation)
         pos.datetime = datetime(1982, 12, 15, 19, 0, 1) #(the datetime of my joyful birth)
 
-        self.assertTrue( xmlcheck(pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" class="WW(pv,tgw,met-t)" datetime="1982-12-15T19:00:01"/>'))
+        self.assertTrue( xmlcheck(pos.xmlstring(), '<pos xmlns="http://ilk.uvt.nl/folia" set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="WW(pv,tgw,met-t)" datetime="1982-12-15T19:00:01"/>'))
 
     def test017_wordtext(self):
         """Edit Check - Altering word text"""
@@ -2032,7 +2032,7 @@ class Test4Edit(unittest.TestCase):
         self.assertTrue( s.hastext('original') )
         self.assertEqual( s.stricttext('original'), 'Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.' )
 
-        self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8"><t class="original">Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.</t><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.1"><t>Een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><quote xml:id="WR-P-E-J-0000000001.p.1.s.8.q.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.2"><t>volle</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="vol"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.3"><t>lijn</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="lijn"/></w></quote><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.4"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.5"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.6"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.7"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.8"><t>,</t><pos class="LET()"/><lemma class=","/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.9"><t>terweil</t><errordetection class="spelling"/><pos class="VG(onder)"/><lemma class="terweil"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.10"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.12"><t>op</t><pos class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.13"><t>een</t><pos class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14"><t>onzekere</t><pos class="ADJ(prenom,basis,met-e,stan)"/><lemma class="onzeker"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14.c.1" class="spelling"><suggestion  auth="no" n="1/2"><t>twijfelachtige</t></suggestion><suggestion  auth="no" n="2/2"><t>ongewisse</t></suggestion></correction></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.15"><t>verwantschap</t><pos class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.16"><t>duidt</t><pos class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.17"><t>.</t><pos class="LET()"/><lemma class="."/></w><observations><observation class="ei_ij_error"><wref id="WR-P-E-J-0000000001.p.1.s.8.w.9" t="terweil"/><desc>Confusion between EI and IJ diphtongues</desc></observation></observations></s>'))
+        self.assertTrue( xmlcheck(s.xmlstring(), '<s xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8"><t class="original">Een volle lijn duidt op een verwantschap, terweil een stippelijn op een onzekere verwantschap duidt.</t><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.1"><t>Een</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="LID(onbep,stan,agr)"/><lemma class="een"/></w><quote xml:id="WR-P-E-J-0000000001.p.1.s.8.q.1"><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.2"><t>volle</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="ADJ(prenom,basis,met-e,stan)"/><lemma class="vol"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.3"><t>lijn</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="N(soort,ev,basis,zijd,stan)"/><lemma class="lijn"/></w></quote><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.4"><t>duidt</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.5"><t>op</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.6"><t>een</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.7"><t>verwantschap</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="N(soort,ev,basis,zijd,stan)"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.8"><t>,</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="LET()"/><lemma class=","/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.9"><t>terweil</t><errordetection class="spelling"/><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="VG(onder)"/><lemma class="terweil"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.10"><t>een</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><t>stippelijn</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.12"><t>op</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="VZ(init)"/><lemma class="op"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.13"><t>een</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="LID(onbep,stan,agr)"/><lemma class="een"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14"><t>onzekere</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="ADJ(prenom,basis,met-e,stan)"/><lemma class="onzeker"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.14.c.1" class="spelling"><suggestion  auth="no" n="1/2"><t>twijfelachtige</t></suggestion><suggestion  auth="no" n="2/2"><t>ongewisse</t></suggestion></correction></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.15"><t>verwantschap</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="N(soort,ev,basis,zijd,stan)" datetime="2011-07-20T19:00:01"/><lemma class="verwantschap"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.16"><t>duidt</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="WW(pv,tgw,met-t)"/><lemma class="duiden"/></w><w xml:id="WR-P-E-J-0000000001.p.1.s.8.w.17"><t>.</t><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="LET()"/><lemma class="."/></w><observations><observation class="ei_ij_error"><wref id="WR-P-E-J-0000000001.p.1.s.8.w.9" t="terweil"/><desc>Confusion between EI and IJ diphtongues</desc></observation></observations></s>'))
 
     def test019_adderrordetection(self):
         """Edit Check - Error Detection"""
@@ -2243,7 +2243,7 @@ class Test5Correction(unittest.TestCase):
         self.assertEqual( w.annotation(folia.Correction).annotator , 'John Doe' )
         self.assertEqual( w.annotation(folia.Correction).annotatortype , folia.AnnotatorType.MANUAL)
 
-        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" auth="no" annotatortype="auto"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
+        self.assertTrue( xmlcheck(w.xmlstring(), '<w xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11"><pos set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" class="FOUTN(soort,ev,basis,zijd,stan)"/><lemma class="stippelijn"/><correction xml:id="WR-P-E-J-0000000001.p.1.s.8.w.11.correction.1" class="spelling" annotator="John Doe"><suggestion annotator="testscript" auth="no" annotatortype="auto"><t>stippellijn</t></suggestion><new><t>stippellijn</t></new><original auth="no"><t>stippelijn</t></original></correction></w>'))
 
     def test006_deletionsuggestion(self):
         """Correction - Suggestion for deletion with parent merge suggestion"""
