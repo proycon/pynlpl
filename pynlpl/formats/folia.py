@@ -6957,13 +6957,53 @@ class Document(object):
                     e.next = ForeignData(self, node=subnode)
                 else:
                     self.metadata = ForeignData(self, node=subnode)
+            elif subnode.tag == '{' + NSFOLIA + '}submetadata':
+                self.parsesubmetadata(subnode)
             elif subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT': #backward-compatibility for old IMDI without foreign-key
                 E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
                 self.metadatatype = "imdi"
                 self.metadata = makeelement(E, '{'+NSFOLIA+'}foreign-data')
                 self.metadata.append(subnode)
 
+    def parsesubmetadata(self, node):
+        if not 'id' in node.attrib:
+            raise MetaDataError("Encountered a submetadata element without xml:id!")
+        else:
+            id = node.attrib['id']
 
+        if 'src' in node.attrib:
+            self.submetadatafile[id] = node.attrib['src']
+        else:
+            self.submetadatafile[id] = None #only for external references
+
+        if 'type' in node.attrib:
+            self.submetadatatype[id] = node.attrib['type']
+        else:
+            self.submetadatatype[id] = "native"
+
+        if self.submetadatatype[id] == "native":
+            self.submetadata[id] = NativeMetaData()
+        else:
+            self.submetadata[id] = None
+
+        for subnode in node:
+            if subnode.tag == '{' + NSFOLIA + '}meta':
+                if self.submetadatatype[id] == "native":
+                    if subnode.text:
+                        self.submetadata[id][subnode.attrib['id']] = subnode.text
+                else:
+                    raise MetaDataError("Encountered a meta element but metadata type is not native!")
+            elif subnode.tag == '{' + NSFOLIA + '}foreign-data':
+                if self.submetadatatype[id] == "native":
+                    raise MetaDataError("Encountered a foreign-data element but metadata type is native!")
+                elif self.submetadata[id] is not None:
+                    #multiple foreign-data elements, chain:
+                    e = self.submetadata[id]
+                    while e.next is not None:
+                        e = e.next
+                    e.next = ForeignData(self, node=subnode)
+                else:
+                    self.submetadata[id] = ForeignData(self, node=subnode)
 
     def parsexml(self, node, ParentClass = None):
         """Internal method.
