@@ -6530,7 +6530,7 @@ class Document(object):
     def xmlmetadata(self):
         """Internal method to serialize XML declarations"""
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
-        if self.metadatatype == MetaDataType.NATIVE:
+        if self.metadatatype == "native":
             e = []
             if not self.metadatafile:
                 for key, value in self.metadata.items():
@@ -6838,11 +6838,11 @@ class Document(object):
            Argument: Set the document's title in metadata
         """
         if not (value is None):
-            if (self.metadatatype == MetaDataType.NATIVE):
+            if (self.metadatatype == "native"):
                 self.metadata['title'] = value
             else:
                 self._title = value
-        if (self.metadatatype == MetaDataType.NATIVE):
+        if (self.metadatatype == "native"):
             if 'title' in self.metadata:
                 return self.metadata['title']
             else:
@@ -6857,11 +6857,11 @@ class Document(object):
            Argument: Set the document's date in metadata
         """
         if not (value is None):
-            if (self.metadatatype == MetaDataType.NATIVE):
+            if (self.metadatatype == "native"):
                 self.metadata['date'] = value
             else:
                 self._date = value
-        if (self.metadatatype == MetaDataType.NATIVE):
+        if (self.metadatatype == "native"):
             if 'date' in self.metadata:
                 return self.metadata['date']
             else:
@@ -6874,11 +6874,11 @@ class Document(object):
            Argument: Set the document's publisher in metadata
         """
         if not (value is None):
-            if (self.metadatatype == MetaDataType.NATIVE):
+            if (self.metadatatype == "native"):
                 self.metadata['publisher'] = value
             else:
                 self._publisher = value
-        if (self.metadatatype == MetaDataType.NATIVE):
+        if (self.metadatatype == "native"):
             if 'publisher' in self.metadata:
                 return self.metadata['publisher']
             else:
@@ -6891,11 +6891,11 @@ class Document(object):
            Argument: Set the document's license in metadata
         """
         if not (value is None):
-            if (self.metadatatype == MetaDataType.NATIVE):
+            if (self.metadatatype == "native"):
                 self.metadata['license'] = value
             else:
                 self._license = value
-        if (self.metadatatype == MetaDataType.NATIVE):
+        if (self.metadatatype == "native"):
             if 'license' in self.metadata:
                 return self.metadata['license']
             else:
@@ -6908,11 +6908,11 @@ class Document(object):
            Argument: Set the document's language (ISO-639-3) in metadata
         """
         if not (value is None):
-            if (self.metadatatype == MetaDataType.NATIVE):
+            if (self.metadatatype == "native"):
                 self.metadata['language'] = value
             else:
                 self._language = value
-        if (self.metadatatype == MetaDataType.NATIVE):
+        if self.metadatatype == "native":
             if 'language' in self.metadata:
                 return self.metadata['language']
             else:
