@@ -70,7 +70,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 
 #foliaspec:version:FOLIAVERSION
 #The FoLiA version
-FOLIAVERSION = "1.4.3"
+FOLIAVERSION = "1.5"
 
 LIBVERSION = FOLIAVERSION + '.87' #== FoLiA version + library revision
 
@@ -120,7 +120,7 @@ class AnnotatorType:
 #foliaspec:attributes
 #Defines all common FoLiA attributes (as part of the Attrib enumeration)
 class Attrib:
-    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, BEGINTIME, ENDTIME, SRC, SPEAKER, TEXTCLASS = range(11)
+    ID, CLASS, ANNOTATOR, CONFIDENCE, N, DATETIME, BEGINTIME, ENDTIME, SRC, SPEAKER, TEXTCLASS, METADATA = range(12)
 
 #foliaspec:annotationtype
 #Defines all annotation types (as part of the AnnotationType enumeration)
@@ -7684,7 +7684,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.4.3 on 2017-07-21 11:05:29, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.5 on 2017-09-22 23:13:29, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -7898,7 +7898,7 @@ AbstractElement.XMLTAG = None
 #Sets all element properties for all elements
 #------ AbstractAnnotationLayer -------
 AbstractAnnotationLayer.ACCEPTED_DATA = (Comment, Correction, Description, ForeignData,)
-AbstractAnnotationLayer.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N, Attrib.TEXTCLASS,)
+AbstractAnnotationLayer.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N, Attrib.TEXTCLASS, Attrib.METADATA,)
 AbstractAnnotationLayer.PRINTABLE = False
 AbstractAnnotationLayer.SETONLY = True
 AbstractAnnotationLayer.SPEAKABLE = False
@@ -7911,7 +7911,7 @@ AbstractCorrectionChild.TEXTDELIMITER = None
 #------ AbstractExtendedTokenAnnotation -------
 #------ AbstractSpanAnnotation -------
 AbstractSpanAnnotation.ACCEPTED_DATA = (AlignReference, Alignment, Comment, Description, ForeignData, Metric,)
-AbstractSpanAnnotation.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.TEXTCLASS,)
+AbstractSpanAnnotation.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.TEXTCLASS, Attrib.METADATA,)
 AbstractSpanAnnotation.PRINTABLE = True
 AbstractSpanAnnotation.SPEAKABLE = True
 #------ AbstractSpanRole -------
@@ -7920,14 +7920,14 @@ AbstractSpanRole.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.N, Attr
 #------ AbstractStructureElement -------
 AbstractStructureElement.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, ForeignData, Metric, Part,)
 AbstractStructureElement.AUTO_GENERATE_ID = True
-AbstractStructureElement.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+AbstractStructureElement.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.METADATA,)
 AbstractStructureElement.PRINTABLE = True
 AbstractStructureElement.REQUIRED_ATTRIBS = None
 AbstractStructureElement.SPEAKABLE = True
 AbstractStructureElement.TEXTDELIMITER = "\n\n"
 #------ AbstractTextMarkup -------
 AbstractTextMarkup.ACCEPTED_DATA = (AbstractTextMarkup, Comment, Description, Linebreak,)
-AbstractTextMarkup.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+AbstractTextMarkup.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.METADATA,)
 AbstractTextMarkup.PRIMARYELEMENT = False
 AbstractTextMarkup.PRINTABLE = True
 AbstractTextMarkup.TEXTCONTAINER = True
@@ -7936,7 +7936,7 @@ AbstractTextMarkup.XLINK = True
 #------ AbstractTokenAnnotation -------
 AbstractTokenAnnotation.ACCEPTED_DATA = (Comment, Description, Feature, ForeignData, Metric,)
 AbstractTokenAnnotation.OCCURRENCES_PER_SET = 1
-AbstractTokenAnnotation.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.TEXTCLASS,)
+AbstractTokenAnnotation.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.TEXTCLASS, Attrib.METADATA,)
 AbstractTokenAnnotation.REQUIRED_ATTRIBS = (Attrib.CLASS,)
 #------ ActorFeature -------
 ActorFeature.SUBSET = "actor"
@@ -7947,7 +7947,7 @@ AlignReference.XMLTAG = "aref"
 Alignment.ACCEPTED_DATA = (AlignReference, Comment, Description, Feature, ForeignData, Metric,)
 Alignment.ANNOTATIONTYPE = AnnotationType.ALIGNMENT
 Alignment.LABEL = "Alignment"
-Alignment.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+Alignment.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.METADATA,)
 Alignment.PRINTABLE = False
 Alignment.REQUIRED_ATTRIBS = None
 Alignment.SPEAKABLE = False
@@ -7957,7 +7957,7 @@ Alignment.XMLTAG = "alignment"
 Alternative.ACCEPTED_DATA = (AbstractTokenAnnotation, Comment, Correction, Description, ForeignData, MorphologyLayer, PhonologyLayer,)
 Alternative.AUTH = False
 Alternative.LABEL = "Alternative"
-Alternative.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+Alternative.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.METADATA,)
 Alternative.PRINTABLE = False
 Alternative.REQUIRED_ATTRIBS = None
 Alternative.SPEAKABLE = False
@@ -7966,7 +7966,7 @@ Alternative.XMLTAG = "alt"
 AlternativeLayers.ACCEPTED_DATA = (AbstractAnnotationLayer, Comment, Description, ForeignData,)
 AlternativeLayers.AUTH = False
 AlternativeLayers.LABEL = "Alternative Layers"
-AlternativeLayers.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+AlternativeLayers.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.METADATA,)
 AlternativeLayers.PRINTABLE = False
 AlternativeLayers.REQUIRED_ATTRIBS = None
 AlternativeLayers.SPEAKABLE = False
@@ -7996,13 +7996,13 @@ ChunkingLayer.PRIMARYELEMENT = False
 ChunkingLayer.XMLTAG = "chunking"
 #------ Comment -------
 Comment.LABEL = "Comment"
-Comment.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N,)
+Comment.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N, Attrib.METADATA,)
 Comment.XMLTAG = "comment"
 #------ ComplexAlignment -------
 ComplexAlignment.ACCEPTED_DATA = (Alignment, Comment, Description, Feature, ForeignData, Metric,)
 ComplexAlignment.ANNOTATIONTYPE = AnnotationType.COMPLEXALIGNMENT
 ComplexAlignment.LABEL = "Complex Alignment"
-ComplexAlignment.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+ComplexAlignment.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.METADATA,)
 ComplexAlignment.PRINTABLE = False
 ComplexAlignment.REQUIRED_ATTRIBS = None
 ComplexAlignment.SPEAKABLE = False
@@ -8037,7 +8037,7 @@ CoreferenceLink.XMLTAG = "coreferencelink"
 Correction.ACCEPTED_DATA = (Comment, Current, Description, ErrorDetection, Feature, ForeignData, Metric, New, Original, Suggestion,)
 Correction.ANNOTATIONTYPE = AnnotationType.CORRECTION
 Correction.LABEL = "Correction"
-Correction.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+Correction.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.METADATA,)
 Correction.PRINTABLE = True
 Correction.SPEAKABLE = True
 Correction.TEXTDELIMITER = None
@@ -8069,7 +8069,7 @@ DependencyDependent.XMLTAG = "dep"
 #------ Description -------
 Description.LABEL = "Description"
 Description.OCCURRENCES = 1
-Description.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N,)
+Description.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N, Attrib.METADATA,)
 Description.XMLTAG = "desc"
 #------ Division -------
 Division.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Division, Entry, Event, Example, Feature, Figure, ForeignData, Gap, Head, Linebreak, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, Table, TextContent, Utterance, Whitespace,)
@@ -8143,7 +8143,7 @@ FunctionFeature.XMLTAG = None
 Gap.ACCEPTED_DATA = (Comment, Content, Description, Feature, ForeignData, Metric, Part,)
 Gap.ANNOTATIONTYPE = AnnotationType.GAP
 Gap.LABEL = "Gap"
-Gap.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME,)
+Gap.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.METADATA,)
 Gap.XMLTAG = "gap"
 #------ Head -------
 Head.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Event, Feature, ForeignData, Gap, Linebreak, Metric, Part, PhonContent, Reference, Sentence, String, TextContent, Whitespace, Word,)
@@ -8194,7 +8194,7 @@ ListItem.XMLTAG = "item"
 Metric.ACCEPTED_DATA = (Comment, Description, Feature, ForeignData, ValueFeature,)
 Metric.ANNOTATIONTYPE = AnnotationType.METRIC
 Metric.LABEL = "Metric"
-Metric.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER,)
+Metric.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.METADATA,)
 Metric.XMLTAG = "metric"
 #------ ModalityFeature -------
 ModalityFeature.SUBSET = "modality"
@@ -8251,7 +8251,7 @@ PhonContent.ACCEPTED_DATA = (Comment, Description,)
 PhonContent.ANNOTATIONTYPE = AnnotationType.PHON
 PhonContent.LABEL = "Phonetic Content"
 PhonContent.OCCURRENCES = 0
-PhonContent.OPTIONAL_ATTRIBS = (Attrib.CLASS, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME,)
+PhonContent.OPTIONAL_ATTRIBS = (Attrib.CLASS, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.METADATA,)
 PhonContent.PHONCONTAINER = True
 PhonContent.PRINTABLE = False
 PhonContent.SPEAKABLE = True
@@ -8358,7 +8358,7 @@ String.ACCEPTED_DATA = (AbstractExtendedTokenAnnotation, Alignment, Comment, Cor
 String.ANNOTATIONTYPE = AnnotationType.STRING
 String.LABEL = "String"
 String.OCCURRENCES = 0
-String.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME,)
+String.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.METADATA,)
 String.PRINTABLE = True
 String.XMLTAG = "str"
 #------ StyleFeature -------
@@ -8413,7 +8413,7 @@ TextContent.ACCEPTED_DATA = (AbstractTextMarkup, Comment, Description, Linebreak
 TextContent.ANNOTATIONTYPE = AnnotationType.TEXT
 TextContent.LABEL = "Text"
 TextContent.OCCURRENCES = 0
-TextContent.OPTIONAL_ATTRIBS = (Attrib.CLASS, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME,)
+TextContent.OPTIONAL_ATTRIBS = (Attrib.CLASS, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.METADATA,)
 TextContent.PRINTABLE = True
 TextContent.SPEAKABLE = False
 TextContent.TEXTCONTAINER = True
@@ -8470,6 +8470,7 @@ Whitespace.XMLTAG = "whitespace"
 Word.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, ForeignData, Metric, Part, PhonContent, Reference, String, TextContent,)
 Word.ANNOTATIONTYPE = AnnotationType.TOKEN
 Word.LABEL = "Word/Token"
+Word.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.CLASS, Attrib.ANNOTATOR, Attrib.N, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.SRC, Attrib.BEGINTIME, Attrib.ENDTIME, Attrib.SPEAKER, Attrib.TEXTCLASS, Attrib.METADATA,)
 Word.TEXTDELIMITER = " "
 Word.XMLTAG = "w"
 #------ WordReference -------
