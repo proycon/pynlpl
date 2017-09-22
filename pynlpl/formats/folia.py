@@ -6108,7 +6108,7 @@ class Document(object):
         self.declareprocessed = False # Will be set to True when declarations have been processed
 
         self.metadata = NativeMetaData() #will point to XML Element holding native metadata
-        self.metadatatype = MetaDataType.NATIVE
+        self.metadatatype = "native"
         self.metadatafile = None #reference to external metadata file
 
         self.submetadata = {}
