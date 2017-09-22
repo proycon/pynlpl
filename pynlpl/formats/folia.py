@@ -6111,7 +6111,9 @@ class Document(object):
         self.metadatatype = MetaDataType.NATIVE
         self.metadatafile = None #reference to external metadata file
 
-
+        self.submetadata = {}
+        self.submetadatatype = {}
+        self.submetadatafile = {}
 
         self.textclasses = set() #will contain the text classes found
 
