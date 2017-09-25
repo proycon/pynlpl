@@ -7001,10 +7001,10 @@ class Document(object):
                 self.metadata.append(subnode)
 
     def parsesubmetadata(self, node):
-        if not 'id' in node.attrib:
+        if '{http://www.w3.org/XML/1998/namespace}id' not in node.attrib:
             raise MetaDataError("Encountered a submetadata element without xml:id!")
         else:
-            id = node.attrib['id']
+            id = node.attrib['{http://www.w3.org/XML/1998/namespace}id']
 
 
         if 'type' in node.attrib:
