@@ -71,7 +71,7 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 
 #foliaspec:version:FOLIAVERSION
 #The FoLiA version
-FOLIAVERSION = "1.5"
+FOLIAVERSION = "1.5.0"
 
 LIBVERSION = FOLIAVERSION + '.87' #== FoLiA version + library revision
 
@@ -7784,7 +7784,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.5 on 2017-09-22 23:13:29, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.5.0 on 2017-09-25 14:48:24, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
