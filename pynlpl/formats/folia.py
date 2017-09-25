@@ -2111,7 +2111,7 @@ class AbstractElement(object):
         return l
 
     def getmetadata(self):
-        """Get the metadata that applies to this element"""
+        """Get the metadata that applies to this element, automatically inherited from parent elements"""
         if self.metadata:
             return self.metadata
         elif self.parent:

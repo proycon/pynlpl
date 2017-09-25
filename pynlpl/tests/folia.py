@@ -37,8 +37,8 @@ else:
     stderr = sys.stderr
     stdout = sys.stdout
 
-FOLIARELEASE = "v1.4.3.56"
-#FOLIARELEASE = None #development version, do *NOT* release if this is set!
+#FOLIARELEASE = "v1.4.3.56"
+FOLIARELEASE = None #development version, do *NOT* release if this is set!
 
 if os.path.exists('../../../FoLiA'):
     FOLIAPATH = '../../../FoLiA/'
@@ -1520,6 +1520,12 @@ class Test2Sanity(unittest.TestCase):
         alignments = list(ca[0].select(folia.Alignment))
         self.assertEqual(len(alignments),2)
 
+    def test106_submetadata(self):
+        """Sanity Check - Submetadata"""
+        self.assertEqual(self.doc['WR-P-E-J-0000000001.div0.1'].getmetadata(), self.doc.submetadata['wikipedia.stemma'])
+        self.assertEqual(self.doc['WR-P-E-J-0000000001.p.1.s.1.w.1'].getmetadata(), self.doc.submetadata['wikipedia.stemma'])
+        self.assertEqual(self.doc['sandbox.3'].getmetadata(), self.doc.submetadata['sandbox.3.metadata'])
+        self.assertEqual(self.doc['sandbox.3.table.1.w.1'].getmetadata(), self.doc.submetadata['sandbox.3.metadata'])
 
 
 class Test4Edit(unittest.TestCase):
