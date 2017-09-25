@@ -1362,7 +1362,7 @@ class Test2Sanity(unittest.TestCase):
   <metadata type="native">n"
     <annotations>n"
       <gap-annotation set="some very convoluted url or such which clutters all" alias="gap-set" datetime="2012-06-18T17:49"/>
-      <div-annotation set="a long div annotation name" alias="div-set" datetime="2012-06-18T17:49"/>
+      <division-annotation set="a long div annotation name" alias="div-set" datetime="2012-06-18T17:49"/>
     </annotations>
   </metadata>
   <text xml:id="example.text.1">

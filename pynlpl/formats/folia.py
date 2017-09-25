@@ -6791,6 +6791,8 @@ class Document(object):
 
         if inspect.isclass(annotationtype):
             annotationtype = annotationtype.ANNOTATIONTYPE
+        if annotationtype in self.alias_set and set in self.alias_set[annotationtype]:
+            raise ValueError("Set " + set + " conflicts with alias, may not be equal!")
         if not (annotationtype, set) in self.annotations:
             self.annotations.append( (annotationtype,set) )
             if set and self.loadsetdefinitions and not set in self.setdefinitions:
@@ -6800,14 +6802,12 @@ class Document(object):
             self.annotationdefaults[annotationtype] = {}
         self.annotationdefaults[annotationtype][set] = kwargs
         if 'alias' in kwargs:
-            if annotationtype in self.set_alias and self.set_alias[annotationtype][set] != kwargs['alias']:
+            if annotationtype in self.set_alias and set in self.set_alias[annotationtype] and self.set_alias[annotationtype][set] != kwargs['alias']:
                 raise ValueError("Redeclaring set " + set + " with another alias ('"+kwargs['alias']+"') is not allowed!")
-            if annotationtype in self.alias_set and self.alias_set[annotationtype][kwargs['alias']] != set:
+            if annotationtype in self.alias_set and kwargs['alias'] in self.alias_set[annotationtype] and self.alias_set[annotationtype][kwargs['alias']] != set:
                 raise ValueError("Redeclaring alias " + kwargs['alias'] + " with another set ('"+set+"') is not allowed!")
             if annotationtype in self.set_alias and kwargs['alias'] in self.set_alias[annotationtype]:
                 raise ValueError("Alias " + kwargs['alias'] + " conflicts with set name, may not be equal!")
-            if annotationtype in self.set_alias and set in self.alias_set[annotationtype]:
-                raise ValueError("Set " + set + " conflicts with alias, may not be equal!")
             if annotationtype not in self.alias_set:
                 self.alias_set[annotationtype] = {}
             if annotationtype not in self.set_alias:
