@@ -697,7 +697,7 @@ class AbstractElement(object):
     def __getattr__(self, attr):
         """Internal method"""
         #overriding getattr so we can get defaults here rather than needing a copy on each element, saves memory
-        if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','speaker','begintime','endtime','xlinktype','xlinktitle','xlinklabel','xlinkrole','xlinkshow','label', 'textclass'):
+        if attr in ('set','cls','confidence','annotator','annotatortype','datetime','n','href','src','speaker','begintime','endtime','xlinktype','xlinktitle','xlinklabel','xlinkrole','xlinkshow','label', 'textclass', 'metadata'):
             return None
         else:
             return super(AbstractElement, self).__getattribute__(attr)
@@ -2109,6 +2109,17 @@ class AbstractElement(object):
                 if isinstance(e, AbstractElement):
                     l += e.items(l)
         return l
+
+    def getmetadata(self):
+        """Get the metadata that applies to this element"""
+        if self.metadata:
+            return self.metadata
+        elif self.parent:
+            return self.parent.getmetadata()
+        elif self.doc:
+            return self.doc.metadata
+        else:
+            return None
 
     def getindex(self, child, recursive=True, ignore=True):
         """Get the index at which an element occurs, recursive by default!
@@ -6542,7 +6553,7 @@ class Document(object):
         return jsondoc
 
     def xmlmetadata(self):
-        """Internal method to serialize XML declarations"""
+        """Internal method to serialize metadata to XML"""
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         elements = []
         if self.metadatatype == "native":
