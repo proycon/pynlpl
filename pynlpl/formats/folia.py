@@ -441,6 +441,16 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
         if Attrib.TEXTCLASS in supported:
             object.textclass = "current"
 
+    if 'metadata' in kwargs:
+        if not Attrib.METADATA in supported:
+            raise ValueError("Metadata is not supported for " + object.__class__.__name__)
+        if doc:
+            try:
+                object.metadata = doc.submetadata[kwargs['metadata']]
+            except KeyError:
+                raise KeyError("No such metadata defined: " + kwargs['metadata'])
+        del kwargs['metadata']
+
     if object.XLINK:
         if 'href' in kwargs:
             object.href =kwargs['href']
