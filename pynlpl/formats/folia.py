@@ -6015,6 +6015,9 @@ this, first a trivial example of searching for one word::
         d = { 'matchannotation':self.matchannotation, 'matchannotationset':self.matchannotationset, 'casesensitive':self.casesensitive }
         yield Pattern(*newsequence, **d )
 
+class ExternalMetaData(object):
+    def __init__(self, url):
+        self.url = url
 
 
 class NativeMetaData(object):
@@ -6119,11 +6122,9 @@ class Document(object):
 
         self.metadata = NativeMetaData() #will point to XML Element holding native metadata
         self.metadatatype = "native"
-        self.metadatafile = None #reference to external metadata file
 
         self.submetadata = {}
         self.submetadatatype = {}
-        self.submetadatafile = {}
 
         self.textclasses = set() #will contain the text classes found
 
@@ -6503,7 +6504,9 @@ class Document(object):
 
         metadataattribs = {}
         metadataattribs['{' + NSFOLIA + '}type'] = self.metadatatype
-        if self.metadatafile: metadataattribs['{' + NSFOLIA + '}src'] = self.metadatafile
+
+        if isinstance(self.metadata, ExternalMetaData):
+            metadataattribs['{' + NSFOLIA + '}src'] = self.metadata.url
 
         e = E.FoLiA(
             E.metadata(
@@ -6542,12 +6545,12 @@ class Document(object):
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         if self.metadatatype == "native":
             e = []
-            if not self.metadatafile:
+            if isinstance(self.metadata, NativeMetaData):
                 for key, value in self.metadata.items():
                     e.append(E.meta(value,id=key) )
             return e
         else:
-            if self.metadatafile:
+            if isintance(self.metadata, ExternalMetaData):
                 return [] #external
             elif self.metadata is not None:
                 #in-document
@@ -6940,14 +6943,11 @@ class Document(object):
             self.metadatatype = "native"
 
         if 'src' in node.attrib:
-            self.metadatafile =  node.attrib['src']
-        else:
-            self.metadatafile = None
-
-        if self.metadatatype == "native":
+            self.metadata = ExternalMetaData(node.attrib['src'])
+        elif self.metadatatype == "native":
             self.metadata = NativeMetaData()
         else:
-            self.metadata = None #will be set below
+            self.metadata = None #may be set below to ForeignData
 
         for subnode in node:
             if subnode.tag == '{' + NSFOLIA + '}annotations':
@@ -6983,17 +6983,15 @@ class Document(object):
         else:
             id = node.attrib['id']
 
-        if 'src' in node.attrib:
-            self.submetadatafile[id] = node.attrib['src']
-        else:
-            self.submetadatafile[id] = None #only for external references
 
         if 'type' in node.attrib:
             self.submetadatatype[id] = node.attrib['type']
         else:
             self.submetadatatype[id] = "native"
 
-        if self.submetadatatype[id] == "native":
+        if 'src' in node.attrib:
+            self.submetadata[id] = ExternalMetaData(node.attrib['src'])
+        elif self.submetadatatype[id] == "native":
             self.submetadata[id] = NativeMetaData()
         else:
             self.submetadata[id] = None
