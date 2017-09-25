@@ -26,6 +26,7 @@ import sys
 
 from copy import copy, deepcopy
 from datetime import datetime
+from collections import OrderedDict
 import inspect
 import itertools
 import glob
@@ -6123,7 +6124,7 @@ class Document(object):
         self.metadata = NativeMetaData() #will point to XML Element holding native metadata
         self.metadatatype = "native"
 
-        self.submetadata = {}
+        self.submetadata = OrderedDict()
         self.submetadatatype = {}
 
         self.textclasses = set() #will contain the text classes found
@@ -6543,25 +6544,34 @@ class Document(object):
     def xmlmetadata(self):
         """Internal method to serialize XML declarations"""
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        elements = []
         if self.metadatatype == "native":
-            e = []
             if isinstance(self.metadata, NativeMetaData):
                 for key, value in self.metadata.items():
-                    e.append(E.meta(value,id=key) )
-            return e
+                    elements.append(E.meta(value,id=key) )
         else:
-            if isintance(self.metadata, ExternalMetaData):
-                return [] #external
-            elif self.metadata is not None:
+            if isinstance(self.metadata, ForeignData):
                 #in-document
-                e = []
                 m = self.metadata
                 while m is not None:
-                    e.append(m.xml())
+                    elements.append(m.xml())
                     m = m.next
-                return e
-            else:
-                return []
+        for metadata_id, submetadata in self.submetadata.items():
+            subelements = []
+            attribs = { type: self.submetadatatype[metadata_id] }
+            if isinstance(submetadata, NativeMetaData):
+                for key, value in submetadata.items():
+                    subelements.append(E.meta(value,id=key) )
+            elif isinstance(submetadata, ExternalMetaData):
+                attribs['src'] = submetadata.url
+            elif isinstance(submetadata, ForeignData):
+                #in-document
+                m = submetadata
+                while m is not None:
+                    subelements.append(m.xml())
+                    m = m.next
+            elements.append( E.submetadata(*subelements, **attribs))
+        return elements
 
 
 
