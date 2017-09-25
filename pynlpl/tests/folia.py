@@ -1355,6 +1355,46 @@ class Test2Sanity(unittest.TestCase):
         doc = folia.Document(string=xml)
         doc.declare(folia.AnnotationType.ENTITY, "https://github.com/proycon/folia/blob/master/setdefinitions/namedentities.foliaset.ttl", annotator='proycon' )
 
+    def test102n_aliases(self):
+        """Sanity Check - Declarations - Testing Aliases"""
+        xml = """<?xml version="1.0"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">n"
+    <annotations>n"
+      <gap-annotation set="some very convoluted url or such which clutters all" alias="gap-set" datetime="2012-06-18T17:49"/>
+      <div-annotation set="a long div annotation name" alias="div-set" datetime="2012-06-18T17:49"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+    <gap class="X" />
+    <gap class="Y" datetime="2012-06-18T17:50"/>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+
+        doc = folia.Document(string=xml)
+        doc.declare(folia.AnnotationType.GAP, "nog zon ingewikkelde en veels te lange declaratie", alias='gap-set2' )
+        self.doc.xmlstring() #check if serialisation works
+
+        #declaring a setname which is already an alias is an error
+        self.assertRaises( ValueError,  doc.declare, folia.AnnotationType.GAP, "gap-set2")
+
+        #declaring an alias  which is already an alias is an error
+        self.assertRaises( ValueError,  doc.declare, folia.AnnotationType.GAP, "gap-set3", alias="gap-set2")
+
+        #declaring an alias  which is already a setname is an error
+        self.assertRaises( ValueError,  doc.declare, folia.AnnotationType.GAP, "gap-set3", alias="nog zon ingewikkelde en veels te lange declaratie")
+
+        #just declaring again is NOT an error!
+        doc.declare(folia.AnnotationType.GAP, "nog zon ingewikkelde en veels te lange declaratie", alias='gap-set2' )
+
+        self.doc.xmlstring() #check if serialisation still works
+
+        #declaring again with another alias IS an error!
+        self.assertRaises(ValueError, doc.declare,folia.AnnotationType.GAP, "nog zon ingewikkelde en veels te lange declaratie", alias='gap-set3' )
+
+        #declaring again with same alias and another setname IS an error!
+        self.assertRaises(ValueError, doc.declare, folia.AnnotationType.GAP, "niet zon ingewikkelde en veels te lange declaratie", alias='gap-set2' )
+
 
 
 
