@@ -964,7 +964,7 @@ class Test2Sanity(unittest.TestCase):
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( doc.metadatatype, folia.MetaDataType.CMDI )
-        self.assertEqual( doc.metadatafile, 'test.cmdi.xml' )
+        self.assertEqual( doc.metadata.url, 'test.cmdi.xml' )
 
     def test101b_metadataextref2(self):
         """Sanity Check - Metadata external reference (IMDI)"""
@@ -979,7 +979,7 @@ class Test2Sanity(unittest.TestCase):
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml)
         self.assertEqual( doc.metadatatype, folia.MetaDataType.IMDI )
-        self.assertEqual( doc.metadatafile, 'test.imdi.xml' )
+        self.assertEqual( doc.metadata.url , 'test.imdi.xml' )
 
     def test101c_metadatainternal(self):
         """Sanity Check - Metadata internal (foreign data) (Dublin Core)"""
@@ -1525,7 +1525,7 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual(self.doc['WR-P-E-J-0000000001.div0.1'].getmetadata(), self.doc.submetadata['wikipedia.stemma'])
         self.assertEqual(self.doc['WR-P-E-J-0000000001.p.1.s.1.w.1'].getmetadata(), self.doc.submetadata['wikipedia.stemma'])
         self.assertEqual(self.doc['sandbox.3'].getmetadata(), self.doc.submetadata['sandbox.3.metadata'])
-        self.assertEqual(self.doc['sandbox.3.table.1.w.1'].getmetadata(), self.doc.submetadata['sandbox.3.metadata'])
+        self.assertEqual(self.doc['example.table.1.w.1'].getmetadata(), self.doc.submetadata['sandbox.3.metadata'])
 
 
 class Test4Edit(unittest.TestCase):

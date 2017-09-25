@@ -445,9 +445,10 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'metadata' in kwargs:
         if not Attrib.METADATA in supported:
             raise ValueError("Metadata is not supported for " + object.__class__.__name__)
+        object.metadata = kwargs['metadata']
         if doc:
             try:
-                object.metadata = doc.submetadata[kwargs['metadata']]
+                doc.submetadata[kwargs['metadata']]
             except KeyError:
                 raise KeyError("No such metadata defined: " + kwargs['metadata'])
         del kwargs['metadata']
@@ -1861,6 +1862,10 @@ class AbstractElement(object):
             if self.textclass and self.textclass != "current":
                 attribs['{' + NSFOLIA + '}textclass'] = self.textclass
 
+        if '{' + NSFOLIA + '}metadata' not in attribs: #do not override if caller already set it
+            if self.metadata:
+                attribs['{' + NSFOLIA + '}metadata'] = self.metadata
+
         if self.XLINK:
             if self.href:
                 attribs['{http://www.w3.org/1999/xlink}href'] = self.href
@@ -2110,16 +2115,22 @@ class AbstractElement(object):
                     l += e.items(l)
         return l
 
-    def getmetadata(self):
+    def getmetadata(self, key=None):
         """Get the metadata that applies to this element, automatically inherited from parent elements"""
         if self.metadata:
-            return self.metadata
+            d =  self.doc.submetadata[self.metadata]
         elif self.parent:
-            return self.parent.getmetadata()
+            d =  self.parent.getmetadata()
         elif self.doc:
-            return self.doc.metadata
+            d =  self.doc.metadata
         else:
             return None
+        if key:
+            return d[key]
+        else:
+            return d
+
+
 
     def getindex(self, child, recursive=True, ignore=True):
         """Get the index at which an element occurs, recursive by default!
@@ -2345,6 +2356,10 @@ class AbstractElement(object):
             attribs.append(E.attribute(name='textclass') )
         elif Attrib.TEXTCLASS in cls.OPTIONAL_ATTRIBS:
             attribs.append( E.optional( E.attribute(name='textclass') ) )
+        if Attrib.METADATA in cls.REQUIRED_ATTRIBS:
+            attribs.append(E.attribute(name='metadata') )
+        elif Attrib.METADATA in cls.OPTIONAL_ATTRIBS:
+            attribs.append( E.optional( E.attribute(name='metadata') ) )
         if cls.XLINK:
             attribs += [ #loose interpretation of specs, not checking whether xlink combinations are valid
                     E.optional(E.attribute(name='href',ns="http://www.w3.org/1999/xlink"),E.attribute(name='type',ns="http://www.w3.org/1999/xlink") ),
@@ -7407,6 +7422,20 @@ def relaxng(filename=None):
                     ),
                     E.zeroOrMore(
                         E.ref(name="foreign-data"),
+                    ),
+                    E.zeroOrMore(
+                        E.element( #submetadata
+                            E.attribute(name='id',ns="http://www.w3.org/XML/1998/namespace"),
+                            E.optional(E.attribute(name='type')),
+                            E.optional(E.attribute(name='src')),
+                            E.zeroOrMore(
+                                E.element(E.attribute(name='id'), E.text(), name='meta'),
+                            ),
+                            E.zeroOrMore(
+                                E.ref(name="foreign-data"),
+                            ),
+                            name="submetadata"
+                        )
                     ),
                     #E.optional(
                     #    E.ref(name='METATRANSCRIPT')
