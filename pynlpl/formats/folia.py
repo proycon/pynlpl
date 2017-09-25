@@ -273,7 +273,9 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
         if object.set:
             if doc and (not (annotationtype in doc.annotationdefaults) or not (object.set in doc.annotationdefaults[annotationtype])):
-                if doc.autodeclare:
+                if object.set in doc.alias_set:
+                    object.set = doc.alias_set[object.set]
+                elif doc.autodeclare:
                     doc.annotations.append( (annotationtype, object.set ) )
                     doc.annotationdefaults[annotationtype] = {object.set: {} }
                 else:
@@ -1800,7 +1802,10 @@ class AbstractElement(object):
                     if self.set:
                         if not self.ANNOTATIONTYPE in self.doc.annotationdefaults or len(self.doc.annotationdefaults[self.ANNOTATIONTYPE]) != 1 or list(self.doc.annotationdefaults[self.ANNOTATIONTYPE].keys())[0] != self.set:
                             if self.set != None:
-                                attribs['{' + NSFOLIA + '}set'] = self.set
+                                if self.ANNOTATIONTYPE in self.doc.set_alias and self.set in self.doc.set_alias[self.ANNOTATIONTYPE]:
+                                    attribs['{' + NSFOLIA + '}set'] = self.doc.set_alias[self.ANNOTATIONTYPE][self.set] #use alias instead
+                                else:
+                                    attribs['{' + NSFOLIA + '}set'] = self.set
                 except AttributeError:
                     pass
 
@@ -6153,6 +6158,9 @@ class Document(object):
         self.submetadata = OrderedDict()
         self.submetadatatype = {}
 
+        self.alias_set = {} #alias to set map (via annotationtype => first)
+        self.set_alias = {} #set to alias map (via annotationtype => first)
+
         self.textclasses = set() #will contain the text classes found
 
         self.autodeclare = False #Automatic declarations in case of undeclared elements (will be enabled for DCOI, since DCOI has no declarations)
@@ -6318,6 +6326,22 @@ class Document(object):
         for result in self.tree.xpath(query,namespaces={'f': 'http://ilk.uvt.nl/folia','folia': 'http://ilk.uvt.nl/folia' }):
             yield self.parsexml(result)
 
+
+    def alias(self, annotationtype, set, fallback=False):
+        """Return the alias for a set (if applicable, returns the unaltered set otherwise iff fallback is enabled)"""
+        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
+        if annotationtype in self.set_alias and set in self.set_alias[annotationtype]:
+            return self.set_alias[annotationtype][set]
+        elif fallback:
+            return set
+        else:
+            raise KeyError("No alias for set " + set)
+
+
+    def unalias(self, annotationtype, alias):
+        """Return the set for an alias (if applicable, raises an exception otherwise)"""
+        if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
+        return self.alias_set[annotationtype][alias]
 
     def findwords(self, *args, **kwargs):
         for x in findwords(self,self.words,*args,**kwargs):
@@ -6756,6 +6780,7 @@ class Document(object):
             annotator (str): Sets a default annotator
             annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process.
             datetime (datetime.datetime): Sets the default datetime
+            alias (str): Defines alias that may be used in set attribute of elements instead of the full set name
 
         Example::
 
@@ -6774,13 +6799,20 @@ class Document(object):
         if not annotationtype in self.annotationdefaults:
             self.annotationdefaults[annotationtype] = {}
         self.annotationdefaults[annotationtype][set] = kwargs
+        if 'alias' in kwargs:
+            if annotationtype not in self.alias_set:
+                self.alias_set[annotationtype] = {}
+            if annotationtype not in self.set_alias:
+                self.set_alias[annotationtype] = {}
+            self.alias_set[annotationtype][kwargs['alias']] = set
+            self.set_alias[annotationtype][set] = kwargs['alias']
 
     def declared(self, annotationtype, set):
         """Checks if the annotation type is present (i.e. declared) in the document.
 
         Arguments:
             annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
-            set (str): the set, should formally be a URL pointing to the set definition
+            set (str): the set, should formally be a URL pointing to the set definition (aliases are also supported)
 
         Example::
 
@@ -6791,7 +6823,7 @@ class Document(object):
             bool
         """
         if inspect.isclass(annotationtype): annotationtype = annotationtype.ANNOTATIONTYPE
-        return ( (annotationtype,set) in self.annotations)
+        return ( (annotationtype,set) in self.annotations) or (set in self.alias_set and self.alias_set[set] and (annotationtype, self.alias_set[set]) in self.annotations )
 
 
     def defaultset(self, annotationtype):
