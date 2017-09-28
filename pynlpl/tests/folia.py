@@ -1033,6 +1033,28 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual( doc.metadata.node.xpath('//dc:creator', namespaces={'dc':'http://purl.org/dc/elements/1.1/'})[0].text , 'proycon' )
         xmlcheck(doc.xmlstring(), xml)
 
+    def test101e_metadatalegacyimdi(self):
+        """Sanity Check - Legacy inline IMDI metadata"""
+        #adapted from foliatests/tests/folia.imdi.xml
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="imdi">
+    <annotations>
+      <event-annotation set="test"/>
+    </annotations>
+    <imdi:METATRANSCRIPT xmlns:imdi="http://www.mpi.nl/IMDI/Schema/IMDI">
+      <imdi:Session>
+	<imdi:Title>Een imdi file</imdi:Title>
+	<imdi:Date>28/09/2017</imdi:Date>
+      </imdi:Session>
+    </imdi:METATRANSCRIPT>
+  </metadata>
+  <text xml:id="test.text"/>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc.metadatatype, "imdi" )
+        self.assertEqual( doc.metadata.node.xpath('//imdi:Title', namespaces={'imdi':'http://www.mpi.nl/IMDI/Schema/IMDI'})[0].text , 'Een imdi file' )
+
     def test102a_declarations(self):
         """Sanity Check - Declarations - Default set"""
         xml = """<?xml version="1.0"?>\n
