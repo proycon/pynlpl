@@ -771,7 +771,7 @@ class AbstractElement(object):
         return self.text(cls,strict=True)
 
     def textvalidation(self, warnonly=None):
-        """Run text validation on this element.
+        """Run text validation on this element. Checks whether any text redundancy is consistent and whether offsets are valid.
 
         Parameters:
             warnonly (bool): Warn only (True) or raise exceptions (False). If set to None then this value will be determined based on the document's FoLiA version (Warn only before FoLiA v1.5)
@@ -784,16 +784,25 @@ class AbstractElement(object):
             warnonly = (checkversion(self.doc.version, '1.5.0') < 0) #warn only for documents older than FoLiA v1.5
         valid = True
         for cls in self.doc.textclasses:
-            if self.hastext(cls, strict=True):
-                stricttext = self.text(cls,retaintokenisation=False,strict=True, normalize_spaces=True)
-                deeptext = self.text(cls,retaintokenisation=False,strict=False, normalize_spaces=True)
-                if stricttext != deeptext:
+            if self.hastext(cls, strict=True) and not isinstance(self, (Linebreak, Whitespace)):
+                if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] Text validation on " + repr(self),file=stderr)
+                strictnormtext = self.text(cls,retaintokenisation=False,strict=True, normalize_spaces=True)
+                deepnormtext = self.text(cls,retaintokenisation=False,strict=False, normalize_spaces=True)
+                if strictnormtext != deepnormtext:
                     valid = False
-                    msg = "Text for " + self.__class__.__name__ + ", ID " + str(self.id) + " is inconsistent: expected (after normalization): '" + deeptext + "', got (after normalization): '" + stricttext + "'"
+                    msg = "Text for " + self.__class__.__name__ + ", ID " + str(self.id) + ", class " + cls  + ", is inconsistent: expected (after normalization): '" + deepnormtext + "', got (after normalization): '" + strictnormtext + "'"
                     if warnonly:
                         print("TEXT VALIDATION ERROR: " + msg,file=sys.stderr)
                     else:
                         raise InconsistentText(msg)
+
+                #validate offsets
+                tc = self.textcontent(cls)
+                if tc.offset is not None:
+                    #we can't validate the reference of this element yet since it may point to higher level elements still being created!! we store it in a buffer that will
+                    #be processed by pendingvalidation() after parsing and prior to serialisation
+                    if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] Queing element for later offset validation: " + repr(self),file=stderr)
+                    self.doc.offsetvalidationbuffer.append( (self, cls) )
         return valid
 
     def toktext(self,cls='current'):
@@ -3348,22 +3357,23 @@ class TextContent(AbstractElement):
         else:
             self.offset = None
 
-        if 'ref' in kwargs: #reference to offset
-            if isinstance(kwargs['ref'], AbstractElement):
-                self.ref = kwargs['ref']
-            else:
-                try:
-                    self.ref = doc.index[kwargs['ref']]
-                except:
-                    raise UnresolvableTextContent("Unable to resolve textcontent reference: " + kwargs['ref'] + " (class=" + self.cls+")")
-            del kwargs['ref']
-        else:
-            self.ref = None #will be set upon parent.append()
-
 
         #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
         if 'cls' not in kwargs and 'class' not in kwargs:
             kwargs['cls'] = 'current'
+
+        if 'ref' in kwargs: #reference to offset
+            if isinstance(kwargs['ref'], AbstractElement):
+                if kwargs['ref'].id is None:
+                    raise ValueError("Reference for text content must have an ID or can't act as reference!")
+                self.ref = kwargs['ref'].id
+            else:
+                #a string (ID) is passed, we can't resolve it yet cause it may not exist at construction time, use getreference() to resolve when needed
+                self.ref = kwargs['ref']
+            del kwargs['ref']
+        else:
+            self.ref = None #no explicit reference; if the reference is implicit, getreference() will still work
+
 
         super(TextContent,self).__init__(doc, *args, **kwargs)
 
@@ -3387,24 +3397,25 @@ class TextContent(AbstractElement):
         #    raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.data[0]))
 
 
-    def validateref(self):
-        """Validates the Text Content's references. Raises UnresolvableTextContent when invalid"""
+    def getreference(self, validate=True):
+        """Returns and validates the Text Content's reference. Raises UnresolvableTextContent when invalid"""
 
-        if self.offset is None: return True #nothing to test
+        if self.offset is None: return None #nothing to test
         if self.ref:
-            ref = self.ref
+            ref = self.doc[self.ref]
         else:
             ref = self.finddefaultreference()
 
         if not ref:
             raise UnresolvableTextContent("Default reference for textcontent not found!")
-        elif ref.hastext(self.cls):
-            raise UnresolvableTextContent("Reference has no such text (class=" + self.cls+")")
-        elif self.text() != ref.textcontent(self.cls).text()[self.offset:self.offset+len(self.data[0])]:
-            raise UnresolvableTextContent("Referenced found but does not match!")
+        elif not ref.hastext(self.cls):
+            raise UnresolvableTextContent("Reference (ID " + str(ref.id) + ") has no such text (class=" + self.cls+")")
+        elif validate and self.text() != ref.textcontent(self.cls).text()[self.offset:self.offset+len(self.data[0])]:
+            raise UnresolvableTextContent("Reference (ID " + str(ref.id) + ", class=" + self.cls+") found but no text match at specified offset ("+str(self.offset)+")! Expected '" + self.text() + "', got '" + ref.textcontent(self.cls).text()[self.offset:self.offset+len(self.data[0])] +"'")
         else:
             #finally, we made it!
-            return True
+            return ref
+
 
     def deepvalidation(self):
         return True
@@ -3486,7 +3497,7 @@ class TextContent(AbstractElement):
         if not self.offset is None:
             attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
         if self.parent and self.ref:
-            attribs['{' + NSFOLIA + '}ref'] = self.ref.id
+            attribs['{' + NSFOLIA + '}ref'] = self.ref
 
         #if self.cls != 'current' and not (self.cls == 'original' and any( isinstance(x, Original) for x in self.ancestors() )  ):
         #    attribs['{' + NSFOLIA + '}class'] = self.cls
@@ -3508,7 +3519,7 @@ class TextContent(AbstractElement):
         if not self.offset is None:
             attribs['offset'] = self.offset
         if self.parent and self.ref:
-            attribs['ref'] = self.ref.id
+            attribs['ref'] = self.ref
         return super(TextContent,self).json(attribs, recurse,ignorelist)
 
 
@@ -3559,22 +3570,23 @@ class PhonContent(AbstractElement):
         else:
             self.offset = None
 
-        if 'ref' in kwargs: #reference to offset
-            if isinstance(kwargs['ref'], AbstractElement):
-                self.ref = kwargs['ref']
-            else:
-                try:
-                    self.ref = doc.index[kwargs['ref']]
-                except:
-                    raise UnresolvableTextContent("Unable to resolve phonetic content reference: " + kwargs['ref'] + " (class=" + self.cls+")")
-            del kwargs['ref']
-        else:
-            self.ref = None #will be set upon parent.append()
 
 
-        #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for t: current and original)
+        #If no class is specified, it defaults to 'current'. (FoLiA uncharacteristically predefines two classes for phon: current and original)
         if 'cls' not in kwargs and 'class' not in kwargs:
             kwargs['cls'] = 'current'
+
+        if 'ref' in kwargs: #reference to offset
+            if isinstance(kwargs['ref'], AbstractElement):
+                if kwargs['ref'].id is None:
+                    raise ValueError("Reference for phonetic content must have an ID or can't act as reference!")
+                self.ref = kwargs['ref'].id
+            else:
+                #a string (ID) is passed, we can't resolve it yet cause it may not exist at construction time, use getreference() to resolve when needed
+                self.ref = kwargs['ref']
+            del kwargs['ref']
+        else:
+            self.ref = None #no explicit reference; if the reference is implicit, getreference() will still work
 
         super(PhonContent,self).__init__(doc, *args, **kwargs)
 
@@ -3598,24 +3610,24 @@ class PhonContent(AbstractElement):
         #    raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.data[0]))
 
 
-    def validateref(self):
-        """Validates the Phonetic Content's references. Raises UnresolvableTextContent when invalid"""
+    def getreference(self, validate=True):
+        """Return and validate the Phonetic Content's reference. Raises UnresolvableTextContent when invalid"""
 
-        if self.offset is None: return True #nothing to test
+        if self.offset is None: return None #nothing to test
         if self.ref:
-            ref = self.ref
+            ref = self.doc[self.ref]
         else:
             ref = self.finddefaultreference()
 
         if not ref:
             raise UnresolvableTextContent("Default reference for phonetic content not found!")
-        elif ref.hasphon(self.cls):
+        elif not ref.hasphon(self.cls):
             raise UnresolvableTextContent("Reference has no such phonetic content (class=" + self.cls+")")
-        elif self.phon() != ref.textcontent(self.cls).phon()[self.offset:self.offset+len(self.data[0])]:
-            raise UnresolvableTextContent("Referenced found but does not match!")
+        elif validate and self.phon() != ref.textcontent(self.cls).phon()[self.offset:self.offset+len(self.data[0])]:
+            raise UnresolvableTextContent("Reference (class=" + self.cls+") found but no phonetic match at specified offset ("+str(self.offset)+")! Expected '" + self.text() + "', got '" + ref.textcontent(self.cls).text()[self.offset:self.offset+len(self.data[0])] +"'")
         else:
             #finally, we made it!
-            return True
+            return ref
 
     def deepvalidation(self):
         return True
@@ -3707,7 +3719,7 @@ class PhonContent(AbstractElement):
         if not self.offset is None:
             attribs['{' + NSFOLIA + '}offset'] = str(self.offset)
         if self.parent and self.ref:
-            attribs['{' + NSFOLIA + '}ref'] = self.ref.id
+            attribs['{' + NSFOLIA + '}ref'] = self.ref
 
         #if self.cls != 'current' and not (self.cls == 'original' and any( isinstance(x, Original) for x in self.ancestors() )  ):
         #    attribs['{' + NSFOLIA + '}class'] = self.cls
@@ -3728,7 +3740,7 @@ class PhonContent(AbstractElement):
         if not self.offset is None:
             attribs['offset'] = self.offset
         if self.parent and self.ref:
-            attribs['ref'] = self.ref.id
+            attribs['ref'] = self.ref
         return super(PhonContent,self).json(attribs, recurse, ignorelist)
 
 
@@ -6264,6 +6276,7 @@ class Document(object):
         else:
             self.textvalidation = False
         self.textvalidationerrors = 0 #will count the number of text validation errors
+        self.offsetvalidationbuffer = [] #will hold (AbstractStructureElement, textclass pairs) that need to be validated still (if textvalidation == True), validation will be done when all parsing is complete and/or prior to serialisation
 
         if 'allowadhocsets' in kwargs:
             self.allowadhocsets = bool(kwargs['allowadhocsets'])
@@ -6579,6 +6592,9 @@ class Document(object):
         See also:
             :meth:`Document.xmlstring`
         """
+
+        self.pendingvalidation()
+
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={'xml' : "http://www.w3.org/XML/1998/namespace", 'xlink':"http://www.w3.org/1999/xlink"})
         attribs = {}
         attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
@@ -6617,6 +6633,8 @@ class Document(object):
             import json
             jsondoc = json.dumps(doc.json())
         """
+        self.pendingvalidation()
+
         jsondoc = {'id': self.id, 'children': [], 'declarations': self.jsondeclarations() }
         if self.version:
             jsondoc['version'] = self.version
@@ -7220,6 +7238,39 @@ class Document(object):
                 raise Exception("Unknown DCOI XML tag: " + node.tag)
         else:
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
+
+        self.pendingvalidation() #perform  any pending offset validations (if applicable)
+
+
+    def pendingvalidation(self, warnonly=None):
+        """Perform any pending validations
+
+        Parameters:
+            warnonly (bool): Warn only (True) or raise exceptions (False). If set to None then this value will be determined based on the document's FoLiA version (Warn only before FoLiA v1.5)
+
+        Returns:
+            bool
+        """
+        if self.debug: print("[PyNLPl FoLiA DEBUG] Processing pending validations (if any)",file=stderr)
+
+        if warnonly is None and self and self.version:
+            warnonly = (checkversion(self.version, '1.5.0') < 0) #warn only for documents older than FoLiA v1.5
+        if self.textvalidation:
+            while self.offsetvalidationbuffer:
+                structureelement, textclass = self.offsetvalidationbuffer.pop()
+
+                if self.debug: print("[PyNLPl FoLiA DEBUG] Performing offset validation on " + repr(structureelement) + " textclass " + textclass,file=stderr)
+
+                #validate offsets
+                tc = structureelement.textcontent(textclass)
+                if tc.offset is not None:
+                    try:
+                        tc.getreference(validate=True)
+                    except UnresolvableTextContent:
+                        msg = "Text for " + structureelement.__class__.__name__ + ", ID " + str(structureelement.id) + ", textclass " + textclass  + ", has incorrect offset " + str(tc.offset) + " or invalid reference"
+                        print("TEXT VALIDATION ERROR: " + msg,file=sys.stderr)
+                        if not warnonly:
+                            raise
 
 
     def select(self, Class, set=None, recursive=True,  ignore=True):
