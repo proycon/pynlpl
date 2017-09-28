@@ -194,10 +194,10 @@ class CorrectionHandling:
     EITHER,CURRENT, ORIGINAL = range(3)
 
 
-def checkversion(version):
+def checkversion(version, REFVERSION=FOLIAVERSION):
     """Checks FoLiA version, returns 1 if the document is newer than the library, -1 if it is older, 0 if it is equal"""
     try:
-        for refversion, docversion in zip([int(x) for x in FOLIAVERSION.split('.')], [int(x) for x in version.split('.')]):
+        for refversion, docversion in zip([int(x) for x in REFVERSION.split('.')], [int(x) for x in version.split('.')]):
             if docversion > refversion:
                 return 1 #doc is newer than library
             elif docversion < refversion:
@@ -506,7 +506,9 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
 
     return kwargs
 
-
+def norm_spaces(s):
+    """Normalize spaces, splits on whitespace (\n\r\t\s) and rejoins (faster than a s/\s+// regexp)"""
+    return ' '.join(s.split())
 
 def parse_datetime(s): #source: http://stackoverflow.com/questions/2211362/how-to-parse-xsddatetime-format
     """Returns (datetime, tz offset in minutes) or (None, None)."""
@@ -768,15 +770,17 @@ class AbstractElement(object):
         """Alias for :meth:`text` with ``strict=True``"""
         return self.text(cls,strict=True)
 
-    def textvalidation(self, warnonly=True): #warnonly will change at some point in the future to be stricter
+    def textvalidation(self, warnonly=None): #warnonly will change at some point in the future to be stricter
+        if warnonly is None and self.doc and self.doc.version:
+            warnonly = (checkversion(self.doc.version, '1.5.0') < 0) #warn only for documents older than FoLiA v1.5
         valid = True
         for cls in self.doc.textclasses:
             if self.hastext(cls, strict=True):
-                stricttext = self.text(cls,retaintokenisation=False,strict=True)
-                deeptext = self.text(cls,retaintokenisation=False,strict=False)
+                stricttext = self.text(cls,retaintokenisation=False,strict=True, normalize_spaces=True)
+                deeptext = self.text(cls,retaintokenisation=False,strict=False, normalize_spaces=True)
                 if stricttext != deeptext:
                     valid = False
-                    msg = "Text for " + self.__class__.__name__ + ", ID " + str(self.id) + " is inconsistent: expected: " + deeptext
+                    msg = "Text for " + self.__class__.__name__ + ", ID " + str(self.id) + " is inconsistent: expected (after normalization): '" + deeptext + "', got (after normalization: '" + stricttext + "'"
                     if warnonly:
                         print("TEXT VALIDATION ERROR: " + msg,file=sys.stderr)
                     else:
@@ -787,7 +791,7 @@ class AbstractElement(object):
         """Alias for :meth:`text` with ``retaintokenisation=True``"""
         return self.text(cls,retaintokenisation=True)
 
-    def text(self, cls='current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT, normalize_spaces=False):
         """Get the text associated with this element (of the specified class)
 
         The text will be constructed from child-elements whereever possible, as they are more specific.
@@ -800,6 +804,7 @@ class AbstractElement(object):
             previousdelimiter (str): Can be set to a delimiter that was last outputed, useful when chaining calls to :meth:`text`. Defaults to an empty string.
             strict (bool):  Set this iif you are strictly interested in the text explicitly associated with the element, without recursing into children. Defaults to ``False``.
             correctionhandling: Specifies what text to retrieve when corrections are encountered. The default is ``CorrectionHandling.CURRENT``, which will retrieve the corrected/current text. You can set this to ``CorrectionHandling.ORIGINAL`` if you want the text prior to correction, and ``CorrectionHandling.EITHER`` if you don't care.
+            normalize_spaces (bool): Return the text with multiple spaces, linebreaks, tabs normalized to single spaces
 
         Example::
 
@@ -813,7 +818,7 @@ class AbstractElement(object):
         """
 
         if strict:
-            return self.textcontent(cls, correctionhandling).text()
+            return self.textcontent(cls, correctionhandling).text(normalize_spaces=normalize_spaces)
 
         if self.TEXTCONTAINER:
             s = ""
@@ -823,7 +828,10 @@ class AbstractElement(object):
                 else:
                     if s: s += e.TEXTDELIMITER #for AbstractMarkup, will usually be ""
                     s += e.text()
-            return s
+            if normalize_spaces:
+                return norm_spaces(s)
+            else:
+                return s
         elif not self.PRINTABLE: #only printable elements can hold text
             raise NoSuchText
         else:
@@ -846,9 +854,12 @@ class AbstractElement(object):
                 s = self.textcontent(cls, correctionhandling).text()
 
             if s and previousdelimiter:
-                return previousdelimiter + s
-            elif s:
-                return s
+                s = previousdelimiter + s
+            if s:
+                if normalize_spaces:
+                    return norm_spaces(s)
+                else:
+                    return s
             else:
                 #No text found at all :`(
                 raise NoSuchText
@@ -3355,9 +3366,9 @@ class TextContent(AbstractElement):
         #    raise ValueError("There are illegal unicode control characters present in TextContent: " + repr(self.data[0]))
 
 
-    def text(self):
+    def text(self, normalize_spaces=False):
         """Obtain the text (unicode instance)"""
-        return super(TextContent,self).text() #AbstractElement will handle it now, merely overridden to get rid of parameters that dont make sense in this context
+        return super(TextContent,self).text(normalize_spaces=normalize_spaces) #AbstractElement will handle it now, merely overridden to get rid of parameters that dont make sense in this context
 
     def settext(self, text):
         self.data = [text]
@@ -3828,8 +3839,11 @@ class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has
         super(Linebreak, self).__init__(doc, *args, **kwargs)
 
 
-    def text(self, cls='current', retaintokenisation=False, previousdelimiter="", strict=False, correctionhandling=None):
-        return previousdelimiter.strip(' ') + "\n"
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter="", strict=False, correctionhandling=None, normalize_spaces=False):
+        if normalize_spaces:
+            return " "
+        else:
+            return previousdelimiter.strip(' ') + "\n"
 
     @classmethod
     def parsexml(Class, node, doc):#pylint: disable=bad-classmethod-argument
@@ -3869,8 +3883,11 @@ class Linebreak(AbstractStructureElement, AbstractTextMarkup): #this element has
 class Whitespace(AbstractStructureElement):
     """Whitespace element, signals a vertical whitespace"""
 
-    def text(self, cls='current', retaintokenisation=False, previousdelimiter="", strict=False,correctionhandling=None):
-        return previousdelimiter.strip(' ') + "\n\n"
+    def text(self, cls='current', retaintokenisation=False, previousdelimiter="", strict=False,correctionhandling=None, normalize_spaces=False):
+        if normalize_spaces:
+            return " "
+        else:
+            return previousdelimiter.strip(' ') + "\n\n"
 
 
 class Word(AbstractStructureElement, AllowCorrections):
@@ -4873,17 +4890,25 @@ class Correction(AbstractElement, AllowGenerateID):
                     return e.hastext(cls,strict, correctionhandling)
         return False
 
-    def text(self, cls = 'current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT):
+    def text(self, cls = 'current', retaintokenisation=False, previousdelimiter="",strict=False, correctionhandling=CorrectionHandling.CURRENT, normalize_spaces=False):
         """See :meth:`AbstractElement.text`"""
         if cls == 'original': correctionhandling = CorrectionHandling.ORIGINAL #backward compatibility
         if correctionhandling in (CorrectionHandling.CURRENT, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, New) or isinstance(e, Current):
-                    return previousdelimiter + e.text(cls, retaintokenisation,"", strict, correctionhandling)
+                    s = previousdelimiter + e.text(cls, retaintokenisation,"", strict, correctionhandling)
+                    if normalize_spaces:
+                        return norm_spaces(s)
+                    else:
+                        return s
         if correctionhandling in (CorrectionHandling.ORIGINAL, CorrectionHandling.EITHER):
             for e in self:
                 if isinstance(e, Original):
-                    return previousdelimiter + e.text(cls, retaintokenisation,"", strict, correctionhandling)
+                    s =  previousdelimiter + e.text(cls, retaintokenisation,"", strict, correctionhandling)
+                    if normalize_spaces:
+                        return norm_spaces(s)
+                    else:
+                        return s
         raise NoSuchText
 
     def hasphon(self, cls='current',strict=True, correctionhandling=CorrectionHandling.CURRENT):
