@@ -2604,7 +2604,6 @@ class Test9Validation(unittest.TestCase):
     def test003_invalid_text_misspelled(self):
         """Validation - Invalid Text (Misspelled word)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="folia.xsl"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
@@ -2628,7 +2627,6 @@ class Test9Validation(unittest.TestCase):
     def test004_invalid_text_missing(self):
         """Validation - Invalid Text (Missing Word)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="folia.xsl"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
@@ -2652,7 +2650,6 @@ class Test9Validation(unittest.TestCase):
     def test005_textvalidation_intermittent_redundancy(self):
         """Validation - Text Validation (Intermittent Redundancy)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="folia.xsl"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
@@ -2681,7 +2678,6 @@ het    ook   ?
     def test006_multiple_textclasses(self):
         """Validation - Invalid Text (Multiple classes)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="folia.xsl"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
     <annotations>
@@ -2704,6 +2700,55 @@ het    ook   ?
   </text>
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         folia.Document(string=xml, textvalidation=True)
+
+    def test007_textcheck_no_morphemes(self):
+        """Validation - No text checking on (nested) morphemes"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
+      <pos-annotation set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn" annotator="frog" annotatortype="auto" />
+      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-04-20T16:48:45" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+      <lemma-annotation set="lemmas-nl" annotator="tadpole" annotatortype="auto" />
+      <morphological-annotation annotator="proycon" annotatortype="manual" />
+    </annotations>
+  </metadata>
+  <text xml:id="example.text">
+      <w xml:id="WR-P-E-J-0000000001.p.1.s.2.w.16">
+        <t>genealogie</t>
+        <pos class="N(soort,ev,basis,zijd,stan)" set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/frog-mbpos-cgn"/>
+        <lemma class="genealogie"/>
+        <morphology>
+          <morpheme class="complex">
+            <t>genealogie</t>
+            <feat class="[[genealogisch]adjective[ie]]noun/singular" subset="structure"/>
+            <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+            <morpheme class="complex">
+              <feat class="N_A*" subset="applied_rule"/>
+              <feat class="[[genealogisch]adjective[ie]]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>genealogisch</t>
+                <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>ie</t>
+                <feat class="[ie]" subset="structure"/>
+              </morpheme>
+             </morpheme>
+             <morpheme class="inflection">
+              <feat class="singular" subset="inflection"/>
+             </morpheme>
+          </morpheme>
+        </morphology>
+      </w>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        folia.Document(string=xml, textvalidation=True)
+
+
+
 
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
     FOLIAEXAMPLE = foliaexample_f.read()
