@@ -7052,8 +7052,7 @@ class Document(object):
             elif subnode.tag == '{http://www.mpi.nl/IMDI/Schema/IMDI}METATRANSCRIPT': #backward-compatibility for old IMDI without foreign-key
                 E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
                 self.metadatatype = "imdi"
-                self.metadata = makeelement(E, '{'+NSFOLIA+'}foreign-data')
-                self.metadata.append(subnode)
+                self.metadata = ForeignData(self, node=subnode)
 
     def parsesubmetadata(self, node):
         if '{http://www.w3.org/XML/1998/namespace}id' not in node.attrib:
