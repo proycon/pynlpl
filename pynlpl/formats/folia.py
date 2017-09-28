@@ -770,7 +770,16 @@ class AbstractElement(object):
         """Alias for :meth:`text` with ``strict=True``"""
         return self.text(cls,strict=True)
 
-    def textvalidation(self, warnonly=None): #warnonly will change at some point in the future to be stricter
+    def textvalidation(self, warnonly=None):
+        """Run text validation on this element.
+
+        Parameters:
+            warnonly (bool): Warn only (True) or raise exceptions (False). If set to None then this value will be determined based on the document's FoLiA version (Warn only before FoLiA v1.5)
+
+        Returns:
+            bool
+        """
+
         if warnonly is None and self.doc and self.doc.version:
             warnonly = (checkversion(self.doc.version, '1.5.0') < 0) #warn only for documents older than FoLiA v1.5
         valid = True
