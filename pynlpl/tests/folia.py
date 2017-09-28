@@ -2613,7 +2613,7 @@ class Test9Validation(unittest.TestCase):
   </metadata>
   <text xml:id="example.text">
     <p xml:id="example.p.1">
-      <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers als Couperus, Haasse, of Grunberg? Of kan een computer net zo goed een rol vervullen in de creatie ervan? Met het kunstwerk 'Writers in the cloud' wagen kunstenaars en wetenschappers zich gezamenlijk aan het beantwoorden van deze vraag. Het resultaat is een interactieve installatie die draait om thema's als authenticiteit, creativiteit en de invloed van de digitale wereld op kunst.</t>
+      <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers als Couperus, Haasse, of Grunberg?</t>
       <s xml:id="example.p.1.s.1">
         <t>Is het creëren van een volwaardig literrair oeuvre voorbehouden aan schrijvers
 	als Couperus, 	Haasse, of
@@ -2637,7 +2637,7 @@ class Test9Validation(unittest.TestCase):
   </metadata>
   <text xml:id="example.text">
     <p xml:id="example.p.1">
-      <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers als Couperus, Haasse, of Grunberg? Of kan een computer net zo goed een rol vervullen in de creatie ervan? Met het kunstwerk 'Writers in the cloud' wagen kunstenaars en wetenschappers zich gezamenlijk aan het beantwoorden van deze vraag. Het resultaat is een interactieve installatie die draait om thema's als authenticiteit, creativiteit en de invloed van de digitale wereld op kunst.</t>
+      <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers als Couperus, Haasse, of Grunberg?</t>
       <s xml:id="example.p.1.s.1">
         <t>Is het creëren van een volwaardig oeuvre voorbehouden aan schrijvers
 	als Couperus, 	Haasse, of
@@ -2649,7 +2649,61 @@ class Test9Validation(unittest.TestCase):
         self.assertRaises( folia.InconsistentText, folia.Document, string=xml, textvalidation=True) #exception
 
 
+    def test005_textvalidation_intermittent_redundancy(self):
+        """Validation - Text Validation (Intermittent Redundancy)"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="folia.xsl"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text">
+    <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers als Couperus, Haasse, of Grunberg? Of kan ik het ook?</t>
+    <p xml:id="example.p.1">
+      <!-- Note: no text here on paragraph level -->
+      <s xml:id="example.p.1.s.1">
+        <t>Is het creëren van een volwaardig oeuvre voorbehouden aan schrijvers
+	als Couperus, 	Haasse, of
+	Grunberg?</t>
+      </s>
+      <s xml:id="example.p.1.s.2">
+        <t> Of kan ik
+het    ook   ?
+	    </t>
+      </s>
+    </p>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        folia.Document(file=os.path.join(FOLIAPATH,'test/example.textvalidation.xml'), textvalidation=True)
 
+    def test006_multiple_textclasses(self):
+        """Validation - Invalid Text (Multiple classes)"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="folia.xsl"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text">
+    <p xml:id="example.p.1">
+      <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers als Couperus, Haasse, of Grunberg?</t>
+      <t class="missingword">Is het creëren van een volwaardig oeuvre voorbehouden aan schrijvers als Couperus, Haasse, of Grunberg?</t>
+      <s xml:id="example.p.1.s.1">
+        <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers
+	als Couperus, 	Haasse, of
+	Grunberg?</t>
+        <t class="missingword">Is het creëren van een volwaardig oeuvre voorbehouden aan schrijvers
+	als Couperus, 	Haasse, of
+	Grunberg?</t>
+      </s>
+    </p>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        folia.Document(string=xml, textvalidation=True)
 
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
     FOLIAEXAMPLE = foliaexample_f.read()
