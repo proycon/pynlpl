@@ -2597,6 +2597,9 @@ class Test9Validation(unittest.TestCase):
         """Validation - Deep Validation"""
         folia.Document(file=os.path.join(FOLIAPATH,'test/example.deep.xml'), deepvalidation=True, allowadhocsets=True)
 
+    def test002_textvalidation(self):
+        """Validation - Text Validation"""
+        folia.Document(file=os.path.join(FOLIAPATH,'test/example.textvalidation.xml'))
 
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
     FOLIAEXAMPLE = foliaexample_f.read()
