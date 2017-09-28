@@ -780,7 +780,7 @@ class AbstractElement(object):
                 deeptext = self.text(cls,retaintokenisation=False,strict=False, normalize_spaces=True)
                 if stricttext != deeptext:
                     valid = False
-                    msg = "Text for " + self.__class__.__name__ + ", ID " + str(self.id) + " is inconsistent: expected (after normalization): '" + deeptext + "', got (after normalization: '" + stricttext + "'"
+                    msg = "Text for " + self.__class__.__name__ + ", ID " + str(self.id) + " is inconsistent: expected (after normalization): '" + deeptext + "', got (after normalization): '" + stricttext + "'"
                     if warnonly:
                         print("TEXT VALIDATION ERROR: " + msg,file=sys.stderr)
                     else:
@@ -5382,6 +5382,9 @@ class Morpheme(AbstractStructureElement):
                     if isinstance(e2, AbstractSpanAnnotation):
                         if self in e2.wrefs():
                             yield e2
+
+    def textvalidation(self, warnonly=None): #warnonly will change at some point in the future to be stricter
+        return True
 
 
 class Phoneme(AbstractStructureElement):
