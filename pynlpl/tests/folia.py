@@ -2595,11 +2595,61 @@ class Test8Validation(unittest.TestCase):
 class Test9Validation(unittest.TestCase):
     def test001_deepvalidation(self):
         """Validation - Deep Validation"""
-        folia.Document(file=os.path.join(FOLIAPATH,'test/example.deep.xml'), deepvalidation=True, allowadhocsets=True)
+        folia.Document(file=os.path.join(FOLIAPATH,'test/example.deep.xml'), deepvalidation=True, textvalidation=True, allowadhocsets=True)
 
     def test002_textvalidation(self):
         """Validation - Text Validation"""
-        folia.Document(file=os.path.join(FOLIAPATH,'test/example.textvalidation.xml'))
+        folia.Document(file=os.path.join(FOLIAPATH,'test/example.textvalidation.xml'), textvalidation=True)
+
+    def test003_invalid_text_misspelled(self):
+        """Validation - Invalid Text (Misspelled word)"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="folia.xsl"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text">
+    <p xml:id="example.p.1">
+      <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers als Couperus, Haasse, of Grunberg? Of kan een computer net zo goed een rol vervullen in de creatie ervan? Met het kunstwerk 'Writers in the cloud' wagen kunstenaars en wetenschappers zich gezamenlijk aan het beantwoorden van deze vraag. Het resultaat is een interactieve installatie die draait om thema's als authenticiteit, creativiteit en de invloed van de digitale wereld op kunst.</t>
+      <s xml:id="example.p.1.s.1">
+        <t>Is het creëren van een volwaardig literrair oeuvre voorbehouden aan schrijvers
+	als Couperus, 	Haasse, of
+	Grunberg?</t>
+      </s>
+    </p>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        self.assertRaises( folia.InconsistentText, folia.Document, string=xml, textvalidation=True) #exception
+
+
+    def test004_invalid_text_missing(self):
+        """Validation - Invalid Text (Missing Word)"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="folia.xsl"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text">
+    <p xml:id="example.p.1">
+      <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers als Couperus, Haasse, of Grunberg? Of kan een computer net zo goed een rol vervullen in de creatie ervan? Met het kunstwerk 'Writers in the cloud' wagen kunstenaars en wetenschappers zich gezamenlijk aan het beantwoorden van deze vraag. Het resultaat is een interactieve installatie die draait om thema's als authenticiteit, creativiteit en de invloed van de digitale wereld op kunst.</t>
+      <s xml:id="example.p.1.s.1">
+        <t>Is het creëren van een volwaardig oeuvre voorbehouden aan schrijvers
+	als Couperus, 	Haasse, of
+	Grunberg?</t>
+      </s>
+    </p>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        self.assertRaises( folia.InconsistentText, folia.Document, string=xml, textvalidation=True) #exception
+
+
+
 
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
     FOLIAEXAMPLE = foliaexample_f.read()
