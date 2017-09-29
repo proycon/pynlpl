@@ -1318,6 +1318,24 @@ class AbstractElement(object):
             if isinstance(e,AbstractElement): e.setdocument(doc)
 
     @classmethod
+    def accepts(Parentclass, Class, raiseexceptions=True, parentinstance=None):
+        if Class in Parentclass.ACCEPTED_DATA:
+            return True
+        else:
+            #Class is not in accepted data, but perhaps any of its ancestors is?
+            for c in Class.__mro__: #iterate over all base/super methods (automatically recurses)
+                if c is not Class and c in Parentclass.ACCEPTED_DATA:
+                    return True
+            if raiseexceptions:
+                extra = ""
+                if parentinstance and parentinstance.id:
+                    extra = ' (id=' + parentinstance.id + ')'
+                raise ValueError("Unable to add object of type " + Class.__name__ + " to " + Parentclass.__name__ + " " + extra + ". Type not allowed as child.")
+            else:
+                return False
+
+
+    @classmethod
     def addable(Class, parent, set=None, raiseexceptions=True):
         """Tests whether a new element of this class can be added to the parent.
 
@@ -1337,24 +1355,8 @@ class AbstractElement(object):
          """
 
 
-        if not Class in parent.ACCEPTED_DATA:
-            #Class is not in accepted data, but perhaps any of its ancestors is?
-            found = False
-            for c in Class.__mro__: #iterate over all base/super methods (automatically recurses)
-                if c is not Class and c in parent.ACCEPTED_DATA:
-                    found = True
-                    break
-            if not found:
-                if raiseexceptions:
-                    if parent.id:
-                        extra = ' (id=' + parent.id + ')'
-                    else:
-                        extra = ''
-                    raise ValueError("Unable to add object of type " + Class.__name__ + " to " + parent.__class__.__name__ + " " + extra + ". Type not allowed as child.")
-                else:
-                    return False
-
-
+        if not parent.__class__.accepts(Class, raiseexceptions, parent):
+            return False
 
         if Class.OCCURRENCES > 0:
             #check if the parent doesn't have too many already
