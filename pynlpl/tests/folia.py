@@ -1593,6 +1593,48 @@ class Test2Sanity(unittest.TestCase):
         self.assertEqual(self.doc['sandbox.3'].getmetadata('author'), 'proycon')
         self.assertEqual(self.doc['example.table.1.w.1'].getmetadata(), self.doc.submetadata['sandbox.3.metadata'])
 
+    def test107a_submetadataextref(self):
+        """Sanity Check - Submetadata external reference (CMDI)"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+<metadata type="native">
+    <annotations>
+    </annotations>
+    <submetadata xml:id="test.metadata" src="test.cmdi.xml" type="cmdi" />
+</metadata>
+<text xml:id="test.text" metadata="test.metadata" />
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc.submetadatatype['test.metadata'], 'cmdi')
+        self.assertTrue( isinstance(doc['test.text'].getmetadata(), folia.ExternalMetaData) )
+        self.assertEqual( doc['test.text'].getmetadata().url, 'test.cmdi.xml' )
+
+
+    def test107b_metadatainternal(self):
+        """Sanity Check - Submetadata internal (foreign data) (Dublin Core)"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+<metadata>
+  <annotations>
+  </annotations>
+  <submetadata xml:id="test.metadata" type="dc">
+      <foreign-data xmlns:dc="http://purl.org/dc/elements/1.1/">
+        <dc:identifier>mydoc</dc:identifier>
+        <dc:format>text/xml</dc:format>
+        <dc:type>Example</dc:type>
+        <dc:contributor>proycon</dc:contributor>
+        <dc:creator>proycon</dc:creator>
+        <dc:language>en</dc:language>
+        <dc:publisher>Radboud University</dc:publisher>
+        <dc:rights>public Domain</dc:rights>
+      </foreign-data>
+    </submetadata>
+</metadata>
+<text xml:id="test.text" metadata="test.metadata" />
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml)
+        self.assertEqual( doc.submetadatatype['test.metadata'], 'dc')
+        self.assertTrue( isinstance(doc['test.text'].getmetadata(), folia.ForeignData) )
 
 class Test4Edit(unittest.TestCase):
 
