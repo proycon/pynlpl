@@ -7871,7 +7871,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.5.0 on 2017-09-29 19:19:42, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.5.0 on 2017-09-29 19:29:28, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -8234,7 +8234,7 @@ Current.OCCURRENCES = 1
 Current.OPTIONAL_ATTRIBS = None
 Current.XMLTAG = "current"
 #------ Definition -------
-Definition.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, Figure, ForeignData, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Word,)
+Definition.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, Figure, ForeignData, Linebreak, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Whitespace, Word,)
 Definition.ANNOTATIONTYPE = AnnotationType.DEFINITION
 Definition.LABEL = "Definition"
 Definition.XMLTAG = "def"
@@ -8346,7 +8346,7 @@ Headspan.LABEL = "Head"
 Headspan.OCCURRENCES = 1
 Headspan.XMLTAG = "hd"
 #------ Label -------
-Label.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, ForeignData, Metric, Part, PhonContent, Reference, String, TextContent, Word,)
+Label.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, ForeignData, Linebreak, Metric, Part, PhonContent, Reference, String, TextContent, Whitespace, Word,)
 Label.LABEL = "Label"
 Label.XMLTAG = "label"
 #------ LangAnnotation -------
@@ -8468,11 +8468,11 @@ Predicate.ANNOTATIONTYPE = AnnotationType.PREDICATE
 Predicate.LABEL = "Predicate"
 Predicate.XMLTAG = "predicate"
 #------ Quote -------
-Quote.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Division, Feature, ForeignData, Gap, Metric, Paragraph, Part, Quote, Sentence, String, TextContent, Utterance, Word,)
+Quote.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Division, Feature, ForeignData, Gap, Metric, Paragraph, Part, Quote, Reference, Sentence, String, TextContent, Utterance, Word,)
 Quote.LABEL = "Quote"
 Quote.XMLTAG = "quote"
 #------ Reference -------
-Reference.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, ForeignData, Metric, Paragraph, Part, PhonContent, Quote, Sentence, String, TextContent, Utterance, Word,)
+Reference.ACCEPTED_DATA = (AbstractAnnotationLayer, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Feature, ForeignData, Linebreak, Metric, Paragraph, Part, PhonContent, Quote, Sentence, String, TextContent, Utterance, Whitespace, Word,)
 Reference.LABEL = "Reference"
 Reference.TEXTDELIMITER = None
 Reference.XMLTAG = "ref"
@@ -8586,12 +8586,12 @@ Target.LABEL = "Target"
 Target.OCCURRENCES = 1
 Target.XMLTAG = "target"
 #------ Term -------
-Term.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Event, Feature, Figure, ForeignData, Gap, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Word,)
+Term.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Event, Feature, Figure, ForeignData, Gap, Linebreak, List, Metric, Paragraph, Part, PhonContent, Reference, Sentence, String, Table, TextContent, Utterance, Whitespace, Word,)
 Term.ANNOTATIONTYPE = AnnotationType.TERM
 Term.LABEL = "Term"
 Term.XMLTAG = "term"
 #------ Text -------
-Text.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Division, Entry, Event, Example, External, Feature, Figure, ForeignData, Gap, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, String, Table, TextContent, Word,)
+Text.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Division, Entry, Event, Example, External, Feature, Figure, ForeignData, Gap, Linebreak, List, Metric, Note, Paragraph, Part, PhonContent, Quote, Reference, Sentence, String, Table, TextContent, Whitespace, Word,)
 Text.LABEL = "Text Body"
 Text.TEXTDELIMITER = "\n\n\n"
 Text.XMLTAG = "text"
