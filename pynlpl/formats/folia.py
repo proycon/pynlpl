@@ -7871,7 +7871,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.5.0 on 2017-09-29 19:29:28, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.5.0 on 2017-09-29 20:09:41, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -8373,7 +8373,7 @@ List.LABEL = "List"
 List.TEXTDELIMITER = "\n\n"
 List.XMLTAG = "list"
 #------ ListItem -------
-ListItem.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Event, Feature, ForeignData, Gap, Label, Linebreak, List, Metric, Note, Part, PhonContent, Reference, Sentence, String, TextContent, Whitespace, Word,)
+ListItem.ACCEPTED_DATA = (AbstractAnnotationLayer, AbstractExtendedTokenAnnotation, Alignment, Alternative, AlternativeLayers, Comment, Correction, Description, Event, Feature, ForeignData, Gap, Label, Linebreak, List, Metric, Note, Paragraph, Part, PhonContent, Reference, Sentence, String, TextContent, Whitespace, Word,)
 ListItem.LABEL = "List Item"
 ListItem.TEXTDELIMITER = "\n"
 ListItem.XMLTAG = "item"
