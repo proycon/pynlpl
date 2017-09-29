@@ -2906,6 +2906,85 @@ het    ook   ?
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         self.assertRaises( folia.UnresolvableTextContent, folia.Document, string=xml, textvalidation=True) #exception
 
+    def test010_offset_reference(self):
+        """Validation - Offset validation with explicit references"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text">
+    <p xml:id="example.p.1">
+      <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers
+	als Couperus, 	Haasse, of
+	Grunberg?</t>
+      <s xml:id="example.p.1.s.1">
+        <w xml:id="example.p.1.s.1.w.1" class="WORD">
+          <t offset="0" ref="example.p.1">Is</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.2" class="WORD">
+          <t offset="3" ref="example.p.1">het</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.3" class="WORD">
+          <t offset="7" ref="example.p.1">creëren</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.4" class="WORD">
+          <t offset="15" ref="example.p.1">van</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.5" class="WORD">
+          <t offset="19" ref="example.p.1">een</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.6" class="WORD">
+          <t offset="23" ref="example.p.1">volwaardig</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.7" class="WORD">
+          <t offset="34" ref="example.p.1">literair</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.8" class="WORD">
+          <t offset="43" ref="example.p.1">oeuvre</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.9" class="WORD">
+          <t offset="50" ref="example.p.1">voorbehouden</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.10" class="WORD">
+          <t offset="63" ref="example.p.1">aan</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.11" class="WORD">
+          <t offset="67" ref="example.p.1">schrijvers</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.12" class="WORD">
+          <t offset="79" ref="example.p.1">als</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.13" class="WORD" space="no">
+          <t offset="83" ref="example.p.1">Couperus</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.14" class="PUNCTUATION">
+          <t offset="91" ref="example.p.1">,</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.15" class="WORD" space="no">
+          <t offset="94" ref="example.p.1">Haasse</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.16" class="PUNCTUATION">
+          <t offset="100" ref="example.p.1">,</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.17" class="WORD">
+          <t offset="102" ref="example.p.1">of</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.18" class="WORD" space="no">
+          <t offset="106" ref="example.p.1">Grunberg</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.19" class="PUNCTUATION">
+          <t offset="114" ref="example.p.1">?</t>
+        </w>
+      </s>
+    </p>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml, textvalidation=True)
+        self.assertEqual( doc['example.p.1.s.1.w.19'].textcontent().getreference(), doc['example.p.1'] ) #testing resolving explicit reference
+
 
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
     FOLIAEXAMPLE = foliaexample_f.read()
