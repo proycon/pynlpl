@@ -1585,6 +1585,7 @@ class Test2Sanity(unittest.TestCase):
     def test106_submetadata(self):
         """Sanity Check - Submetadata"""
         self.assertEqual(self.doc['WR-P-E-J-0000000001.div0.1'].getmetadata(), self.doc.submetadata['wikipedia.stemma'])
+        self.assertTrue(isinstance(self.doc['WR-P-E-J-0000000001.div0.1'].getmetadata(), folia.NativeMetaData))
         self.assertEqual(self.doc['WR-P-E-J-0000000001.p.1.s.1.w.1'].getmetadata(), self.doc.submetadata['wikipedia.stemma'])
         self.assertEqual(self.doc['sandbox.3'].getmetadata(), self.doc.submetadata['sandbox.3.metadata'])
         self.assertEqual(self.doc['example.table.1.w.1'].getmetadata(), self.doc.submetadata['sandbox.3.metadata'])
