@@ -2747,6 +2747,83 @@ het    ook   ?
         folia.Document(string=xml, textvalidation=True)
 
 
+    def test008_offset(self):
+        """Validation - Offset validation"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text">
+    <p xml:id="example.p.1">
+      <s xml:id="example.p.1.s.1">
+        <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers
+	als Couperus, 	Haasse, of
+	Grunberg?</t>
+        <w xml:id="example.p.1.s.1.w.1" class="WORD">
+          <t offset="0">Is</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.2" class="WORD">
+          <t offset="3">het</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.3" class="WORD">
+          <t offset="7">creëren</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.4" class="WORD">
+          <t offset="15">van</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.5" class="WORD">
+          <t offset="19">een</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.6" class="WORD">
+          <t offset="23">volwaardig</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.7" class="WORD">
+          <t offset="34">literair</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.8" class="WORD">
+          <t offset="43">oeuvre</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.9" class="WORD">
+          <t offset="50">voorbehouden</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.10" class="WORD">
+          <t offset="63">aan</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.11" class="WORD">
+          <t offset="67">schrijvers</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.12" class="WORD">
+          <t offset="79">als</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.13" class="WORD" space="no">
+          <t offset="83">Couperus</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.14" class="PUNCTUATION">
+          <t offset="91">,</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.15" class="WORD" space="no">
+          <t offset="94">Haasse</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.16" class="PUNCTUATION">
+          <t offset="100">,</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.17" class="WORD">
+          <t offset="102">of</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.18" class="WORD" space="no">
+          <t offset="106">Grunberg</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.19" class="PUNCTUATION">
+          <t offset="114">?</t>
+        </w>
+      </s>
+    </p>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        folia.Document(string=xml, textvalidation=True)
 
 
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
