@@ -3189,6 +3189,7 @@ het    ook   ?
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml, textvalidation=True)
         self.assertEqual( doc['example.p.1.s.1.w.19'].textcontent().getreference(), doc['example.p.1.s.1'] ) #testing resolving implicit reference
+
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
     FOLIAEXAMPLE = foliaexample_f.read()
 
