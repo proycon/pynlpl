@@ -3525,6 +3525,123 @@ het    ook   ?
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml, textvalidation=True)
 
+    def test013e_correction(self):
+        """Validation - Text Validation on complex nested correction (Double text layers, structural changes, custom class)"""
+        #NOTE: Current library implementation won't be able to validate nested layers and will just skip those!
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
+      <style-annotation />
+    </annotations>
+  </metadata>
+  <text xml:id="example.text">
+    <p xml:id="example.p.1">
+      <s xml:id="example.p.1.s.1">
+        <t>Is het creëren van een volwaardig literair oeuvre voorbehouden aan schrijvers?</t>
+        <t class="old">Is het creeren van een volwaardig litterair oeuvre voor behouden aan schrijvers?</t>
+        <t class="older">Is het CREEREN van een volwaardig litterair oeuvre voor behouden aan schrijvers?</t>
+        <w xml:id="example.p.1.s.1.w.1" class="WORD">
+          <t offset="0">Is</t>
+          <t class="old" offset="0">Is</t>
+          <t class="older" offset="0">Is</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.2" class="WORD">
+          <t offset="3">het</t>
+          <t class="old" offset="3">het</t>
+          <t class="older" offset="3">het</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.3" class="WORD">
+          <correction>
+           <new>
+              <t offset="7">creëren</t>
+           </new>
+           <original auth="no">
+              <correction>
+                  <new>
+                      <t class="old" offset="7">creeren</t>
+                  </new>
+                  <original auth="no">
+                      <t class="older" offset="7">CREEREN</t>
+                  </original>
+              </correction>
+           </original>
+          </correction>
+        </w>
+        <w xml:id="example.p.1.s.1.w.4" class="WORD">
+          <t offset="15">van</t>
+          <t class="old" offset="15">van</t>
+          <t class="older" offset="15">van</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.5" class="WORD">
+          <t offset="19">een</t>
+          <t class="old" offset="19">een</t>
+          <t class="older" offset="19">een</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.6" class="WORD">
+          <t offset="23">volwaardig</t>
+          <t class="old" offset="23">volwaardig</t>
+          <t class="older" offset="23">volwaardig</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.7" class="WORD">
+          <t offset="34">literair</t>
+          <t class="old" offset="34">litterair</t>
+          <t class="older" offset="34">litterair</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.8" class="WORD">
+          <t offset="43">oeuvre</t>
+          <t class="old" offset="44">oeuvre</t>
+          <t class="older" offset="44">oeuvre</t>
+        </w>
+        <correction>
+         <new>
+            <w xml:id="example.p.1.s.1.w.9" class="WORD">
+              <t offset="50">voorbehouden</t>
+            </w>
+         </new>
+         <original>
+            <correction>
+                <new>
+                    <w xml:id="example.p.1.s.1.w.9a" class="WORD">
+                      <t class="old" offset="51">voor</t>
+                    </w>
+                    <w xml:id="example.p.1.s.1.w.9b" class="WORD">
+                      <t class="old" offset="56">behouden</t>
+                    </w>
+                </new>
+                <original>
+                    <w xml:id="example.p.1.s.1.w.9c" class="WORD">
+                      <t class="older" offset="51">voor</t>
+                    </w>
+                    <w xml:id="example.p.1.s.1.w.9d" class="WORD">
+                      <t class="older" offset="56">behouden</t>
+                    </w>
+                </original>
+            </correction>
+         </original>
+        </correction>
+        <w xml:id="example.p.1.s.1.w.10" class="WORD">
+          <t offset="63">aan</t>
+          <t class="old" offset="65">aan</t>
+          <t class="older" offset="65">aan</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.11" class="WORD" space="no">
+          <t offset="67">schrijvers</t>
+          <t class="old" offset="69">schrijvers</t>
+          <t class="older" offset="69">schrijvers</t>
+        </w>
+        <w xml:id="example.p.1.s.1.w.12" class="WORD">
+          <t offset="77">?</t>
+          <t class="old" offset="79">?</t>
+          <t class="older" offset="79">?</t>
+        </w>
+      </s>
+    </p>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml, textvalidation=True)
+
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
     FOLIAEXAMPLE = foliaexample_f.read()
 
