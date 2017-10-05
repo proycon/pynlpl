@@ -1639,7 +1639,7 @@ class Test2Sanity(unittest.TestCase):
 class Test4Edit(unittest.TestCase):
 
     def setUp(self):
-        self.doc = folia.Document(string=FOLIAEXAMPLE)
+        self.doc = folia.Document(string=FOLIAEXAMPLE, textvalidation=True)
 
     def test001_addsentence(self):
         """Edit Check - Adding a sentence to first paragraph (verbose)"""
@@ -2208,7 +2208,7 @@ class Test4Create(unittest.TestCase):
 
 class Test5Correction(unittest.TestCase):
     def setUp(self):
-        self.doc = folia.Document(id='example')
+        self.doc = folia.Document(id='example', textvalidation=True)
         self.doc.declare(folia.AnnotationType.TOKEN, set='adhocset',annotator='proycon')
         self.text = folia.Text(self.doc, id=self.doc.id + '.text.1')
         self.doc.append( self.text )
@@ -2392,7 +2392,7 @@ class Test5Correction(unittest.TestCase):
 
 class Test6Query(unittest.TestCase):
     def setUp(self):
-        self.doc = folia.Document(string=FOLIAEXAMPLE)
+        self.doc = folia.Document(string=FOLIAEXAMPLE, textvalidation=True)
 
     def test001_findwords_simple(self):
         """Querying - Find words (simple)"""
