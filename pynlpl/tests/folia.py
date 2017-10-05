@@ -3642,6 +3642,45 @@ het    ook   ?
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml, textvalidation=True)
 
+    def test013f_correction(self):
+        """Validation - Text Validation with redundancy on construction"""
+        #NOTE: Current library implementation won't be able to validate nested layers and will just skip those!
+        doc = folia.Document(id='example',textvalidation=True)
+
+        text = folia.Text(doc, id=doc.id + '.text.1')
+
+        text.append(
+            folia.Sentence(doc,id=doc.id + '.s.1', text="De site staat online . ", contents=[
+                folia.Word(doc,id=doc.id + '.s.1.w.1', text="De"),
+                folia.Word(doc,id=doc.id + '.s.1.w.2', text="site"),
+                folia.Word(doc,id=doc.id + '.s.1.w.3', text="staat"),
+                folia.Word(doc,id=doc.id + '.s.1.w.4', text="online"),
+                folia.Word(doc,id=doc.id + '.s.1.w.5', text=".")
+            ])
+        )
+        doc.xmlstring() #serialisation forces validation
+
+    def test013g_correction(self):
+        """Validation - Text Validation with redundancy on partial construction"""
+        #NOTE: Current library implementation won't be able to validate nested layers and will just skip those!
+        doc = folia.Document(id='example',textvalidation=True)
+
+        text = folia.Text(doc, id=doc.id + '.text.1')
+
+        raised = False
+        try:
+            text.append(
+                folia.Sentence(doc,id=doc.id + '.s.1', text="De site staat online . ", contents=[
+                    folia.Word(doc,id=doc.id + '.s.1.w.1', text="De"),
+                    folia.Word(doc,id=doc.id + '.s.1.w.2', text="site"),
+                    folia.Word(doc,id=doc.id + '.s.1.w.3', text="staat"),
+                ])
+            )
+        except folia.InconsistentText:
+            raised = True
+        self.assertTrue(raised)
+
+
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
     FOLIAEXAMPLE = foliaexample_f.read()
 
