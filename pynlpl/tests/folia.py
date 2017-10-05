@@ -3190,6 +3190,31 @@ het    ook   ?
         doc = folia.Document(string=xml, textvalidation=True)
         self.assertEqual( doc['example.p.1.s.1.w.19'].textcontent().getreference(), doc['example.p.1.s.1'] ) #testing resolving implicit reference
 
+    def test012_string(self):
+        """Validation - String"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
+      <style-annotation />
+    </annotations>
+  </metadata>
+  <text xml:id="example.text">
+    <p xml:id="example.p.1">
+      <s xml:id="example.p.1.s.1">
+        <t>Is het creëren van een <t-style class="emphasis">volwaardig</t-style> literair oeuvre voorbehouden aan schrijvers<br/>\tals <t-str xlink:href="https://nl.wikipedia.org/wiki/Louis_Couperus" xlink:type="simple">Couperus</t-str>, 	Haasse, of
+\tGrunberg?</t>
+        <str xml:id="example.string">
+            <t offset="7">creëren</t>
+        </str>
+      </s>
+    </p>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml, textvalidation=True)
+        self.assertEqual( doc['example.string'].textcontent().getreference(), doc['example.p.1.s.1'] ) #testing resolving implicit reference
+
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
     FOLIAEXAMPLE = foliaexample_f.read()
 
