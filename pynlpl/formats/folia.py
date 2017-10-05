@@ -770,6 +770,61 @@ class AbstractElement(object):
         """Alias for :meth:`text` with ``strict=True``"""
         return self.text(cls,strict=True)
 
+    def findcorrectionhandling(self, cls):
+        """Find the proper correctionhandling given a textclass by looking in the underlying corrections where it is reused"""
+        if cls == "current":
+            return CorrectionHandling.CURRENT
+        elif cls == "original":
+            return CorrectionHandling.ORIGINAL #backward compatibility
+        else:
+            correctionhandling = None
+            #but any other class may be anything
+            #Do we have corrections at all? otherwise no need to bother
+            for correction in self.select(Correction):
+                #yes, in which branch is the text class found?
+                found = False
+                hastext = False
+                if correction.hasnew():
+                    found = True
+                    doublecorrection = correction.new().count(Correction) > 0
+                    if doublecorrection: return None #skipping text validation, correction is too complex (nested) to handle for now
+                    for t in  correction.new().select(TextContent):
+                        hastext = True
+                        if t.cls == cls:
+                            if correctionhandling is not None and correctionhandling != CorrectionHandling.CURRENT:
+                                return None #inconsistent
+                            else:
+                                correctionhandling = CorrectionHandling.CURRENT
+                            break
+                elif correction.hascurrent():
+                    found = True
+                    doublecorrection = correction.current().count(Correction) > 0
+                    if doublecorrection: return None #skipping text validation, correction is too complex (nested) to handle for now
+                    for t in  correction.current().select(TextContent):
+                        hastext = True
+                        if t.cls == cls:
+                            if correctionhandling is not None and correctionhandling != CorrectionHandling.CURRENT:
+                                return None #inconsistent
+                            else:
+                                correctionhandling = CorrectionHandling.CURRENT
+                            break
+                if correction.hasoriginal():
+                    found = True
+                    doublecorrection = correction.original().count(Correction) > 0
+                    if doublecorrection: return None #skipping text validation, correction is too complex (nested) to handle for now
+                    for t in  correction.original().select(TextContent):
+                        hastext = True
+                        if t.cls == cls:
+                            if correctionhandling is not None and correctionhandling != CorrectionHandling.ORIGINAL:
+                                return None #inconsistent
+                            else:
+                                correctionhandling = CorrectionHandling.ORIGINAL
+                            break
+            if correctionhandling is None:
+                #well, we couldn't find our textclass in any correction, just fall back to current and let text validation fail if needed
+                return CorrectionHandling.CURRENT
+
+
     def textvalidation(self, warnonly=None):
         """Run text validation on this element. Checks whether any text redundancy is consistent and whether offsets are valid.
 
@@ -786,6 +841,12 @@ class AbstractElement(object):
         for cls in self.doc.textclasses:
             if self.hastext(cls, strict=True) and not isinstance(self, (Linebreak, Whitespace)):
                 if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] Text validation on " + repr(self),file=stderr)
+                correctionhandling = self.findcorrectionhandling(cls)
+                if correctionhandling is None:
+                    #skipping text validation, correction is too complex (nested) to handle for now; just assume valid (benefit of the doubt)
+                    if self.doc and self.doc.debug: print("[PyNLPl FoLiA DEBUG] SKIPPING Text validation on " + repr(self) + ", too complex to handle (nested corrections or inconsistent use)",file=stderr)
+                    return True #just assume it's valid then
+
                 strictnormtext = self.text(cls,retaintokenisation=False,strict=True, normalize_spaces=True)
                 deepnormtext = self.text(cls,retaintokenisation=False,strict=False, normalize_spaces=True)
                 if strictnormtext != deepnormtext:
