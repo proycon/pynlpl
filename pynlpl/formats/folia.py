@@ -3455,7 +3455,7 @@ class TextContent(AbstractElement):
                 #no parent, breaking
                 return False
 
-            if isinstance(e,AbstractStructureElement) or isinstance(e,AbstractSubtokenAnnotation) or isinstance(e, String):
+            if isinstance(e, (AbstractStructureElement, AbstractSubtokenAnnotation, String)):
                 depth += 1
                 if depth == 2:
                     return e
