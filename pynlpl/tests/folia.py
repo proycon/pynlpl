@@ -170,7 +170,7 @@ class Test1Read(unittest.TestCase):
 class Test2Sanity(unittest.TestCase):
 
     def setUp(self):
-        self.doc = folia.Document(string=FOLIAEXAMPLE)
+        self.doc = folia.Document(string=FOLIAEXAMPLE, textvalidation=True)
 
     def test000_count_text(self):
         """Sanity check - One text """
