@@ -3440,7 +3440,7 @@ het    ook   ?
         doc = folia.Document(string=xml, textvalidation=True)
 
     def test013d_correction(self):
-        """Validation - Text Validation on Correction (Double text layers, structural changes)"""
+        """Validation - Text Validation on Correction (Double text layers, structural changes, custom class)"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
