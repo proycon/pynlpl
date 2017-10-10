@@ -5810,8 +5810,14 @@ class Sentence(AbstractStructureElement):
     def gettextdelimiter(self, retaintokenisation=False):
         #no text delimiter of itself, recurse into children to inherit delimiter
         for child in reversed(self):
-            if isinstance(child, Linebreak) or isinstance(child, Whitespace):
+            if isinstance(child, (Linebreak, Whitespace)):
                 return "" #if a sentence ends in a linebreak, we don't want any delimiter
+            elif isinstance(child, Word) and not child.space:
+                return "" #if a sentence ends in a word with space=no, then we don't delimit either
+            elif isinstance(child, AbstractStructureElement):
+                #recurse? if the child is hidden in another element (part for instance?)
+                return child.gettextdelimiter(retaintokenisation) #if a sentence ends in a word with space=no, then we don't delimit either
+            #TODO: what about corrections?
             else:
                 break
         return self.TEXTDELIMITER
