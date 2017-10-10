@@ -3680,6 +3680,220 @@ het    ook   ?
             raised = True
         self.assertTrue(raised)
 
+    def test014_fullparagraph(self):
+        """Validation - Text Validation on a full paragraph"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+      <paragraph-annotation set="undefined" />
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
+    </annotations>
+  </metadata>
+  <text xml:id="test">
+        <p xml:id="TEI.1.text.1.front.1.div1.1.p.13" class="p">
+          <t class="default">Versoek van het Zuyd-Hollandse Synode aan Haar Ho. Mo., dat bij het inwilligen van een nieuw octroy de Compagnie een goede somme gelds soude contribueeren tot onderhoud van een Seminarium. Het getal der predikanten in Indiën a°. 1647 gebragt op ’t getal van 28. Verdeelinge van deselve (blz. 12).</t>
+          <s xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1">
+            <t class="default">Versoek van het Zuyd-Hollandse Synode aan Haar Ho.</t>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1.w.1" class="WORD" set="tokconfig-nld">
+              <t class="default">Versoek</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1.w.2" class="WORD" set="tokconfig-nld">
+              <t class="default">van</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1.w.3" class="WORD" set="tokconfig-nld">
+              <t class="default">het</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1.w.4" class="WORD-COMPOUND" set="tokconfig-nld">
+              <t class="default">Zuyd-Hollandse</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1.w.5" class="WORD" set="tokconfig-nld">
+              <t class="default">Synode</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1.w.6" class="WORD" set="tokconfig-nld">
+              <t class="default">aan</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1.w.7" class="WORD" set="tokconfig-nld">
+              <t class="default">Haar</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1.w.8" class="WORD" set="tokconfig-nld" space="no">
+              <t class="default">Ho</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1.w.9" class="PUNCTUATION" set="tokconfig-nld">
+              <t class="default">.</t>
+            </w>
+          </s>
+          <s xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.2">
+            <t class="default">Mo.</t>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.2.w.1" class="WORD" set="tokconfig-nld" space="no">
+              <t class="default">Mo</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.2.w.2" class="PUNCTUATION" set="tokconfig-nld" space="no">
+              <t class="default">.</t>
+            </w>
+          </s>
+          <s xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3">
+            <t class="default">, dat bij het inwilligen van een nieuw octroy de Compagnie een goede somme gelds soude contribueeren tot onderhoud van een Seminarium.</t>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.1" class="PUNCTUATION" set="tokconfig-nld">
+              <t class="default">,</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.2" class="WORD" set="tokconfig-nld">
+              <t class="default">dat</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.3" class="WORD" set="tokconfig-nld">
+              <t class="default">bij</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.4" class="WORD" set="tokconfig-nld">
+              <t class="default">het</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.5" class="WORD" set="tokconfig-nld">
+              <t class="default">inwilligen</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.6" class="WORD" set="tokconfig-nld">
+              <t class="default">van</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.7" class="WORD" set="tokconfig-nld">
+              <t class="default">een</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.8" class="WORD" set="tokconfig-nld">
+              <t class="default">nieuw</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.9" class="WORD" set="tokconfig-nld">
+              <t class="default">octroy</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.10" class="WORD" set="tokconfig-nld">
+              <t class="default">de</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.11" class="WORD" set="tokconfig-nld">
+              <t class="default">Compagnie</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.12" class="WORD" set="tokconfig-nld">
+              <t class="default">een</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.13" class="WORD" set="tokconfig-nld">
+              <t class="default">goede</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.14" class="WORD" set="tokconfig-nld">
+              <t class="default">somme</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.15" class="WORD" set="tokconfig-nld">
+              <t class="default">gelds</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.16" class="WORD" set="tokconfig-nld">
+              <t class="default">soude</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.17" class="WORD" set="tokconfig-nld">
+              <t class="default">contribueeren</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.18" class="WORD" set="tokconfig-nld">
+              <t class="default">tot</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.19" class="WORD" set="tokconfig-nld">
+              <t class="default">onderhoud</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.20" class="WORD" set="tokconfig-nld">
+              <t class="default">van</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.21" class="WORD" set="tokconfig-nld">
+              <t class="default">een</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.22" class="WORD" set="tokconfig-nld" space="no">
+              <t class="default">Seminarium</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.3.w.23" class="PUNCTUATION" set="tokconfig-nld">
+              <t class="default">.</t>
+            </w>
+          </s>
+          <s xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.4">
+            <t class="default">Het getal der predikanten in Indiën a°.</t>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.4.w.1" class="WORD" set="tokconfig-nld">
+              <t class="default">Het</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.4.w.2" class="WORD" set="tokconfig-nld">
+              <t class="default">getal</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.4.w.3" class="WORD" set="tokconfig-nld">
+              <t class="default">der</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.4.w.4" class="WORD" set="tokconfig-nld">
+              <t class="default">predikanten</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.4.w.5" class="WORD" set="tokconfig-nld">
+              <t class="default">in</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.4.w.6" class="WORD" set="tokconfig-nld">
+              <t class="default">Indiën</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.4.w.7" class="WORD" set="tokconfig-nld" space="no">
+              <t class="default">a</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.4.w.8" class="SYMBOL" set="tokconfig-nld" space="no">
+              <t class="default">°</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.4.w.9" class="PUNCTUATION" set="tokconfig-nld">
+              <t class="default">.</t>
+            </w>
+          </s>
+          <s xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.5">
+            <t class="default">1647 gebragt op ’t getal van 28.</t>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.5.w.1" class="NUMBER" set="tokconfig-nld">
+              <t class="default">1647</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.5.w.2" class="WORD" set="tokconfig-nld">
+              <t class="default">gebragt</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.5.w.3" class="WORD" set="tokconfig-nld">
+              <t class="default">op</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.5.w.4" class="WORD-TOKEN" set="tokconfig-nld">
+              <t class="default">’t</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.5.w.5" class="WORD" set="tokconfig-nld">
+              <t class="default">getal</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.5.w.6" class="WORD" set="tokconfig-nld">
+              <t class="default">van</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.5.w.7" class="NUMBER" set="tokconfig-nld" space="no">
+              <t class="default">28</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.5.w.8" class="PUNCTUATION" set="tokconfig-nld">
+              <t class="default">.</t>
+            </w>
+          </s>
+          <s xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.6">
+            <t class="default">Verdeelinge van deselve (blz. 12).</t>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.6.w.1" class="WORD" set="tokconfig-nld">
+              <t class="default">Verdeelinge</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.6.w.2" class="WORD" set="tokconfig-nld">
+              <t class="default">van</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.6.w.3" class="WORD" set="tokconfig-nld">
+              <t class="default">deselve</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.6.w.4" class="PUNCTUATION" set="tokconfig-nld" space="no">
+              <t class="default">(</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.6.w.5" class="ABBREVIATION-KNOWN" set="tokconfig-nld">
+              <t class="default">blz.</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.6.w.6" class="NUMBER" set="tokconfig-nld" space="no">
+              <t class="default">12</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.6.w.7" class="PUNCTUATION" set="tokconfig-nld" space="no">
+              <t class="default">)</t>
+            </w>
+            <w xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.6.w.8" class="PUNCTUATION" set="tokconfig-nld">
+              <t class="default">.</t>
+            </w>
+          </s>
+        </p>
+    </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml, textvalidation=True)
+
+
 
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
     FOLIAEXAMPLE = foliaexample_f.read()
