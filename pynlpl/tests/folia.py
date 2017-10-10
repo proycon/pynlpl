@@ -37,7 +37,7 @@ else:
     stderr = sys.stderr
     stdout = sys.stdout
 
-FOLIARELEASE = "v1.5.0.57"
+FOLIARELEASE = "v1.5.0.58"
 #FOLIARELEASE = None #development version, do *NOT* release if this is set!
 
 if os.path.exists('../../../FoLiA'):
@@ -3681,7 +3681,7 @@ het    ook   ?
         self.assertTrue(raised)
 
     def test014_fullparagraph(self):
-        """Validation - Text Validation on a full paragraph"""
+        """Validation - Text Validation with sentence text delimiter inheritance"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
@@ -3893,6 +3893,24 @@ het    ook   ?
 </FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
         doc = folia.Document(string=xml, textvalidation=True)
 
+
+    def test015_textwhitespace(self):
+        """Validation - Text Validation with sentence text delimiter inheritance"""
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+    </annotations>
+  </metadata>
+  <text xml:id="test">
+      <s xml:id="test.s"><t>Dit
+         is een rare test.
+         </t>
+      </s>
+    </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml, textvalidation=True)
+        self.assertEqual( doc['test.s'].text(), "Dit\n         is een rare test.\n         ")
 
 
 with io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8') as foliaexample_f:
