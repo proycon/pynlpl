@@ -3902,7 +3902,7 @@ het    ook   ?
     <annotations>
     </annotations>
   </metadata>
-  <text xml:id="test">
+  <text xml:id="test.text">
       <s xml:id="test.s"><t>Dit
          is een rare test.
          </t>
