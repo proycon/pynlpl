@@ -3895,7 +3895,7 @@ het    ook   ?
 
 
     def test015_textwhitespace(self):
-        """Validation - Text Validation with sentence text delimiter inheritance"""
+        """Validation - Whitespace in text content sanity check"""
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
   <metadata type="native">
