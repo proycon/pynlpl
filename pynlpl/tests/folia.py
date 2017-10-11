@@ -3690,7 +3690,7 @@ het    ook   ?
       <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-09-25T10:29:52" set="tokconfig-nld"/>
     </annotations>
   </metadata>
-  <text xml:id="test">
+  <text xml:id="test.text">
         <p xml:id="TEI.1.text.1.front.1.div1.1.p.13" class="p">
           <t class="default">Versoek van het Zuyd-Hollandse Synode aan Haar Ho. Mo., dat bij het inwilligen van een nieuw octroy de Compagnie een goede somme gelds soude contribueeren tot onderhoud van een Seminarium. Het getal der predikanten in Indiën a°. 1647 gebragt op ’t getal van 28. Verdeelinge van deselve (blz. 12).</t>
           <s xml:id="TEI.1.text.1.front.1.div1.1.p.13.s.1">
