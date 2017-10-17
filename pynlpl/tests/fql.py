@@ -121,6 +121,7 @@ Qcorrect_split = "SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegev
 
 Qsuggest_split = "SUBSTITUTE (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"runonerror\" SUGGESTION (SUBSTITUTE w WITH text \"weer\" SUBSTITUTE w WITH text \"gegeven\")) FOR SPAN ID \"WR-P-E-J-0000000001.p.1.s.6.w.20\""
 
+
 Qprepend = "PREPEND w WITH text \"heel\" FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
 Qcorrect_prepend = "PREPEND w WITH text \"heel\" (AS CORRECTION OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH class \"insertion\") FOR ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\""
 
@@ -155,6 +156,8 @@ Qfeat = "SELECT feat WHERE subset = \"wvorm\" FOR pos WHERE class = \"WW(pv,tgw,
 Qfeat2 = "EDIT feat WHERE subset = \"wvorm\" WITH class \"inf\" FOR pos WHERE class = \"WW(pv,tgw,met-t)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.5\""
 Qfeat3 = "ADD feat WITH subset \"wvorm\" class \"inf\" FOR pos WHERE class = \"WW(inf,vrij,zonder)\" FOR ID \"WR-P-E-J-0000000001.p.1.s.2.w.28\""
 Qfeat4 = "EDIT feat WHERE subset = \"strength\" AND class = \"strong\"  WITH class \"verystrong\"  FOR ID \"WR-P-E-J-0000000001.text.sentiment.1\""
+
+Qdelete_correction = "DELETE correction ID \"correctionexample.s.1.w.2.correction.1\" RESTORE ORIGINAL RETURN ancestor-focus"
 
 
 class Test1UnparsedQuery(unittest.TestCase):
@@ -826,6 +829,8 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(list(results[0].annotation(folia.Headspan).wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.3'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
         self.assertEqual(results[0].ancestor(folia.AbstractStructureElement).id,  'WR-P-E-J-0000000001.p.1.s.1')
 
+
+
 class Test4CQL(unittest.TestCase):
     def setUp(self):
         self.doc = folia.Document(string=FOLIAEXAMPLE)
@@ -960,6 +965,13 @@ class Test4Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0], folia.Correction)
         self.assertEqual(results[0].text(), '.')
         self.assertIsInstance(results[0].original()[0], folia.Correction)
+
+    def test4_delete_correction(self):
+        """Deleting a correction and restoring the original"""
+        q = fql.Query(Qdelete_correction)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Word)
+        self.assertEqual(results[0].text(), "word")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'

@@ -35,8 +35,8 @@ MASK_LITERAL = 1
 MASK_EXPRESSION = 2
 MAXEXPANSION = 99
 
-FOLIAVERSION = '1.4.3'
-FQLVERSION = '0.4.0'
+FOLIAVERSION = '1.5.0'
+FQLVERSION = '0.4.1'
 
 class SyntaxError(Exception):
     pass
@@ -1424,6 +1424,12 @@ class Action(object): #Action expression
 
         if action.action in ("EDIT","ADD", "APPEND","PREPEND") and q.kw(i,("RESPAN","SPAN")):
             action.span, i = Span.parse(q,i+1)
+        if action.action == "DELETE" and q.kw(i,("RESTORE")):
+            action.restore = q[i+1].upper()
+            print("DEBUG RESTORE=", action.restore,file=sys.stderr)
+            i += 2
+        else:
+            action.restore = None
 
         done = False
         while not done:
@@ -1602,6 +1608,15 @@ class Action(object): #Action expression
                             elif action.action == "DELETE":
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Applying DELETE to focus ", repr(focus),file=sys.stderr)
                                 p = focus.parent
+                                if action.restore == "ORIGINAL":
+                                    if not isinstance(focus, folia.Correction):
+                                        raise QueryError("RESTORE ORIGINAL can only be performed when the focus is a correction")
+                                    #restore original
+                                    originals = list(focus.original())
+                                    for original in originals:
+                                        if debug: print("[FQL EVALUATION DEBUG] Action - Restoring original: ", repr(original),file=sys.stderr)
+                                        original.parent = p
+                                        p.append(original)
                                 p.remove(focus)
                                 #we set the parent back on the element we return, so return types like ancestor-focus work
                                 focus.parent = p
