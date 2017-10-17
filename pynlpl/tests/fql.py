@@ -158,6 +158,8 @@ Qfeat3 = "ADD feat WITH subset \"wvorm\" class \"inf\" FOR pos WHERE class = \"W
 Qfeat4 = "EDIT feat WHERE subset = \"strength\" AND class = \"strong\"  WITH class \"verystrong\"  FOR ID \"WR-P-E-J-0000000001.text.sentiment.1\""
 
 Qdelete_correction = "DELETE correction ID \"correctionexample.s.1.w.2.correction.1\" RESTORE ORIGINAL RETURN ancestor-focus"
+Qdelete_structural_correction = "DELETE correction ID \"correctionexample.s.3.correction.1\" RESTORE ORIGINAL RETURN ancestor-focus"
+Qdelete_structural_correction2 = "DELETE correction ID \"correctionexample.s.3.correction.2\" RESTORE ORIGINAL RETURN ancestor-focus"
 
 
 class Test1UnparsedQuery(unittest.TestCase):
@@ -972,6 +974,24 @@ class Test4Evaluation(unittest.TestCase):
         results = q(self.doc)
         self.assertIsInstance(results[0], folia.Word)
         self.assertEqual(results[0].text(), "word")
+
+    def test4b_delete_structural_correction(self):
+        """Deleting a structural correction and restoring the original (runon error)"""
+        q = fql.Query(Qdelete_structural_correction)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Sentence)
+        self.assertIsInstance(results[0][0], folia.Word)
+        self.assertEqual(results[0][0].text(), "Ikhoor")
+
+    def test4c_delete_structural_correction(self):
+        """Deleting a structural correction and restoring the original (split error)"""
+        q = fql.Query(Qdelete_structural_correction2)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.Sentence)
+        self.assertIsInstance(results[0][1], folia.Word)
+        self.assertIsInstance(results[0][2], folia.Word)
+        self.assertEqual(results[0][1].text(), "on")
+        self.assertEqual(results[0][2].text(), "weer")
 
 if os.path.exists('../../FoLiA'):
     FOLIAPATH = '../../FoLiA/'

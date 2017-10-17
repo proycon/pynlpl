@@ -1426,7 +1426,6 @@ class Action(object): #Action expression
             action.span, i = Span.parse(q,i+1)
         if action.action == "DELETE" and q.kw(i,("RESTORE")):
             action.restore = q[i+1].upper()
-            print("DEBUG RESTORE=", action.restore,file=sys.stderr)
             i += 2
         else:
             action.restore = None
@@ -1609,14 +1608,14 @@ class Action(object): #Action expression
                                 if debug: print("[FQL EVALUATION DEBUG] Action - Applying DELETE to focus ", repr(focus),file=sys.stderr)
                                 p = focus.parent
                                 if action.restore == "ORIGINAL":
+                                    index = p.getindex(focus, False, False)
                                     if not isinstance(focus, folia.Correction):
                                         raise QueryError("RESTORE ORIGINAL can only be performed when the focus is a correction")
                                     #restore original
-                                    originals = list(focus.original())
-                                    for original in originals:
+                                    for original in reversed(focus.original()):
                                         if debug: print("[FQL EVALUATION DEBUG] Action - Restoring original: ", repr(original),file=sys.stderr)
                                         original.parent = p
-                                        p.append(original)
+                                        p.insert(index, original)
                                 p.remove(focus)
                                 #we set the parent back on the element we return, so return types like ancestor-focus work
                                 focus.parent = p
