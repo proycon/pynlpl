@@ -4288,8 +4288,8 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
             if isinstance(child, Word) or isinstance(child, Morpheme) or isinstance(child, Phoneme):
                 #Include REFERENCES to word items instead of word items themselves
                 attribs['{' + NSFOLIA + '}id'] = child.id
-                if child.PRINTABLE and child.hastext():
-                    attribs['{' + NSFOLIA + '}t'] = child.text()
+                if child.PRINTABLE and child.hastext(self.textclass):
+                    attribs['{' + NSFOLIA + '}t'] = child.text(self.textclass)
                 e.append( E.wref(**attribs) )
             elif not (isinstance(child, Feature) and child.SUBSET): #Don't add pre-defined features, they are already added as attributes
                 e.append( child.xml() )
