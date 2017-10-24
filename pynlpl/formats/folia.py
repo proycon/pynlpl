@@ -5252,9 +5252,9 @@ class External(AbstractElement):
         #special handling for external
         source = node.attrib['src']
         if 'include' in node.attrib:
-            kwargs['include'] = node.attrib['include']
+            include = node.attrib['include']
         else:
-            kwargs['include'] = False
+            include = False
         if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Found external",file=stderr)
         return External(doc, source=source, include=include)
 
