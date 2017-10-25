@@ -2576,7 +2576,10 @@ class AbstractElement(object):
 
         for subnode in node: #pylint: disable=too-many-nested-blocks
             #don't trip over comments
-            if not isinstance(subnode, ElementTree._Comment): #pylint: disable=protected-access
+            if isinstance(subnode, ElementTree._Comment): #pylint: disable=protected-access
+                if (Class.TEXTCONTAINER or Class.PHONCONTAINER) and subnode.tail:
+                    args.append(subnode.tail)
+            else:
                 if subnode.tag.startswith('{' + NSFOLIA + '}'):
                     if doc.debug >= 1: print("[PyNLPl FoLiA DEBUG] Processing subnode " + subnode.tag[nslen:],file=stderr)
                     try:
