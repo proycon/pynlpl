@@ -1666,6 +1666,20 @@ class Test2Sanity(unittest.TestCase):
         doc = folia.Document(string=xml)
         self.assertEqual(doc['example.text.1'].text(),"This is the real text")
 
+    def test108c_text_with_comment(self):
+        """Sanity Check - Text with FoLiA comment"""
+        xml = """<?xml version="1.0"?>\n
+<FoLiA xmlns="http://ilk.uvt.nl/folia" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="test" version="{version}" generator="{generator}">
+  <metadata type="native">
+    <annotations>
+    </annotations>
+  </metadata>
+  <text xml:id="example.text.1">
+   <t>This is the real text<comment annotator="pkampschreur" annotatortype="manual" datetime="2017-11-01T20:55:50">Overbodig</comment></t>
+  </text>
+</FoLiA>""".format(version=folia.FOLIAVERSION, generator='pynlpl.formats.folia-v' + folia.LIBVERSION)
+        doc = folia.Document(string=xml)
+        self.assertEqual(doc['example.text.1'].text(),"This is the real text")
 
 class Test4Edit(unittest.TestCase):
 
