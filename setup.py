@@ -23,7 +23,7 @@ if sys.version > '3':
 
 setup(
     name = "PyNLPl",
-    version = "1.2.4", #edit version in __init__.py as well and ensure tests/folia.py FOLIARELEASE points to the right version and is not set to None!
+    version = "1.2.5", #edit version in __init__.py as well and ensure tests/folia.py FOLIARELEASE points to the right version and is not set to None!
     author = "Maarten van Gompel",
     author_email = "proycon@anaproy.nl",
     description = ("PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language Processing. It contains various modules useful for common, and less common, NLP tasks. PyNLPl contains modules for basic tasks, clients for interfacting with server, and modules for parsing several file formats common in NLP, most notably FoLiA."),
