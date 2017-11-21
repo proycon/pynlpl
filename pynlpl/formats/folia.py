@@ -71,9 +71,9 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 
 #foliaspec:version:FOLIAVERSION
 #The FoLiA version
-FOLIAVERSION = "1.5.0"
+FOLIAVERSION = "1.5.1"
 
-LIBVERSION = FOLIAVERSION + '.87' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.88' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -904,7 +904,7 @@ class AbstractElement(object):
             for e in self:
                 if isstring(e):
                     s += e
-                else:
+                elif e.PRINTABLE:
                     if s: s += e.TEXTDELIMITER #for AbstractMarkup, will usually be ""
                     s += e.text()
             if normalize_spaces:
@@ -7944,7 +7944,7 @@ def validate(filename,schema=None,deep=False):
 #================================= FOLIA SPECIFICATION ==========================================================
 
 #foliaspec:header
-#This file was last updated according to the FoLiA specification for version 1.5.0 on 2017-09-29 20:09:41, using foliaspec.py
+#This file was last updated according to the FoLiA specification for version 1.5.1 on 2017-11-21 13:18:02, using foliaspec.py
 #Code blocks after a foliaspec comment (until the next newline) are automatically generated. **DO NOT EDIT THOSE** and **DO NOT REMOVE ANY FOLIASPEC COMMENTS** !!!
 
 #foliaspec:structurescope:STRUCTURESCOPE
@@ -8257,6 +8257,7 @@ ChunkingLayer.XMLTAG = "chunking"
 #------ Comment -------
 Comment.LABEL = "Comment"
 Comment.OPTIONAL_ATTRIBS = (Attrib.ID, Attrib.ANNOTATOR, Attrib.CONFIDENCE, Attrib.DATETIME, Attrib.N, Attrib.METADATA,)
+Comment.PRINTABLE = False
 Comment.XMLTAG = "comment"
 #------ ComplexAlignment -------
 ComplexAlignment.ACCEPTED_DATA = (Alignment, Comment, Description, Feature, ForeignData, Metric,)
