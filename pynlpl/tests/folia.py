@@ -37,7 +37,7 @@ else:
     stderr = sys.stderr
     stdout = sys.stdout
 
-FOLIARELEASE = "v1.5.0.58"
+FOLIARELEASE = "v1.5.1.59"
 #FOLIARELEASE = None #development version, do *NOT* release if this is set!
 
 if os.path.exists('../../../FoLiA'):
