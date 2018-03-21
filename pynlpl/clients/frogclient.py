@@ -25,7 +25,7 @@ from pynlpl.common import u
 import socket
 
 class FrogClient:
-    def __init__(self,host="localhost",port=12345, server_encoding="utf-8", returnall=False, timeout=120.0, ner=False):
+    def __init__(self,host="localhost",port=12345, server_encoding="utf-8", returnall=False, timeout=120.0):
         """Create a client connecting to a Frog or Tadpole server."""
         self.BUFSIZE = 4096
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -83,6 +83,9 @@ class FrogClient:
                             ner = fields[5]
                         if len(fields) > 6:
                             chunk = fields[6]
+                        if len(fields) >= 8:
+                            parse1 = fields[7]
+                            parse2 = fields[8]
 
                         if len(fields) < 5:
                             raise Exception("Can't process response line from Frog: ", repr(line), " got unexpected number of fields ", str(len(fields) + 1))
