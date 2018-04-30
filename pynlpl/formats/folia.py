@@ -5822,6 +5822,8 @@ class Sentence(AbstractStructureElement):
                 #recurse? if the child is hidden in another element (part for instance?)
                 return child.gettextdelimiter(retaintokenisation) #if a sentence ends in a word with space=no, then we don't delimit either
             #TODO: what about corrections?
+            elif isinstance(child, (AbstractAnnotationLayer, AbstractTokenAnnotation) ):
+                continue #this never counts as the last element (issue #41), continue...
             else:
                 break
         return self.TEXTDELIMITER
