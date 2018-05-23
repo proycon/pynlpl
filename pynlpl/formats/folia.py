@@ -856,7 +856,7 @@ class AbstractElement(object):
                         if c1 != c2:
                             deviation = i
                             break
-                    msg = "Text for " + self.__class__.__name__ + ", ID " + str(self.id) + ", class " + cls  + ", is inconsistent: EXPECTED (after normalization) *****>\n" + deepnormtext + "\n****> BUT FOUND (after normalization) ****>\n" + strictnormtext + "\n******* DEVIATION POINT: " + strictnormtext[min(0,deviation-10):deviation] + "<*HERE*>" + strictnormtext[deviation:deviation+10]
+                    msg = "Text for " + self.__class__.__name__ + ", ID " + str(self.id) + ", class " + cls  + ", is inconsistent: EXPECTED (after normalization) *****>\n" + deepnormtext + "\n****> BUT FOUND (after normalization) ****>\n" + strictnormtext + "\n******* DEVIATION POINT: " + strictnormtext[max(0,deviation-10):deviation] + "<*HERE*>" + strictnormtext[deviation:deviation+10]
                     if warnonly:
                         print("TEXT VALIDATION ERROR: " + msg,file=sys.stderr)
                     else:
