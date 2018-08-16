@@ -71,9 +71,9 @@ LXE=True #use lxml instead of built-in ElementTree (default)
 
 #foliaspec:version:FOLIAVERSION
 #The FoLiA version
-FOLIAVERSION = "1.5.1"
+FOLIAVERSION = "1.6.0"
 
-LIBVERSION = FOLIAVERSION + '.88' #== FoLiA version + library revision
+LIBVERSION = FOLIAVERSION + '.89' #== FoLiA version + library revision
 
 #0.9.1.31 is the first version with Python 3 support
 
@@ -86,7 +86,10 @@ NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 nslen = len(NSFOLIA) + 2
 nslendcoi = len(NSDCOI) + 2
 
-TMPDIR = "/tmp/" #will be used for downloading temporary data (external subdocuments)
+if 'TMPDIR' in os.environ:
+    TMPDIR = os.environ['TMPDIR']
+else:
+    TMPDIR = "/tmp/" #will be used for downloading temporary data (external subdocuments)
 
 DOCSTRING_GENERIC_ATTRIBS = """    id (str): An ID for the element. IDs must be unique for the entire document. They may not contain colons or spaces, and must start with a letter. (they must adhere to XML's NCName type). This is a generic FoLiA attribute.
     set (str): The FoLiA set for this element. This is a generic FoLiA attribute.
@@ -117,6 +120,8 @@ class AnnotatorType:
     AUTO = "auto"
     MANUAL = "manual"
 
+class ProcessorType(AnnotatorType): #superset of AnnotatorType
+    GENERATOR = "generator"
 
 #foliaspec:attributes
 #Defines all common FoLiA attributes (as part of the Attrib enumeration)
@@ -193,6 +198,122 @@ class GenerateIDException(Exception):
 class CorrectionHandling:
     EITHER,CURRENT, ORIGINAL = range(3)
 
+
+class Processor:
+    def __init__(self, id, name, type, version=None, document_version=None, folia_version=None, command=None, host=None, user=None, begindatetime=None, enddatetime=None):
+        self.id = id
+        self.name = name
+        assert type in (ProcessorType.MANUAL, ProcessorType.AUTO, ProcessorType.GENERATOR) #superset of AnnotatorType
+        self.type = type
+        self.version = version
+        self.folia_version = folia_version
+        self.document_version = document_version
+        self.command = command
+        self.host = host
+        self.user = user
+        self.begindatetime = begindatetime
+        self.enddatetime = enddatetime
+        self.processors = []
+        self.metadata = NativeMetaData()
+
+    def append(self, processor):
+        assert isinstance(processor, Processor)
+        self.subprocessors.append(processor)
+
+    @classmethod
+    def parsexml(Class, node): #pylint: disable=bad-classmethod-argument
+        if node.tag == '{' + NSFOLIA + '}processor':
+            processor = Processor(node.attrib['{http://www.w3.org/XML/1998/namespace}id'], node.attrib['name'], node.attrib.get('version',None), node.attrib.get('document_version', None), node.attrib.get('folia_version', None), node.attrib.get('command', None),node.attrib.get('host', None),node.attrib.get('user', None),node.attrib.get('begindatetime', None) ,node.attrib.get('enddatetime', None))
+            for subnode in node:
+                if subnode.tag == '{' + NSFOLIA + '}processor':
+                    processor.processors.append(Processor.parsexml(subnode))
+                elif subnode.tag == '{' + NSFOLIA + '}meta':
+                    if subnode.text:
+                        processor.metadata[subnode.attrib['id']] = subnode.text
+                else:
+                    raise ParseError("Unexpected element in Processor: " + subnode.tag)
+            return processor
+        raise ValueError("Invalid node passed" + node.tag)
+
+    def xml(self):
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        attribs = {}
+        attribs['{http://www.w3.org/XML/1998/namespace}id'] = self.id
+        for key in ('name','type', 'version','document_version', 'folia_version','command','host','user','begindatetime','enddatetime'):
+            if hasattr(self,key) and getattr(self,key) is not None:
+                attribs[key] = getattr(self, key)
+        elements = []
+        if isinstance(self.metadata, NativeMetaData): #serialize metadata on the processor
+            for key, value in self.metadata.items():
+                elements.append(E.meta(value,id=key) )
+        #serialize subprocessors
+        for subprocessor in self:
+            elements.append(subprocessor.xml())
+        return E.processor(*elements, **attribs)
+
+    def __getitem__(self, id):
+        for processor in self.processors:
+            if processor.id == id:
+                return processor
+        return KeyError(id)
+
+    def __len__(self):
+        return len(self.processors)
+
+    def __iter__(self):
+        for processor in self.processors:
+            yield processor
+
+    def __bool__(self):
+        return bool(len(self.processors))
+
+    def last(self):
+        if len(self.processors) > 0:
+            return self.processors[-1]
+        else:
+            raise ValueError("No processors")
+
+
+class Provenance:
+    def __init__(self):
+        self.processors = []
+
+    def append(self, processor):
+        assert isinstance(processor, Processor)
+        self.processors.append(processor)
+
+    def __getitem__(self, id):
+        for processor in self.processors:
+            if processor.id == id:
+                return processor
+            else:
+                #recurse into subprocessors
+                try:
+                    subprocessor = processor[id]
+                except KeyError:
+                    pass
+        return KeyError(id)
+
+    def __len__(self):
+        return len(self.processors)
+
+    def __iter__(self):
+        for processor in self.processors:
+            yield processor
+
+    def __bool__(self):
+        return bool(len(self.processors))
+
+    def last(self):
+        if len(self.processors) > 0:
+            return self.processors[-1]
+        else:
+            raise ValueError("No processors")
+
+    def xml(self):
+        E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
+        processors = [ processor.xml() for processor in self ]
+        return E.provenance(*processors)
 
 def checkversion(version, REFVERSION=FOLIAVERSION):
     """Checks FoLiA version, returns 1 if the document is newer than the library, -1 if it is older, 0 if it is equal"""
@@ -6265,6 +6386,7 @@ class Document(object):
 
 
         self.version = FOLIAVERSION
+        self.document_version = None
 
         self.data = [] #will hold all texts (usually only one)
 
@@ -6283,6 +6405,7 @@ class Document(object):
 
         self.metadata = NativeMetaData() #will point to XML Element holding native metadata
         self.metadatatype = "native"
+        self.provenance = Provenance()
 
         self.submetadata = OrderedDict()
         self.submetadatatype = {}
@@ -7165,6 +7288,8 @@ class Document(object):
         for subnode in node:
             if subnode.tag == '{' + NSFOLIA + '}annotations':
                 self.parsexmldeclarations(subnode)
+            elif subnode.tag == '{' + NSFOLIA + '}provenance':
+                self.parsexmlprovenance(subnode)
             elif subnode.tag == '{' + NSFOLIA + '}meta':
                 if self.metadatatype == "native":
                     if subnode.text:
@@ -7188,6 +7313,12 @@ class Document(object):
                 E = ElementMaker(namespace=NSFOLIA,nsmap={None: NSFOLIA, 'xml' : "http://www.w3.org/XML/1998/namespace"})
                 self.metadatatype = "imdi"
                 self.metadata = ForeignData(self, node=subnode)
+
+    def parsexmlprovenance(self, node):
+        for subnode in node:
+            if subnode.tag == '{' + NSFOLIA + '}processor':
+                self.provenance.add(Processor(subnode.attrib['{http://www.w3.org/XML/1998/namespace}id'], subnode.attrib['name'], subnode.attrib.get('version',None), subnode.attrib.get('folia_version', None), subnode.attrib.get('generator', None), subnode.attrib.get('command', None),subnode.attrib.get('host', None),subnode.attrib.get('user', None),subnode.attrib.get('begindatetime', None) ,subnode.attrib.get('enddatetime', None)))
+
 
     def parsesubmetadata(self, node):
         if '{http://www.w3.org/XML/1998/namespace}id' not in node.attrib:
@@ -7256,6 +7387,8 @@ class Document(object):
                         print("WARNING!!! Document uses a newer version of FoLiA than this library! (" + self.version + " vs " + FOLIAVERSION + "). Any possible subsequent failures in parsing or processing may probably be attributed to this. Upgrade pynlpl to remedy this.",file=sys.stderr)
                 else:
                     self.version = None
+                if 'document_version' in node.attrib:
+                    self.document_version = node.attrib['document_version']
 
                 if 'external' in node.attrib:
                     self.external = (node.attrib['external'] == 'yes')
