@@ -198,11 +198,22 @@ class GenerateIDException(Exception):
 class CorrectionHandling:
     EITHER,CURRENT, ORIGINAL = range(3)
 
+class Annotator:
+    """Links to a Processor"""
+    def __init__(self, processor_id, doc):
+        self.processor_id = processor_id
+        self.doc = doc
+
+    def __call__(self):
+        return self.doc.provenance[self.processor_id]
 
 class Processor:
-    def __init__(self, id, name, type, version=None, document_version=None, folia_version=None, command=None, host=None, user=None, begindatetime=None, enddatetime=None):
-        self.id = id
+    def __init__(self, name, type=ProcessorType.AUTO, id=None, version=None, document_version=None, folia_version=None, command=None, host=None, user=None, begindatetime=None, enddatetime=None, parent=None):
         self.name = name
+        if id is None:
+            self.id = "proc." + self.name.lower() + "."  + ("%08x" % random.getrandbits(16)) #assign ID with random elements if none provided
+        else:
+            self.id = id
         assert type in (ProcessorType.MANUAL, ProcessorType.AUTO, ProcessorType.GENERATOR) #superset of AnnotatorType
         self.type = type
         self.version = version
@@ -215,15 +226,17 @@ class Processor:
         self.enddatetime = enddatetime
         self.processors = []
         self.metadata = NativeMetaData()
+        self.parent = parent
 
     def append(self, processor):
         assert isinstance(processor, Processor)
-        self.subprocessors.append(processor)
+        self.processors.append(processor)
+        processor.parent = self
 
     @classmethod
     def parsexml(Class, node): #pylint: disable=bad-classmethod-argument
         if node.tag == '{' + NSFOLIA + '}processor':
-            processor = Processor(node.attrib['{http://www.w3.org/XML/1998/namespace}id'], node.attrib['name'], node.attrib.get('version',None), node.attrib.get('document_version', None), node.attrib.get('folia_version', None), node.attrib.get('command', None),node.attrib.get('host', None),node.attrib.get('user', None),node.attrib.get('begindatetime', None) ,node.attrib.get('enddatetime', None))
+            processor = Processor(id=node.attrib['{http://www.w3.org/XML/1998/namespace}id'], name=node.attrib['name'], version=node.attrib.get('version',None), document_version=node.attrib.get('document_version', None), folia_version=node.attrib.get('folia_version', None), command=node.attrib.get('command', None),host=node.attrib.get('host', None),user=node.attrib.get('user', None),begindatetime=node.attrib.get('begindatetime', None) ,enddatetime=node.attrib.get('enddatetime', None))
             for subnode in node:
                 if subnode.tag == '{' + NSFOLIA + '}processor':
                     processor.processors.append(Processor.parsexml(subnode))
@@ -281,8 +294,10 @@ class Provenance:
     def append(self, processor):
         assert isinstance(processor, Processor)
         self.processors.append(processor)
+        return processor
 
     def __getitem__(self, id):
+        if isinstance(id, Processor): id = id.id
         for processor in self.processors:
             if processor.id == id:
                 return processor
@@ -293,6 +308,14 @@ class Provenance:
                 except KeyError:
                     pass
         return KeyError(id)
+
+
+    def __exists__(self, id):
+        if isinstance(id, Processor): id = processor.id
+        for processor in self.processors:
+            if processor.id == id:
+                return True
+        return False
 
     def __len__(self):
         return len(self.processors)
@@ -449,9 +472,9 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     if 'annotatortype' in kwargs:
         if not Attrib.ANNOTATOR in supported:
             raise ValueError("Annotatortype is not supported for " + object.__class__.__name__)
-        if kwargs['annotatortype'] == 'auto' or kwargs['annotatortype'] == AnnotatorType.AUTO:
+        if kwargs['annotatortype'] == AnnotatorType.AUTO:
             object.annotatortype = AnnotatorType.AUTO
-        elif kwargs['annotatortype'] == 'manual' or kwargs['annotatortype']  == AnnotatorType.MANUAL:
+        elif kwargs['annotatortype']  == AnnotatorType.MANUAL:
             object.annotatortype = AnnotatorType.MANUAL
         else:
             raise ValueError("annotatortype must be 'auto' or 'manual', got "  + repr(kwargs['annotatortype']))
@@ -6391,7 +6414,8 @@ class Document(object):
         self.data = [] #will hold all texts (usually only one)
 
         self.annotationdefaults = {}
-        self.annotations = [] #Ordered list of incorporated annotations ['token','pos', etc..]
+        self.annotations = [] #Ordered list of incorporated(AnnotationType, set (str))
+        self.annotators = {} #AnnotationType => set => Annotator    (leaf value resolves to Processor when called)
 
         #Add implicit declaration for TextContent
         self.annotations.append( (AnnotationType.TEXT,'undefined') )
@@ -6906,6 +6930,8 @@ class Document(object):
                 else:
                     set = 'undefined'
 
+
+
                 if (type,set) in self.annotations:
                     if type == AnnotationType.TEXT:
                         #explicit Text declaration, remove the implicit declaration:
@@ -6926,36 +6952,57 @@ class Document(object):
                         except DeepValidationError:
                             print("WARNING: Set " + set + " could not be downloaded, ignoring!",file=sys.stderr) #warning and ignore
 
-                #Set defaults
-                if type in self.annotationdefaults and set in self.annotationdefaults[type]:
-                    #handle duplicate. If ambiguous: remove defaults
-                    if 'annotator' in subnode.attrib:
-                        if not ('annotator' in self.annotationdefaults[type][set]):
-                            self.annotationdefaults[type][set]['annotator'] = subnode.attrib['annotator']
-                        elif self.annotationdefaults[type][set]['annotator'] != subnode.attrib['annotator']:
-                            del self.annotationdefaults[type][set]['annotator']
-                    if 'annotatortype' in subnode.attrib:
-                        if not ('annotatortype' in self.annotationdefaults[type][set]):
-                            self.annotationdefaults[type][set]['annotatortype'] = subnode.attrib['annotatortype']
-                        elif self.annotationdefaults[type][set]['annotatortype'] != subnode.attrib['annotatortype']:
-                            del self.annotationdefaults[type][set]['annotatortype']
-                else:
-                    defaults = {}
-                    if 'annotator' in subnode.attrib:
-                        defaults['annotator'] = subnode.attrib['annotator']
-                    if 'annotatortype' in subnode.attrib:
-                        if subnode.attrib['annotatortype'] == 'auto':
-                            defaults['annotatortype'] = AnnotatorType.AUTO
-                        else:
-                            defaults['annotatortype'] = AnnotatorType.MANUAL
-                    if 'datetime' in subnode.attrib:
-                        if isinstance(subnode.attrib['datetime'], datetime):
-                            defaults['datetime'] = subnode.attrib['datetime']
-                        else:
-                            defaults['datetime'] = parse_datetime(subnode.attrib['datetime'])
+                if type not in self.annotators:
+                    self.annotators[type] = OrderedDict()
+                    if set not in self.annotators[type]:
+                        self.annotators[type][set] = []
 
-                    if not type in self.annotationdefaults:
-                        self.annotationdefaults[type] = {}
+                for annotatornode in subnode:
+                    if annotatornode.tag == '{' + NSFOLIA + '}annotator':
+                        self.annotators[type][set].append(Annotator(annotatornode.attrib['processor'], self))
+                    else:
+                        raise ParseError("Expected <annotator>, got " + annotatornode.tag)
+
+                #Set defaults
+                if type not in self.annotationdefaults:
+                    self.annotationdefaults[type] = {}
+                defaults = {}
+                if len(self.annotators[type][set]) == 1:
+                    #There is only one annotator (FoLiA >= v1.6), it will be the default
+                    processor = self.annotators[type][set]()
+                    defaults['processor'] = processor
+                elif len(self.annotators[type][set]) >= 1:
+                    #There are multiple annotators (FoLiA >= v1.6), there will be no defaults
+                    self.annotationdefaults[type][set] = {} #no defaults
+                else:
+                    #Fallback to FoLiA <= v1.5 behaviour; parse from attributes
+                    if type in self.annotationdefaults and set in self.annotationdefaults[type]:
+                        if 'annotator' in subnode.attrib:
+                            if not ('annotator' in self.annotationdefaults[type][set]):
+                                self.annotationdefaults[type][set]['annotator'] = subnode.attrib['annotator']
+                            elif self.annotationdefaults[type][set]['annotator'] != subnode.attrib['annotator']:
+                                del self.annotationdefaults[type][set]['annotator']
+                        if 'annotatortype' in subnode.attrib:
+                            if not ('annotatortype' in self.annotationdefaults[type][set]):
+                                self.annotationdefaults[type][set]['annotatortype'] = subnode.attrib['annotatortype']
+                            elif self.annotationdefaults[type][set]['annotatortype'] != subnode.attrib['annotatortype']:
+                                del self.annotationdefaults[type][set]['annotatortype']
+                        defaults = None
+                    else:
+                        if 'annotator' in subnode.attrib:
+                            defaults['annotator'] = subnode.attrib['annotator']
+                        if 'annotatortype' in subnode.attrib:
+                            if subnode.attrib['annotatortype'] == 'auto':
+                                defaults['annotatortype'] = AnnotatorType.AUTO
+                            else:
+                                defaults['annotatortype'] = AnnotatorType.MANUAL
+                        if 'datetime' in subnode.attrib:
+                            if isinstance(subnode.attrib['datetime'], datetime):
+                                defaults['datetime'] = subnode.attrib['datetime']
+                            else:
+                                defaults['datetime'] = parse_datetime(subnode.attrib['datetime'])
+
+                if defaults is not None:
                     self.annotationdefaults[type][set] = defaults
 
 
@@ -7025,24 +7072,49 @@ class Document(object):
         n = node.xpath('//imdi:Languages/imdi:Language/imdi:ID', namespaces=ns)
         if n and n[0].text: self._language = n[0].text
 
-    def declare(self, annotationtype, set, **kwargs):
-        """Declare a new annotation type to be used in the document.
+    def declare(self, annotationtype, set, *args, **kwargs):
+        """Declare new annotation types, sets or annotators to be used in the document.
 
-        Keyword arguments can be used to set defaults for any annotation of this type and set.
+           This typically done by associating an annotationtype and set with a processor, the processor
+           contains annotator information and will be recorded in the provenance data.
 
         Arguments:
-            annotationtype: The type of annotation, this is conveyed by passing the corresponding annototion class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
+            annotationtype: The type of annotation, this is conveyed by passing the corresponding annotation class (such as :class:`PosAnnotation` for example), or a member of :class:`AnnotationType`, such as ``AnnotationType.POS``.
             set (str): the set, should formally be a URL pointing to the set definition
 
+        Positional Arguments:
+            processor (Processor or str): A processor to declare, can be a processor instance or an ID of an existing processor. The processor encapsulates all information of an annotator. If you specify multiple processors then they are parsed as a hierarchy, the first one being the root and the others subprocessors.
+
         Keyword Arguments:
-            annotator (str): Sets a default annotator
-            annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process.
-            datetime (datetime.datetime): Sets the default datetime
             alias (str): Defines alias that may be used in set attribute of elements instead of the full set name
+            generator (bool): Automatically append a subprocessor with generator information on the FoLiA library used? (default: True)
 
-        Example::
+        Keyword Arguments (<= FoLiA 1.5 behaviour, i.e. without provenance data):
+            annotator (str): Sets a default annotator old-style, i.e. without full provenance
+            annotatortype: Old-style, should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process. Please use processor= instead.
+            datetime (datetime.datetime): Sets the default datetime
 
+        Example 1 (with provenance)::
+            doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', Processor(name="mytagger") )
+
+        Example 2 (with provenance; nested processors)::
+            main_processor = Processor(name="myNLPtool", version="2.2")
+            doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', main_processor, Processor(name="mytagger"))
+            doc.declare(folia.LemmaAnnotation, 'http://some/set', main_processor, Processor(name="mylemmatiser"))
+
+        Example 3 (with provenance; nested processors)::
+            main_processor = Processor(name="myEditor", version="1.2")
+            doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', main_processor, Processor(name="alice", type=AnnotatorType.MANUAL))
+            doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', main_processor, Processor(name="bob", type=AnnotatorType.MANUAL))
+            doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', main_processor, Processor(name="john", type=AnnotatorType.MANUAL))
+
+        Example 4 (without provenance, for backward compatibility, the use of proper provenance is always preferred!)::
             doc.declare(folia.PosAnnotation, 'http://some/path/brown-tag-set', annotator="mytagger", annotatortype=folia.AnnotatorType.AUTO)
+
+        Returns::
+            Processor instance of the last processor added (or None if no provenance is used)
+
+
         """
         if (sys.version > '3' and not isinstance(set,str)) or (sys.version < '3' and not isinstance(set,(str,unicode))):
             raise ValueError("Set parameter for declare() must be a string")
@@ -7051,14 +7123,17 @@ class Document(object):
             annotationtype = annotationtype.ANNOTATIONTYPE
         if annotationtype in self.alias_set and set in self.alias_set[annotationtype]:
             raise ValueError("Set " + set + " conflicts with alias, may not be equal!")
-        if not (annotationtype, set) in self.annotations:
+        if (annotationtype, set) not in self.annotations:
             self.annotations.append( (annotationtype,set) )
             if set and self.loadsetdefinitions and not set in self.setdefinitions:
                 if set[:7] == "http://" or set[:8] == "https://" or set[:6] == "ftp://":
                     self.setdefinitions[set] = SetDefinition(set,verbose=self.verbose) #will raise exception on error
-        if not annotationtype in self.annotationdefaults:
+        if annotationtype not in self.annotationdefaults:
             self.annotationdefaults[annotationtype] = {}
-        self.annotationdefaults[annotationtype][set] = kwargs
+        if annotationtype not in self.annotators:
+            self.annotators[annotationtype] = OrderedDict()
+            if set not in self.annotators[annotationtype]:
+                self.annotators[annotationtype][set] = []
         if 'alias' in kwargs:
             if annotationtype in self.set_alias and set in self.set_alias[annotationtype] and self.set_alias[annotationtype][set] != kwargs['alias']:
                 raise ValueError("Redeclaring set " + set + " with another alias ('"+kwargs['alias']+"') is not allowed!")
@@ -7072,6 +7147,51 @@ class Document(object):
                 self.set_alias[annotationtype] = {}
             self.alias_set[annotationtype][kwargs['alias']] = set
             self.set_alias[annotationtype][set] = kwargs['alias']
+
+        context = None
+        return_processors = []
+        for i, processor in enumerate(args):
+            if isinstance(processor, Processor):
+                #check if processor is new
+                processor_new = processor in self.provenance
+                if not processor_new:
+                    processor = self.provenance[processor]
+            else:
+                #assume we got passed a processor ID of an already existing processor, resolve it
+                processor = self.provenance[processor]
+                processor_new = False
+
+            leaf = i == len(args) - 1
+            if leaf:
+                #An annotator is a reference to a processor, make the reference only if it is not already there
+                annotator_new = any( a.processor_id == processor.id for a in self.annotators[annotationtype][set] )
+                if annotator_new:
+                    self.annotators[annotationtype][set].append(Annotator(processor.id, self))
+
+            if processor_new:
+                if 'generator' not in kwargs or not kwargs['generator']:
+                    #Add a subprocessor with generator information about this FoLiA library
+                    processor.append(Processor(id=processor.id+'.generator', name="pynlpl.formats.folia", type=ProcessorType.GENERATOR, version=LIBVERSION, folia_version=FOLIAVERSION))
+                if context:
+                    #add processor to existing context in provenance chain
+                    context.append(processor)
+                else:
+                    #add processor to provenance chain
+                    self.provenance.append(processor)
+            return_processors.append(processor)
+            context = processor
+
+        #Set defaults
+        if len(self.annotator[annotationtype][set]) == 1:
+            self.annotationdefaults[annotationtype][set] = {'processor': processor.id}
+            return processor #returns the last one
+        elif not args:
+            #No processors, old-style behaviour with annotator/annotatortype attributes for defaults
+            self.annotationdefaults[annotationtype][set] = kwargs
+        else:
+            #no defaults
+            self.annotationdefaults[annotationtype][set] = {}
+
 
     def declared(self, annotationtype, set):
         """Checks if the annotation type is present (i.e. declared) in the document.
