@@ -94,8 +94,9 @@ else:
 DOCSTRING_GENERIC_ATTRIBS = """    id (str): An ID for the element. IDs must be unique for the entire document. They may not contain colons or spaces, and must start with a letter. (they must adhere to XML's NCName type). This is a generic FoLiA attribute.
     set (str): The FoLiA set for this element. This is a generic FoLiA attribute.
     cls (str): The class for this element. This is a generic FoLiA attribute.
-    annotator (str): A name or ID for the annotator. This is a generic FoLiA attribute.
-    annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process. This is a generic FoLiA attribute.
+    processor (str): The ID of the processor of this annotation. This is a generic FoLiA attribute that replaces annotator/annotatortype.
+    annotator (str): A name or ID for the annotator. This is a generic FoLiA attribute but is mostly replaced by ``processor``.
+    annotatortype: Should be either ``AnnotatorType.MANUAL`` or ``AnnotatorType.AUTO``, indicating whether the annotation was performed manually or by an automated process. This is a generic FoLiA attribute but is mostly replaced by ``processor``.
     confidence (float): A value between 0 and 1 indicating the degree of confidence the annotator has that this the annotation is correct.. This is a generic FoLiA attribute.
     n (int): An index number to indicate the element is part of an sequence (does not affect the placement of the element).
     src (str): Speech annotation attribute, refers to a media file (audio/video) that this element describes. This is a generic FoLiA attribute.
@@ -455,34 +456,45 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
             raise ValueError("Set is required for " + object.__class__.__name__ +  ". Class '" + object.cls + "' assigned without set.")
 
 
-
-
-
-    if 'annotator' in kwargs:
-        if not Attrib.ANNOTATOR in supported:
-            raise ValueError("Annotator is not supported for " + object.__class__.__name__)
-        object.annotator = kwargs['annotator']
-        del kwargs['annotator']
-    elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults[annotationtype] and 'annotator' in doc.annotationdefaults[annotationtype][object.set]:
-        object.annotator = doc.annotationdefaults[annotationtype][object.set]['annotator']
-    elif Attrib.ANNOTATOR in required:
-        raise ValueError("Annotator is required for " + object.__class__.__name__)
-
-
-    if 'annotatortype' in kwargs:
-        if not Attrib.ANNOTATOR in supported:
-            raise ValueError("Annotatortype is not supported for " + object.__class__.__name__)
-        if kwargs['annotatortype'] == AnnotatorType.AUTO:
-            object.annotatortype = AnnotatorType.AUTO
-        elif kwargs['annotatortype']  == AnnotatorType.MANUAL:
-            object.annotatortype = AnnotatorType.MANUAL
+    if 'processor' in kwargs:
+        if Attrib.ANNOTATOR not in supported:   #(ANNOTATOR attribute also subsumes Processor)
+            raise ValueError("Processor is not supported for " + object.__class__.__name__)
+        if isinstance(kwargs['processor'], Processor):
+            object.processor = kwargs['processor']
         else:
-            raise ValueError("annotatortype must be 'auto' or 'manual', got "  + repr(kwargs['annotatortype']))
-        del kwargs['annotatortype']
-    elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults[annotationtype] and 'annotatortype' in doc.annotationdefaults[annotationtype][object.set]:
-        object.annotatortype = doc.annotationdefaults[annotationtype][object.set]['annotatortype']
-    elif Attrib.ANNOTATOR in required:
-        raise ValueError("Annotatortype is required for " + object.__class__.__name__)
+            object.processor = doc.provenance[kwargs['processor']]
+    elif doc and annotationtype in doc.annotators and object.set in doc.annotators[annotationtype] and len(doc.annotators[annotationtype][object.set]) == 1:
+        #assign the default processor
+        object.processor = doc.annotators[annotationtype][object.set]()
+        del kwargs['annotator']
+
+    if object.processor is None:
+        #old behavour without provenance (FoLiA <= 1.5)
+        if 'annotator' in kwargs:
+            if Attrib.ANNOTATOR not in supported:
+                raise ValueError("Annotator is not supported for " + object.__class__.__name__)
+            object.annotator = kwargs['annotator']
+            del kwargs['annotator']
+        elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults[annotationtype] and 'annotator' in doc.annotationdefaults[annotationtype][object.set]:
+            object.annotator = doc.annotationdefaults[annotationtype][object.set]['annotator']
+        elif Attrib.ANNOTATOR in required:
+            raise ValueError("Annotator is required for " + object.__class__.__name__)
+
+
+        if 'annotatortype' in kwargs:
+            if not Attrib.ANNOTATOR in supported:
+                raise ValueError("Annotatortype is not supported for " + object.__class__.__name__)
+            if kwargs['annotatortype'] == AnnotatorType.AUTO:
+                object.annotatortype = AnnotatorType.AUTO
+            elif kwargs['annotatortype']  == AnnotatorType.MANUAL:
+                object.annotatortype = AnnotatorType.MANUAL
+            else:
+                raise ValueError("annotatortype must be 'auto' or 'manual', got "  + repr(kwargs['annotatortype']))
+            del kwargs['annotatortype']
+        elif doc and annotationtype in doc.annotationdefaults and object.set in doc.annotationdefaults[annotationtype] and 'annotatortype' in doc.annotationdefaults[annotationtype][object.set]:
+            object.annotatortype = doc.annotationdefaults[annotationtype][object.set]['annotatortype']
+        elif Attrib.ANNOTATOR in required:
+            raise ValueError("Annotatortype is required for " + object.__class__.__name__)
 
 
     if 'confidence' in kwargs:
@@ -2057,7 +2069,17 @@ class AbstractElement(object):
             except AttributeError:
                 pass
 
-        if '{' + NSFOLIA + '}annotator' not in attribs: #do not override if caller already set it
+        if '{' + NSFOLIA + '}processor' not in attribs: #do not override if caller already set it
+            if self.ANNOTATIONTYPE in self.doc.annotators and self.set in self.doc.annotators[self.ANNOTATIONTYPE] and self.doc.annotators[self.ANNOTATIONTYPE][self.set]:
+                #there are new-style (FoLiA v1.6) annotators (pointing to processors in provenance data)
+
+                has_default = (self.ANNOTATIONTYPE in self.doc.annotationdefaults) and (self.set in self.doc.annotationdefaults[self.ANNOTATIONTYPE])
+                if not has_default:
+                    attribs['{' + NSFOLIA + '}processor'] = self.processor
+                else:
+                    assert self.annotationdefaults[self.ANNOTATIONTYPE][self.set] == self.processor.id
+
+        if '{' + NSFOLIA + '}annotator' not in attribs and not self.processor: #do not override if caller already set it
             try:
                 if self.annotator and ((not (self.ANNOTATIONTYPE in self.doc.annotationdefaults)) or (not ( 'annotator' in self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set])) or (self.annotator != self.doc.annotationdefaults[self.ANNOTATIONTYPE][self.set]['annotator'])):
                     attribs['{' + NSFOLIA + '}annotator'] = self.annotator
