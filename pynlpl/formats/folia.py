@@ -4374,11 +4374,6 @@ class Feature(AbstractElement):
         self.id = None
         self.set = None
         self.data = []
-        self.annotator = None
-        self.annotatortype = None
-        self.confidence = None
-        self.n = None
-        self.datetime = None
         if not isinstance(doc, Document) and not (doc is None):
             raise Exception("First argument of Feature constructor must be a Document instance, not " + str(type(doc)))
         self.doc = doc
@@ -4846,14 +4841,8 @@ class AlignReference(AbstractElement):
         assert(isinstance(doc,Document))
         self.doc = doc
         self.id = kwargs['id']
-        self.annotator = None
-        self.annotatortype = None
-        self.confidence = None
-        self.n = None
-        self.datetime = None
         self.auth = False
         self.set = None
-        self.cls = None
         self.data = []
 
 
@@ -5382,12 +5371,6 @@ class External(AbstractElement):
             self.include = bool(kwargs['include'])
         else:
             self.include = False
-        self.annotator = None
-        self.annotatortype = None
-        self.confidence = None
-        self.n = None
-        self.datetime = None
-        self.auth = False
         self.data = []
         self.subdoc = None
 
@@ -5476,14 +5459,7 @@ class WordReference(AbstractElement):
             self.id = kwargs['idref']
         else:
             self.id = kwargs['id']
-        self.annotator = None
-        self.annotatortype = None
-        self.confidence = None
-        self.n = None
-        self.datetime = None
         self.data = []
-        self.set = None
-        self.cls = None
         self.auth = True
 
     @classmethod
