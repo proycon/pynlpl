@@ -106,7 +106,7 @@ class LegacyClassDefinition(object):
         if seqnr is not None:
             graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSFOLIASETDEFINITION + '#sequenceNumber'), rdflib.term.Literal(seqnr) ))
         if parentclass:
-            graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSSKOS + '#broader'), rdflib.term.URIRef(basens + '#' + parentclass) ))
+            graph.add((rdflib.term.URIRef(basens + '#' + self.id), rdflib.term.URIRef(NSSKOS + '#narrower'), rdflib.term.URIRef(basens + '#' + parentclass) ))
 
         for subclass in self.subclasses:
             subclass.rdf(graph,basens,parentseturi, self.id)
@@ -389,7 +389,7 @@ class SetDefinition(object):
 
         classes= {}
         uri2idmap = {}
-        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass ?seqnr  WHERE { ?classuri rdf:type skos:Concept ; skos:notation ?classid. <" + str(set_uri) + "> skos:member ?classuri . OPTIONAL { ?classuri skos:prefLabel ?classlabel } OPTIONAL { ?classuri skos:broader ?parentclass } OPTIONAL { ?classuri fsd:sequenceNumber ?seqnr } }"):
+        for row in self.graph.query("SELECT ?classuri ?classid ?classlabel ?parentclass ?seqnr  WHERE { ?classuri rdf:type skos:Concept ; skos:notation ?classid. <" + str(set_uri) + "> skos:member ?classuri . OPTIONAL { ?classuri skos:prefLabel ?classlabel } OPTIONAL { ?classuri skos:narrower ?parentclass } OPTIONAL { ?classuri fsd:sequenceNumber ?seqnr } }"):
             classinfo = {'uri': str(row.classuri), 'id': str(row.classid),'label': str(row.classlabel) if row.classlabel else "" }
             if nestedhierarchy:
                 uri2idmap[str(row.classuri)] = str(row.classid)
