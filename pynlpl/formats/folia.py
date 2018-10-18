@@ -2276,6 +2276,35 @@ class AbstractElement(object):
                         return i #yes, i ... not j!
         return -1
 
+    def precedes(self, other):
+        """Returns a boolean indicating whether this element precedes the other element"""
+        try:
+            ancestor = next(commonancestors(AbstractElement, self, other))
+        except StopIteration:
+            raise Exception("Elements share no common ancestor")
+        #now we just do a depth first search and see who comes first
+        def callback(e):
+            if e is self:
+                return True
+            elif e is other:
+                return False
+            return None
+        result = ancestor.depthfirstsearch(callback)
+        if result is None:
+            raise Exception("Unable to find relation between elements! (shouldn't happen)")
+        return result
+
+
+    def depthfirstsearch(self, function):
+        """Generic depth first search algorithm using a callback function, continues as long as the callback function returns None"""
+        result = function(self)
+        if result is not None:
+            return result
+        for e in self:
+            result = e.depthfirstsearch(function)
+            if result is not None:
+                return result
+        return None
 
     def next(self, Class=True, scope=True, reverse=False):
         """Returns the next element, if it is of the specified type and if it does not cross the boundary of the defined scope. Returns None if no next element is found. Non-authoritative elements are never returned.
@@ -4293,7 +4322,7 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
         E = ElementMaker(namespace="http://ilk.uvt.nl/folia",nsmap={None: "http://ilk.uvt.nl/folia", 'xml' : "http://www.w3.org/XML/1998/namespace"})
         e = super(AbstractSpanAnnotation,self).xml(attribs, elements, True)
         for child in self:
-            if isinstance(child, Word) or isinstance(child, Morpheme) or isinstance(child, Phoneme):
+            if isinstance(child, (Word, Morpheme, Phoneme)):
                 #Include REFERENCES to word items instead of word items themselves
                 attribs['{' + NSFOLIA + '}id'] = child.id
                 if child.PRINTABLE and child.hastext(self.textclass):
@@ -4306,10 +4335,37 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
 
     def append(self, child, *args, **kwargs):
         """See :meth:`AbstractElement.append`"""
-        if (isinstance(child, Word) or isinstance(child, Morpheme) or isinstance(child, Phoneme))  and WordReference in self.ACCEPTED_DATA:
-            #Accept Word instances instead of WordReference, references will be automagically used upon serialisation
-            self.data.append(child)
+        #Accept Word instances instead of WordReference, references will be automagically used upon serialisation
+        if isinstance(child, (Word, Morpheme, Phoneme)) and WordReference in self.ACCEPTED_DATA:
+            #We don't really append but do an insertion so all references are in proper order
+            insertionpoint = len(self.data)
+            for i, sibling in enumerate(self.data):
+                if isinstance(sibling, (Word, Morpheme, Phoneme)):
+                    try:
+                        if not sibling.precedes(child):
+                            insertionpoint = i
+                    except: #happens if we can't determine common ancestors
+                        pass
+
+            self.data.insert(insertionpoint, child)
             return child
+        elif isinstance(child, AbstractSpanAnnotation): #(covers span roles just as well)
+            insertionpoint = len(self.data)
+            try:
+                firstword = child.wrefs(0)
+            except IndexError:
+                #we have no basis to determine an insertionpoint for this child, just append it then
+                return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)
+
+            insertionpoint = len(self.data)
+            for i, sibling in enumerate(self.data):
+                if isinstance(sibling, (Word, Morpheme, Phoneme)):
+                    try:
+                        if not sibling.precedes(firstword):
+                            insertionpoint = i
+                    except: #happens if we can't determine common ancestors
+                        pass
+            return super(AbstractSpanAnnotation,self).insert(insertionpoint, child, *args, **kwargs)
         else:
             return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)
 
@@ -4429,6 +4485,14 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
                 except ValueError:
                     pass
             e = e.parent
+
+
+
+
+
+
+
+
 
 class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections):
     """Annotation layers for Span Annotation are derived from this abstract base class"""
@@ -6293,6 +6357,8 @@ class Document(object):
         self.textclasses = set() #will contain the text classes found
 
         self.autodeclare = False #Automatic declarations in case of undeclared elements (will be enabled for DCOI, since DCOI has no declarations)
+
+        self.sortspans = kwargs.get('sortspans', True) #sort references in span elements
 
         if 'setdefinitions' in kwargs:
             self.setdefinitions = kwargs['setdefinitions'] #to re-use a shared store
