@@ -1681,6 +1681,16 @@ class Test2Sanity(unittest.TestCase):
         doc = folia.Document(string=xml)
         self.assertEqual(doc['example.text.1'].text(),"This is the real text")
 
+
+    def test109_precedes(self):
+        """Sanity Check - Check precedes() method"""
+        self.assertTrue( self.doc["WR-P-E-J-0000000001.p.1.s.1.w.1"].precedes(self.doc["WR-P-E-J-0000000001.p.1.s.1.w.2"]) )
+        self.assertFalse( self.doc["WR-P-E-J-0000000001.p.1.s.1.w.2"].precedes(self.doc["WR-P-E-J-0000000001.p.1.s.1.w.1"]) )
+        self.assertTrue( self.doc["WR-P-E-J-0000000001.p.1.s.1.w.1"].precedes(self.doc["WR-P-E-J-0000000001.p.1.s.1.w.2"]) )
+        self.assertTrue( self.doc["WR-P-E-J-0000000001.p.1.s.1.w.1"].precedes(self.doc["WR-P-E-J-0000000001.p.1.s.2.w.9"]) )
+        self.assertFalse( self.doc["WR-P-E-J-0000000001.p.1.s.2.w.9"].precedes(self.doc["WR-P-E-J-0000000001.p.1.s.1.w.1"]) )
+
+
 class Test4Edit(unittest.TestCase):
 
     def setUp(self):
