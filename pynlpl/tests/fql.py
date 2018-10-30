@@ -93,6 +93,8 @@ Qedit_spanrole_id = "EDIT hd ID \"test\" SPAN ID \"WR-P-E-J-0000000001.p.1.s.1.w
 
 Qadd_nested_span = "ADD su OF \"syntax-set\" WITH class \"np\" SPAN ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\" & ID \"WR-P-E-J-0000000001.p.1.s.1.w.5\" FOR ID \"WR-P-E-J-0000000001.p.1.s.1.su.0\""
 
+Qinsert_nested_span = "ADD su OF \"syntax-set\" WITH class \"adj\" SPAN ID \"WR-P-E-J-0000000001.p.1.s.1.w.4\" FOR ID \"WR-P-E-J-0000000001.p.1.s.1.su.0\""
+
 Qalt = "EDIT lemma WHERE class = \"terweil\" WITH class \"terwijl\" (AS ALTERNATIVE WITH confidence 0.9)"
 
 Qdeclare = "DECLARE correction OF \"http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml\" WITH annotator \"me\" annotatortype \"manual\""
@@ -808,6 +810,17 @@ class Test3Evaluation(unittest.TestCase):
         self.assertIsInstance(results[0].parent, folia.SyntacticUnit)
         self.assertEqual(results[0].parent.id, "WR-P-E-J-0000000001.p.1.s.1.su.0")
         self.assertEqual(list(results[0].wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
+        self.assertEqual(list(results[0].parent.wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.3'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
+
+    def test38b_nested_span(self):
+        """Insert a nested span (verify order)"""
+        q = fql.Query(Qinsert_nested_span)
+        results = q(self.doc)
+        self.assertIsInstance(results[0], folia.SyntacticUnit)
+        self.assertIsInstance(results[0].parent, folia.SyntacticUnit)
+        self.assertEqual(results[0].parent.id, "WR-P-E-J-0000000001.p.1.s.1.su.0")
+        self.assertEqual(list(results[0].wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'] ] )
+        self.assertEqual(list(results[0].parent.wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.3'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
 
     def test39_edit_spanrole(self):
         """Editing a spanrole"""
