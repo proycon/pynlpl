@@ -1690,6 +1690,76 @@ class Test2Sanity(unittest.TestCase):
         self.assertTrue( self.doc["WR-P-E-J-0000000001.p.1.s.1.w.1"].precedes(self.doc["WR-P-E-J-0000000001.p.1.s.2.w.9"]) )
         self.assertFalse( self.doc["WR-P-E-J-0000000001.p.1.s.2.w.9"].precedes(self.doc["WR-P-E-J-0000000001.p.1.s.1.w.1"]) )
 
+    def test110_spansort(self):
+        """Sanity Check - Checking span sorting"""
+        XML = """<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="folia2html.xsl"?>
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="WR-P-E-J-0000000001" version="1.5" generator="manual">
+  <metadata type="native">
+    <annotations>
+      <token-annotation annotator="ilktok" annotatortype="auto" />
+      <syntax-annotation set="syntax-set" />
+    </annotations>
+  </metadata>
+  <text>
+    <s xml:id="WR-P-E-J-0000000001.p.1.s.1">
+      <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.1">
+        <t>Stemma</t>
+      </w>
+      <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.2">
+        <t>is</t>
+      </w>
+      <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.3">
+        <t>een</t>
+      </w>
+      <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.4">
+        <t>ander</t>
+      </w>
+      <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.5">
+        <t>woord</t>
+      </w>
+      <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.6">
+        <t>voor</t>
+      </w>
+      <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.7" space="no">
+        <t>stamboom</t>
+      </w>
+      <w xml:id="WR-P-E-J-0000000001.p.1.s.1.w.8">
+        <t>.</t>
+      </w>
+      <syntax>
+        <su xml:id="WR-P-E-J-0000000001.p.1.s.1.su.sentence" class="sentence">
+          <su xml:id="WR-P-E-J-0000000001.p.1.s.1.su.subject" class="subject">
+            <wref id="WR-P-E-J-0000000001.p.1.s.1.w.1" t="Stemma"/>
+          </su>
+          <su xml:id="WR-P-E-J-0000000001.p.1.s.1.su.verb" class="verb">
+            <wref id="WR-P-E-J-0000000001.p.1.s.1.w.2" t="is"/>
+          </su>
+          <su xml:id="WR-P-E-J-0000000001.p.1.s.1.su.pred" class="predicate">
+            <su xml:id="WR-P-E-J-0000000001.p.1.s.1.su.pp" class="pp">
+              <wref id="WR-P-E-J-0000000001.p.1.s.1.w.6" t="voor"/>
+              <wref id="WR-P-E-J-0000000001.p.1.s.1.w.7" t="stamboom"/>
+            </su>
+            <su xml:id="WR-P-E-J-0000000001.p.1.s.1.su.np" class="np">
+              <wref id="WR-P-E-J-0000000001.p.1.s.1.w.3" t="een"/>
+              <su xml:id="WR-P-E-J-0000000001.p.1.s.1.su.adj" class="adj">
+                  <wref id="WR-P-E-J-0000000001.p.1.s.1.w.4" t="ander"/>
+              </su>
+              <wref id="WR-P-E-J-0000000001.p.1.s.1.w.5" t="woord"/>
+            </su>
+          </su>
+          <wref id="WR-P-E-J-0000000001.p.1.s.1.w.8" t="."/>
+        </su>
+      </syntax>
+    </s>
+  </text>
+</FoLiA>
+"""
+        self.doc = folia.Document(string=XML)
+        s = self.doc['WR-P-E-J-0000000001.p.1.s.1']
+        layer = next(s.select(folia.SyntaxLayer))
+        self.assertTrue( xmlcheck(layer.xmlstring(),"""<syntax xmlns="http://ilk.uvt.nl/folia"><su class="sentence" xml:id="WR-P-E-J-0000000001.p.1.s.1.su.sentence"><su class="subject" xml:id="WR-P-E-J-0000000001.p.1.s.1.su.subject"><wref id="WR-P-E-J-0000000001.p.1.s.1.w.1" t="Stemma"/></su><su class="verb" xml:id="WR-P-E-J-0000000001.p.1.s.1.su.verb"><wref id="WR-P-E-J-0000000001.p.1.s.1.w.2" t="is"/></su><su class="predicate" xml:id="WR-P-E-J-0000000001.p.1.s.1.su.pred"><su class="np" xml:id="WR-P-E-J-0000000001.p.1.s.1.su.np"><wref id="WR-P-E-J-0000000001.p.1.s.1.w.3" t="een"/><su class="adj" xml:id="WR-P-E-J-0000000001.p.1.s.1.su.adj"><wref id="WR-P-E-J-0000000001.p.1.s.1.w.4" t="ander"/></su><wref id="WR-P-E-J-0000000001.p.1.s.1.w.5" t="woord"/></su><su class="pp" xml:id="WR-P-E-J-0000000001.p.1.s.1.su.pp"><wref id="WR-P-E-J-0000000001.p.1.s.1.w.6" t="voor"/><wref id="WR-P-E-J-0000000001.p.1.s.1.w.7" t="stamboom"/></su></su><wref id="WR-P-E-J-0000000001.p.1.s.1.w.8" t="."/></su></syntax>"""))
+
 
 class Test4Edit(unittest.TestCase):
 
@@ -2236,6 +2306,9 @@ class Test4Edit(unittest.TestCase):
     #    self.assertEqual( w.annotation(folia.Correction).original[0] ,'stippelijn' )
     #    self.assertEqual( w.annotation(folia.Correction).new[0] ,'stippellijn' )
     #    self.assertEqual( w.text(), 'stippellijn')
+
+
+
 
 class Test4Create(unittest.TestCase):
     def test001_create(self):

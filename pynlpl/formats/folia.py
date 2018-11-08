@@ -162,6 +162,10 @@ class DuplicateIDError(Exception):
     """Exception raised when an identifier that is already in use is assigned again to another element"""
     pass
 
+class NoCommonAncestor(Exception):
+    """Exception raised when two elements do not share a common ancestor"""
+    pass
+
 class NoDefaultError(Exception):
     pass
 
@@ -1199,7 +1203,7 @@ class AbstractElement(object):
         if self.id:
             return hash(self.id)
         else:
-            raise TypeError("FoLiA elements are only hashable if they have an ID")
+            return hash(id(self)) #use the memory address
 
     def __iter__(self):
         """Iterate over all children of this element.
@@ -2278,10 +2282,14 @@ class AbstractElement(object):
 
     def precedes(self, other):
         """Returns a boolean indicating whether this element precedes the other element"""
+        if not self.parent:
+            raise NoCommonAncestor("Element " + repr(self) + " has no parent!")
+        elif not other.parent:
+            raise NoCommonAncestor("Other element " + repr(other) + " has no parent!")
         try:
             ancestor = next(commonancestors(AbstractElement, self, other))
         except StopIteration:
-            raise Exception("Elements share no common ancestor")
+            raise NoCommonAncestor("Elements share no common ancestor")
         #now we just do a depth first search and see who comes first
         def callback(e):
             if e is self:
@@ -2301,9 +2309,10 @@ class AbstractElement(object):
         if result is not None:
             return result
         for e in self:
-            result = e.depthfirstsearch(function)
-            if result is not None:
-                return result
+            if isinstance(e, AbstractElement):
+                result = e.depthfirstsearch(function)
+                if result is not None:
+                    return result
         return None
 
     def next(self, Class=True, scope=True, reverse=False):
@@ -3190,6 +3199,12 @@ class AbstractStructureElement(AbstractElement, AllowTokenAnnotation, AllowGener
 
     def __init__(self, doc, *args, **kwargs):
         super(AbstractStructureElement,self).__init__(doc, *args, **kwargs)
+
+    def __hash__(self):
+        if self.id:
+            return hash(self.id)
+        else:
+            return hash(id(self)) #use the memory address
 
     def resolveword(self, id):
         for child in self:
@@ -4316,6 +4331,10 @@ class AbstractSubtokenAnnotation(AbstractElement, AllowGenerateID):
 class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections):
     """Abstract element, all span annotation elements are derived from this class"""
 
+    def __init__(self, doc, *args, **kwargs):
+        self.needsort = False
+        super(AbstractSpanAnnotation,self).__init__(doc, *args, **kwargs)
+
     def xml(self, attribs = None,elements = None, skipchildren = False):
         """See :meth:`AbstractElement.xml`"""
         if not attribs: attribs = {}
@@ -4344,29 +4363,17 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
                     try:
                         if not sibling.precedes(child):
                             insertionpoint = i
+                            break
                     except: #happens if we can't determine common ancestors
+                        self.needsort = True
                         pass
 
             self.data.insert(insertionpoint, child)
+            child.postappend()
             return child
-        elif isinstance(child, AbstractSpanAnnotation): #(covers span roles just as well)
-            insertionpoint = len(self.data)
-            try:
-                firstword = child.wrefs(0)
-            except IndexError:
-                #we have no basis to determine an insertionpoint for this child, just append it then
-                return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)
-
-            insertionpoint = len(self.data)
-            for i, sibling in enumerate(self.data):
-                if isinstance(sibling, (Word, Morpheme, Phoneme)):
-                    try:
-                        if not sibling.precedes(firstword):
-                            insertionpoint = i
-                    except: #happens if we can't determine common ancestors
-                        pass
-            return super(AbstractSpanAnnotation,self).insert(insertionpoint, child, *args, **kwargs)
         else:
+            if isinstance(child, AbstractSpanAnnotation) or (inspect.isclass(child) and issubclass(child, AbstractSpanAnnotation)):
+                self.needsort = True
             return super(AbstractSpanAnnotation,self).append(child, *args, **kwargs)
 
     def setspan(self, *args):
@@ -4486,10 +4493,106 @@ class AbstractSpanAnnotation(AbstractElement, AllowGenerateID, AllowCorrections)
                     pass
             e = e.parent
 
+        if self.doc and self.doc.doneparsing:
+            layer = self.layer()
+            if self not in self.doc.layersortbuffer:
+                self.doc.layersortbuffer.append(layer)
 
+    def layer(self):
+        """Return the annotation layer this annotation pertains to"""
+        return self.ancestor(AbstractAnnotationLayer)
 
+    def sort(self, force=False):
+        """Sort children (wrefs and child spans) in order of appearance. Returns True if sort is successful (or not needed), False if sort needs to be deferred to a later stage"""
+        if self.doc and self.doc.debug >= 2: print("CALLED SORT ON", type(self), self.id,file=sys.stderr)
+        nonrefdata = [] #data that has no wrefs
+        refdata = [] #data that has wrefs
+        missingparents = False
+        for e in self.data:
+            missingparents = not e.parent or missingparents
+            #is this element a word reference?
+            reference = True #falsify
+            if isinstance(e, AbstractSpanAnnotation):
+                if self.doc and self.doc.debug >= 2: print("RECURSION",file=sys.stderr)
+                self.needsort = not e.sort() or self.needsort #recursion step
+                if self.doc and self.doc.debug >= 2: print("RETURNED FROM RECURSION, ",type(self), self.id,file=sys.stderr)
+                try:
+                    w = e.wrefs(0, recurse=True)
+                except IndexError:
+                    #empty span
+                    if self.doc and self.doc.debug >= 2: print("EMPTY SPAN ", (type(e), self.id),file=sys.stderr)
+                    reference = False
+            elif not isinstance(e, (Word, Morpheme, Phoneme)):
+                reference = False
+            if not reference:
+                nonrefdata.append(e)
+            else:
+                refdata.append(e)
 
+        if missingparents:
+            #unable to sort if not all elements have parents yet, defer to later stage (e.g. serialisation)
+            if self.doc and self.doc.debug >= 2: print(" MISSING PARENTS INSIDE ", (type(self), self.id),file=sys.stderr)
+            self.needsort = True
+            return False
 
+        if len(refdata) <= 1:
+            self.needsort = False
+
+        self.data = nonrefdata + refdata #everything that is a non-reference will precede everything that is a reference
+
+        cache = set() #contains (w1,w2) word tuples indicating w1 precedes w2 (to prevent recomputation)
+
+        if self.needsort or force:
+            if self.doc and self.doc.debug >= 2: print(" SORTING ", (type(self), self.id),file=sys.stderr)
+            if self.doc and self.doc.debug >= 2: print("  SORT BEFORE: ", [(type(e), e.id) for e in self.data] ,file=sys.stderr)
+            #now make sure everything that is a reference is in proper order
+            #using a simple bubble sort
+            inorder = False
+            while not inorder: #as long as elements are not in proper order
+                inorder = True #falsify this
+                for i in range(len(nonrefdata),len(self.data) - 1):
+                    e1 = self.data[i]
+                    e2 = self.data[i+1]
+
+                    if isinstance(e1, (Word, Morpheme, Phoneme)):
+                        e1_word = e1
+                    elif isinstance(e1, AbstractSpanAnnotation):
+                        e1_word = e1.wrefs(0, recurse=True)
+                    else: #TODO: corrections
+                        e1_word = None
+                    if isinstance(e2, (Word, Morpheme, Phoneme)):
+                        e2_word = e2
+                    elif isinstance(e2, AbstractSpanAnnotation):
+                        e2_word = e2.wrefs(0, recurse=True)
+                    else: #TODO: corrections
+                        e2_word = None
+
+                    if self.doc and self.doc.debug >= 2: print("     TESTING: ",  type(e1),e1.id , " vs ", type(e2),e2.id,file=sys.stderr)
+                    if e1_word and e2_word:
+                        if self.doc and self.doc.debug >= 2: print("       CHECKING: ",  e1_word.id , " vs ", e2_word.id ,file=sys.stderr)
+                        try:
+                            if not e1_word.precedes(e2_word):
+                                if self.doc and self.doc.debug >= 2: print("       SWAPPING!",file=sys.stderr)
+                                #swap places
+                                self.data[i] = e2
+                                self.data[i+1] = e1
+                                #cache.add((e2_word,e1_word))
+                                inorder = False
+                            else:
+                                if self.doc and self.doc.debug >= 2: print("       OK!",file=sys.stderr)
+                                #cache.add((e1_word,e2_word))
+                        except NoCommonAncestor:
+                                if self.doc and self.doc.debug >= 2: print("       No common ancestor",file=sys.stderr)
+                    else:
+                        if self.doc and self.doc.debug >= 2: print("       NO REFERENCE WORDS", file=sys.stderr)
+
+            self.needsort = False
+            if self.doc and self.doc.debug >= 2: print("  SORT AFTER: ", [(type(e), e.id) for e in self.data] ,file=sys.stderr)
+        else:
+            if self.doc and self.doc.debug >= 2:
+                print(" NO SORT NEEDED FOR ", (type(self), self.id),file=sys.stderr)
+                print("  STATUS QUO: ", [(type(e), e.id) for e in self.data] ,file=sys.stderr)
+        return True
 
 
 
@@ -4536,6 +4639,11 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
                         break
 
         return super(AbstractAnnotationLayer, self).append(child, *args, **kwargs)
+
+    def postappend(self):
+        super(AbstractAnnotationLayer, self).postappend()
+        if self.doc:
+            self.doc.layersortbuffer.append(self)  #will hold instances derived off AbstractAnnotationLayer (i.e. all span annotation layers), so the the span annotations within can be sorted after all parsing is done
 
     def add(self, child, *args, **kwargs): #alias for append
         return self.append(child, *args, **kwargs)
@@ -4620,6 +4728,11 @@ class AbstractAnnotationLayer(AbstractElement, AllowGenerateID, AllowCorrections
 
     def deepvalidation(self):
         return True
+
+    def sort(self):
+        for e in self:
+            if isinstance(e, AbstractSpanAnnotation):
+                e.sort()
 
 # class AbstractSubtokenAnnotationLayer(AbstractElement, AllowGenerateID):
     # """Annotation layers for Subtoken Annotation are derived from this abstract base class"""
@@ -6423,6 +6536,7 @@ class Document(object):
             self.textvalidation = False
         self.textvalidationerrors = 0 #will count the number of text validation errors
         self.offsetvalidationbuffer = [] #will hold (AbstractStructureElement, textclass pairs) that need to be validated still (if textvalidation == True), validation will be done when all parsing is complete and/or prior to serialisation
+        self.layersortbuffer = [] #will hold instances derived off AbstractAnnotationLayer (i.e. all span annotation layers), so the the span annotations within can be sorted after all parsing is done
 
         if 'allowadhocsets' in kwargs:
             self.allowadhocsets = bool(kwargs['allowadhocsets'])
@@ -6480,6 +6594,8 @@ class Document(object):
             self.parsexml(kwargs['tree'])
         else:
             raise Exception("No ID, filename or tree specified")
+        self.doneparsing = True #we are done parsing
+        self.postparse()
 
         if self.mode != Mode.XPATH:
             #XML Tree is now obsolete (only needed when partially loaded for xpath queries), free memory
@@ -6490,6 +6606,9 @@ class Document(object):
     #    for child in self.data:
     #        del child
     #    del self.data
+    def postparse(self):
+        """Post-processing after parsing the entire document"""
+
 
     def load(self, filename):
         """Load a FoLiA XML file.
@@ -7302,6 +7421,9 @@ class Document(object):
         elif isstring(node):
             node = xmltreefromstring(node).getroot()
 
+        self.doneparsing = False #indicates that the document is still parsing
+        self.postprocess = [] #list of items to postprocess after parsing
+
         if node.tag.startswith('{' + NSFOLIA + '}'):
             foliatag = node.tag[nslen:]
             if foliatag == "FoLiA":
@@ -7386,7 +7508,14 @@ class Document(object):
             raise Exception("Unknown FoLiA XML tag: " + node.tag)
 
         self.pendingvalidation() #perform  any pending offset validations (if applicable)
+        self.pendingsort() #perform any pending sorts (if applicable)
+        self.doneparsing = True #indicates that the document is still parsing
 
+    def pendingsort(self, warnonly=None):
+        """Perform any pending sorts on span annotation elements (per layer, in turn recurses into all span annotations)"""
+        while self.layersortbuffer:
+            layer = self.layersortbuffer.pop()
+            layer.sort()
 
     def pendingvalidation(self, warnonly=None):
         """Perform any pending validations
