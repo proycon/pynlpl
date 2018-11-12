@@ -131,7 +131,11 @@ class ConfusionMatrix(FrequencyList):
         """Print Confusion Matrix in table form"""
         o = "== Confusion Matrix == (hor: goals, vert: observations)\n\n"
 
-        keys = sorted( set( ( x[1] for x in self._count.keys()) ) )
+        keys = set()
+        for goalkey,observationkey in self._count.keys():
+            keys.add(goalkey)
+            keys.add(observationkey)
+        keys = sorted( keys)
 
         linemask = "%20s"
         cells = ['']
@@ -414,7 +418,7 @@ class OrdinalEvaluation(ClassEvaluation):
             return mae(self.error[cls])
         else:
             return mae(sum([self.error[x] for x in set(self.goals)], []))
-             
+
     def rmse(self, cls=None):
         if not self.computed: self.compute()
         if cls:
