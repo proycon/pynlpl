@@ -11,6 +11,8 @@ PyNLPl - Python Natural Language Processing Library
 .. image:: http://applejack.science.ru.nl/lamabadge.php/pynlpl
    :target: http://applejack.science.ru.nl/languagemachines/
 
+.. image:: https://zenodo.org/badge/759484.svg
+   :target: https://zenodo.org/badge/latestdoi/759484
 
 PyNLPl, pronounced as 'pineapple', is a Python library for Natural Language
 Processing. It contains various modules useful for common, and less common, NLP
