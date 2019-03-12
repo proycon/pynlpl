@@ -340,7 +340,6 @@ def parsecommonarguments(object, doc, annotationtype, required, allowed, **kwarg
     elif Attrib.ANNOTATOR in required:
         raise ValueError("Annotatortype is required for " + object.__class__.__name__)
 
-
     if 'confidence' in kwargs:
         if not Attrib.CONFIDENCE in supported:
             raise ValueError("Confidence is not supported")
@@ -695,7 +694,7 @@ class AbstractElement(object):
         for key in kwargs:
             if key[0] == '{': #this is a parameter in a different alien namespace, ignore it
                 continue
-            else:
+            elif key not in ("processor","space"): #ignore some FoLiA 2.0 attributes for limited forward compatibility
                 raise ValueError("Parameter '" + key + "' not supported by " + self.__class__.__name__)
 
 
@@ -7239,6 +7238,7 @@ class Document(object):
                     raise MetaDataError("Encountered a meta element but metadata type is not native!")
             elif subnode.tag == '{' + NSFOLIA + '}provenance':
                 #forward compatibility with FoLiA 2.0; ignore provenance
+                print("WARNING: Ignoring provenance data. Use foliapy instead of pynlpl.formats.folia for FoLiA v2.0 compatibility!",file=sys.stderr)
                 pass
             elif subnode.tag == '{' + NSFOLIA + '}foreign-data':
                 if self.metadatatype == "native":
@@ -7322,7 +7322,7 @@ class Document(object):
                 if 'version' in node.attrib:
                     self.version = node.attrib['version']
                     if checkversion(self.version) > 0:
-                        print("WARNING!!! Document uses a newer version of FoLiA than this library! (" + self.version + " vs " + FOLIAVERSION + "). Any possible subsequent failures in parsing or processing may probably be attributed to this. Upgrade pynlpl to remedy this.",file=sys.stderr)
+                        print("WARNING!!! Document uses a newer version of FoLiA than this library! (" + self.version + " vs " + FOLIAVERSION + "). Any possible subsequent failures in parsing or processing may probably be attributed to this. Upgrade to foliapy (https://github.com/proycon/foliapy) to remedy this.",file=sys.stderr)
                 else:
                     self.version = None
 
