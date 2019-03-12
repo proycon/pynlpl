@@ -7237,6 +7237,9 @@ class Document(object):
                         self.metadata[subnode.attrib['id']] = subnode.text
                 else:
                     raise MetaDataError("Encountered a meta element but metadata type is not native!")
+            elif subnode.tag == '{' + NSFOLIA + '}provenance':
+                #forward compatibility with FoLiA 2.0; ignore provenance
+                pass
             elif subnode.tag == '{' + NSFOLIA + '}foreign-data':
                 if self.metadatatype == "native":
                     raise MetaDataError("Encountered a foreign-data element but metadata type is native!")
