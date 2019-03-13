@@ -31,6 +31,8 @@ import unittest
 import io
 from pynlpl.formats import fql, folia, cql
 
+FOLIARELEASE = "v1.5.1.60"
+
 Q1 = 'SELECT pos WHERE class = "n" FOR w WHERE text = "house" AND class != "punct" RETURN focus'
 Q2 = 'ADD w WITH text "house" (ADD pos WITH class "n") FOR ID sentence'
 
@@ -1012,8 +1014,10 @@ elif os.path.exists('../FoLiA'):
     FOLIAPATH = '../FoLiA/'
 else:
     FOLIAPATH = 'FoLiA'
-    print("Downloading FoLiA",file=sys.stderr)
-    os.system("git clone https://github.com/proycon/folia.git FoLiA")
+    if FOLIARELEASE:
+        os.system("git clone https://github.com/proycon/folia.git FoLiA && cd FoLiA && git checkout tags/" + FOLIARELEASE + ' && cd ..')
+    else:
+        os.system("git clone https://github.com/proycon/folia.git FoLiA")
 
 f = io.open(FOLIAPATH + '/test/example.xml', 'r',encoding='utf-8')
 FOLIAEXAMPLE = f.read()
