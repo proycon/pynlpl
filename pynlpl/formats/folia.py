@@ -81,6 +81,8 @@ LIBVERSION = FOLIAVERSION + '.88' #== FoLiA version + library revision
 #The FoLiA XML namespace
 NSFOLIA = "http://ilk.uvt.nl/folia"
 
+print("WARNING: The FoLiA library pynlpl.formats.folia is being used but this version is now deprecated and is replaced by FoLiAPy (pip install folia), see https://github.com/proycon/foliapy. Please update your software if you are a developer, if you are an end-user you can safely ignore this message.",file=sys.stderr)
+
 
 NSDCOI = "http://lands.let.ru.nl/projects/d-coi/ns/1.0"
 nslen = len(NSFOLIA) + 2
