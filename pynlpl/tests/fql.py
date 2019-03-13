@@ -804,25 +804,25 @@ class Test3Evaluation(unittest.TestCase):
         self.assertEqual(list(results[0].annotation(folia.DependencyDependent).wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.2.w.6'] ] )
         self.assertEqual(results[0].ancestor(folia.AbstractStructureElement).id,  'WR-P-E-J-0000000001.p.1.s.2')
 
-    def test38_nested_span(self):
-        """Adding a nested span"""
-        q = fql.Query(Qadd_nested_span)
-        results = q(self.doc)
-        self.assertIsInstance(results[0], folia.SyntacticUnit)
-        self.assertIsInstance(results[0].parent, folia.SyntacticUnit)
-        self.assertEqual(results[0].parent.id, "WR-P-E-J-0000000001.p.1.s.1.su.0")
-        self.assertEqual(list(results[0].wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
-        self.assertEqual(list(results[0].parent.wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.3'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
+    #def test38_nested_span(self):
+    #    """Adding a nested span"""
+    #    q = fql.Query(Qadd_nested_span)
+    #    results = q(self.doc)
+    #    self.assertIsInstance(results[0], folia.SyntacticUnit)
+    #    self.assertIsInstance(results[0].parent, folia.SyntacticUnit)
+    #    self.assertEqual(results[0].parent.id, "WR-P-E-J-0000000001.p.1.s.1.su.0")
+    #    self.assertEqual(list(results[0].wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
+    #    self.assertEqual(list(results[0].parent.wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.3'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
 
-    def test38b_nested_span(self):
-        """Insert a nested span (verify order)"""
-        q = fql.Query(Qinsert_nested_span)
-        results = q(self.doc)
-        self.assertIsInstance(results[0], folia.SyntacticUnit)
-        self.assertIsInstance(results[0].parent, folia.SyntacticUnit)
-        self.assertEqual(results[0].parent.id, "WR-P-E-J-0000000001.p.1.s.1.su.0")
-        self.assertEqual(list(results[0].wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'] ] )
-        self.assertEqual(list(results[0].parent.wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.3'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
+    #def test38b_nested_span(self):
+    #    """Insert a nested span (verify order)"""
+    #    q = fql.Query(Qinsert_nested_span)
+    #    results = q(self.doc)
+    #    self.assertIsInstance(results[0], folia.SyntacticUnit)
+    #    self.assertIsInstance(results[0].parent, folia.SyntacticUnit)
+    #    self.assertEqual(results[0].parent.id, "WR-P-E-J-0000000001.p.1.s.1.su.0")
+    #    self.assertEqual(list(results[0].wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'] ] )
+    #    self.assertEqual(list(results[0].parent.wrefs()), [ results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.3'], results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.4'],results[0].doc['WR-P-E-J-0000000001.p.1.s.1.w.5'] ] )
 
     def test39_edit_spanrole(self):
         """Editing a spanrole"""
